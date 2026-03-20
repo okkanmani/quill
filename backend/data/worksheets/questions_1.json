@@ -1,0 +1,106 @@
+{
+  "title": "Long Division – Week 1",
+  "subject": "math",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What is 84 ÷ 4?",
+      "answer": "21",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "prompt": "What is 96 ÷ 3?",
+      "answer": "32",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "prompt": "What is 125 ÷ 5?",
+      "answer": "25",
+      "hint": true,
+      "hintContext": "Break it into parts: 100 ÷ 5 and 25 ÷ 5, then add."
+    },
+    {
+      "id": "q4",
+      "prompt": "What is 144 ÷ 6?",
+      "answer": "24",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "prompt": "What is 180 ÷ 9?",
+      "answer": "20",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "prompt": "What is 256 ÷ 8?",
+      "answer": "32",
+      "hint": true,
+      "hintContext": "Try dividing 240 ÷ 8 first, then handle the remaining 16."
+    },
+    {
+      "id": "q7",
+      "prompt": "What is 315 ÷ 7?",
+      "answer": "45",
+      "hint": true,
+      "hintContext": "7 × 40 = 280. How much is left after subtracting 280 from 315?"
+    },
+    {
+      "id": "q8",
+      "prompt": "What is 432 ÷ 6?",
+      "answer": "72",
+      "hint": true,
+      "hintContext": "Break it into 420 ÷ 6 and 12 ÷ 6, then add the results."
+    },
+    {
+      "id": "q9",
+      "prompt": "What is 378 ÷ 9?",
+      "answer": "42",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "prompt": "A baker made 504 cookies and packed them equally into boxes of 8. How many boxes did he fill?",
+      "answer": "63",
+      "hint": true,
+      "hintContext": "This is 504 ÷ 8. Try 8 × 60 = 480 first, then see what's left."
+    },
+    {
+      "id": "q11",
+      "prompt": "What is 672 ÷ 7?",
+      "answer": "96",
+      "hint": true,
+      "hintContext": "7 × 90 = 630. How much remains after subtracting 630 from 672?"
+    },
+    {
+      "id": "q12",
+      "prompt": "A school has 845 students divided equally into 5 classes. How many students are in each class?",
+      "answer": "169",
+      "hint": true,
+      "hintContext": "This is 845 ÷ 5. Break it into 800 ÷ 5 and 45 ÷ 5."
+    },
+    {
+      "id": "q13",
+      "prompt": "What is 756 ÷ 4?",
+      "answer": "189",
+      "hint": true,
+      "hintContext": "Try 700 ÷ 4 = 175, then divide the remaining 56 by 4."
+    },
+    {
+      "id": "q14",
+      "prompt": "What is 918 ÷ 6?",
+      "answer": "153",
+      "hint": true,
+      "hintContext": "Break it into 900 ÷ 6 and 18 ÷ 6, then add."
+    },
+    {
+      "id": "q15",
+      "prompt": "A farmer harvested 992 apples and packed them into bags of 8. How many bags did he fill?",
+      "answer": "124",
+      "hint": true,
+      "hintContext": "This is 992 ÷ 8. Try 8 × 100 = 800 first, then divide what's left."
+    }
+  ]
+}

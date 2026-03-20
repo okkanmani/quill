@@ -1,0 +1,141 @@
+{
+  "title": "Algebra & Geometry Mix – Week 1",
+  "subject": "math",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 4x - 3 = 25",
+      "choices": ["5", "6", "7", "8"],
+      "answer": "7",
+      "hint": true,
+      "hintContext": "First add 3 to both sides to get 4x = 28. Then divide both sides by 4."
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "A rectangle has a length of 12 cm and a perimeter of 38 cm. What is its width?",
+      "choices": ["5 cm", "6 cm", "7 cm", "8 cm"],
+      "answer": "7 cm",
+      "hint": true,
+      "hintContext": "Perimeter = 2 × (length + width). Substitute what you know: 38 = 2 × (12 + width). Solve for width."
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 3x + 9 = 33",
+      "choices": ["6", "7", "8", "9"],
+      "answer": "8",
+      "hint": true,
+      "hintContext": "Subtract 9 from both sides first to get 3x = 24. Then divide by 3."
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "A square has a perimeter of 48 cm. What is the area of the square?",
+      "choices": ["100 cm²", "121 cm²", "144 cm²", "169 cm²"],
+      "answer": "144 cm²",
+      "hint": true,
+      "hintContext": "First find the side length: perimeter ÷ 4. Then multiply side × side to get the area."
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 5x - 7 = 43",
+      "choices": ["8", "9", "10", "11"],
+      "answer": "10",
+      "hint": true,
+      "hintContext": "Add 7 to both sides to get 5x = 50. Then divide both sides by 5."
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "A triangle has angles of 65° and 55°. What is the third angle?",
+      "choices": ["50°", "55°", "60°", "70°"],
+      "answer": "60°",
+      "hint": true,
+      "hintContext": "All angles in a triangle add up to 180°. Subtract the two known angles from 180°."
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 2x + 14 = 36",
+      "choices": ["9", "10", "11", "12"],
+      "answer": "11",
+      "hint": true,
+      "hintContext": "Subtract 14 from both sides to get 2x = 22. Then divide both sides by 2."
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "A rectangle has an area of 72 cm² and a width of 6 cm. What is its perimeter?",
+      "choices": ["36 cm", "38 cm", "40 cm", "42 cm"],
+      "answer": "36 cm",
+      "hint": true,
+      "hintContext": "First find the length: area ÷ width = 72 ÷ 6. Then use perimeter = 2 × (length + width)."
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 6x - 12 = 42",
+      "choices": ["8", "9", "10", "11"],
+      "answer": "9",
+      "hint": true,
+      "hintContext": "Add 12 to both sides to get 6x = 54. Then divide both sides by 6."
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "A right angle triangle has one angle of 37°. What is the third angle?",
+      "choices": ["43°", "53°", "63°", "73°"],
+      "answer": "53°",
+      "hint": true,
+      "hintContext": "A right angle triangle always has a 90° angle. All three angles add up to 180°. Subtract 90° and 37° from 180°."
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 4x + 11 = 51",
+      "choices": ["8", "9", "10", "11"],
+      "answer": "10",
+      "hint": true,
+      "hintContext": "Subtract 11 from both sides to get 4x = 40. Then divide both sides by 4."
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "A square has an area of 81 cm². What is its perimeter?",
+      "choices": ["27 cm", "32 cm", "36 cm", "40 cm"],
+      "answer": "36 cm",
+      "hint": true,
+      "hintContext": "First find the side length by asking: what number multiplied by itself gives 81? Then multiply that by 4 for the perimeter."
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 7x - 14 = 49",
+      "choices": ["7", "8", "9", "10"],
+      "answer": "9",
+      "hint": true,
+      "hintContext": "Add 14 to both sides to get 7x = 63. Then divide both sides by 7."
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "A rectangle has a perimeter of 54 cm. Its length is twice its width. What is its width?",
+      "choices": ["7 cm", "8 cm", "9 cm", "10 cm"],
+      "answer": "9 cm",
+      "hint": true,
+      "hintContext": "If width = x, then length = 2x. Perimeter = 2 × (x + 2x) = 54. Solve for x."
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 3x + 18 = 48",
+      "choices": ["8", "9", "10", "11"],
+      "answer": "10",
+      "hint": true,
+      "hintContext": "Subtract 18 from both sides to get 3x = 30. Then divide both sides by 3."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "languages": {
+    "Python": {
+      "python": {
+        "defaultInterpreter": {
+          "executablePath": "./venv/bin/python3"
+        }
+      }
+    }
+  }
+}

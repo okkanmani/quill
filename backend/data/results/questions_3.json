@@ -1,0 +1,40 @@
+{
+  "worksheet_id": "questions_3",
+  "title": "Math Mix \u2013 MCQ Week 1",
+  "student": "Yayien",
+  "score": 0,
+  "total": 5,
+  "answers": [
+    {
+      "question_id": "q1",
+      "prompt": "What is 1/2 + 1/4?",
+      "given": "",
+      "correct": false
+    },
+    {
+      "question_id": "q2",
+      "prompt": "If 3x = 24, what is x?",
+      "given": "",
+      "correct": false
+    },
+    {
+      "question_id": "q3",
+      "prompt": "What is 144 \u00f7 6?",
+      "given": "",
+      "correct": false
+    },
+    {
+      "question_id": "q4",
+      "prompt": "Which fraction is equivalent to 2/4?",
+      "given": "",
+      "correct": false
+    },
+    {
+      "question_id": "q5",
+      "prompt": "A bag has 56 candies shared equally among 7 friends. How many does each friend get?",
+      "given": "",
+      "correct": false
+    }
+  ],
+  "submitted_at": "2026-03-15T17:33:01.900759+00:00"
+}

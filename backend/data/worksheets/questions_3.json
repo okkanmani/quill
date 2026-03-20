@@ -1,0 +1,141 @@
+{
+  "title": "Decimals & Algebra Mix – Week 1",
+  "subject": "math",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 3x + 1.5 = 10.5",
+      "choices": ["2.5", "3", "3.5", "4"],
+      "answer": "3",
+      "hint": true,
+      "hintContext": "Subtract 1.5 from both sides to get 3x = 9. Then divide both sides by 3."
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "A bottle holds 1.75 L of juice. After pouring out 0.65 L, how much is left if you then add 0.4 L?",
+      "choices": ["1.4 L", "1.5 L", "1.6 L", "1.7 L"],
+      "answer": "1.5 L",
+      "hint": true,
+      "hintContext": "First subtract 0.65 from 1.75. Then add 0.4 to that result."
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 4x - 2.4 = 13.6",
+      "choices": ["3.5", "4", "4.5", "5"],
+      "answer": "4",
+      "hint": true,
+      "hintContext": "Add 2.4 to both sides to get 4x = 16. Then divide both sides by 4."
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "A ribbon is 4.8 m long. It is cut into 6 equal pieces. How much longer is one piece than 0.5 m?",
+      "choices": ["0.2 m", "0.3 m", "0.4 m", "0.5 m"],
+      "answer": "0.3 m",
+      "hint": true,
+      "hintContext": "First divide 4.8 by 6 to find the length of one piece. Then subtract 0.5 from that."
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 5x + 3.5 = 23.5",
+      "choices": ["3", "4", "5", "6"],
+      "answer": "4",
+      "hint": true,
+      "hintContext": "Subtract 3.5 from both sides to get 5x = 20. Then divide both sides by 5."
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "A shop sells apples for $0.75 each. Maya buys some apples and pays with a $5 bill, getting $1.25 back. How many apples did she buy?",
+      "choices": ["4", "5", "6", "7"],
+      "answer": "5",
+      "hint": true,
+      "hintContext": "First find how much Maya spent: $5 - $1.25. Then divide that by the price per apple."
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 2x - 4.6 = 7.4",
+      "choices": ["5", "5.5", "6", "6.5"],
+      "answer": "6",
+      "hint": true,
+      "hintContext": "Add 4.6 to both sides to get 2x = 12. Then divide both sides by 2."
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "A tank has 12.6 L of water. Water drains at 0.9 L per minute. How much water is left after 8 minutes?",
+      "choices": ["4.8 L", "5.0 L", "5.2 L", "5.4 L"],
+      "answer": "5.4 L",
+      "hint": true,
+      "hintContext": "First find how much drained: 0.9 × 8. Then subtract that from 12.6."
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 6x + 4.2 = 28.2",
+      "choices": ["3", "3.5", "4", "4.5"],
+      "answer": "4",
+      "hint": true,
+      "hintContext": "Subtract 4.2 from both sides to get 6x = 24. Then divide both sides by 6."
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "A runner completes 3 laps of a track. Each lap is 0.75 km. How much further does she need to run to reach 3 km total?",
+      "choices": ["0.50 km", "0.75 km", "1.00 km", "1.25 km"],
+      "answer": "0.75 km",
+      "hint": true,
+      "hintContext": "First find total distance run: 3 × 0.75. Then subtract from 3 km."
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 7x - 5.6 = 29.4",
+      "choices": ["4", "5", "6", "7"],
+      "answer": "5",
+      "hint": true,
+      "hintContext": "Add 5.6 to both sides to get 7x = 35. Then divide both sides by 7."
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "A bag of rice weighs 2.4 kg. After using 0.85 kg, the remainder is split equally into 5 containers. How much is in each container?",
+      "choices": ["0.25 kg", "0.31 kg", "0.35 kg", "0.40 kg"],
+      "answer": "0.31 kg",
+      "hint": true,
+      "hintContext": "First subtract 0.85 from 2.4 to find what's left. Then divide that by 5."
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 4x + 6.8 = 26.8",
+      "choices": ["4", "5", "6", "7"],
+      "answer": "5",
+      "hint": true,
+      "hintContext": "Subtract 6.8 from both sides to get 4x = 20. Then divide both sides by 4."
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "A plank is 3.6 m long. A carpenter cuts off two pieces of 0.85 m each. How long is the remaining piece?",
+      "choices": ["1.7 m", "1.8 m", "1.9 m", "2.0 m"],
+      "answer": "1.9 m",
+      "hint": true,
+      "hintContext": "First find total cut: 0.85 × 2. Then subtract from 3.6."
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 5x - 8.5 = 16.5",
+      "choices": ["4", "5", "6", "7"],
+      "answer": "5",
+      "hint": true,
+      "hintContext": "Add 8.5 to both sides to get 5x = 25. Then divide both sides by 5."
+    }
+  ]
+}
