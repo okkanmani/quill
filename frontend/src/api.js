@@ -68,6 +68,15 @@ export async function getWorksheet(id) {
   return res.json();
 }
 
+export async function deleteWorksheet(id) {
+  const res = await fetch(`${BASE_URL}/worksheets/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to delete worksheet");
+  return res.json();
+}
+
 export async function submitResult(result) {
   const res = await fetch(`${BASE_URL}/results`, {
     method: "POST",

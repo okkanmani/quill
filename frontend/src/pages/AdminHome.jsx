@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getResults, logout } from "../api";
 
 export default function AdminHome() {
@@ -26,6 +26,12 @@ export default function AdminHome() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-amber-800">🪶 Quill</h1>
         <div className="flex items-center gap-4">
+          <Link
+            to="/admin/worksheets"
+            className="text-amber-700 text-sm underline hover:text-amber-900"
+          >
+            Worksheets
+          </Link>
           <span className="text-amber-700 text-sm">Admin</span>
           <button
             onClick={handleLogout}
