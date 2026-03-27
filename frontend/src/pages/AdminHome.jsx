@@ -48,16 +48,20 @@ export default function AdminHome() {
       <div className="flex flex-col gap-4">
         {results.map((r) => (
           <div
-            key={r.worksheet_id}
+            key={r.id}
             className="bg-white border border-amber-200 rounded-2xl p-5 shadow-sm"
           >
-            {/* Per question breakdown */}
-            <div className="flex justify-between items-center mb-4">
-              <p className="text-amber-900 font-semibold text-lg">
-                {r.title || r.worksheet_id}
-              </p>
+            <div className="flex justify-between items-start mb-4 gap-4">
+              <div>
+                <p className="text-amber-900 font-semibold text-lg">
+                  {r.title || r.worksheet_id}
+                </p>
+                {r.student ? (
+                  <p className="text-amber-600 text-sm mt-1">{r.student}</p>
+                ) : null}
+              </div>
               <span
-                className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                className={`text-sm font-semibold px-3 py-1 rounded-full shrink-0 ${
                   r.score === r.total
                     ? "bg-green-100 text-green-700"
                     : r.score >= r.total / 2
@@ -68,36 +72,20 @@ export default function AdminHome() {
                 {r.score} / {r.total}
               </span>
             </div>
-            {/* Worksheet title and score */}
-            <div className="flex justify-between items-center mb-4">
-              <p className="text-amber-900 font-semibold text-lg">
-                {r.answers.map((a) => (
-                  <div
-                    key={a.question_id}
-                    className="flex justify-between items-center text-sm gap-4"
-                  >
-                    <span className="text-amber-700 flex-1">{a.prompt}</span>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-amber-500">"{a.given}"</span>
-                      <span>{a.correct ? "✅" : "❌"}</span>
-                    </div>
+            <div className="flex flex-col gap-2">
+              {r.answers.map((a) => (
+                <div
+                  key={a.question_id}
+                  className="flex justify-between items-center text-sm gap-4"
+                >
+                  <span className="text-amber-700 flex-1">{a.prompt}</span>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-amber-500">"{a.given}"</span>
+                    <span>{a.correct ? "✅" : "❌"}</span>
                   </div>
-                ))}
-              </p>
-              <span
-                className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                  r.score === r.total
-                    ? "bg-green-100 text-green-700"
-                    : r.score >= r.total / 2
-                      ? "bg-amber-100 text-amber-700"
-                      : "bg-red-100 text-red-700"
-                }`}
-              >
-                {r.score} / {r.total}
-              </span>
+                </div>
+              ))}
             </div>
-
-            {/* Submitted at */}
             <p className="text-amber-400 text-xs mt-4">
               Submitted: {new Date(r.submitted_at).toLocaleString()}
             </p>

@@ -1,0 +1,218 @@
+{
+  "title": "Reading Comprehension – Week 1",
+  "subject": "english",
+  "scratchpad": false,
+  "passages": [
+    {
+      "id": "p1",
+      "title": "The Arctic Fox",
+      "body": "The arctic fox is one of nature's most remarkable survivors. Living in some of the coldest places on Earth, this small mammal has developed extraordinary adaptations to endure temperatures as low as -50°C. Its thick, multi-layered fur coat is so effective that the fox does not even begin to shiver until temperatures drop below -70°C. In winter, its fur turns pure white, providing perfect camouflage against the snow. In summer, the coat changes to brown or grey, blending seamlessly with rocks and tundra vegetation.\n\nThe arctic fox is an opportunistic feeder, meaning it will eat almost anything it can find. Its primary prey is the lemming, a small rodent whose population rises and falls in cycles. When lemming populations crash, the arctic fox must travel enormous distances — sometimes over 1,500 km — in search of food. It will follow polar bears to scavenge leftover scraps, eat berries, birds, eggs, and even seaweed washed ashore.\n\nDespite its hardiness, the arctic fox faces growing challenges. Climate change is shrinking its habitat as the red fox, which is larger and more aggressive, moves northward into arctic territory. The two species compete for the same food and den sites, and the red fox almost always wins. Scientists are closely monitoring arctic fox populations to understand how quickly these changes are taking place."
+    },
+    {
+      "id": "p2",
+      "title": "The Silk Road",
+      "body": "More than two thousand years ago, a network of trade routes connected China to the Mediterranean world. Today we call this network the Silk Road, though it was not a single road and traders rarely travelled its entire length. Instead, goods passed through many hands, moving from merchant to merchant across deserts, mountains, and steppes.\n\nSilk was the most famous product traded along these routes. Chinese silk was extraordinarily valuable in the Roman Empire, where it was considered a luxury item reserved for the wealthy. In exchange, Rome sent glassware, gold, and wool westward. But the Silk Road carried far more than luxury goods. Spices, paper, gunpowder, and cotton all travelled these routes. So did ideas, religions, and diseases. Buddhism spread from India into China along Silk Road corridors. The bubonic plague, which would later devastate Europe as the Black Death, also travelled westward along these same paths.\n\nThe city of Samarkand, located in present-day Uzbekistan, was one of the great hubs of Silk Road trade. Merchants, scholars, and diplomats from dozens of cultures passed through its bazaars. At its peak, Samarkand was one of the largest and most cosmopolitan cities in the world. The Silk Road began to decline after the 15th century, when European sailors discovered sea routes to Asia that were faster and cheaper than the overland journey."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, at what temperature does the arctic fox begin to shiver?",
+      "choices": ["-50°C", "-60°C", "-70°C", "Below -70°C"],
+      "answer": "Below -70°C",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Why does the arctic fox change the colour of its fur between winter and summer?",
+      "choices": [
+        "To stay warm in different temperatures",
+        "To blend in with its surroundings",
+        "To attract a mate",
+        "To signal danger to other foxes"
+      ],
+      "answer": "To blend in with its surroundings",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "What does the word 'opportunistic' mean as used in the passage?",
+      "choices": [
+        "Eating only one type of food",
+        "Hunting only at night",
+        "Willing to eat whatever is available",
+        "Sharing food with other animals"
+      ],
+      "answer": "Willing to eat whatever is available",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, what is the main reason the arctic fox is under threat?",
+      "choices": [
+        "Hunters are trapping them for their fur",
+        "Lemmings are disappearing",
+        "The red fox is moving into arctic territory",
+        "The arctic fox cannot find enough seaweed"
+      ],
+      "answer": "The red fox is moving into arctic territory",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Which of the following best describes the main idea of the passage?",
+      "choices": [
+        "The arctic fox is the fastest animal in the Arctic",
+        "The arctic fox is a remarkable survivor now facing new challenges",
+        "Climate change is destroying all Arctic wildlife",
+        "The arctic fox and red fox are closely related species"
+      ],
+      "answer": "The arctic fox is a remarkable survivor now facing new challenges",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Why was the Silk Road given that name, according to the passage?",
+      "choices": [
+        "Because it was paved with smooth stones",
+        "Because silk was the most famous product traded along it",
+        "Because it was discovered by Chinese silk merchants",
+        "Because it connected silk factories across Asia"
+      ],
+      "answer": "Because silk was the most famous product traded along it",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Which of the following was NOT mentioned in the passage as something that travelled along the Silk Road?",
+      "choices": ["Gunpowder", "Buddhism", "Cotton", "Democracy"],
+      "answer": "Democracy",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "What does the word 'cosmopolitan' most likely mean as used in the passage?",
+      "choices": [
+        "Very old and historic",
+        "Home to people from many different cultures",
+        "Famous for its markets and trade",
+        "Located at the centre of a large empire"
+      ],
+      "answer": "Home to people from many different cultures",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, why did the Silk Road decline after the 15th century?",
+      "choices": [
+        "Wars destroyed the trade routes",
+        "China stopped producing silk",
+        "Sea routes to Asia were discovered",
+        "The plague wiped out too many merchants"
+      ],
+      "answer": "Sea routes to Asia were discovered",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Which of the following best describes what the Silk Road actually was?",
+      "choices": [
+        "A single well-maintained road from China to Rome",
+        "A network of sea routes connecting Asia to Europe",
+        "A network of trade routes where goods passed through many hands",
+        "A road built by the Roman Empire to trade with China"
+      ],
+      "answer": "A network of trade routes where goods passed through many hands",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "A scientist argues that arctic fox populations will recover if climate change is slowed. Which of the following, if true, would most WEAKEN this argument?",
+      "choices": [
+        "Arctic foxes have survived previous periods of warming in Earth's history",
+        "Red foxes have already permanently established large populations in arctic regions and will not retreat even if temperatures drop",
+        "Lemming populations have been stable for the past decade",
+        "Scientists have successfully bred arctic foxes in captivity"
+      ],
+      "answer": "Red foxes have already permanently established large populations in arctic regions and will not retreat even if temperatures drop",
+      "hint": true,
+      "hintContext": "The argument says slowing climate change will help. Look for a reason why that still might not be enough."
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "The passage about the Silk Road states that the bubonic plague travelled westward along its routes. Which of the following conclusions is best supported by this fact?",
+      "choices": [
+        "The Silk Road was responsible for all major diseases in history",
+        "Trade routes can spread more than just goods — they can spread disease too",
+        "Merchants along the Silk Road were careless about hygiene",
+        "The Roman Empire deliberately spread the plague to weaken its rivals"
+      ],
+      "answer": "Trade routes can spread more than just goods — they can spread disease too",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "Both passages describe something that faces or faced a significant challenge. What do these challenges have in common?",
+      "choices": [
+        "Both challenges were caused by human greed",
+        "Both challenges involve one thing being replaced by something faster or stronger",
+        "Both challenges were solved by scientists",
+        "Both challenges are related to climate change"
+      ],
+      "answer": "Both challenges involve one thing being replaced by something faster or stronger",
+      "hint": true,
+      "hintContext": "Think about what replaced the arctic fox's territory and what replaced the Silk Road as a trade route."
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "A student claims: 'The Silk Road was not very important because traders never travelled its full length.' Is this a strong argument?",
+      "choices": [
+        "Yes, because distance determines importance",
+        "No, because goods and ideas still spread across the entire route even if individual traders did not travel it all",
+        "Yes, because the Romans never visited China directly",
+        "No, because some traders did travel the full length"
+      ],
+      "answer": "No, because goods and ideas still spread across the entire route even if individual traders did not travel it all",
+      "hint": true,
+      "hintContext": "Think about what actually matters — whether one person travels the whole route, or whether things still move from one end to the other."
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "Which of the following statements is an OPINION rather than a fact?",
+      "choices": [
+        "The arctic fox can travel over 1,500 km in search of food",
+        "Samarkand is located in present-day Uzbekistan",
+        "The Silk Road was the most important event in human history",
+        "Buddhism spread from India into China along Silk Road corridors"
+      ],
+      "answer": "The Silk Road was the most important event in human history",
+      "hint": true,
+      "hintContext": "A fact can be checked and proven. An opinion is someone's belief or judgment. Which statement cannot be proven true or false?"
+    }
+  ]
+}

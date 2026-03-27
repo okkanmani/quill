@@ -67,6 +67,34 @@ export default function Worksheet() {
     );
   }
 
+  const renderQuestion = (q, index) => {
+    return (
+      <div
+        key={q.id}
+        className={`bg-white border rounded-2xl p-5 shadow-sm ${
+          submitted
+            ? isCorrect(q)
+              ? "border-green-300"
+              : "border-red-300"
+            : "border-amber-200"
+        }`}
+      >
+        <p className="text-amber-900 font-medium mb-3">
+          {index + 1}. {q.prompt}
+        </p>
+        {showScratchpad && <Drawpad />}
+        {renderInput(q)}
+        {submitted && !isCorrect(q) && q.type !== "multiple_choice" && (
+          <p className="text-red-500 text-sm mt-2">
+            Correct answer: {q.answer}
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  const showScratchpad = worksheet?.scratchpad !== false;
+
   function renderInput(q) {
     if (q.type === "multiple_choice") {
       return (
@@ -156,31 +184,59 @@ export default function Worksheet() {
       )}
 
       {/* Questions */}
-      <div className="flex flex-col gap-6">
-        {worksheet.questions.map((q, index) => (
-          <div
-            key={q.id}
-            className={`bg-white border rounded-2xl p-5 shadow-sm ${
-              submitted
-                ? isCorrect(q)
-                  ? "border-green-300"
-                  : "border-red-300"
-                : "border-amber-200"
-            }`}
-          >
-            <p className="text-amber-900 font-medium mb-3">
-              {index + 1}. {q.prompt}
-            </p>
+      <div className="flex flex-col gap-8">
+        {/* Group questions by passage */}
+        {worksheet.passages &&
+          worksheet.passages.map((passage) => {
+            const passageQuestions = worksheet.questions.filter(
+              (q) => q.passage_id === passage.id,
+            );
+            return (
+              <div key={passage.id} className="flex flex-col gap-4">
+                {/* Sticky passage */}
+                <div className="sticky top-4 z-10 bg-white border border-amber-200 rounded-2xl p-5 shadow-sm">
+                  <p className="text-amber-800 font-semibold text-base mb-3">
+                    📖 {passage.title}
+                  </p>
+                  <p className="text-amber-900 text-sm leading-relaxed whitespace-pre-line">
+                    {passage.body}
+                  </p>
+                </div>
+                {/* Questions for this passage */}
+                <div className="flex flex-col gap-4">
+                  {passageQuestions.map((q) => {
+                    const index = worksheet.questions.indexOf(q);
+                    return renderQuestion(q, index);
+                  })}
+                </div>
+              </div>
+            );
+          })}
 
-            <Drawpad />
-            {renderInput(q)}
-            {submitted && !isCorrect(q) && q.type !== "multiple_choice" && (
-              <p className="text-red-500 text-sm mt-2">
-                Correct answer: {q.answer}
+        {/* Critical reasoning section */}
+        {worksheet.questions.filter((q) => !q.passage_id).length > 0 && (
+          <div className="flex flex-col gap-4">
+            <div>
+              <p className="text-amber-700 font-semibold text-base">
+                🧠 Critical Reasoning
               </p>
-            )}
+              <p className="text-amber-400 text-xs mt-1">
+                Use what you have read and your own reasoning to answer these
+                questions.
+              </p>
+            </div>
+            {worksheet.questions
+              .filter((q) => !q.passage_id)
+              .map((q) => {
+                const index = worksheet.questions.indexOf(q);
+                return renderQuestion(q, index);
+              })}
           </div>
-        ))}
+        )}
+
+        {/* Fallback for non-reading worksheets */}
+        {!worksheet.passages &&
+          worksheet.questions.map((q, index) => renderQuestion(q, index))}
       </div>
 
       {/* Submit button */}

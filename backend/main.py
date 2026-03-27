@@ -1,8 +1,17 @@
+from contextlib import asynccontextmanager
+
 from auth import create_token, get_student_name, verify_admin, verify_token
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from worksheets import get_worksheet, list_results, list_worksheets, save_result
+from worksheets import (
+    get_worksheet,
+    init_worksheet_tables,
+    list_results,
+    list_worksheets,
+    save_result,
+    sync_worksheets_from_json_files,
+)
 
 
 class SubmitResultRequest(BaseModel):
@@ -13,7 +22,14 @@ class SubmitResultRequest(BaseModel):
     answers: list
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_worksheet_tables()
+    sync_worksheets_from_json_files()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
