@@ -1,0 +1,256 @@
+{
+  "title": "English – Critical Reasoning Focus (Grade 5 Ontario)",
+  "subject": "english",
+  "scratchpad": false,
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Maple Syrup Season in Ontario",
+      "body": "Each spring, when nights are still cold but daytime temperatures climb above freezing, maple sap begins to flow in sugar bushes across Ontario and Quebec. Producers tap maple trees by drilling small holes and hanging buckets or tubes that collect the clear, watery sap. It takes about 40 litres of sap — sometimes more — to make just one litre of syrup, because sap is mostly water.\n\nThe collected sap is boiled for many hours in a sugar shack until enough water evaporates and the liquid thickens into golden syrup. The colour and flavour can vary depending on how early or late in the season the sap was gathered. Many farms welcome visitors during \"sugar bush\" weekends, offering tours, samples, and pancakes — a tradition that connects today's families to practices that go back generations."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, when does maple sap usually begin to flow?",
+      "choices": [
+        "Only in the middle of summer",
+        "When nights are cold but daytime temperatures rise above freezing",
+        "Whenever it rains for a week",
+        "After all the leaves have fallen"
+      ],
+      "answer": "When nights are cold but daytime temperatures rise above freezing",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "About how much sap does the passage say is needed to make one litre of syrup?",
+      "choices": [
+        "About 1 litre",
+        "About 10 litres",
+        "About 40 litres or more",
+        "About 100 millilitres"
+      ],
+      "answer": "About 40 litres or more",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Why must producers boil the sap for a long time?",
+      "choices": [
+        "To add sugar from the air",
+        "To turn the sap blue",
+        "To evaporate water so the liquid thickens into syrup",
+        "To freeze the sap solid"
+      ],
+      "answer": "To evaporate water so the liquid thickens into syrup",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "What can cause maple syrup to differ in colour and flavour?",
+      "choices": [
+        "Whether the sap came from oak trees",
+        "How early or late in the season the sap was gathered",
+        "The size of the pancakes served",
+        "Whether visitors came on a weekend"
+      ],
+      "answer": "How early or late in the season the sap was gathered",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "The author mentions pancakes and tours mainly to show that —",
+      "choices": [
+        "maple farms only sell pancakes, not syrup",
+        "maple syrup production is a tradition that families still share today",
+        "pancakes are unhealthy",
+        "tours are required by law"
+      ],
+      "answer": "maple syrup production is a tradition that families still share today",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "Read: \"The experiment failed because the team rushed the final steps.\" Which word is closest in meaning to \"rushed\" here?",
+      "choices": ["celebrated", "hurried", "ignored", "doubled"],
+      "answer": "hurried",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "Maya scores 88, 92, and 84 on three quizzes. Her friend says, \"You always get above 95.\" Why is the friend's statement weak?",
+      "choices": [
+        "Because Maya did not take any quizzes",
+        "Because the scores shown are all below 95",
+        "Because 88 is the highest possible score",
+        "Because averages cannot be calculated with three numbers"
+      ],
+      "answer": "Because the scores shown are all below 95",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "Which is the best closing sentence for a paragraph that explains how to plant a seed?",
+      "choices": [
+        "Therefore, water the soil gently and place the pot where it gets suitable light.",
+        "I like pizza more than gardening.",
+        "Seeds are small.",
+        "Once upon a time there was a dragon."
+      ],
+      "answer": "Therefore, water the soil gently and place the pot where it gets suitable light.",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "\"The evidence is scant.\" In this sentence, \"scant\" most likely means —",
+      "choices": ["abundant", "very little", "colourful", "illegal"],
+      "answer": "very little",
+      "hint": true,
+      "hintContext": "If evidence is scant, do you have a lot to work with or almost none?"
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "A poster claims: \"Our juice has vitamins, so drinking it cures every illness.\" What logical problem does this have?",
+      "choices": [
+        "Vitamins never exist in juice",
+        "It leaps from one true idea to an extreme conclusion that is not supported",
+        "Juice cannot be cold",
+        "Posters cannot use colour"
+      ],
+      "answer": "It leaps from one true idea to an extreme conclusion that is not supported",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "Which pair are synonyms?",
+      "choices": [
+        "ancient / modern",
+        "rapid / swift",
+        "expand / shrink",
+        "ancient / rapid"
+      ],
+      "answer": "rapid / swift",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "The mayor announced a new skate park. A critic writes, \"This is a frivolous waste when roads need repair.\" The critic's tone is mainly —",
+      "choices": ["joyful", "neutral", "disapproving", "confused"],
+      "answer": "disapproving",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "If all robins are birds, and this animal is not a bird, which conclusion is valid?",
+      "choices": [
+        "It must be a robin",
+        "It cannot be a robin",
+        "It must be a fish",
+        "All birds are robins"
+      ],
+      "answer": "It cannot be a robin",
+      "hint": true,
+      "hintContext": "Robins are a type of bird. If something is not a bird, can it still be a robin?"
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "Which revision fixes the run-on? \"We hiked to the ridge the view was incredible.\"",
+      "choices": [
+        "We hiked to the ridge the view, was incredible.",
+        "We hiked to the ridge, and the view was incredible.",
+        "We hiked to the ridge the view were incredible.",
+        "We hiked, to the ridge the view was incredible."
+      ],
+      "answer": "We hiked to the ridge, and the view was incredible.",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "A student concludes: \"The book is boring because I only read the first page.\" This is weak because —",
+      "choices": [
+        "first pages never have words",
+        "one page may not represent the whole book",
+        "boring books have no covers",
+        "reading is impossible"
+      ],
+      "answer": "one page may not represent the whole book",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "\"She delivered the speech with poise.\" \"Poise\" suggests she was —",
+      "choices": ["clumsy and loud", "calm and self-controlled", "silent and invisible", "confused about the topic"],
+      "answer": "calm and self-controlled",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "Which question is best for researching \"how compost helps gardens\"?",
+      "choices": [
+        "What is your favourite colour?",
+        "How does compost improve soil for plants?",
+        "Who invented the alphabet?",
+        "Why are dogs better than cats?"
+      ],
+      "answer": "How does compost improve soil for plants?",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "Read: \"Unlike his brother, Leo rarely raises his voice.\" What does this imply about Leo?",
+      "choices": [
+        "Leo shouts constantly",
+        "Leo is usually quiet or calm when speaking",
+        "Leo has no brother",
+        "Leo cannot speak"
+      ],
+      "answer": "Leo is usually quiet or calm when speaking",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "A survey asked only people leaving a hockey game, \"Is hockey the best sport?\" Why might results be biased?",
+      "choices": [
+        "Because surveys never work",
+        "Because the sample probably includes many hockey fans already",
+        "Because hockey is not a sport",
+        "Because Grade 5 students cannot answer surveys"
+      ],
+      "answer": "Because the sample probably includes many hockey fans already",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "Which transition best shows contrast? \"Several species adapted to the cold. ____, others migrated south.\"",
+      "choices": ["Similarly", "However", "Therefore", "Next"],
+      "answer": "However",
+      "hint": false
+    }
+  ]
+}

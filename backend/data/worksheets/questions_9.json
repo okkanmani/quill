@@ -1,0 +1,289 @@
+{
+  "title": "English – Reading Focus (Grade 5 Ontario)",
+  "subject": "english",
+  "scratchpad": false,
+  "passages": [
+    {
+      "id": "p1",
+      "title": "The Great Lakes: A Shared Treasure",
+      "body": "The Great Lakes — Superior, Michigan, Huron, Erie, and Ontario — hold about one-fifth of the world's fresh surface water. They form a natural border between Canada and the United States and support millions of people who rely on them for drinking water, transportation, fishing, and recreation.\n\nLong before European settlers arrived, Indigenous nations lived along these shores and travelled them by canoe. Trade routes connected communities hundreds of kilometres apart. Today, huge cargo ships still carry grain, iron ore, and other goods through the lakes to ports around the world.\n\nKeeping the lakes healthy is a major challenge. Runoff from farms and cities can carry pollutants into the water. Invasive species, such as zebra mussels, have upset food webs by filtering out plankton that native fish need. Climate change is also altering water levels and ice cover, which affects wetlands and wildlife.\n\nGovernments on both sides of the border work together through agreements to monitor water quality and limit pollution. Schools and community groups often organize shoreline cleanups. Scientists say that protecting the Great Lakes requires both large policy decisions and everyday choices, such as reducing plastic waste and being careful about what goes down storm drains."
+    },
+    {
+      "id": "p2",
+      "title": "How a Bill Becomes a Law in Ontario",
+      "body": "Ontario's laws are made by the Legislative Assembly at Queen's Park in Toronto. Most new laws begin as ideas that a government minister believes are needed. These ideas are drafted into a bill — a proposed law written in formal language.\n\nA bill must pass through several stages. First, it is introduced and read aloud so members of the assembly know what it is about. Then committees study the bill, hear from experts and the public, and may suggest changes. After debate and votes in the assembly, a bill that passes its final vote receives Royal Assent from the Lieutenant Governor and becomes law.\n\nNot every idea becomes a law quickly. Some bills are debated for months because members disagree about details or costs. Opposition parties may argue that a bill should be changed or rejected. In a democracy, this disagreement is expected; it is part of how citizens' different views are represented.\n\nOnce a law is in place, government departments and agencies put it into practice. Courts may later interpret the law if people disagree about what it means in a specific case."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, approximately what fraction of the world's fresh surface water do the Great Lakes hold?",
+      "choices": ["One-tenth", "One-fifth", "One-quarter", "One-third"],
+      "answer": "One-fifth",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Why does the passage mention canoes?",
+      "choices": [
+        "To explain that the lakes are too shallow for large ships",
+        "To show that Indigenous nations used the lakes for travel and trade long ago",
+        "To argue that modern ships are worse for the environment",
+        "To describe a popular tourist activity today"
+      ],
+      "answer": "To show that Indigenous nations used the lakes for travel and trade long ago",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "What problem do zebra mussels cause, based on the passage?",
+      "choices": [
+        "They increase the amount of plankton in the water",
+        "They filter out plankton that native fish need",
+        "They are illegal to transport through the locks",
+        "They make drinking water taste salty"
+      ],
+      "answer": "They filter out plankton that native fish need",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "The word \"runoff\" in the passage most likely refers to —",
+      "choices": [
+        "water that flows over land and can carry pollutants into the lakes",
+        "ships that run off course during storms",
+        "fish that swim away from invasive species",
+        "ice that runs off the surface in spring"
+      ],
+      "answer": "water that flows over land and can carry pollutants into the lakes",
+      "hint": true,
+      "hintContext": "Read the sentence about farms and cities — what is moving into the water?"
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Which statement best expresses the main idea of the passage?",
+      "choices": [
+        "The Great Lakes are only important for shipping grain",
+        "The Great Lakes are a vital resource that faces serious threats and needs many kinds of protection",
+        "Zebra mussels are the only danger to the Great Lakes",
+        "Canada and the United States should stop sharing the Great Lakes"
+      ],
+      "answer": "The Great Lakes are a vital resource that faces serious threats and needs many kinds of protection",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, climate change affects the Great Lakes by —",
+      "choices": [
+        "making the water completely fresh",
+        "increasing the number of cargo ships",
+        "changing water levels and ice cover",
+        "removing all invasive species"
+      ],
+      "answer": "changing water levels and ice cover",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Why does the author include the detail about shoreline cleanups?",
+      "choices": [
+        "To show that only scientists can protect the lakes",
+        "To give an example of how ordinary people can help protect the lakes",
+        "To prove that cleanups are more important than laws",
+        "To explain how bills become laws"
+      ],
+      "answer": "To give an example of how ordinary people can help protect the lakes",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Which detail from the passage is a fact rather than an opinion?",
+      "choices": [
+        "Protecting the lakes is easy",
+        "The Great Lakes support millions of people",
+        "Cargo ships are ugly",
+        "Everyone should move away from the lakes"
+      ],
+      "answer": "The Great Lakes support millions of people",
+      "hint": true,
+      "hintContext": "A fact can be checked; an opinion is what someone thinks or feels."
+    },
+    {
+      "id": "q9",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Where does Ontario's Legislative Assembly meet?",
+      "choices": ["Ottawa", "Queen's Park in Toronto", "Windsor", "Thunder Bay"],
+      "answer": "Queen's Park in Toronto",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "What is a bill, according to the passage?",
+      "choices": [
+        "A speech given by the Lieutenant Governor",
+        "A proposed law written in formal language",
+        "A committee of experts",
+        "A type of court decision"
+      ],
+      "answer": "A proposed law written in formal language",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "What happens after a bill passes its final vote in the assembly?",
+      "choices": [
+        "It is automatically sent to the United Nations",
+        "It receives Royal Assent from the Lieutenant Governor and becomes law",
+        "It must be approved by every city mayor",
+        "It is stored until the next election"
+      ],
+      "answer": "It receives Royal Assent from the Lieutenant Governor and becomes law",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Why does the passage say that disagreement among parties is \"expected\" in a democracy?",
+      "choices": [
+        "Because laws should never change",
+        "Because different views of citizens are represented and debated",
+        "Because committees always make mistakes",
+        "Because bills are never read aloud"
+      ],
+      "answer": "Because different views of citizens are represented and debated",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, who may suggest changes to a bill?",
+      "choices": [
+        "Only the Lieutenant Governor",
+        "Committees, after hearing from experts and the public",
+        "Only students in Grade 5",
+        "Only cargo ships on the Great Lakes"
+      ],
+      "answer": "Committees, after hearing from experts and the public",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "What role do courts play, based on the last paragraph?",
+      "choices": [
+        "They write new bills every week",
+        "They may interpret a law when people disagree about its meaning",
+        "They replace the Legislative Assembly",
+        "They organize public cleanups"
+      ],
+      "answer": "They may interpret a law when people disagree about its meaning",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Which title would best fit the second passage?",
+      "choices": [
+        "The History of Canoes on the Great Lakes",
+        "The Path from Idea to Law in Ontario",
+        "How Zebra Mussels Invaded North America",
+        "Why Climate Change Is Fake"
+      ],
+      "answer": "The Path from Idea to Law in Ontario",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "A classmate says: \"If one invasive species hurts the Great Lakes, then every new species that enters the lakes must be harmful.\" What is the main flaw in this reasoning?",
+      "choices": [
+        "It confuses fresh water with salt water",
+        "It assumes all new species are harmful because one example is harmful",
+        "It ignores the role of the Lieutenant Governor",
+        "It uses too many statistics"
+      ],
+      "answer": "It assumes all new species are harmful because one example is harmful",
+      "hint": true,
+      "hintContext": "Can you conclude something about ALL species from ONE bad example?"
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "Which sentence contains only a fact?",
+      "choices": [
+        "Queen's Park is the most boring building in Canada",
+        "Royal Assent is given by the Lieutenant Governor",
+        "Everyone agrees that laws should pass in one day",
+        "Committees are always useless"
+      ],
+      "answer": "Royal Assent is given by the Lieutenant Governor",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "If a new law banned single-use plastic bottles near Great Lakes beaches, which group from the passages would put that law into daily practice?",
+      "choices": [
+        "The Legislative Assembly only, with no one else involved",
+        "Government departments and agencies",
+        "Zebra mussels",
+        "Cargo ship captains only"
+      ],
+      "answer": "Government departments and agencies",
+      "hint": true,
+      "hintContext": "Re-read the last sentence of the bill passage about who carries out laws."
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "The phrase \"put it into practice\" in the bill passage is closest in meaning to —",
+      "choices": [
+        "argue about it in committee",
+        "carry it out in real life",
+        "delete it from the books",
+        "read it aloud once"
+      ],
+      "answer": "carry it out in real life",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "Both passages emphasize that important problems — lake health and lawmaking — require —",
+      "choices": [
+        "ignoring other people's opinions",
+        "only one quick solution",
+        "cooperation, time, and more than one kind of effort",
+        "getting rid of all ships"
+      ],
+      "answer": "cooperation, time, and more than one kind of effort",
+      "hint": true,
+      "hintContext": "Think about cross-border work and committees, debate, and many actors in each passage."
+    }
+  ]
+}

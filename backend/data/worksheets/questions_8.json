@@ -1,0 +1,191 @@
+{
+  "title": "Math Challenge – Grade 5 (Ontario)",
+  "subject": "math",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "What is the value of 48 ÷ (6 + 2) × 3?",
+      "choices": ["9", "12", "18", "24"],
+      "answer": "18",
+      "hint": true,
+      "hintContext": "Do the brackets first: 6 + 2 = 8. Then divide and multiply from left to right."
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "A rectangular garden is 7.5 m long and 4.2 m wide. What is its area in square metres?",
+      "choices": ["28.5 m²", "31.5 m²", "32.5 m²", "33.5 m²"],
+      "answer": "31.5 m²",
+      "hint": true,
+      "hintContext": "Area of a rectangle = length × width. Multiply 7.5 by 4.2."
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "Which fraction is equivalent to 3/4?",
+      "choices": ["6/10", "9/12", "4/6", "5/8"],
+      "answer": "9/12",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "Solve for n: n − 4.6 = 12.8",
+      "choices": ["8.2", "17.4", "18.4", "7.2"],
+      "answer": "17.4",
+      "hint": true,
+      "hintContext": "Add 4.6 to both sides to isolate n."
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "A school has 230 glue sticks to share equally among 8 classrooms. How many glue sticks does each classroom get, and how many are left over?",
+      "choices": [
+        "28 with 6 left over",
+        "28 with 7 left over",
+        "29 with 2 left over",
+        "27 with 14 left over"
+      ],
+      "answer": "28 with 6 left over",
+      "hint": true,
+      "hintContext": "Divide 230 by 8. The whole-number part is how many each class gets; the remainder is what is left."
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "What is 2/3 + 1/6?",
+      "choices": ["3/9", "5/6", "3/6", "1/2"],
+      "answer": "5/6",
+      "hint": true,
+      "hintContext": "Use a common denominator. 2/3 = 4/6, then add 1/6."
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "A rectangular prism is built from centimetre cubes. Its base is 5 cm by 4 cm and its height is 6 cm. What is its volume in cubic centimetres?",
+      "choices": ["120 cm³", "150 cm³", "180 cm³", "200 cm³"],
+      "answer": "120 cm³",
+      "hint": true,
+      "hintContext": "Volume = length × width × height (for a box shape)."
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "Round 47.856 to the nearest tenth.",
+      "choices": ["47.8", "47.9", "48.0", "47.85"],
+      "answer": "47.9",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "The number pattern follows the rule 'start at 3, then add 7 each time.' What is the 6th term?",
+      "choices": ["38", "45", "41", "48"],
+      "answer": "45",
+      "hint": true,
+      "hintContext": "The terms are 3, 10, 17, 24, 31, … What comes next after 31?"
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "A movie starts at 2:45 p.m. and lasts 1 hour 50 minutes. At what time does it end?",
+      "choices": ["4:25 p.m.", "4:35 p.m.", "4:45 p.m.", "3:95 p.m."],
+      "answer": "4:35 p.m.",
+      "hint": true,
+      "hintContext": "Add 1 hour to 2:45 to get 3:45, then add 50 more minutes."
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "The masses of four backpacks in kilograms are 2.1, 2.4, 2.0, and 2.5. What is the mean mass?",
+      "choices": ["2.2 kg", "2.25 kg", "2.3 kg", "2.35 kg"],
+      "answer": "2.25 kg",
+      "hint": true,
+      "hintContext": "Add the four masses and divide by 4."
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "Which number is prime?",
+      "choices": ["21", "29", "33", "39"],
+      "answer": "29",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "A trapezoid-shaped desk mat has parallel sides of 30 cm and 50 cm. The distance (height) between them is 20 cm. What is the area? (Use: area = (a + b) × h ÷ 2)",
+      "choices": ["600 cm²", "800 cm²", "1000 cm²", "1600 cm²"],
+      "answer": "800 cm²",
+      "hint": true,
+      "hintContext": "Add 30 and 50, multiply by 20, then divide by 2."
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "Which comparison is true?",
+      "choices": [
+        "0.6 < 3/5",
+        "0.6 = 3/5",
+        "0.6 > 3/5",
+        "0.6 > 4/5"
+      ],
+      "answer": "0.6 = 3/5",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "A juice pack costs $2.85. About how much do 7 packs cost, rounded to the nearest dollar?",
+      "choices": ["$18", "$19", "$20", "$21"],
+      "answer": "$20",
+      "hint": true,
+      "hintContext": "Multiply 2.85 by 7, then round to the nearest whole dollar."
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 5x + 12 = 47",
+      "choices": ["5", "6", "7", "8"],
+      "answer": "7",
+      "hint": true,
+      "hintContext": "Subtract 12 from both sides, then divide by 5."
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "An isosceles triangle has two equal angles of 50° each. What is the measure of the third angle?",
+      "choices": ["70°", "80°", "90°", "100°"],
+      "answer": "80°",
+      "hint": true,
+      "hintContext": "Angles in a triangle add to 180°. Subtract both 50° angles from 180°."
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "A recipe uses 3/4 cup of milk for one batch. How many cups are needed for 5 batches?",
+      "choices": ["3 1/4 cups", "3 3/4 cups", "4 cups", "4 1/4 cups"],
+      "answer": "3 3/4 cups",
+      "hint": true,
+      "hintContext": "Multiply 3/4 by 5. Write the result as a mixed number."
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "Which decimal is the greatest?",
+      "choices": ["0.405", "0.45", "0.045", "0.4051"],
+      "answer": "0.45",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "A number is multiplied by 10, then 15 is subtracted. The result is 65. What was the original number?",
+      "choices": ["5", "6", "7", "8"],
+      "answer": "8",
+      "hint": true,
+      "hintContext": "Work backwards: 65 + 15 = 80, then 80 ÷ 10 = ?"
+    }
+  ]
+}

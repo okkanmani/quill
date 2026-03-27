@@ -1,7 +1,14 @@
+import os
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(__file__).resolve().parent / "data" / "app.db"
+_backend_dir = Path(__file__).resolve().parent
+_data_dir = os.environ.get("QUILL_DATA_DIR", "").strip()
+DB_PATH = (
+    Path(_data_dir) / "app.db"
+    if _data_dir
+    else _backend_dir / "data" / "app.db"
+)
 
 
 def connect() -> sqlite3.Connection:

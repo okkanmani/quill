@@ -153,6 +153,9 @@ export default function Worksheet() {
       <div className="min-h-screen bg-amber-50 p-6 text-red-500">{error}</div>
     );
 
+  const passages = Array.isArray(worksheet.passages) ? worksheet.passages : [];
+  const hasReadingPassages = passages.length > 0;
+
   return (
     <div className="min-h-screen bg-amber-50 p-6">
       {/* Header */}
@@ -183,60 +186,56 @@ export default function Worksheet() {
         </div>
       )}
 
-      {/* Questions */}
+      {/* Questions: exactly one layout — reading (passages + optional CR) OR flat list */}
       <div className="flex flex-col gap-8">
-        {/* Group questions by passage */}
-        {worksheet.passages &&
-          worksheet.passages.map((passage) => {
-            const passageQuestions = worksheet.questions.filter(
-              (q) => q.passage_id === passage.id,
-            );
-            return (
-              <div key={passage.id} className="flex flex-col gap-4">
-                {/* Sticky passage */}
-                <div className="sticky top-4 z-10 bg-white border border-amber-200 rounded-2xl p-5 shadow-sm">
-                  <p className="text-amber-800 font-semibold text-base mb-3">
-                    📖 {passage.title}
+        {hasReadingPassages ? (
+          <>
+            {passages.map((passage) => {
+              const passageQuestions = worksheet.questions.filter(
+                (q) => q.passage_id === passage.id,
+              );
+              return (
+                <div key={passage.id} className="flex flex-col gap-4">
+                  <div className="sticky top-4 z-10 bg-white border border-amber-200 rounded-2xl p-5 shadow-sm">
+                    <p className="text-amber-800 font-semibold text-base mb-3">
+                      📖 {passage.title}
+                    </p>
+                    <p className="text-amber-900 text-sm leading-relaxed whitespace-pre-line">
+                      {passage.body}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    {passageQuestions.map((q) => {
+                      const index = worksheet.questions.indexOf(q);
+                      return renderQuestion(q, index);
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+            {worksheet.questions.some((q) => !q.passage_id) ? (
+              <div className="flex flex-col gap-4">
+                <div>
+                  <p className="text-amber-700 font-semibold text-base">
+                    🧠 Critical Reasoning
                   </p>
-                  <p className="text-amber-900 text-sm leading-relaxed whitespace-pre-line">
-                    {passage.body}
+                  <p className="text-amber-400 text-xs mt-1">
+                    Use what you have read and your own reasoning to answer
+                    these questions.
                   </p>
                 </div>
-                {/* Questions for this passage */}
-                <div className="flex flex-col gap-4">
-                  {passageQuestions.map((q) => {
+                {worksheet.questions
+                  .filter((q) => !q.passage_id)
+                  .map((q) => {
                     const index = worksheet.questions.indexOf(q);
                     return renderQuestion(q, index);
                   })}
-                </div>
               </div>
-            );
-          })}
-
-        {/* Critical reasoning section */}
-        {worksheet.questions.filter((q) => !q.passage_id).length > 0 && (
-          <div className="flex flex-col gap-4">
-            <div>
-              <p className="text-amber-700 font-semibold text-base">
-                🧠 Critical Reasoning
-              </p>
-              <p className="text-amber-400 text-xs mt-1">
-                Use what you have read and your own reasoning to answer these
-                questions.
-              </p>
-            </div>
-            {worksheet.questions
-              .filter((q) => !q.passage_id)
-              .map((q) => {
-                const index = worksheet.questions.indexOf(q);
-                return renderQuestion(q, index);
-              })}
-          </div>
+            ) : null}
+          </>
+        ) : (
+          worksheet.questions.map((q, index) => renderQuestion(q, index))
         )}
-
-        {/* Fallback for non-reading worksheets */}
-        {!worksheet.passages &&
-          worksheet.questions.map((q, index) => renderQuestion(q, index))}
       </div>
 
       {/* Submit button */}
