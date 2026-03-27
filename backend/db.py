@@ -20,7 +20,9 @@ def init_schema() -> None:
             CREATE TABLE IF NOT EXISTS worksheets (
                 id TEXT PRIMARY KEY,
                 title TEXT NOT NULL,
-                subject TEXT NOT NULL
+                subject TEXT NOT NULL,
+                scratchpad INTEGER NOT NULL DEFAULT 1,
+                passages TEXT NOT NULL DEFAULT '[]'
             );
             CREATE TABLE IF NOT EXISTS worksheet_questions (
                 worksheet_id TEXT NOT NULL,
@@ -42,6 +44,15 @@ def init_schema() -> None:
             CREATE INDEX IF NOT EXISTS idx_results_submitted_at ON results (submitted_at DESC);
             """
         )
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(worksheets)")}
+        if "scratchpad" not in cols:
+            conn.execute(
+                "ALTER TABLE worksheets ADD COLUMN scratchpad INTEGER NOT NULL DEFAULT 1"
+            )
+        if "passages" not in cols:
+            conn.execute(
+                "ALTER TABLE worksheets ADD COLUMN passages TEXT NOT NULL DEFAULT '[]'"
+            )
         conn.commit()
     finally:
         conn.close()

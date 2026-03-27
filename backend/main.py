@@ -5,6 +5,7 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from worksheets import (
+    delete_worksheet,
     get_worksheet,
     init_worksheet_tables,
     list_results,
@@ -95,6 +96,17 @@ def get_worksheet_by_id(worksheet_id: str, authorization: str = Header(...)):
     if not worksheet:
         raise HTTPException(status_code=404, detail="Worksheet not found")
     return worksheet
+
+
+@app.delete("/worksheets/{worksheet_id}")
+def remove_worksheet(worksheet_id: str, authorization: str = Header(...)):
+    token = authorization.replace("Bearer ", "")
+    payload = verify_token(token)
+    if not payload or payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    if not delete_worksheet(worksheet_id):
+        raise HTTPException(status_code=404, detail="Worksheet not found")
+    return {"message": "Worksheet deleted"}
 
 
 @app.post("/results")
