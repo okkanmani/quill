@@ -29,7 +29,8 @@ def init_schema() -> None:
                 title TEXT NOT NULL,
                 subject TEXT NOT NULL,
                 scratchpad INTEGER NOT NULL DEFAULT 1,
-                passages TEXT NOT NULL DEFAULT '[]'
+                passages TEXT NOT NULL DEFAULT '[]',
+                sort_ts INTEGER NOT NULL DEFAULT 0
             );
             CREATE TABLE IF NOT EXISTS worksheet_questions (
                 worksheet_id TEXT NOT NULL,
@@ -59,6 +60,10 @@ def init_schema() -> None:
         if "passages" not in cols:
             conn.execute(
                 "ALTER TABLE worksheets ADD COLUMN passages TEXT NOT NULL DEFAULT '[]'"
+            )
+        if "sort_ts" not in cols:
+            conn.execute(
+                "ALTER TABLE worksheets ADD COLUMN sort_ts INTEGER NOT NULL DEFAULT 0"
             )
         conn.commit()
     finally:

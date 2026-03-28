@@ -7,6 +7,31 @@ import db
 WORKSHEETS_DIR = Path(__file__).parent / "data" / "worksheets"
 
 
+def _worksheet_sort_ts_ms(data: dict, path: Path) -> int:
+    """Milliseconds since epoch; higher = newer (listed first)."""
+    raw = data.get("sort_ts")
+    if isinstance(raw, bool):
+        raw = None
+    if isinstance(raw, (int, float)):
+        return int(raw)
+    if isinstance(raw, str) and raw.strip().isdigit():
+        return int(raw.strip())
+    created = data.get("created_at")
+    if isinstance(created, str) and created.strip():
+        s = created.strip().replace("Z", "+00:00")
+        try:
+            dt = datetime.fromisoformat(s)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return int(dt.timestamp() * 1000)
+        except ValueError:
+            pass
+    try:
+        return int(path.stat().st_mtime * 1000)
+    except OSError:
+        return 0
+
+
 def init_worksheet_tables() -> None:
     db.init_schema()
 
@@ -25,13 +50,14 @@ def sync_worksheets_from_json_files() -> None:
             subject = data.get("subject", "general")
             scratchpad = 1 if data.get("scratchpad", True) else 0
             passages = json.dumps(data.get("passages", []))
+            sort_ts = _worksheet_sort_ts_ms(data, path)
             questions = data.get("questions", [])
             conn.execute(
                 """
-                INSERT INTO worksheets (id, title, subject, scratchpad, passages)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (ws_id, title, subject, scratchpad, passages),
+                (ws_id, title, subject, scratchpad, passages, sort_ts),
             )
             for order, q in enumerate(questions):
                 conn.execute(
@@ -51,11 +77,12 @@ def list_worksheets() -> list:
     try:
         rows = conn.execute(
             """
-            SELECT w.id, w.title, w.subject, w.scratchpad, COUNT(q.sort_order) AS question_count
+            SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
+                   COUNT(q.sort_order) AS question_count
             FROM worksheets w
             LEFT JOIN worksheet_questions q ON q.worksheet_id = w.id
-            GROUP BY w.id, w.title, w.subject, w.scratchpad
-            ORDER BY w.id
+            GROUP BY w.id, w.title, w.subject, w.scratchpad, w.sort_ts
+            ORDER BY w.sort_ts DESC, w.id DESC
             """
         ).fetchall()
         return [
@@ -65,6 +92,7 @@ def list_worksheets() -> list:
                 "subject": r["subject"],
                 "scratchpad": bool(r["scratchpad"]),
                 "question_count": r["question_count"],
+                "sort_ts": r["sort_ts"],
             }
             for r in rows
         ]
