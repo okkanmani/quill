@@ -36,8 +36,30 @@ def init_worksheet_tables() -> None:
     db.init_schema()
 
 
+def _insert_worksheet(conn, ws_id: str, data: dict, path: Path) -> None:
+    """Insert one worksheet and its questions (worksheet id must not already exist)."""
+    title = data.get("title", ws_id)
+    subject = data.get("subject", "general")
+    scratchpad = 1 if data.get("scratchpad", True) else 0
+    passages = json.dumps(data.get("passages", []))
+    sort_ts = _worksheet_sort_ts_ms(data, path)
+    questions = data.get("questions", [])
+    conn.execute(
+        """
+        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (ws_id, title, subject, scratchpad, passages, sort_ts),
+    )
+    for order, q in enumerate(questions):
+        conn.execute(
+            "INSERT INTO worksheet_questions (worksheet_id, sort_order, payload) VALUES (?, ?, ?)",
+            (ws_id, order, json.dumps(q)),
+        )
+
+
 def sync_worksheets_from_json_files() -> None:
-    """Replace worksheet rows from JSON files on disk (safe to run on each deploy)."""
+    """Replace ALL worksheets from JSON files. Destructive — use empty DB, reset, or tooling."""
     conn = db.connect()
     try:
         conn.execute("DELETE FROM worksheet_questions")
@@ -45,25 +67,7 @@ def sync_worksheets_from_json_files() -> None:
         for path in sorted(WORKSHEETS_DIR.glob("*.json")):
             with open(path) as f:
                 data = json.load(f)
-            ws_id = path.stem
-            title = data.get("title", ws_id)
-            subject = data.get("subject", "general")
-            scratchpad = 1 if data.get("scratchpad", True) else 0
-            passages = json.dumps(data.get("passages", []))
-            sort_ts = _worksheet_sort_ts_ms(data, path)
-            questions = data.get("questions", [])
-            conn.execute(
-                """
-                INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts)
-                VALUES (?, ?, ?, ?, ?, ?)
-                """,
-                (ws_id, title, subject, scratchpad, passages, sort_ts),
-            )
-            for order, q in enumerate(questions):
-                conn.execute(
-                    "INSERT INTO worksheet_questions (worksheet_id, sort_order, payload) VALUES (?, ?, ?)",
-                    (ws_id, order, json.dumps(q)),
-                )
+            _insert_worksheet(conn, path.stem, data, path)
         conn.commit()
     except Exception:
         conn.rollback()
@@ -72,19 +76,75 @@ def sync_worksheets_from_json_files() -> None:
         conn.close()
 
 
-def list_worksheets() -> list:
+def seed_worksheets_from_json_if_empty() -> bool:
+    """Import JSON only when the worksheets table is empty (first boot / fresh DB)."""
     conn = db.connect()
     try:
-        rows = conn.execute(
-            """
-            SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
-                   COUNT(q.sort_order) AS question_count
-            FROM worksheets w
-            LEFT JOIN worksheet_questions q ON q.worksheet_id = w.id
-            GROUP BY w.id, w.title, w.subject, w.scratchpad, w.sort_ts
-            ORDER BY w.sort_ts DESC, w.id DESC
-            """
-        ).fetchall()
+        n = conn.execute("SELECT COUNT(*) FROM worksheets").fetchone()[0]
+    finally:
+        conn.close()
+    if n == 0:
+        sync_worksheets_from_json_files()
+        return True
+    return False
+
+
+def merge_worksheets_from_json_files() -> None:
+    """Upsert each worksheet that has a JSON file; other rows in the DB are unchanged."""
+    conn = db.connect()
+    try:
+        for path in sorted(WORKSHEETS_DIR.glob("*.json")):
+            with open(path) as f:
+                data = json.load(f)
+            ws_id = path.stem
+            conn.execute("DELETE FROM worksheets WHERE id = ?", (ws_id,))
+            _insert_worksheet(conn, ws_id, data, path)
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def list_worksheets(student_name: str | None = None) -> list:
+    """If student_name is set, done = this student submitted. If None (admin), done = any submission."""
+    conn = db.connect()
+    try:
+        # Scalar subqueries avoid GROUP BY + EXISTS quirks in SQLite.
+        if student_name is not None:
+            rows = conn.execute(
+                """
+                SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done
+                FROM (
+                    SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
+                           (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
+                           EXISTS (
+                             SELECT 1 FROM results r
+                             WHERE r.worksheet_id = w.id AND r.student = ?
+                           ) AS done
+                    FROM worksheets w
+                ) t
+                ORDER BY t.done ASC, t.sort_ts DESC, t.id DESC
+                """,
+                (student_name,),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done
+                FROM (
+                    SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
+                           (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
+                           EXISTS (
+                             SELECT 1 FROM results r
+                             WHERE r.worksheet_id = w.id
+                           ) AS done
+                    FROM worksheets w
+                ) t
+                ORDER BY t.done ASC, t.sort_ts DESC, t.id DESC
+                """
+            ).fetchall()
         return [
             {
                 "id": r["id"],
@@ -93,6 +153,7 @@ def list_worksheets() -> list:
                 "scratchpad": bool(r["scratchpad"]),
                 "question_count": r["question_count"],
                 "sort_ts": r["sort_ts"],
+                "done": bool(r["done"]),
             }
             for r in rows
         ]
@@ -132,7 +193,7 @@ def get_worksheet(worksheet_id: str) -> dict | None:
 
 
 def delete_worksheet(worksheet_id: str) -> bool:
-    """Remove worksheet from DB (questions cascade). Delete JSON source file if present."""
+    """Remove worksheet from DB (questions cascade). JSON files are not used after initial seed."""
     conn = db.connect()
     try:
         cur = conn.execute("DELETE FROM worksheets WHERE id = ?", (worksheet_id,))
@@ -143,12 +204,6 @@ def delete_worksheet(worksheet_id: str) -> bool:
         raise
     finally:
         conn.close()
-    path = WORKSHEETS_DIR / f"{worksheet_id}.json"
-    if path.is_file():
-        try:
-            path.unlink()
-        except OSError:
-            pass
     return deleted
 
 

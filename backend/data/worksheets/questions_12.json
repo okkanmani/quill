@@ -1,0 +1,283 @@
+{
+  "title": "English – Reading Focus, Set 2 (Grade 5 Ontario)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-03-28T13:00:00Z",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "The Boreal Forest",
+      "body": "The boreal forest is a vast belt of evergreen and deciduous trees that stretches across Canada from the Yukon to Newfoundland and Labrador. Sometimes called the \"taiga,\" it is home to moose, caribou, lynx, black bears, and billions of birds that migrate north each spring to nest.\n\nThe soil beneath the boreal forest is often thin and acidic, and the growing season is short. Trees such as black spruce and jack pine have adapted to survive cold winters and occasional fires. Fire may look destructive, but it also clears old growth and allows new seedlings to take root.\n\nIndigenous peoples have lived in the boreal region for thousands of years, hunting, fishing, and trapping sustainably. Today, the forest faces pressure from logging, mining, and road building. Conservation groups work with governments and industry to balance jobs and wildlife habitat. Some areas are protected as parks, while others are managed with rules about how many trees may be cut and how streams must be protected."
+    },
+    {
+      "id": "p2",
+      "title": "Electricity in Ontario",
+      "body": "Ontario's electricity grid delivers power to homes, schools, hospitals, and businesses across the province. For many years, coal-fired plants produced a large share of that electricity, but Ontario phased out coal to improve air quality and reduce greenhouse gas emissions.\n\nToday the mix includes nuclear power, hydroelectric dams, natural gas plants, wind turbines, and solar panels. Nuclear stations can run steadily for long periods, while wind and solar vary with weather and time of day. Engineers use batteries, imports from neighbouring jurisdictions, and flexible gas plants to keep supply and demand in balance so the lights stay on.\n\nUsing electricity wisely — turning off unused lights, choosing efficient appliances, and shifting some use away from peak hours — helps reduce costs and stress on the grid. Students can learn about energy by reading their family's electricity bill, visiting a science centre, or following how much renewable energy was used in a given week."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, another name sometimes used for the boreal forest is —",
+      "choices": ["the prairie", "the taiga", "the tundra", "the marsh"],
+      "answer": "the taiga",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Why does the passage describe fire as something that is not only destructive?",
+      "choices": [
+        "Because fire never harms trees",
+        "Because fire can clear old growth and allow new seedlings to grow",
+        "Because fire is illegal in Canada",
+        "Because fire only happens in summer"
+      ],
+      "answer": "Because fire can clear old growth and allow new seedlings to grow",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Which detail best supports the idea that life in the boreal forest is challenging for plants?",
+      "choices": [
+        "Birds migrate there every spring",
+        "The soil is often thin and acidic and the growing season is short",
+        "Moose are large animals",
+        "Newfoundland is an island"
+      ],
+      "answer": "The soil is often thin and acidic and the growing season is short",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "The word \"sustainably\" in the passage suggests that traditional harvesting was done in a way that —",
+      "choices": [
+        "used up all resources immediately",
+        "could continue over time without destroying the environment",
+        "ignored wildlife completely",
+        "focused only on mining"
+      ],
+      "answer": "could continue over time without destroying the environment",
+      "hint": true,
+      "hintContext": "Think about what \"sustainable\" means: keeping something going for the future."
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "What is one pressure on the boreal forest mentioned in the passage?",
+      "choices": ["Too many deserts", "Logging, mining, and road building", "Lack of trees", "Too much rain in winter"],
+      "answer": "Logging, mining, and road building",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Which statement would the author most likely agree with?",
+      "choices": [
+        "Protecting the boreal forest requires balancing human needs with nature",
+        "All logging should be banned everywhere without discussion",
+        "Wildlife does not matter compared to jobs",
+        "The boreal forest only exists in one province"
+      ],
+      "answer": "Protecting the boreal forest requires balancing human needs with nature",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, jack pine and black spruce have adapted to —",
+      "choices": [
+        "life only in deserts",
+        "cold winters and occasional fires",
+        "living only underwater",
+        "year-round tropical heat"
+      ],
+      "answer": "cold winters and occasional fires",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "What is the author's main purpose in the first paragraph?",
+      "choices": [
+        "To list every animal species in Canada",
+        "To introduce where the boreal forest is and what lives there",
+        "To argue that birds should not migrate",
+        "To explain how electricity works"
+      ],
+      "answer": "To introduce where the boreal forest is and what lives there",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, why did Ontario phase out coal-fired electricity?",
+      "choices": [
+        "Because coal was too cheap",
+        "To improve air quality and reduce greenhouse gas emissions",
+        "Because Ontario had no coal left",
+        "To remove all electricity from the province"
+      ],
+      "answer": "To improve air quality and reduce greenhouse gas emissions",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Which sources of electricity does the passage say are part of Ontario's mix today?",
+      "choices": [
+        "Only coal and oil",
+        "Nuclear, hydro, natural gas, wind, and solar",
+        "Only solar panels",
+        "Only batteries"
+      ],
+      "answer": "Nuclear, hydro, natural gas, wind, and solar",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Why might wind and solar power be harder to predict than nuclear power for the grid?",
+      "choices": [
+        "Because nuclear plants are always closed",
+        "Because wind and solar depend on weather and time of day",
+        "Because wind and solar use no technology",
+        "Because Ontario has no wind"
+      ],
+      "answer": "Because wind and solar depend on weather and time of day",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, what helps keep electricity supply and demand in balance?",
+      "choices": [
+        "Only turning off every hospital",
+        "Batteries, imports, and flexible gas plants",
+        "Stopping all use of nuclear power",
+        "Using only coal at night"
+      ],
+      "answer": "Batteries, imports, and flexible gas plants",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Which action does the passage suggest as a way students can learn about energy?",
+      "choices": [
+        "Ignoring all science classes",
+        "Reading the family electricity bill or visiting a science centre",
+        "Never using electricity",
+        "Only watching television"
+      ],
+      "answer": "Reading the family electricity bill or visiting a science centre",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "The phrase \"peak hours\" in the passage most likely refers to times when —",
+      "choices": [
+        "everyone is asleep",
+        "electricity demand is especially high",
+        "only wind turbines work",
+        "coal plants are legal again"
+      ],
+      "answer": "electricity demand is especially high",
+      "hint": true,
+      "hintContext": "Peak often means \"high point\" — when many people use power at once."
+    },
+    {
+      "id": "q15",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Which title best fits the second passage?",
+      "choices": [
+        "How Birds Nest in the Boreal Forest",
+        "Ontario's Changing Electricity Sources and Wise Use",
+        "Why Coal Is the Only Fuel",
+        "Building Roads in the Yukon"
+      ],
+      "answer": "Ontario's Changing Electricity Sources and Wise Use",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "A classmate says: \"If one invasive insect harms boreal trees, every insect in the forest must be harmful.\" What is the main flaw?",
+      "choices": [
+        "Insects are not real",
+        "It generalizes from one harmful example to all insects",
+        "Trees are too small",
+        "The boreal forest has no trees"
+      ],
+      "answer": "It generalizes from one harmful example to all insects",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "Which revision fixes the fragment? \"Because the wind stopped. The turbines slowed.\"",
+      "choices": [
+        "Because the wind stopped the turbines slowed.",
+        "Because the wind stopped, the turbines slowed.",
+        "Because. The wind stopped the turbines slowed.",
+        "Because the wind stopped; because."
+      ],
+      "answer": "Because the wind stopped, the turbines slowed.",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "\"The evidence is inconclusive.\" The word \"inconclusive\" means the evidence —",
+      "choices": [
+        "proves everything definitively",
+        "does not prove a clear conclusion yet",
+        "was collected illegally",
+        "is only about math"
+      ],
+      "answer": "does not prove a clear conclusion yet",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "Both passages discuss human use of natural resources. What is one similarity in the authors' attitudes?",
+      "choices": [
+        "Both ignore Indigenous peoples",
+        "Both suggest that thoughtful choices and rules matter for the future",
+        "Both argue that nature is unimportant",
+        "Both say fires should never happen"
+      ],
+      "answer": "Both suggest that thoughtful choices and rules matter for the future",
+      "hint": true,
+      "hintContext": "Think about conservation, balancing needs, and using electricity wisely."
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "Which transition shows cause and effect? \"Ontario closed coal plants. ____, air quality improved in many areas.\"",
+      "choices": ["However", "As a result", "Although", "Before"],
+      "answer": "As a result",
+      "hint": false
+    }
+  ]
+}

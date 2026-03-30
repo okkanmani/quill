@@ -1,21 +1,23 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getWorksheets, logout } from "../api";
+import SubjectBadge from "../components/SubjectBadge";
 
 export default function StudentHome() {
-  console.log("StudentHome rendered");
   const navigate = useNavigate();
+  const location = useLocation();
   const [worksheets, setWorksheets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const name = localStorage.getItem("name");
 
   useEffect(() => {
+    setLoading(true);
     getWorksheets()
       .then(setWorksheets)
       .catch(() => setError("Could not load worksheets."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [location.key]);
 
   async function handleLogout() {
     await logout();
@@ -59,10 +61,20 @@ export default function StudentHome() {
             onClick={() => navigate(`/student/worksheet/${ws.id}`)}
             className="bg-white border border-amber-200 rounded-2xl p-5 text-left shadow-sm hover:shadow-md hover:border-amber-400 transition"
           >
-            <p className="text-amber-900 font-semibold text-lg">{ws.title}</p>
-            <p className="text-amber-500 text-sm mt-1 capitalize">
-              {ws.subject} · {ws.question_count} questions
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-amber-900 font-semibold text-lg">{ws.title}</p>
+              {ws.done === true || ws.done === 1 ? (
+                <span className="shrink-0 inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-200">
+                  Done
+                </span>
+              ) : null}
+            </div>
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <SubjectBadge subject={ws.subject} />
+              <span className="text-amber-500 text-sm">
+                {ws.question_count} questions
+              </span>
+            </div>
           </button>
         ))}
       </div>

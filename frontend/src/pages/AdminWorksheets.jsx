@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { deleteWorksheet, getWorksheets, logout } from "../api";
+import SubjectBadge from "../components/SubjectBadge";
 
 export default function AdminWorksheets() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [worksheets, setWorksheets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -21,7 +23,7 @@ export default function AdminWorksheets() {
 
   useEffect(() => {
     loadWorksheets();
-  }, []);
+  }, [location.key]);
 
   async function handleLogout() {
     await logout();
@@ -30,7 +32,7 @@ export default function AdminWorksheets() {
 
   async function handleDelete(ws) {
     const ok = window.confirm(
-      `Delete “${ws.title}”? This removes it from the app and deletes its JSON file on the server.`,
+      `Delete “${ws.title}”? This removes it from the database. It will not come back unless you import it again from JSON.`,
     );
     if (!ok) return;
     try {
@@ -83,10 +85,20 @@ export default function AdminWorksheets() {
               onClick={() => navigate(`/student/worksheet/${ws.id}`)}
               className="flex-1 bg-white border border-amber-200 rounded-2xl p-5 text-left shadow-sm hover:shadow-md hover:border-amber-400 transition"
             >
-              <p className="text-amber-900 font-semibold text-lg">{ws.title}</p>
-              <p className="text-amber-500 text-sm mt-1 capitalize">
-                {ws.subject} · {ws.question_count} questions
-              </p>
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-amber-900 font-semibold text-lg">{ws.title}</p>
+                {ws.done === true || ws.done === 1 ? (
+                  <span className="shrink-0 inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-200">
+                    Done
+                  </span>
+                ) : null}
+              </div>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <SubjectBadge subject={ws.subject} />
+                <span className="text-amber-500 text-sm">
+                  {ws.question_count} questions
+                </span>
+              </div>
             </button>
             <button
               type="button"

@@ -1,0 +1,182 @@
+{
+  "title": "Math Challenge – Set 2 (Grade 5 Ontario)",
+  "subject": "math",
+  "created_at": "2026-03-28T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "What is 2.4 × 0.5?",
+      "choices": ["1.0", "1.2", "1.4", "2.9"],
+      "answer": "1.2",
+      "hint": true,
+      "hintContext": "Multiply 24 × 5 = 120, then place the decimal so the answer has two decimal places total."
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "A recipe uses 3/4 cup of flour per batch. How many cups are needed for 8 batches?",
+      "choices": ["5 cups", "6 cups", "7 cups", "8 cups"],
+      "answer": "6 cups",
+      "hint": true,
+      "hintContext": "Multiply 3/4 by 8, or add 3/4 eight times."
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "What is the least common multiple (LCM) of 6 and 8?",
+      "choices": ["14", "24", "48", "2"],
+      "answer": "24",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "Solve for y: y ÷ 4 = 7.25",
+      "choices": ["28", "29", "30", "31"],
+      "answer": "29",
+      "hint": true,
+      "hintContext": "Multiply both sides by 4: y = 7.25 × 4."
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "A right triangle has legs of 6 cm and 8 cm. If the hypotenuse is 10 cm, what is the perimeter of the triangle?",
+      "choices": ["20 cm", "22 cm", "24 cm", "26 cm"],
+      "answer": "24 cm",
+      "hint": true,
+      "hintContext": "Perimeter = sum of all three sides: 6 + 8 + 10."
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "Which decimal is equal to 7/20?",
+      "choices": ["0.35", "0.7", "0.072", "0.035"],
+      "answer": "0.35",
+      "hint": true,
+      "hintContext": "Divide 7 by 20, or rewrite with denominator 100."
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "A tank holds 45 L. It is 2/5 full. How many litres are in the tank?",
+      "choices": ["9 L", "18 L", "22 L", "27 L"],
+      "answer": "18 L",
+      "hint": true,
+      "hintContext": "Find 2/5 of 45: (2 × 45) ÷ 5."
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "Round 18.475 to the nearest hundredth.",
+      "choices": ["18.4", "18.47", "18.48", "18.5"],
+      "answer": "18.48",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "On a coordinate grid in the first quadrant, point A is at (8, 6). Point B is 4 units to the left and 2 units down from A. What are the coordinates of B?",
+      "choices": ["(12, 8)", "(4, 4)", "(8, 4)", "(4, 8)"],
+      "answer": "(4, 4)",
+      "hint": true,
+      "hintContext": "Left decreases x; down decreases y. New x = 8 − 4, new y = 6 − 2."
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "A store sells notebooks in packs of 6. How many packs are needed for at least 50 notebooks?",
+      "choices": ["8 packs", "9 packs", "10 packs", "7 packs"],
+      "answer": "9 packs",
+      "hint": true,
+      "hintContext": "Divide 50 by 6 and round up to the next whole number of packs."
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "The data set is 12, 15, 18, 21, 24. What is the median?",
+      "choices": ["15", "18", "19.5", "21"],
+      "answer": "18",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "What is 5/6 − 1/4?",
+      "choices": ["4/2", "7/12", "4/10", "1/2"],
+      "answer": "7/12",
+      "hint": true,
+      "hintContext": "Use denominator 12: 5/6 = 10/12 and 1/4 = 3/12."
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "A cube has edges of 5 cm. What is its volume?",
+      "choices": ["25 cm³", "75 cm³", "125 cm³", "150 cm³"],
+      "answer": "125 cm³",
+      "hint": true,
+      "hintContext": "Volume of a cube = edge × edge × edge."
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "If 1 km = 1 000 m, how many metres are in 2.35 km?",
+      "choices": ["235 m", "2 350 m", "23 500 m", "235 000 m"],
+      "answer": "2 350 m",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "Solve for m: 3m − 8 = 19",
+      "choices": ["7", "8", "9", "10"],
+      "answer": "9",
+      "hint": true,
+      "hintContext": "Add 8 to both sides, then divide by 3."
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "A spinner has 8 equal sections: 3 red, 3 blue, 2 green. What is the probability of landing on green?",
+      "choices": ["1/8", "1/4", "3/8", "1/2"],
+      "answer": "1/4",
+      "hint": true,
+      "hintContext": "Probability = favourable outcomes ÷ total sections = 2/8, then simplify."
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "Which number is a multiple of both 4 and 6?",
+      "choices": ["10", "12", "14", "22"],
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "A parallelogram has a base of 12 cm and a height of 5 cm. What is its area?",
+      "choices": ["34 cm²", "60 cm²", "120 cm²", "17 cm²"],
+      "answer": "60 cm²",
+      "hint": true,
+      "hintContext": "Area of a parallelogram = base × height."
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "Compare: 4/5 ___ 0.82. Which symbol makes the statement true?",
+      "choices": ["<", "=", ">", "≥"],
+      "answer": "<",
+      "hint": true,
+      "hintContext": "Write 4/5 as a decimal, then compare to 0.82."
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "Starting at −3 on a number line, you move 7 units to the right, then 4 units left. Where do you land?",
+      "choices": ["0", "1", "2", "−14"],
+      "answer": "0",
+      "hint": true,
+      "hintContext": "−3 + 7 = 4, then 4 − 4 = 0."
+    }
+  ]
+}

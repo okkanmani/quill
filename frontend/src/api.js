@@ -33,10 +33,16 @@ export async function loginStudent() {
 }
 
 export async function logout() {
-  await fetch(`${BASE_URL}/auth/logout`, {
-    method: "POST",
-    headers: authHeaders(),
-  });
+  if (BASE_URL) {
+    try {
+      await fetch(`${BASE_URL}/auth/logout`, {
+        method: "POST",
+        headers: authHeaders(),
+      });
+    } catch {
+      // Still clear the session — JWT is discarded client-side; backend may be down.
+    }
+  }
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   localStorage.removeItem("name");

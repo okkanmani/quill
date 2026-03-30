@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from auth import create_token, get_student_name, verify_admin, verify_token
@@ -10,8 +11,9 @@ from worksheets import (
     init_worksheet_tables,
     list_results,
     list_worksheets,
+    merge_worksheets_from_json_files,
     save_result,
-    sync_worksheets_from_json_files,
+    seed_worksheets_from_json_if_empty,
 )
 
 
@@ -26,7 +28,10 @@ class SubmitResultRequest(BaseModel):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_worksheet_tables()
-    sync_worksheets_from_json_files()
+    seed_worksheets_from_json_if_empty()
+    # After the first seed, new JSON in the image is skipped unless you merge (see fly.toml comment).
+    if os.environ.get("MERGE_WORKSHEETS_JSON_ON_START") == "1":
+        merge_worksheets_from_json_files()
     yield
 
 
@@ -36,6 +41,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://quill-app.fly.dev",
+        "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:8000",
     ],
@@ -82,9 +88,12 @@ def me(authorization: str = Header(...)):
 @app.get("/worksheets")
 def get_worksheets(authorization: str = Header(...)):
     token = authorization.replace("Bearer ", "")
-    if not verify_token(token):
+    payload = verify_token(token)
+    if not payload:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    return list_worksheets()
+    if payload["role"] == "student":
+        return list_worksheets(student_name=get_student_name())
+    return list_worksheets(student_name=None)
 
 
 @app.get("/worksheets/{worksheet_id}")

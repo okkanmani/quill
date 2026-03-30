@@ -8,7 +8,10 @@ primary_region = 'yyz'
 
 [build]
 
-# Persistent SQLite (worksheets sync from image JSON on each boot; results survive restarts).
+# Persistent SQLite at /data/app.db. Worksheets load from JSON only when DB is empty (first deploy).
+# To add new worksheet JSON after that: run on the machine:
+#   .venv/bin/python seed_worksheets.py --merge
+# Or set secret MERGE_WORKSHEETS_JSON_ON_START=1 for one deploy, then remove it.
 # One-time: fly volumes create quill_data --region yyz --size 1
 [mounts]
   source = "quill_data"
