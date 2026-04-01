@@ -93,7 +93,9 @@ export default function Worksheet() {
     );
   };
 
-  const showScratchpad = worksheet?.scratchpad !== false;
+  const showScratchpad =
+    worksheet?.subject?.toLowerCase() === "math" &&
+    worksheet?.scratchpad !== false;
 
   function renderInput(q) {
     if (q.type === "multiple_choice") {
