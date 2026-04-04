@@ -1,0 +1,9 @@
+{
+  "title": "Math",
+  "description": "Math Reference for Quill.",
+  "sections": [
+    { "id": "fractions", "title": "Fractions", "file": "fractions.md" },
+    { "id": "decimals", "title": "Decimals", "file": "decimals.md" },
+    { "id": "geometry", "title": "Geometry", "file": "geometry.md" }
+  ]
+}

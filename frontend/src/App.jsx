@@ -4,6 +4,8 @@ import StudentHome from "./pages/StudentHome";
 import AdminHome from "./pages/AdminHome";
 import AdminWorksheets from "./pages/AdminWorksheets";
 import Worksheet from "./pages/Worksheet";
+import LearnHub from "./pages/LearnHub";
+import LearnSubject from "./pages/LearnSubject";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
@@ -26,6 +28,24 @@ export default function App() {
           element={
             <ProtectedRoute role={["student", "admin"]}>
               <Worksheet />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/learn"
+          element={
+            <ProtectedRoute role={["student", "admin"]}>
+              <LearnHub />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/learn/:subjectKey"
+          element={
+            <ProtectedRoute role={["student", "admin"]}>
+              <LearnSubject />
             </ProtectedRoute>
           }
         />

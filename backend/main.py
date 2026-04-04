@@ -6,6 +6,7 @@ from auth_users import authenticate_admin_for_student, authenticate_student
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from learn_content import get_subject, list_subjects
 from worksheets import (
     delete_worksheet,
     get_worksheet,
@@ -160,3 +161,18 @@ def get_results(authorization: str = Header(...)):
         raise HTTPException(status_code=403, detail="Admin only")
     who = context_student_name(payload)
     return list_results(who)
+
+
+@app.get("/learn/subjects")
+def learn_subjects(authorization: str = Header(...)):
+    _payload(authorization)
+    return {"subjects": list_subjects()}
+
+
+@app.get("/learn/{subject_key}")
+def learn_subject(subject_key: str, authorization: str = Header(...)):
+    _payload(authorization)
+    data = get_subject(subject_key)
+    if not data:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    return data

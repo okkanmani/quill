@@ -102,3 +102,24 @@ export async function getResults() {
   if (!res.ok) throw new Error("Failed to fetch results");
   return res.json();
 }
+
+// --- Learning material (Markdown) ---
+
+export async function getLearnSubjects() {
+  const res = await fetch(`${BASE_URL}/learn/subjects`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch learning subjects");
+  return res.json();
+}
+
+export async function getLearnSubject(subjectKey) {
+  const res = await fetch(
+    `${BASE_URL}/learn/${encodeURIComponent(subjectKey)}`,
+    {
+      headers: authHeaders(),
+    },
+  );
+  if (!res.ok) throw new Error("Failed to fetch learning material");
+  return res.json();
+}

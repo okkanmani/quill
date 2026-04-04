@@ -40,11 +40,19 @@ function AdminSectionNav({ navLinks }) {
  * Left: Quill logo; row below: optional Back; optional admin section nav (active = title text).
  * Right: trailing + Log out (top-aligned with the logo row).
  */
-export default function AppHeader({ navLinks = [], onBack, trailing, onLogout }) {
+export default function AppHeader({
+  navLinks = [],
+  onBack,
+  trailing,
+  onLogout,
+  className = "",
+}) {
   const subRow = onBack || navLinks.length > 0;
 
   return (
-    <header className="flex justify-between items-start gap-6 mb-8">
+    <header
+      className={`flex justify-between items-start gap-6 mb-8 ${className}`.trim()}
+    >
       <div className="min-w-0">
         <h1 className="text-2xl font-bold text-amber-800">🪶 Quill</h1>
         {subRow ? (
