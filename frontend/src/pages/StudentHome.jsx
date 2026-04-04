@@ -36,23 +36,25 @@ export default function StudentHome() {
         onLogout={handleLogout}
       />
 
-      <h2 className="text-xl font-semibold text-amber-900 mb-4">
-        Your Worksheets
-      </h2>
+      <div className="max-w-3xl">
+        <h2 className="text-xl font-semibold text-amber-900 mb-4">
+          Your Worksheets
+        </h2>
 
-      {loading && <p className="text-amber-600">Loading...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+        {loading && <p className="text-amber-600">Loading...</p>}
+        {error && <p className="text-red-500">{error}</p>}
 
-      {!loading && !error && worksheets.length === 0 && (
-        <p className="text-amber-600">No worksheets yet. Check back soon!</p>
-      )}
+        {!loading && !error && worksheets.length === 0 && (
+          <p className="text-amber-600">No worksheets yet. Check back soon!</p>
+        )}
 
-      {!loading && !error && worksheets.length > 0 && (
-        <WorksheetsBySubject
-          worksheets={worksheets}
-          onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
-        />
-      )}
+        {!loading && !error && worksheets.length > 0 && (
+          <WorksheetsBySubject
+            worksheets={worksheets}
+            onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
+          />
+        )}
+      </div>
     </div>
   );
 }

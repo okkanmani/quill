@@ -58,28 +58,30 @@ export default function AdminWorksheets() {
         onLogout={handleLogout}
       />
 
-      {loading && <p className="text-amber-600">Loading...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      <div className="max-w-3xl">
+        {loading && <p className="text-amber-600">Loading...</p>}
+        {error && <p className="text-red-500">{error}</p>}
 
-      {!loading && !error && worksheets.length === 0 && (
-        <p className="text-amber-600">No worksheets.</p>
-      )}
+        {!loading && !error && worksheets.length === 0 && (
+          <p className="text-amber-600">No worksheets.</p>
+        )}
 
-      {!loading && !error && worksheets.length > 0 && (
-        <WorksheetsBySubject
-          worksheets={worksheets}
-          onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
-          renderSideAction={(ws) => (
-            <button
-              type="button"
-              onClick={() => handleDelete(ws)}
-              className="sm:w-28 shrink-0 bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 text-sm font-semibold rounded-2xl px-4 py-3 transition"
-            >
-              Delete
-            </button>
-          )}
-        />
-      )}
+        {!loading && !error && worksheets.length > 0 && (
+          <WorksheetsBySubject
+            worksheets={worksheets}
+            onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
+            renderSideAction={(ws) => (
+              <button
+                type="button"
+                onClick={() => handleDelete(ws)}
+                className="sm:w-28 shrink-0 self-stretch flex items-center justify-center bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 text-sm font-semibold rounded-2xl px-4 py-3 transition"
+              >
+                Delete
+              </button>
+            )}
+          />
+        )}
+      </div>
     </div>
   );
 }

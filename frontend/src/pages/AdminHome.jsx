@@ -46,20 +46,22 @@ export default function AdminHome() {
         onLogout={handleLogout}
       />
 
-      {loading && <p className="text-amber-600">Loading...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      <div className="max-w-3xl">
+        {loading && <p className="text-amber-600">Loading...</p>}
+        {error && <p className="text-red-500">{error}</p>}
 
-      {!loading && !error && results.length === 0 && (
-        <p className="text-amber-600">No results yet.</p>
-      )}
+        {!loading && !error && results.length === 0 && (
+          <p className="text-amber-600">No results yet.</p>
+        )}
 
-      {!loading && !error && results.length > 0 && (
-        <ResultsBySubject
-          results={results}
-          openIds={openIds}
-          toggleAnswers={toggleAnswers}
-        />
-      )}
+        {!loading && !error && results.length > 0 && (
+          <ResultsBySubject
+            results={results}
+            openIds={openIds}
+            toggleAnswers={toggleAnswers}
+          />
+        )}
+      </div>
     </div>
   );
 }

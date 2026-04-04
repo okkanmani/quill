@@ -42,7 +42,7 @@ export default function ResultsBySubject({ results, openIds, toggleAnswers }) {
   if (groups.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-3 max-w-3xl">
+    <div className="flex flex-col gap-3">
       {groups.map(([subjectKey, items]) => {
         const isOpen = openSubjects.has(subjectKey);
         return (

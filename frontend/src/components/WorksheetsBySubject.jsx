@@ -65,11 +65,11 @@ export default function WorksheetsBySubject({
               </span>
             </button>
             {isOpen ? (
-              <div className="p-3 flex flex-col gap-3 bg-amber-50/40">
+              <div className="p-3 flex flex-col gap-4 bg-amber-50/40">
                 {items.map((ws) => (
                   <div
                     key={ws.id}
-                    className="flex flex-col sm:flex-row gap-3 sm:items-stretch"
+                    className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4"
                   >
                     <button
                       type="button"
