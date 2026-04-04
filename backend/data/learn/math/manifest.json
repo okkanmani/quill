@@ -1,9 +1,46 @@
 {
-  "title": "Math",
-  "description": "Math Reference for Quill.",
-  "sections": [
-    { "id": "fractions", "title": "Fractions", "file": "fractions.md" },
-    { "id": "decimals", "title": "Decimals", "file": "decimals.md" },
-    { "id": "geometry", "title": "Geometry", "file": "geometry.md" }
+  "title": "Math — Grade 5 (Ontario, home learning)",
+  "description": "Short notes for at-home practice. You may share these with other families. They are meant as a friendly supplement, not a replacement for your school program or teacher’s lessons.",
+  "groups": [
+    {
+      "id": "number",
+      "title": "Number",
+      "sections": [
+        { "id": "number-place-value", "title": "Place value & rounding", "file": "number-place-value.md" },
+        { "id": "number-operations", "title": "Operations & order of operations", "file": "number-operations.md" },
+        { "id": "number-fractions", "title": "Fractions", "file": "fractions.md" },
+        { "id": "number-decimals", "title": "Decimals", "file": "decimals.md" }
+      ]
+    },
+    {
+      "id": "algebra",
+      "title": "Algebra",
+      "sections": [
+        { "id": "algebra-patterns", "title": "Patterns & relationships", "file": "algebra-patterns.md" },
+        { "id": "algebra-equations", "title": "Equations & variables", "file": "algebra-equations.md" }
+      ]
+    },
+    {
+      "id": "data",
+      "title": "Data",
+      "sections": [
+        { "id": "data-graphs", "title": "Graphs & data", "file": "data-graphs.md" }
+      ]
+    },
+    {
+      "id": "geometry",
+      "title": "Geometry (spatial sense)",
+      "sections": [
+        { "id": "geometry-shapes", "title": "Shapes & angles", "file": "geometry-shapes.md" },
+        { "id": "geometry-measurement", "title": "Perimeter, area & volume", "file": "geometry-measurement.md" }
+      ]
+    },
+    {
+      "id": "financial",
+      "title": "Financial literacy",
+      "sections": [
+        { "id": "money-basics", "title": "Money & budgets", "file": "money-basics.md" }
+      ]
+    }
   ]
 }

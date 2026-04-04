@@ -48,4 +48,4 @@ Pick a place (e.g. hundredths), look at the next digit to the right: if it is 5 
 
 ---
 
-*Sample study material for Quill.*
+*For families learning at home — feel free to share. Loosely aligned with Ontario Grade 5; your teacher may use different wording.*

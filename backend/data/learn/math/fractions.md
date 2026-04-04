@@ -36,4 +36,4 @@ A **mixed number** has a whole part and a fraction, e.g. **2 1/3**. For operatio
 
 ---
 
-*Sample study material for Quill — check with your teacher if your class uses slightly different wording.*
+*For families learning at home — feel free to share. Loosely aligned with Ontario Grade 5; your teacher may use different wording.*

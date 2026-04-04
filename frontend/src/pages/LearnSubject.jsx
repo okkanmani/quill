@@ -34,6 +34,13 @@ export default function LearnSubject() {
     });
   }, [data, loading, location.hash]);
 
+  const groups =
+    data && data.groups?.length > 0
+      ? data.groups
+      : data
+        ? [{ id: "", title: "", sections: data.sections ?? [] }]
+        : [];
+
   return (
     <LearnChrome onBack={() => navigate("/student/learn")}>
       <div className="max-w-5xl">
@@ -47,14 +54,27 @@ export default function LearnSubject() {
                 On this page
               </p>
               <nav className="flex flex-col gap-1 border-l-2 border-amber-200 pl-3 pb-2">
-                {data.sections.map((sec) => (
-                  <a
-                    key={sec.id}
-                    href={`#${sec.id}`}
-                    className="text-sm text-amber-800 hover:text-amber-950 font-medium py-0.5"
-                  >
-                    {sec.title}
-                  </a>
+                {groups.map((g, gi) => (
+                  <div key={g.id || `toc-${gi}`}>
+                    {g.title ? (
+                      <p
+                        className={`text-[11px] font-bold uppercase tracking-wide text-amber-500 mb-1.5 ${
+                          gi > 0 ? "mt-3" : ""
+                        }`}
+                      >
+                        {g.title}
+                      </p>
+                    ) : null}
+                    {g.sections.map((sec) => (
+                      <a
+                        key={sec.id}
+                        href={`#${sec.id}`}
+                        className="block text-sm text-amber-800 hover:text-amber-950 font-medium py-0.5"
+                      >
+                        {sec.title}
+                      </a>
+                    ))}
+                  </div>
                 ))}
               </nav>
             </aside>
@@ -72,29 +92,62 @@ export default function LearnSubject() {
               {/* Mobile TOC — sticky under app header */}
               <div className="lg:hidden sticky top-44 z-30 mb-8 rounded-xl border border-amber-200 bg-amber-50/95 backdrop-blur-sm shadow-sm p-4">
                 <p className="text-xs font-semibold text-amber-600 mb-2">Sections</p>
-                <div className="flex flex-wrap gap-2">
-                  {data.sections.map((sec) => (
-                    <a
-                      key={sec.id}
-                      href={`#${sec.id}`}
-                      className="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-1 rounded-lg"
-                    >
-                      {sec.title}
-                    </a>
+                <div className="flex flex-col gap-3">
+                  {groups.map((g, gi) => (
+                    <div key={g.id || `mob-${gi}`}>
+                      {g.title ? (
+                        <p className="text-[11px] font-bold uppercase tracking-wide text-amber-500 mb-1.5">
+                          {g.title}
+                        </p>
+                      ) : null}
+                      <div className="flex flex-wrap gap-2">
+                        {g.sections.map((sec) => (
+                          <a
+                            key={sec.id}
+                            href={`#${sec.id}`}
+                            className="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-1 rounded-lg"
+                          >
+                            {sec.title}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-amber-200 bg-white p-6 sm:p-8 shadow-sm">
-                {data.sections.map((sec) => (
-                  <section key={sec.id} id={sec.id} className="scroll-mt-44">
-                    <h2 className="text-xl font-bold text-amber-950 mb-4 pb-2 border-b border-amber-100">
-                      {sec.title}
-                    </h2>
-                    <div className="learn-md">
-                      <LearnMarkdown markdown={sec.markdown} />
-                    </div>
-                  </section>
+              <div className="rounded-2xl border border-amber-200 bg-white p-6 sm:p-8 shadow-sm space-y-12">
+                {groups.map((g, gi) => (
+                  <div key={g.id || `body-${gi}`} className="space-y-8">
+                    {g.title ? (
+                      <h2
+                        id={g.id || undefined}
+                        className="text-xl font-bold text-amber-950 pb-2 border-b border-amber-200 scroll-mt-44"
+                      >
+                        {g.title}
+                      </h2>
+                    ) : null}
+                    {g.sections.map((sec) => (
+                      <section
+                        key={sec.id}
+                        id={sec.id}
+                        className="scroll-mt-44"
+                      >
+                        {g.title ? (
+                          <h3 className="text-lg font-bold text-amber-950 mb-4 pb-2 border-b border-amber-100">
+                            {sec.title}
+                          </h3>
+                        ) : (
+                          <h2 className="text-xl font-bold text-amber-950 mb-4 pb-2 border-b border-amber-100">
+                            {sec.title}
+                          </h2>
+                        )}
+                        <div className="learn-md">
+                          <LearnMarkdown markdown={sec.markdown} />
+                        </div>
+                      </section>
+                    ))}
+                  </div>
                 ))}
               </div>
             </div>

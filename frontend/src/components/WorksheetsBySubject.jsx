@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import SubjectBadge, { formatSubjectLabel } from "./SubjectBadge";
 import { normalizeSubjectKey, subjectSortKey } from "../subjectUtils";
 
@@ -71,28 +72,42 @@ export default function WorksheetsBySubject({
                     key={ws.id}
                     className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4"
                   >
-                    <button
-                      type="button"
-                      onClick={() => onOpenWorksheet(ws.id)}
-                      className="flex-1 bg-white border border-amber-200 rounded-2xl p-5 text-left shadow-sm hover:shadow-md hover:border-amber-400 transition"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="text-amber-900 font-semibold text-lg">
-                          {ws.title}
-                        </p>
-                        {ws.done === true || ws.done === 1 ? (
-                          <span className="shrink-0 inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-200">
-                            Done
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <div className="flex-1 flex flex-col bg-white border border-amber-200 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-400 transition overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => onOpenWorksheet(ws.id)}
+                        className="flex-1 p-5 text-left pb-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="text-amber-900 font-semibold text-lg">
+                            {ws.title}
+                          </p>
+                          {ws.done === true || ws.done === 1 ? (
+                            <span className="shrink-0 inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-200">
+                              Done
+                            </span>
+                          ) : null}
+                        </div>
+                      </button>
+                      <div className="px-5 pb-4 flex flex-wrap items-center gap-2 border-t border-amber-100 bg-amber-50/50 pt-3">
                         <SubjectBadge subject={ws.subject} />
                         <span className="text-amber-500 text-sm">
                           {ws.question_count} questions
                         </span>
+                        {ws.learn_subject ? (
+                          <Link
+                            to={`/student/learn/${encodeURIComponent(ws.learn_subject)}${
+                              ws.learn_section
+                                ? `#${encodeURIComponent(ws.learn_section)}`
+                                : ""
+                            }`}
+                            className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900 border border-amber-200 hover:bg-amber-200/80 transition"
+                          >
+                            Open Resource
+                          </Link>
+                        ) : null}
                       </div>
-                    </button>
+                    </div>
                     {renderSideAction ? renderSideAction(ws) : null}
                   </div>
                 ))}

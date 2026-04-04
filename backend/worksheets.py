@@ -8,6 +8,70 @@ from learn_content import get_subject
 WORKSHEETS_DIR = Path(__file__).parent / "data" / "worksheets"
 
 
+def _learn_fields_from_sheet_data(data: dict) -> tuple[str | None, str | None]:
+    ls = data.get("learn_subject")
+    learn_subject = (
+        str(ls).strip().lower()
+        if ls is not None and str(ls).strip()
+        else None
+    )
+    lc = data.get("learn_section")
+    learn_section = None
+    if learn_subject and lc is not None and str(lc).strip():
+        learn_section = str(lc).strip().lower()
+    return learn_subject, learn_section
+
+
+def _apply_learn_section_title(out: dict) -> None:
+    """Add learn_section_title when learn_subject + learn_section match the learn manifest."""
+    out.pop("learn_section_title", None)
+    sec_id = out.get("learn_section")
+    subj_key = out.get("learn_subject")
+    if not sec_id or not subj_key:
+        return
+    sdata = get_subject(subj_key)
+    if not sdata:
+        return
+    for sec in sdata.get("sections") or []:
+        if sec.get("id") == sec_id:
+            out["learn_section_title"] = sec.get("title", sec_id)
+            break
+
+
+def _resolve_learn_metadata(
+    worksheet_id: str,
+    row_learn_subject,
+    row_learn_section,
+) -> dict:
+    """learn_* from bundled JSON (preferred) or DB. Used for GET worksheet and list."""
+    learn_subject, learn_section = None, None
+    json_path = WORKSHEETS_DIR / f"{worksheet_id}.json"
+    if json_path.is_file():
+        try:
+            with open(json_path, encoding="utf-8") as f:
+                file_data = json.load(f)
+            learn_subject, learn_section = _learn_fields_from_sheet_data(file_data)
+        except (OSError, json.JSONDecodeError):
+            pass
+
+    if learn_subject is None:
+        ls = row_learn_subject
+        if ls is not None and str(ls).strip():
+            learn_subject = str(ls).strip().lower()
+    if learn_section is None and learn_subject is not None:
+        lsec = row_learn_section
+        if lsec is not None and str(lsec).strip():
+            learn_section = str(lsec).strip().lower()
+
+    meta: dict = {}
+    if learn_subject:
+        meta["learn_subject"] = learn_subject
+    if learn_section:
+        meta["learn_section"] = learn_section
+    _apply_learn_section_title(meta)
+    return meta
+
+
 def _worksheet_sort_ts_ms(data: dict, path: Path) -> int:
     """Milliseconds since epoch; higher = newer (listed first)."""
     raw = data.get("sort_ts")
@@ -45,16 +109,7 @@ def _insert_worksheet(conn, ws_id: str, data: dict, path: Path) -> None:
     passages = json.dumps(data.get("passages", []))
     sort_ts = _worksheet_sort_ts_ms(data, path)
     questions = data.get("questions", [])
-    ls = data.get("learn_subject")
-    learn_subject = (
-        str(ls).strip().lower()
-        if ls is not None and str(ls).strip()
-        else None
-    )
-    lc = data.get("learn_section")
-    learn_section = None
-    if learn_subject and lc is not None and str(lc).strip():
-        learn_section = str(lc).strip().lower()
+    learn_subject, learn_section = _learn_fields_from_sheet_data(data)
     conn.execute(
         """
         INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section)
@@ -126,9 +181,11 @@ def list_worksheets(student_name: str | None = None) -> list:
         if student_name is not None:
             rows = conn.execute(
                 """
-                SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done
+                SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
+                       t.learn_subject, t.learn_section
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
+                           w.learn_subject, w.learn_section,
                            (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
                            EXISTS (
                              SELECT 1 FROM results r
@@ -143,9 +200,11 @@ def list_worksheets(student_name: str | None = None) -> list:
         else:
             rows = conn.execute(
                 """
-                SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done
+                SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
+                       t.learn_subject, t.learn_section
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
+                           w.learn_subject, w.learn_section,
                            (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
                            EXISTS (
                              SELECT 1 FROM results r
@@ -156,8 +215,9 @@ def list_worksheets(student_name: str | None = None) -> list:
                 ORDER BY t.done ASC, t.sort_ts DESC, t.id DESC
                 """
             ).fetchall()
-        return [
-            {
+        out_list = []
+        for r in rows:
+            item = {
                 "id": r["id"],
                 "title": r["title"],
                 "subject": r["subject"],
@@ -166,8 +226,13 @@ def list_worksheets(student_name: str | None = None) -> list:
                 "sort_ts": r["sort_ts"],
                 "done": bool(r["done"]),
             }
-            for r in rows
-        ]
+            item.update(
+                _resolve_learn_metadata(
+                    r["id"], r["learn_subject"], r["learn_section"]
+                )
+            )
+            out_list.append(item)
+        return out_list
     finally:
         conn.close()
 
@@ -201,21 +266,12 @@ def get_worksheet(worksheet_id: str) -> dict | None:
         }
         if passage_list:
             out["passages"] = passage_list
-        ls = row["learn_subject"]
-        if ls is not None and str(ls).strip():
-            out["learn_subject"] = str(ls).strip()
-        lsec = row["learn_section"]
-        if lsec is not None and str(lsec).strip():
-            sec_id = str(lsec).strip()
-            out["learn_section"] = sec_id
-            subj_key = out.get("learn_subject")
-            if subj_key:
-                sdata = get_subject(subj_key)
-                if sdata:
-                    for sec in sdata.get("sections") or []:
-                        if sec.get("id") == sec_id:
-                            out["learn_section_title"] = sec.get("title", sec_id)
-                            break
+
+        out.update(
+            _resolve_learn_metadata(
+                worksheet_id, row["learn_subject"], row["learn_section"]
+            )
+        )
         return out
     finally:
         conn.close()
