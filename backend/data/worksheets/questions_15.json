@@ -1,0 +1,145 @@
+{
+  "title": "Fractions in Context – Grade 5 (Ontario)",
+  "subject": "math",
+  "learn_subject": "math",
+  "created_at": "2026-03-29T10:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "A water tank holds 40 L when full. It is 3/5 full. How many litres are in the tank?",
+      "choices": ["20 L", "22 L", "24 L", "28 L"],
+      "answer": "24 L",
+      "hint": true,
+      "hintContext": "Find 3/5 of 40: (3 × 40) ÷ 5."
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "A ribbon is 2/3 m long. You cut off 1/6 m. How much ribbon is left?",
+      "choices": ["1/6 m", "1/3 m", "1/2 m", "5/6 m"],
+      "answer": "1/2 m",
+      "hint": true,
+      "hintContext": "Use sixths: 2/3 = 4/6. Subtract 1/6."
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "Which fraction is greater than 3/4?",
+      "choices": ["5/8", "13/16", "2/3", "5/7"],
+      "answer": "13/16",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "A recipe calls for 2/5 cup of oil. You want to make 2 1/2 times the recipe. How many cups of oil do you need?",
+      "choices": ["1 cup", "1 1/4 cups", "1 1/2 cups", "2 cups"],
+      "answer": "1 cup",
+      "hint": true,
+      "hintContext": "Multiply 2/5 by 5/2 (2.5 as a fraction)."
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "What is 5/6 − 1/4?",
+      "choices": ["4/2", "7/12", "1/2", "4/10"],
+      "answer": "7/12",
+      "hint": true,
+      "hintContext": "Common denominator 12: 5/6 = 10/12, 1/4 = 3/12."
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "A pizza is cut into 8 equal slices. You eat 3 slices. What fraction of the pizza is left?",
+      "choices": ["3/8", "5/8", "1/2", "1/4"],
+      "answer": "5/8",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "A jug is 7/8 full of juice. After pouring out 1/4 of the jug’s capacity, what fraction of the jug is still full?",
+      "choices": ["1/2", "5/8", "3/4", "7/8"],
+      "answer": "5/8",
+      "hint": true,
+      "hintContext": "Use eighths: 1/4 = 2/8. Subtract 2/8 from 7/8."
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "Which pair of fractions are equivalent?",
+      "choices": ["2/3 and 3/4", "4/6 and 2/3", "3/5 and 4/7", "1/2 and 2/5"],
+      "answer": "4/6 and 2/3",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "A walking trail is 15 km long. You complete 2/5 of the trail. How many kilometres have you walked?",
+      "choices": ["4 km", "5 km", "6 km", "7.5 km"],
+      "answer": "6 km",
+      "hint": true,
+      "hintContext": "Find 2/5 of 15."
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "What is 3/10 + 2/5?",
+      "choices": ["5/15", "7/10", "1/2", "5/10"],
+      "answer": "7/10",
+      "hint": true,
+      "hintContext": "Write 2/5 as tenths, then add."
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "A bag holds 3/4 kg of sand. Another bag holds 1/2 kg. What is the total mass, in kilograms?",
+      "choices": ["1 1/4 kg", "1 1/2 kg", "1 3/4 kg", "2 kg"],
+      "answer": "1 1/4 kg",
+      "hint": true,
+      "hintContext": "3/4 + 2/4 = 5/4 = 1 1/4."
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "A paint can is 4/5 full. You use half of the paint that is in the can. What fraction of the full can did you use?",
+      "choices": ["1/5", "2/5", "1/2", "4/10"],
+      "answer": "2/5",
+      "hint": true,
+      "hintContext": "Half of 4/5 is (1/2) × (4/5)."
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "Put these fractions in order from least to greatest: 5/6, 2/3, 7/12.",
+      "choices": [
+        "7/12, 2/3, 5/6",
+        "5/6, 2/3, 7/12",
+        "2/3, 7/12, 5/6",
+        "7/12, 5/6, 2/3"
+      ],
+      "answer": "7/12, 2/3, 5/6",
+      "hint": true,
+      "hintContext": "Convert to twelfths: 5/6 = 10/12, 2/3 = 8/12, 7/12 stays."
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "A school raised 3/10 of its fundraising goal on Monday and 1/5 on Tuesday. What fraction of the goal was raised in those two days?",
+      "choices": ["4/15", "1/2", "4/10", "9/10"],
+      "answer": "1/2",
+      "hint": true,
+      "hintContext": "3/10 + 2/10 = 5/10 = 1/2."
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "A rectangular garden has 2/3 of its area planted with vegetables. Of the vegetable section, 3/4 is planted with tomatoes. What fraction of the whole garden is tomatoes?",
+      "choices": ["5/7", "1/2", "8/9", "2/3"],
+      "answer": "1/2",
+      "hint": true,
+      "hintContext": "Multiply (2/3) × (3/4) — three cancels."
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { getWorksheet, submitResult, logout } from "../api";
 import AppHeader from "../components/AppHeader";
+import { formatSubjectLabel } from "../components/SubjectBadge";
 import Drawpad from "../components/Drawpad";
 
 export default function Worksheet() {
@@ -191,9 +192,23 @@ export default function Worksheet() {
       <h2 className="text-xl font-semibold text-amber-900 mb-1">
         {worksheet.title}
       </h2>
-      <p className="text-amber-500 text-sm capitalize mb-8">
+      <p
+        className={`text-amber-500 text-sm capitalize ${
+          worksheet.learn_subject ? "mb-2" : "mb-8"
+        }`}
+      >
         {worksheet.subject} · {worksheet.questions.length} questions
       </p>
+      {worksheet.learn_subject && (
+        <p className="mb-8">
+          <Link
+            to={`/student/learn/${encodeURIComponent(worksheet.learn_subject)}`}
+            className="text-sm font-semibold text-amber-800 underline decoration-amber-400 underline-offset-2 hover:text-amber-950"
+          >
+            Open {formatSubjectLabel(worksheet.learn_subject)} study notes →
+          </Link>
+        </p>
+      )}
 
       {/* Score banner */}
       {submitted && (

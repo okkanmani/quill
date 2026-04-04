@@ -1,0 +1,208 @@
+{
+  "title": "Science – Human Body & Matter (Grade 5 Ontario)",
+  "subject": "science",
+  "created_at": "2026-03-29T11:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "Which organ pumps blood through the circulatory system?",
+      "choices": ["Lungs", "Liver", "Heart", "Stomach"],
+      "answer": "Heart",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "What do we call the tiny air sacs in the lungs where gas exchange happens?",
+      "choices": ["Bronchi", "Alveoli", "Trachea", "Diaphragm"],
+      "answer": "Alveoli",
+      "hint": true,
+      "hintContext": "These are found at the ends of the smallest branches of the lungs."
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "Which organ is mainly responsible for filtering waste from the blood and making urine?",
+      "choices": ["Large intestine", "Kidneys", "Pancreas", "Gall bladder"],
+      "answer": "Kidneys",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "In the digestive system, most nutrients are absorbed into the blood in the —",
+      "choices": ["stomach", "small intestine", "esophagus", "large intestine"],
+      "answer": "small intestine",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "Which blood vessels carry blood away from the heart?",
+      "choices": ["Veins", "Arteries", "Capillaries only", "Valves"],
+      "answer": "Arteries",
+      "hint": true,
+      "hintContext": "Think “A” for away from the heart."
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "The brain and spinal cord are the main parts of which system?",
+      "choices": ["Digestive system", "Nervous system", "Respiratory system", "Skeletal system"],
+      "answer": "Nervous system",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "What is the main job of red blood cells?",
+      "choices": [
+        "Fight infection",
+        "Carry oxygen",
+        "Digest food",
+        "Pump blood"
+      ],
+      "answer": "Carry oxygen",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "Which organ produces bile to help digest fats?",
+      "choices": ["Kidney", "Liver", "Lung", "Heart"],
+      "answer": "Liver",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "When you breathe in, your rib cage moves outward and your diaphragm moves —",
+      "choices": ["up", "down", "sideways", "inward only"],
+      "answer": "down",
+      "hint": true,
+      "hintContext": "This increases space in the chest so the lungs can expand."
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "White blood cells are important mainly because they —",
+      "choices": [
+        "carry oxygen",
+        "help defend the body against germs",
+        "digest protein",
+        "store fat"
+      ],
+      "answer": "help defend the body against germs",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "Which state of matter has a definite volume but takes the shape of its container?",
+      "choices": ["Solid", "Liquid", "Gas", "Plasma only"],
+      "answer": "Liquid",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "Melting ice into water is an example of a change that is usually —",
+      "choices": [
+        "chemical and irreversible",
+        "physical and reversible",
+        "only a colour change",
+        "impossible to reverse"
+      ],
+      "answer": "physical and reversible",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "Which property describes how much matter is in an object?",
+      "choices": ["Volume", "Mass", "Temperature", "Colour"],
+      "answer": "Mass",
+      "hint": true,
+      "hintContext": "Often measured in grams or kilograms."
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "A mixture of sand and water can be separated by filtering because —",
+      "choices": [
+        "sand dissolves completely in water",
+        "sand is insoluble and the particles are large enough to trap",
+        "water evaporates instantly",
+        "sand becomes a gas"
+      ],
+      "answer": "sand is insoluble and the particles are large enough to trap",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "When water boils, it changes from liquid to gas. This is called —",
+      "choices": ["condensation", "evaporation", "melting", "freezing"],
+      "answer": "evaporation",
+      "hint": true,
+      "hintContext": "Boiling is rapid evaporation at the boiling point."
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "Sugar dissolving in tea is best described as forming a —",
+      "choices": [
+        "solution",
+        "compound that cannot be separated",
+        "new chemical element",
+        "solid mixture only"
+      ],
+      "answer": "solution",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "Which of the following is a mixture?",
+      "choices": ["Pure water (H₂O)", "Table salt (NaCl)", "Air", "Gold element"],
+      "answer": "Air",
+      "hint": true,
+      "hintContext": "Think about gases blended together in the atmosphere."
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "Compressing a gas can increase its — in a fixed volume.",
+      "choices": ["mass only", "pressure", "density of the container walls", "colour"],
+      "answer": "pressure",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "Rust forming on iron is usually considered a —",
+      "choices": [
+        "physical change only",
+        "chemical change",
+        "change of state only",
+        "reversible change"
+      ],
+      "answer": "chemical change",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "The volume of a rectangular box is best found by measuring length, width, and height —",
+      "choices": [
+        "and adding them",
+        "and multiplying them",
+        "and dividing them",
+        "and comparing only two"
+      ],
+      "answer": "and multiplying them",
+      "hint": false
+    }
+  ]
+}

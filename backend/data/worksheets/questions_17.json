@@ -1,0 +1,288 @@
+{
+  "title": "English – History & Reasoning (Grade 5 Ontario)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-03-29T12:00:00Z",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "The War of 1812 in British North America",
+      "body": "Between 1812 and 1815, Britain and the United States fought a war that included major battles in what is now Canada. Many people living in Upper Canada (today’s Ontario) had Loyalist roots or had arrived from the United States; they feared American invasion and wanted to remain under British rule.\n\nBritish regular troops, local militia, and Indigenous allies all played important roles. Indigenous nations such as the Shawnee leader Tecumseh hoped a British alliance would help protect their lands from American expansion. At Queenston Heights, at Chrysler’s Farm, and at other sites, defenders turned back American attacks.\n\nThe war did not end with a clear winner on the battlefield, but the peace treaty signed in Europe restored borders roughly to what they had been before the fighting. For many Canadians today, the war is remembered as a time when diverse groups worked together to resist invasion and helped shape a distinct identity north of the border."
+    },
+    {
+      "id": "p2",
+      "title": "Confederation and the Dominion of Canada",
+      "body": "By the 1860s, the British colonies in North America faced political and economic pressures. Some leaders feared American expansion after the Civil War; others wanted stronger trade links and a railway to link the colonies.\n\nAt conferences in Charlottetown and Quebec City, politicians debated a federal system — powers shared between a central government and provincial governments. In 1867, the British North America Act created the Dominion of Canada with four provinces: Ontario, Quebec, Nova Scotia, and New Brunswick.\n\nThe new country could make laws about trade, defence, and banking, while provinces kept responsibility for areas such as education. Other regions joined later through negotiations. Confederation was not perfect; many voices, including those of First Nations, Métis, and Inuit peoples, were not fully represented in those early decisions, an issue Canadians still study and discuss today."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, about when did the War of 1812 take place?",
+      "choices": ["1776–1783", "1812–1815", "1861–1865", "1914–1918"],
+      "answer": "1812–1815",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Why did many people in Upper Canada fear American invasion?",
+      "choices": [
+        "They wanted to join the United States immediately",
+        "They wished to remain under British rule and worried about losing that",
+        "They had no militia",
+        "They disliked trade"
+      ],
+      "answer": "They wished to remain under British rule and worried about losing that",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, what did Tecumseh and some Indigenous allies hope to achieve by working with the British?",
+      "choices": [
+        "To move all settlers to Europe",
+        "To help protect their lands from American expansion",
+        "To end all wars forever",
+        "To build a railway"
+      ],
+      "answer": "To help protect their lands from American expansion",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Which of the following groups does the passage say helped defend British North America?",
+      "choices": [
+        "Only the British navy in Europe",
+        "British troops, militia, and Indigenous allies",
+        "Only American soldiers",
+        "Only French traders"
+      ],
+      "answer": "British troops, militia, and Indigenous allies",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "The passage says the peace treaty —",
+      "choices": [
+        "moved Canada into the United States",
+        "restored borders roughly to what they had been before the war",
+        "abolished all Indigenous treaties",
+        "ended British rule in North America"
+      ],
+      "answer": "restored borders roughly to what they had been before the war",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "What is one way the passage says the war is remembered in Canada today?",
+      "choices": [
+        "As a time when no one cooperated",
+        "As a time when diverse groups resisted invasion and helped shape identity",
+        "As a war Canada lost completely",
+        "As unrelated to modern life"
+      ],
+      "answer": "As a time when diverse groups resisted invasion and helped shape identity",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "The word \"invasion\" in the passage is closest in meaning to —",
+      "choices": [
+        "a friendly visit",
+        "an armed attack into another’s territory",
+        "a trade agreement",
+        "a school holiday"
+      ],
+      "answer": "an armed attack into another’s territory",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Which title best matches the main idea of the first passage?",
+      "choices": [
+        "How Canada Invented Airplanes",
+        "The War of 1812 and Its Meaning for Early British North America",
+        "Why the United States Won Every War",
+        "The History of Hockey"
+      ],
+      "answer": "The War of 1812 and Its Meaning for Early British North America",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, one reason leaders discussed uniting the colonies was —",
+      "choices": [
+        "to end all railways",
+        "concern about American expansion after the U.S. Civil War",
+        "to remove education from every province",
+        "to join the United States"
+      ],
+      "answer": "concern about American expansion after the U.S. Civil War",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "In 1867, how many provinces formed the original Dominion of Canada, according to the passage?",
+      "choices": ["Two", "Three", "Four", "Ten"],
+      "answer": "Four",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Which document does the passage say created the Dominion of Canada?",
+      "choices": [
+        "The Treaty of Paris 1763",
+        "The British North America Act",
+        "The Magna Carta",
+        "The United Nations Charter"
+      ],
+      "answer": "The British North America Act",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, which area would provinces likely control under Confederation?",
+      "choices": [
+        "Only national defence",
+        "Education",
+        "Only banking for the whole country",
+        "International treaties only"
+      ],
+      "answer": "Education",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "What does the passage suggest about early Confederation decisions?",
+      "choices": [
+        "Everyone’s voice was equally heard",
+        "Some groups, including many Indigenous peoples, were not fully represented",
+        "Only one person made decisions",
+        "Women could not read"
+      ],
+      "answer": "Some groups, including many Indigenous peoples, were not fully represented",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "The word \"federal\" in the passage refers to a system where —",
+      "choices": [
+        "only towns have power",
+        "power is shared between central and provincial governments",
+        "there are no laws",
+        "Canada has no provinces"
+      ],
+      "answer": "power is shared between central and provincial governments",
+      "hint": true,
+      "hintContext": "The passage contrasts a central government with provincial governments."
+    },
+    {
+      "id": "q15",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Which statement would the author most likely agree with?",
+      "choices": [
+        "Confederation solved every problem forever",
+        "Understanding Confederation includes studying who was left out of early decisions",
+        "History should never be questioned",
+        "Provinces had no powers after 1867"
+      ],
+      "answer": "Understanding Confederation includes studying who was left out of early decisions",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "Statement: \"If a plant is not watered for a month, it will die.\" This plant was not watered for a month and is still alive. What can you conclude?",
+      "choices": [
+        "The statement must be false in this case",
+        "All plants are the same",
+        "Water never matters",
+        "Months cannot be measured"
+      ],
+      "answer": "The statement must be false in this case",
+      "hint": true,
+      "hintContext": "A general statement is tested by a specific counterexample."
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "Statement: \"Every student who wears a red hat is a member of the choir.\" Maria wears a red hat. Can you conclude she is in the choir?",
+      "choices": [
+        "Yes, without question",
+        "Not necessarily — the statement does not say only choir members wear red hats",
+        "No, because hats are illegal",
+        "Yes, because red is the best colour"
+      ],
+      "answer": "Not necessarily — the statement does not say only choir members wear red hats",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "Which is the strongest evidence for the claim \"Our school should start a composting program\"?",
+      "choices": [
+        "Composting is boring",
+        "Food waste makes up a large share of landfill waste and composting reduces it",
+        "No other schools exist",
+        "I like pizza"
+      ],
+      "answer": "Food waste makes up a large share of landfill waste and composting reduces it",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "If all bloops are razzles, and this is not a razzle, then —",
+      "choices": [
+        "it must be a bloop",
+        "it cannot be a bloop",
+        "all razzles are bloops",
+        "bloops do not exist"
+      ],
+      "answer": "it cannot be a bloop",
+      "hint": true,
+      "hintContext": "Bloops are a subset of razzles. If something is not a razzle, can it be a bloop?"
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "A friend says: \"I flipped a coin three times and got heads each time, so the next flip must be tails.\" What is wrong with this reasoning?",
+      "choices": [
+        "Coins cannot flip",
+        "Each fair flip is independent — past results do not force the next outcome",
+        "Heads is impossible",
+        "Three is not a number"
+      ],
+      "answer": "Each fair flip is independent — past results do not force the next outcome",
+      "hint": false
+    }
+  ]
+}

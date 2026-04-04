@@ -44,12 +44,18 @@ def _insert_worksheet(conn, ws_id: str, data: dict, path: Path) -> None:
     passages = json.dumps(data.get("passages", []))
     sort_ts = _worksheet_sort_ts_ms(data, path)
     questions = data.get("questions", [])
+    ls = data.get("learn_subject")
+    learn_subject = (
+        str(ls).strip().lower()
+        if ls is not None and str(ls).strip()
+        else None
+    )
     conn.execute(
         """
-        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
-        (ws_id, title, subject, scratchpad, passages, sort_ts),
+        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject),
     )
     for order, q in enumerate(questions):
         conn.execute(
@@ -165,7 +171,10 @@ def get_worksheet(worksheet_id: str) -> dict | None:
     conn = db.connect()
     try:
         row = conn.execute(
-            "SELECT title, subject, scratchpad, passages FROM worksheets WHERE id = ?",
+            """
+            SELECT title, subject, scratchpad, passages, learn_subject
+            FROM worksheets WHERE id = ?
+            """,
             (worksheet_id,),
         ).fetchone()
         if not row:
@@ -187,6 +196,9 @@ def get_worksheet(worksheet_id: str) -> dict | None:
         }
         if passage_list:
             out["passages"] = passage_list
+        ls = row["learn_subject"]
+        if ls is not None and str(ls).strip():
+            out["learn_subject"] = str(ls).strip()
         return out
     finally:
         conn.close()

@@ -1,0 +1,203 @@
+{
+  "title": "English \u2013 Critical Reasoning (15 questions)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-04-02T20:10:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "Which is the strongest evidence that a source might be biased?",
+      "choices": [
+        "The article includes dates and names.",
+        "The author sells the product they praise and never mentions drawbacks.",
+        "The website ends in .org.",
+        "There are three paragraphs."
+      ],
+      "answer": "The author sells the product they praise and never mentions drawbacks.",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "Read: \"Because the bus was late, we missed the opening scene.\" The word \"Because\" signals \u2014",
+      "choices": [
+        "a cause-and-effect relationship.",
+        "a question to the reader",
+        "a list of unrelated facts",
+        "the story is fictional"
+      ],
+      "answer": "a cause-and-effect relationship.",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "A flyer says, \"Nine out of ten dentists in our survey recommend BrightSmile!\" What should a careful reader ask first?",
+      "choices": [
+        "Whether the flyer uses colour ink.",
+        "How many words are on the flyer.",
+        "If dentists exist in other countries.",
+        "How those dentists were chosen and whether the survey was fair."
+      ],
+      "answer": "How those dentists were chosen and whether the survey was fair.",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "Which conclusion follows logically? All robins in this park have red breasts. This bird in the park has no red breast.",
+      "choices": [
+        "It must be an eagle.",
+        "All birds in the park are robins.",
+        "It is not a robin (at least not one matching that description).",
+        "Robins never visit parks."
+      ],
+      "answer": "It is not a robin (at least not one matching that description).",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "\"She revised her draft three times before submitting.\" This detail mainly suggests she \u2014",
+      "choices": [
+        "dislikes writing completely",
+        "cares about quality and improving her work.",
+        "never reads instructions",
+        "finished in under one minute"
+      ],
+      "answer": "cares about quality and improving her work.",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "Which pair shows a fact (not an opinion)?",
+      "choices": [
+        "Lake Ontario is one of the Great Lakes.",
+        "Lake Ontario is the prettiest lake.",
+        "Summer is the best season.",
+        "Chocolate ice cream is tastier than vanilla."
+      ],
+      "answer": "Lake Ontario is one of the Great Lakes.",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "A student argues, \"We should start school later because teenagers need more sleep.\" Which statement is a counterargument?",
+      "choices": [
+        "Teenagers are human beings.",
+        "Sleep happens at night.",
+        "Schools have buildings.",
+        "Later start times can make sports practices and after-school jobs harder to schedule."
+      ],
+      "answer": "Later start times can make sports practices and after-school jobs harder to schedule.",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "Which sentence contains a simile?",
+      "choices": [
+        "The fog rolled in before dawn.",
+        "The harbour was closed Tuesday.",
+        "The fog was like a thick blanket over the harbour.",
+        "Blankets are sold at the store."
+      ],
+      "answer": "The fog was like a thick blanket over the harbour.",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Two friends disagree whether a movie is \"good.\" What makes their disagreement hard to settle with one proof?",
+      "choices": [
+        "Movies always last exactly two hours.",
+        "\"Good\" is a value judgment and people use different criteria.",
+        "Theatre seats are made of fabric.",
+        "Popcorn is salty."
+      ],
+      "answer": "\"Good\" is a value judgment and people use different criteria.",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "If everyone in town who answers a poll shops at the same store that day, the results likely \u2014",
+      "choices": [
+        "overrepresent shoppers at that store and may not reflect the whole town.",
+        "are perfectly random",
+        "must be ignored forever",
+        "only count people over 100 years old"
+      ],
+      "answer": "overrepresent shoppers at that store and may not reflect the whole town.",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "Which question best checks whether a claim is reasonable?",
+      "choices": [
+        "How many letters are in the claim?",
+        "Was the claim written in cursive?",
+        "Does the claim rhyme?",
+        "What evidence supports it, and is that evidence trustworthy?"
+      ],
+      "answer": "What evidence supports it, and is that evidence trustworthy?",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "\"Although the hike was long, the view was worth it.\" The contrast set up by \"Although\" emphasizes \u2014",
+      "choices": [
+        "that hiking is illegal",
+        "that views never matter",
+        "that the positive outcome mattered despite the difficulty.",
+        "that time always stands still"
+      ],
+      "answer": "that the positive outcome mattered despite the difficulty.",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "A headline reads, \"New study: screens harm all children.\" A critical reader should notice \u2014",
+      "choices": [
+        "headlines are always exactly 10 words",
+        "words like \"all\" are extreme and may not match the actual study.",
+        "studies never use data",
+        "children never use screens"
+      ],
+      "answer": "words like \"all\" are extreme and may not match the actual study.",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "Which is an example of a false cause fallacy?",
+      "choices": [
+        "The rooster crows, then the sun rises; therefore the rooster causes sunrise.",
+        "Water boils at 100 \u00b0C at sea level.",
+        "If it rains, the ground gets wet.",
+        "A square has four equal sides."
+      ],
+      "answer": "The rooster crows, then the sun rises; therefore the rooster causes sunrise.",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "When comparing two products online, which practice is most fair?",
+      "choices": [
+        "Trust only the shortest description.",
+        "Choose the one with the brightest logo.",
+        "Ignore reviews written on weekdays.",
+        "Use the same criteria for both (price, warranty, reviews) and check multiple sources."
+      ],
+      "answer": "Use the same criteria for both (price, warranty, reviews) and check multiple sources.",
+      "hint": false
+    }
+  ]
+}
