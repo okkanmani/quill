@@ -234,15 +234,17 @@ def save_result(result: dict):
         conn.close()
 
 
-def list_results() -> list:
+def list_results(student_name: str) -> list:
     conn = db.connect()
     try:
         rows = conn.execute(
             """
             SELECT id, worksheet_id, title, student, score, total, answers, submitted_at
             FROM results
+            WHERE student = ?
             ORDER BY submitted_at DESC
-            """
+            """,
+            (student_name,),
         ).fetchall()
         return [
             {

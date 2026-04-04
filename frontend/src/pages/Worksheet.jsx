@@ -6,6 +6,7 @@ import Drawpad from "../components/Drawpad";
 export default function Worksheet() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const isAdminPreview = localStorage.getItem("role") === "admin";
   const [worksheet, setWorksheet] = useState(null);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -41,6 +42,7 @@ export default function Worksheet() {
         prompt: q.prompt,
         given: answers[q.id],
         correct: isRight,
+        expected: q.answer,
       };
     });
 
@@ -84,10 +86,17 @@ export default function Worksheet() {
         </p>
         {showScratchpad && <Drawpad />}
         {renderInput(q)}
-        {submitted && !isCorrect(q) && q.type !== "multiple_choice" && (
-          <p className="text-red-500 text-sm mt-2">
-            Correct answer: {q.answer}
-          </p>
+        {submitted && !isCorrect(q) && (
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50/50 p-3 text-sm space-y-2">
+            <p className="text-amber-900">
+              <span className="text-red-700 font-semibold">Question</span>
+              <span className="block mt-0.5">{q.prompt}</span>
+            </p>
+            <p>
+              <span className="text-red-700 font-semibold">Correct answer</span>
+              <span className="block mt-0.5 text-amber-900">{q.answer}</span>
+            </p>
+          </div>
         )}
       </div>
     );
@@ -120,7 +129,7 @@ export default function Worksheet() {
             return (
               <button
                 key={choice}
-                disabled={submitted}
+                disabled={submitted || isAdminPreview}
                 onClick={() => handleAnswerChange(q.id, choice)}
                 className={`border rounded-xl px-4 py-3 text-sm text-left transition ${choiceStyle}`}
               >
@@ -137,7 +146,7 @@ export default function Worksheet() {
         type="text"
         value={answers[q.id]}
         onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-        disabled={submitted}
+        disabled={submitted || isAdminPreview}
         placeholder="Your answer..."
         className="w-full border border-amber-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:bg-amber-50"
       />
@@ -170,6 +179,13 @@ export default function Worksheet() {
           ← Back
         </button>
       </div>
+
+      {isAdminPreview && (
+        <div className="mb-6 rounded-xl border border-amber-300 bg-amber-100/80 px-4 py-3 text-sm text-amber-900">
+          You are viewing this worksheet as an admin (read-only). Students can
+          submit answers from their own login.
+        </div>
+      )}
 
       {/* Worksheet title */}
       <h2 className="text-xl font-semibold text-amber-900 mb-1">
@@ -241,7 +257,7 @@ export default function Worksheet() {
       </div>
 
       {/* Submit button */}
-      {!submitted && (
+      {!submitted && !isAdminPreview && (
         <button
           onClick={handleSubmit}
           className="mt-8 w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-4 rounded-2xl shadow transition"

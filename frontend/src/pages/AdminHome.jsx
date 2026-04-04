@@ -43,7 +43,9 @@ export default function AdminHome() {
           >
             Worksheets
           </Link>
-          <span className="text-amber-700 text-sm">Admin</span>
+          <span className="text-amber-700 text-sm">
+            Admin · {localStorage.getItem("studentName") || "—"}
+          </span>
           <button
             onClick={handleLogout}
             className="text-amber-600 text-sm underline"
@@ -136,6 +138,14 @@ export default function AdminHome() {
                             {a.correct ? "Correct" : "Incorrect"}
                           </span>
                         </div>
+                        {!a.correct && a.expected != null && a.expected !== "" ? (
+                          <p className="mt-2 text-sm text-amber-900">
+                            <span className="text-red-700 font-semibold">
+                              Correct answer:{" "}
+                            </span>
+                            {a.expected}
+                          </p>
+                        ) : null}
                       </li>
                     ))}
                   </ul>

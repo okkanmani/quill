@@ -55,7 +55,9 @@ export default function AdminWorksheets() {
           >
             Results
           </Link>
-          <span className="text-amber-700 text-sm">Admin</span>
+          <span className="text-amber-700 text-sm">
+            Admin · {localStorage.getItem("studentName") || "—"}
+          </span>
           <button
             onClick={handleLogout}
             className="text-amber-600 text-sm underline"

@@ -13,20 +13,21 @@ function authHeaders() {
 
 // --- Auth ---
 
-export async function loginAdmin(password) {
+export async function loginAdmin({ studentName, password }) {
   const res = await fetch(`${BASE_URL}/auth/admin/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({ student_name: studentName, password }),
   });
-  if (!res.ok) throw new Error("Invalid password");
+  if (!res.ok) throw new Error("Invalid admin login");
   return res.json();
 }
 
-export async function loginStudent() {
+export async function loginStudent({ name, password }) {
   const res = await fetch(`${BASE_URL}/auth/student/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, password }),
   });
   if (!res.ok) throw new Error("Login failed");
   return res.json();
@@ -46,6 +47,7 @@ export async function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   localStorage.removeItem("name");
+  localStorage.removeItem("studentName");
 }
 
 export async function getMe() {

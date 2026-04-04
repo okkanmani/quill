@@ -1,36 +1,29 @@
-import json
+import os
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
-import bcrypt
 from jose import JWTError, jwt
 
-AUTH_FILE = Path(__file__).parent / "data" / "auth.json"
-
-SECRET_KEY = "quill-secret-key-change-this-in-production"
+SECRET_KEY = os.environ.get("JWT_SECRET", "quill-secret-key-change-this-in-production")
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_DAYS = 30
 
 
-def load_auth() -> dict:
-    with open(AUTH_FILE) as f:
-        return json.load(f)
-
-
-def verify_admin(password: str) -> bool:
-    auth = load_auth()
-    hashed = auth["admin"]["password_hash"].encode()
-    return bcrypt.checkpw(password.encode(), hashed)
-
-
-def get_student_name() -> str:
-    auth = load_auth()
-    return auth["student"]["name"]
-
-
-def create_token(role: str) -> str:
+def create_student_token(student_id: int, name: str) -> str:
     payload = {
-        "role": role,
+        "role": "student",
+        "student_id": student_id,
+        "name": name,
+        "exp": datetime.now(timezone.utc) + timedelta(days=TOKEN_EXPIRE_DAYS),
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def create_admin_token(admin_id: int, student_id: int, student_name: str) -> str:
+    payload = {
+        "role": "admin",
+        "admin_id": admin_id,
+        "student_id": student_id,
+        "student_name": student_name,
         "exp": datetime.now(timezone.utc) + timedelta(days=TOKEN_EXPIRE_DAYS),
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
@@ -38,7 +31,16 @@ def create_token(role: str) -> str:
 
 def verify_token(token: str) -> dict | None:
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
         return None
+
+
+def context_student_name(payload: dict) -> str:
+    """Name stored in results.student for the current session."""
+    role = payload.get("role")
+    if role == "student":
+        return payload["name"]
+    if role == "admin":
+        return payload["student_name"]
+    raise ValueError("invalid token role")

@@ -65,6 +65,26 @@ def init_schema() -> None:
             conn.execute(
                 "ALTER TABLE worksheets ADD COLUMN sort_ts INTEGER NOT NULL DEFAULT 0"
             )
+        conn.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS admins (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                password_hash TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS students (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                admin_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                password_hash TEXT NOT NULL,
+                FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE,
+                UNIQUE (admin_id, name)
+            );
+            CREATE INDEX IF NOT EXISTS idx_students_name ON students(name);
+            """
+        )
+        from auth_users import migrate_legacy_from_auth_json
+
+        migrate_legacy_from_auth_json(conn)
         conn.commit()
     finally:
         conn.close()
