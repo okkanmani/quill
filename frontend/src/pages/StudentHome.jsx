@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getWorksheets, logout } from "../api";
+import { STUDENT_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
 import WorksheetsBySubject from "../components/WorksheetsBySubject";
 
@@ -28,6 +29,7 @@ export default function StudentHome() {
   return (
     <div className="min-h-screen bg-amber-50 p-6">
       <AppHeader
+        navLinks={STUDENT_MAIN_NAV}
         trailing={
           <span className="text-amber-800 text-sm font-medium">
             Hi, {name}!
@@ -37,16 +39,6 @@ export default function StudentHome() {
       />
 
       <div className="max-w-3xl">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <h2 className="text-xl font-semibold text-amber-900">Your Worksheets</h2>
-          <Link
-            to="/student/learn"
-            className="text-sm font-bold text-amber-50 bg-amber-900 hover:bg-amber-950 border border-amber-950 rounded-xl px-4 py-2 shadow-sm transition"
-          >
-            Learning materials
-          </Link>
-        </div>
-
         {loading && <p className="text-amber-600">Loading...</p>}
         {error && <p className="text-red-500">{error}</p>}
 

@@ -23,9 +23,9 @@ export default function LearnHub() {
       onBack={() => navigate(isAdmin ? "/admin/worksheets" : "/student")}
     >
       <div className="max-w-3xl">
-        <h1 className="text-2xl font-bold text-amber-950 mb-2">Learning materials</h1>
+        <h1 className="text-2xl font-bold text-amber-950 mb-2">Learning resources</h1>
         <p className="text-amber-700 text-sm mb-8 leading-relaxed">
-          Draft reference pages (Markdown). More subjects can be added under{" "}
+          Reference pages you can read before worksheets. More subjects can be added under{" "}
           <code className="text-xs bg-amber-100 px-1 rounded">backend/data/learn/</code>.
         </p>
 
