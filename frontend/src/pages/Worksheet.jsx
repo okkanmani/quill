@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getWorksheet, submitResult } from "../api";
+import { getWorksheet, submitResult, logout } from "../api";
+import AppHeader from "../components/AppHeader";
 import Drawpad from "../components/Drawpad";
 
 export default function Worksheet() {
@@ -164,21 +165,20 @@ export default function Worksheet() {
       <div className="min-h-screen bg-amber-50 p-6 text-red-500">{error}</div>
     );
 
+  async function handleLogout() {
+    await logout();
+    navigate("/");
+  }
+
   const passages = Array.isArray(worksheet.passages) ? worksheet.passages : [];
   const hasReadingPassages = passages.length > 0;
 
   return (
     <div className="min-h-screen bg-amber-50 p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-amber-800">🪶 Quill</h1>
-        <button
-          onClick={() => navigate(-1)}
-          className="text-amber-600 text-sm underline"
-        >
-          ← Back
-        </button>
-      </div>
+      <AppHeader
+        onBack={() => navigate(-1)}
+        onLogout={handleLogout}
+      />
 
       {isAdminPreview && (
         <div className="mb-6 rounded-xl border border-amber-300 bg-amber-100/80 px-4 py-3 text-sm text-amber-900">

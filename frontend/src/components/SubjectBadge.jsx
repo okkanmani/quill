@@ -5,7 +5,7 @@ const STYLES = {
   general: "bg-stone-100 text-stone-800 border-stone-200",
 };
 
-function formatLabel(subject) {
+export function formatSubjectLabel(subject) {
   const s = (subject || "general").trim();
   if (!s) return "General";
   return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
@@ -18,7 +18,7 @@ export default function SubjectBadge({ subject }) {
     <span
       className={`inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${style}`}
     >
-      {formatLabel(subject)}
+      {formatSubjectLabel(subject)}
     </span>
   );
 }

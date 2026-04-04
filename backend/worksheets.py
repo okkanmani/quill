@@ -239,10 +239,13 @@ def list_results(student_name: str) -> list:
     try:
         rows = conn.execute(
             """
-            SELECT id, worksheet_id, title, student, score, total, answers, submitted_at
-            FROM results
-            WHERE student = ?
-            ORDER BY submitted_at DESC
+            SELECT r.id, r.worksheet_id, r.title, r.student, r.score, r.total,
+                   r.answers, r.submitted_at,
+                   COALESCE(NULLIF(TRIM(w.subject), ''), 'general') AS subject
+            FROM results r
+            LEFT JOIN worksheets w ON w.id = r.worksheet_id
+            WHERE r.student = ?
+            ORDER BY r.submitted_at DESC
             """,
             (student_name,),
         ).fetchall()
@@ -256,6 +259,7 @@ def list_results(student_name: str) -> list:
                 "total": r["total"],
                 "answers": json.loads(r["answers"]),
                 "submitted_at": r["submitted_at"],
+                "subject": r["subject"] or "general",
             }
             for r in rows
         ]
