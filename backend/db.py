@@ -67,6 +67,8 @@ def init_schema() -> None:
             )
         if "learn_subject" not in cols:
             conn.execute("ALTER TABLE worksheets ADD COLUMN learn_subject TEXT")
+        if "learn_section" not in cols:
+            conn.execute("ALTER TABLE worksheets ADD COLUMN learn_section TEXT")
         conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS admins (

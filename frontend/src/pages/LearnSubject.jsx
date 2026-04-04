@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getLearnSubject } from "../api";
 import LearnChrome from "../components/LearnChrome";
 import LearnMarkdown from "../components/LearnMarkdown";
@@ -9,6 +9,7 @@ import LearnMarkdown from "../components/LearnMarkdown";
 export default function LearnSubject() {
   const { subjectKey } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -21,6 +22,17 @@ export default function LearnSubject() {
       .catch(() => setError("Could not load this topic."))
       .finally(() => setLoading(false));
   }, [subjectKey]);
+
+  useEffect(() => {
+    if (!data?.sections?.length || loading) return;
+    const raw = location.hash?.replace(/^#/, "");
+    if (!raw) return;
+    const id = decodeURIComponent(raw);
+    requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [data, loading, location.hash]);
 
   return (
     <LearnChrome onBack={() => navigate("/student/learn")}>

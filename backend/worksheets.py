@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import db
+from learn_content import get_subject
 
 WORKSHEETS_DIR = Path(__file__).parent / "data" / "worksheets"
 
@@ -50,12 +51,16 @@ def _insert_worksheet(conn, ws_id: str, data: dict, path: Path) -> None:
         if ls is not None and str(ls).strip()
         else None
     )
+    lc = data.get("learn_section")
+    learn_section = None
+    if learn_subject and lc is not None and str(lc).strip():
+        learn_section = str(lc).strip().lower()
     conn.execute(
         """
-        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject),
+        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section),
     )
     for order, q in enumerate(questions):
         conn.execute(
@@ -172,7 +177,7 @@ def get_worksheet(worksheet_id: str) -> dict | None:
     try:
         row = conn.execute(
             """
-            SELECT title, subject, scratchpad, passages, learn_subject
+            SELECT title, subject, scratchpad, passages, learn_subject, learn_section
             FROM worksheets WHERE id = ?
             """,
             (worksheet_id,),
@@ -199,6 +204,18 @@ def get_worksheet(worksheet_id: str) -> dict | None:
         ls = row["learn_subject"]
         if ls is not None and str(ls).strip():
             out["learn_subject"] = str(ls).strip()
+        lsec = row["learn_section"]
+        if lsec is not None and str(lsec).strip():
+            sec_id = str(lsec).strip()
+            out["learn_section"] = sec_id
+            subj_key = out.get("learn_subject")
+            if subj_key:
+                sdata = get_subject(subj_key)
+                if sdata:
+                    for sec in sdata.get("sections") or []:
+                        if sec.get("id") == sec_id:
+                            out["learn_section_title"] = sec.get("title", sec_id)
+                            break
         return out
     finally:
         conn.close()

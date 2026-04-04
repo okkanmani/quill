@@ -202,10 +202,16 @@ export default function Worksheet() {
       {worksheet.learn_subject && (
         <p className="mb-8">
           <Link
-            to={`/student/learn/${encodeURIComponent(worksheet.learn_subject)}`}
+            to={`/student/learn/${encodeURIComponent(worksheet.learn_subject)}${
+              worksheet.learn_section
+                ? `#${encodeURIComponent(worksheet.learn_section)}`
+                : ""
+            }`}
             className="text-sm font-semibold text-amber-800 underline decoration-amber-400 underline-offset-2 hover:text-amber-950"
           >
-            Open {formatSubjectLabel(worksheet.learn_subject)} study notes →
+            {worksheet.learn_section_title
+              ? `Open ${worksheet.learn_section_title} study notes →`
+              : `Open ${formatSubjectLabel(worksheet.learn_subject)} study notes →`}
           </Link>
         </p>
       )}
