@@ -1,0 +1,140 @@
+{
+  "title": "Math — Fractions (mixed practice)",
+  "subject": "math",
+  "learn_subject": "math",
+  "learn_section": "number-fractions",
+  "scratchpad": true,
+  "created_at": "2026-03-27T14:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "What is 7/9 − 2/5?",
+      "choices": [
+        "17/45",
+        "5/4",
+        "9/14",
+        "5/45"
+      ],
+      "answer": "17/45",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "Which fraction is already written in simplest form?",
+      "choices": [
+        "22/30",
+        "11/15",
+        "14/21",
+        "12/18"
+      ],
+      "answer": "11/15",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "A rope is 5/6 m long. You cut off a piece that is 1/4 m. How many metres are left?",
+      "choices": [
+        "4/10 m",
+        "6/10 m",
+        "7/12 m",
+        "1/2 m"
+      ],
+      "answer": "7/12 m",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "What is (3/8) × (16/9)?",
+      "choices": [
+        "48/72",
+        "19/17",
+        "1/2",
+        "2/3"
+      ],
+      "answer": "2/3",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "Which number is between 3/7 and 5/8 on the number line?",
+      "choices": [
+        "1/2",
+        "2/5",
+        "4/5",
+        "3/8"
+      ],
+      "answer": "1/2",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "A jug holds 2 1/4 L when full. It is filled to 2/3 of its capacity. How many litres are in the jug?",
+      "choices": [
+        "1 1/2 L",
+        "1 3/4 L",
+        "2 L",
+        "1 7/12 L"
+      ],
+      "answer": "1 1/2 L",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "If 4/n = 10/15, what is n?",
+      "choices": [
+        "8",
+        "6",
+        "5",
+        "9"
+      ],
+      "answer": "6",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "You run 3/5 of a 10 km route, then walk another 1 1/4 km. How many kilometres have you covered in total?",
+      "choices": [
+        "7 1/4 km",
+        "6 km",
+        "8 km",
+        "7 3/4 km"
+      ],
+      "answer": "7 1/4 km",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "A paint mixture is 2 parts blue to 5 parts white by volume. What fraction of the mixture is blue?",
+      "choices": [
+        "2/7",
+        "2/5",
+        "5/7",
+        "3/5"
+      ],
+      "answer": "2/7",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "A tank is 5/12 full. After adding water, it is 3/4 full. What fraction of a full tank was added?",
+      "choices": [
+        "8/16",
+        "1/3",
+        "2/3",
+        "1/6"
+      ],
+      "answer": "1/3",
+      "hint": false
+    }
+  ]
+}

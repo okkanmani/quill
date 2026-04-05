@@ -1,0 +1,149 @@
+{
+  "title": "English — Critical reasoning (set 1)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-03-27T15:00:00Z",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Homework hours and report-card marks",
+      "body": "Researchers surveyed 800 middle-school students in one district and found a clear pattern: students who reported spending more hours per week on homework tended to earn higher average marks on their report cards. The team concluded that increasing assigned homework could be an effective way to raise achievement district-wide.\n\nThe study did not track how students actually used homework time (focused practice versus distraction), whether families hired tutors, or how teachers graded. It also grouped all subjects together, even though homework demands differ between, say, mathematics and music."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "The researchers’ conclusion would be most seriously weakened if which of the following were true?",
+      "choices": [
+        "Many high-achieving students also participated in team sports.",
+        "Some students completed homework during supervised study hall periods.",
+        "Report-card averages were calculated using the same scale across all schools in the district.",
+        "Students who already earned strong marks tended to receive more homework from their teachers than struggling students did."
+      ],
+      "answer": "Students who already earned strong marks tended to receive more homework from their teachers than struggling students did.",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Which choice best describes the author’s primary purpose in the second paragraph?",
+      "choices": [
+        "To argue that music homework should count for more of the final grade",
+        "To prove that tutoring is more effective than homework",
+        "To list limitations that complicate a straightforward causal reading of the survey results",
+        "To recommend abolishing homework in mathematics"
+      ],
+      "answer": "To list limitations that complicate a straightforward causal reading of the survey results",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "The researchers assume, without providing direct evidence, that —",
+      "choices": [
+        "all middle-school students dislike homework",
+        "homework is easier in music than in mathematics",
+        "800 students is too small a sample to detect any pattern",
+        "report-card marks mainly reflect time spent on homework rather than other overlapping factors"
+      ],
+      "answer": "report-card marks mainly reflect time spent on homework rather than other overlapping factors",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Which finding, if discovered in a follow-up study, would most strengthen the claim that homework time itself drives higher marks?",
+      "choices": [
+        "Students who listened to music while studying reported feeling less stressed.",
+        "Teachers who assigned more homework also gave longer tests.",
+        "Wealthier families bought more school supplies.",
+        "Among pairs of twins in the same classes, the sibling who logged more focused homework minutes earned higher marks, even when classroom instruction was identical."
+      ],
+      "answer": "Among pairs of twins in the same classes, the sibling who logged more focused homework minutes earned higher marks, even when classroom instruction was identical.",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "Policy: “Any club that receives school funding must open at least one meeting per term to all students.” The chess club holds closed strategy sessions every week but hosts one open “learn to play” night each term. Does the club satisfy the policy?",
+      "choices": [
+        "No, unless chess is offered as a graded course.",
+        "No, because weekly meetings are still closed to many students.",
+        "Yes, but only if the open night lasts longer than one hour.",
+        "Yes, because the open night meets the stated requirement."
+      ],
+      "answer": "Yes, because the open night meets the stated requirement.",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "Argument: “This app must be secure; it was built by engineers who previously worked at major banks.” The reasoning is flawed primarily because —",
+      "choices": [
+        "past employment does not guarantee that this particular product was designed with strong security practices",
+        "banks never use software",
+        "engineers prefer working at small startups",
+        "major banks do not care about customer data"
+      ],
+      "answer": "past employment does not guarantee that this particular product was designed with strong security practices",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "If all bloops are razzles, and some razzles are flimps, which statement must be true?",
+      "choices": [
+        "Some bloops are flimps.",
+        "All flimps are bloops.",
+        "No bloop can be a flimp.",
+        "None of the other statements must be true."
+      ],
+      "answer": "None of the other statements must be true.",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "Editorial: “City ridership on buses rose 6% after fares were lowered; therefore lower fares alone caused the increase.” Which fact would most undermine this causal claim?",
+      "choices": [
+        "The city printed new route maps using clearer colours.",
+        "A few riders switched from monthly passes to single tickets.",
+        "Several new employers opened offices along major bus routes the same month fares dropped.",
+        "Bus drivers received refresher training on safety rules."
+      ],
+      "answer": "Several new employers opened offices along major bus routes the same month fares dropped.",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Two classmates disagree. Sam says, “We should start the project now so we avoid a last-minute rush.” Jordan says, “We should wait until we’ve seen next week’s lab results so we don’t redo work.” What is the most accurate description of their disagreement?",
+      "choices": [
+        "They disagree about who should be team leader.",
+        "They agree on both timing and strategy.",
+        "They disagree about whether the project is worth doing.",
+        "They disagree about timing: acting early versus waiting for more information"
+      ],
+      "answer": "They disagree about timing: acting early versus waiting for more information",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "Statement: “Only members may borrow books from this shelf.” Kei is borrowing a book from the shelf. What can be properly inferred?",
+      "choices": [
+        "The shelf holds only fiction.",
+        "No inference about Kei’s membership follows logically from the statement alone",
+        "Kei dislikes digital books.",
+        "Kei is a member"
+      ],
+      "answer": "Kei is a member",
+      "hint": false
+    }
+  ]
+}

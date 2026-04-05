@@ -1,0 +1,140 @@
+{
+  "title": "Math — Algebra (expressions & equations)",
+  "subject": "math",
+  "learn_subject": "math",
+  "learn_section": "algebra-equations",
+  "scratchpad": true,
+  "created_at": "2026-03-27T14:05:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "Solve: 4k − 9 = 19",
+      "choices": [
+        "k = 7",
+        "k = 5",
+        "k = 8",
+        "k = 6"
+      ],
+      "answer": "k = 7",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "Which expression is equivalent to 6(x − 2)?",
+      "choices": [
+        "6x − 8",
+        "6x − 12",
+        "6x + 2",
+        "3x − 6"
+      ],
+      "answer": "6x − 12",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "In the sequence 5, 12, 19, 26, … what is the next term?",
+      "choices": [
+        "32",
+        "33",
+        "34",
+        "31"
+      ],
+      "answer": "33",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "Solve: m/3 + 4 = 11",
+      "choices": [
+        "m = 2",
+        "m = 18",
+        "m = 21",
+        "m = 15"
+      ],
+      "answer": "m = 21",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "If 2a + 5 = 3a − 1, what is a?",
+      "choices": [
+        "4",
+        "5",
+        "6",
+        "3"
+      ],
+      "answer": "6",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "The perimeter of a square is P centimetres. Which expression gives the side length?",
+      "choices": [
+        "P − 4",
+        "4P",
+        "P ÷ 4",
+        "P²"
+      ],
+      "answer": "P ÷ 4",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "Evaluate 7 − 2n when n = 5",
+      "choices": [
+        "−3",
+        "17",
+        "3",
+        "−17"
+      ],
+      "answer": "−3",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "A number is doubled and then 8 is added. The result is 34. What equation matches this story if x is the number?",
+      "choices": [
+        "2x + 8 = 34",
+        "2(x + 8) = 34",
+        "x + 2 + 8 = 34",
+        "2x − 8 = 34"
+      ],
+      "answer": "2x + 8 = 34",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Which value of t makes 3t + 1 < 13 true?",
+      "choices": [
+        "t = 5",
+        "t = 4",
+        "t = 3",
+        "t = 5.5"
+      ],
+      "answer": "t = 3",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "The rule for a pattern is “start at 1, then repeatedly multiply by 3 and add 1.” The first terms are 1, 4, 13, … What is the next term?",
+      "choices": [
+        "39",
+        "40",
+        "52",
+        "37"
+      ],
+      "answer": "40",
+      "hint": false
+    }
+  ]
+}
