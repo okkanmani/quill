@@ -182,7 +182,7 @@ def list_worksheets(student_name: str | None = None) -> list:
             rows = conn.execute(
                 """
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
-                       t.learn_subject, t.learn_section
+                       t.learn_subject, t.learn_section, t.last_score, t.last_total
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section,
@@ -190,18 +190,24 @@ def list_worksheets(student_name: str | None = None) -> list:
                            EXISTS (
                              SELECT 1 FROM results r
                              WHERE r.worksheet_id = w.id AND r.student = ?
-                           ) AS done
+                           ) AS done,
+                           (SELECT r.score FROM results r
+                            WHERE r.worksheet_id = w.id AND r.student = ?
+                            ORDER BY r.submitted_at DESC LIMIT 1) AS last_score,
+                           (SELECT r.total FROM results r
+                            WHERE r.worksheet_id = w.id AND r.student = ?
+                            ORDER BY r.submitted_at DESC LIMIT 1) AS last_total
                     FROM worksheets w
                 ) t
                 ORDER BY t.done ASC, t.sort_ts DESC, t.id DESC
                 """,
-                (student_name,),
+                (student_name, student_name, student_name),
             ).fetchall()
         else:
             rows = conn.execute(
                 """
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
-                       t.learn_subject, t.learn_section
+                       t.learn_subject, t.learn_section, t.last_score, t.last_total
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section,
@@ -209,7 +215,9 @@ def list_worksheets(student_name: str | None = None) -> list:
                            EXISTS (
                              SELECT 1 FROM results r
                              WHERE r.worksheet_id = w.id
-                           ) AS done
+                           ) AS done,
+                           CAST(NULL AS INTEGER) AS last_score,
+                           CAST(NULL AS INTEGER) AS last_total
                     FROM worksheets w
                 ) t
                 ORDER BY t.done ASC, t.sort_ts DESC, t.id DESC
@@ -231,6 +239,11 @@ def list_worksheets(student_name: str | None = None) -> list:
                     r["id"], r["learn_subject"], r["learn_section"]
                 )
             )
+            ls_ = r["last_score"]
+            lt_ = r["last_total"]
+            if ls_ is not None and lt_ is not None and int(lt_) > 0:
+                item["last_score"] = int(ls_)
+                item["last_total"] = int(lt_)
             out_list.append(item)
         return out_list
     finally:

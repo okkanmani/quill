@@ -1,7 +1,12 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import SubjectBadge, { formatSubjectLabel } from "./SubjectBadge";
-import { normalizeSubjectKey, subjectSortKey } from "../subjectUtils";
+import {
+  averagePercentAcrossDoneWorksheets,
+  isWorksheetDone,
+  normalizeSubjectKey,
+  subjectSortKey,
+} from "../subjectUtils";
 
 function groupWorksheets(worksheets) {
   const m = new Map();
@@ -44,6 +49,11 @@ export default function WorksheetsBySubject({
     <div className="flex flex-col gap-3">
       {groups.map(([subjectKey, items]) => {
         const isOpen = open.has(subjectKey);
+        const total = items.length;
+        const done = items.filter(isWorksheetDone).length;
+        const pct =
+          total > 0 ? Math.round((done / total) * 100) : 0;
+        const avgScore = averagePercentAcrossDoneWorksheets(items);
         return (
           <div
             key={subjectKey}
@@ -55,10 +65,24 @@ export default function WorksheetsBySubject({
               aria-expanded={isOpen}
               className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left bg-amber-200/90 hover:bg-amber-200 border-b border-amber-300/80 transition"
             >
-              <span className="font-bold text-amber-950 text-base">
-                {formatSubjectLabel(subjectKey)}
-                <span className="font-semibold text-amber-800/90 text-sm ml-2">
-                  ({items.length})
+              <span className="min-w-0 flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2">
+                <span className="font-bold text-amber-950 text-base">
+                  {formatSubjectLabel(subjectKey)}
+                </span>
+                <span className="font-semibold text-amber-800/90 text-sm tabular-nums">
+                  {done}/{total} done
+                  {total > 0 ? (
+                    <span className="text-amber-700/85 font-medium">
+                      {" "}
+                      · {pct}%
+                    </span>
+                  ) : null}
+                  {avgScore ? (
+                    <span className="text-amber-800 font-semibold">
+                      {" "}
+                      · avg {avgScore.avgPct}%
+                    </span>
+                  ) : null}
                 </span>
               </span>
               <span className="text-amber-900 text-sm font-bold shrink-0 tabular-nums">
@@ -82,9 +106,27 @@ export default function WorksheetsBySubject({
                           <p className="text-amber-900 font-semibold text-lg">
                             {ws.title}
                           </p>
-                          {ws.done === true || ws.done === 1 ? (
-                            <span className="shrink-0 inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-200">
-                              Done
+                          {isWorksheetDone(ws) ? (
+                            <span className="shrink-0 inline-flex items-center gap-2 flex-wrap justify-end">
+                              {typeof ws.last_score === "number" &&
+                              typeof ws.last_total === "number" &&
+                              ws.last_total > 0 ? (
+                                <span className="inline-flex items-baseline gap-x-4 text-sm font-bold text-emerald-950 tabular-nums">
+                                  <span className="shrink-0">Score:</span>
+                                  <span>
+                                    {ws.last_score}/{ws.last_total}
+                                  </span>
+                                  <span>
+                                    {Math.round(
+                                      (ws.last_score / ws.last_total) * 100,
+                                    )}
+                                    %
+                                  </span>
+                                </span>
+                              ) : null}
+                              <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-200">
+                                Done
+                              </span>
                             </span>
                           ) : null}
                         </div>
