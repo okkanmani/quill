@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { deleteWorksheet, getWorksheets, logout } from "../api";
+import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
+import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import WorksheetsBySubject from "../components/WorksheetsBySubject";
 
 export default function AdminWorksheets() {
@@ -52,13 +54,15 @@ export default function AdminWorksheets() {
         navLinks={ADMIN_MAIN_NAV}
         trailing={
           <span className="text-amber-800 text-sm font-medium">
-            Admin · {localStorage.getItem("studentName") || "—"}
+            Admin · {formatAdminHeaderTrail()}
           </span>
         }
         onLogout={handleLogout}
       />
 
       <div className="max-w-3xl">
+        <AdminStudentSwitcher />
+
         {loading && <p className="text-amber-600">Loading...</p>}
         {error && <p className="text-red-500">{error}</p>}
 

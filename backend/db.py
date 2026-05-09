@@ -73,6 +73,7 @@ def init_schema() -> None:
             """
             CREATE TABLE IF NOT EXISTS admins (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT,
                 password_hash TEXT NOT NULL
             );
             CREATE TABLE IF NOT EXISTS students (
@@ -85,6 +86,22 @@ def init_schema() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_students_name ON students(name);
             """
+        )
+        admin_cols = {row[1] for row in conn.execute("PRAGMA table_info(admins)")}
+        if "name" not in admin_cols:
+            conn.execute("ALTER TABLE admins ADD COLUMN name TEXT")
+        orphans = conn.execute(
+            """
+            SELECT id FROM admins
+            WHERE name IS NULL OR TRIM(name) = ''
+            ORDER BY id
+            """
+        ).fetchall()
+        for i, row in enumerate(orphans):
+            nm = "admin" if i == 0 else f"admin_{row['id']}"
+            conn.execute("UPDATE admins SET name = ? WHERE id = ?", (nm, row["id"]))
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_admins_name ON admins(name)"
         )
         from auth_users import migrate_legacy_from_auth_json
 

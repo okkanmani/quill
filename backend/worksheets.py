@@ -155,22 +155,44 @@ def seed_worksheets_from_json_if_empty() -> bool:
     return False
 
 
-def merge_worksheets_from_json_files() -> None:
-    """Upsert each worksheet that has a JSON file; other rows in the DB are unchanged."""
+def _worksheet_subject_key(data: dict) -> str:
+    s = data.get("subject", "general")
+    return str(s).strip().lower() or "general"
+
+
+def merge_worksheets_from_json_files(
+    subjects: frozenset[str] | None = None,
+) -> dict[str, object]:
+    """Upsert each worksheet that has a JSON file; other rows in the DB are unchanged.
+
+    If ``subjects`` is set, only merge files whose worksheet ``subject`` (normalized)
+    is in that set. Returns counts for logging and cron responses.
+    """
     conn = db.connect()
+    merged_ids: list[str] = []
+    skipped_count = 0
     try:
         for path in sorted(WORKSHEETS_DIR.glob("*.json")):
             with open(path) as f:
                 data = json.load(f)
+            if subjects is not None and _worksheet_subject_key(data) not in subjects:
+                skipped_count += 1
+                continue
             ws_id = path.stem
             conn.execute("DELETE FROM worksheets WHERE id = ?", (ws_id,))
             _insert_worksheet(conn, ws_id, data, path)
+            merged_ids.append(ws_id)
         conn.commit()
     except Exception:
         conn.rollback()
         raise
     finally:
         conn.close()
+    return {
+        "merged_count": len(merged_ids),
+        "skipped_count": skipped_count,
+        "merged_ids": merged_ids,
+    }
 
 
 def list_worksheets(student_name: str | None = None) -> list:

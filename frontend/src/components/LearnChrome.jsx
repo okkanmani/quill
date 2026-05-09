@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api";
+import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV, STUDENT_MAIN_NAV } from "../adminNav";
 import AppHeader from "./AppHeader";
 
@@ -10,7 +11,6 @@ export default function LearnChrome({ onBack, children }) {
   const navigate = useNavigate();
   const isAdmin = localStorage.getItem("role") === "admin";
   const name = localStorage.getItem("name");
-  const studentName = localStorage.getItem("studentName");
 
   async function handleLogout() {
     await logout();
@@ -27,7 +27,7 @@ export default function LearnChrome({ onBack, children }) {
             className="!mb-0"
             trailing={
               <span className="text-amber-800 text-sm font-medium">
-                {isAdmin ? `Admin · ${studentName || "—"}` : `Hi, ${name}!`}
+                {isAdmin ? `Admin · ${formatAdminHeaderTrail()}` : `Hi, ${name}!`}
               </span>
             }
             onLogout={handleLogout}

@@ -1,0 +1,128 @@
+{
+  "title": "Science — Astronomy (Earth, Moon, & solar system)",
+  "subject": "science",
+  "scratchpad": false,
+  "created_at": "2026-05-09T12:15:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "About how long does Earth take to complete one full rotation on its axis?",
+      "choices": ["About 24 hours", "About 28 days", "About 365 days", "About 12 hours"],
+      "answer": "About 24 hours",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "What is the main reason Earth has seasons through the year?",
+      "choices": [
+        "The Moon blocks the Sun each month",
+        "Earth’s distance to the Sun is always the same",
+        "Earth’s spin axis is tilted as we orbit the Sun",
+        "The Sun moves in a small circle around Earth"
+      ],
+      "answer": "Earth’s spin axis is tilted as we orbit the Sun",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "Which planet is the largest in our solar system?",
+      "choices": ["Saturn", "Earth", "Jupiter", "Neptune"],
+      "answer": "Jupiter",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "A light-year is best described as —",
+      "choices": [
+        "how long it takes sound to cross the solar system",
+        "the distance light travels through space in one year",
+        "the radius of the Milky Way galaxy",
+        "the time for Jupiter to orbit the Sun once"
+      ],
+      "answer": "the distance light travels through space in one year",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "We see lunar phases (crescent, quarter, full) mainly because —",
+      "choices": [
+        "the Moon produces its own changing colours",
+        "the Moon’s orbit lines up so different portions of its sunlit side face Earth",
+        "Earth’s shadow covers the Moon every night",
+        "clouds on Earth reflect moonlight unevenly"
+      ],
+      "answer": "the Moon’s orbit lines up so different portions of its sunlit side face Earth",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "The four inner, rocky planets of our solar system are —",
+      "choices": [
+        "Jupiter, Saturn, Uranus, Neptune",
+        "Mercury, Venus, Earth, Mars",
+        "Mercury, Mars, Jupiter, Saturn",
+        "Venus, Earth, Uranus, Neptune"
+      ],
+      "answer": "Mercury, Venus, Earth, Mars",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "By mass, the Sun is composed mostly of —",
+      "choices": [
+        "iron and nickel",
+        "oxygen and nitrogen",
+        "hydrogen and helium",
+        "carbon dioxide and methane"
+      ],
+      "answer": "hydrogen and helium",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "In our solar system, the main asteroid belt is found —",
+      "choices": [
+        "between Earth and the Moon",
+        "between Mars and Jupiter",
+        "beyond Neptune",
+        "inside the Sun’s core"
+      ],
+      "answer": "between Mars and Jupiter",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "We usually see the same familiar side of the Moon from Earth because —",
+      "choices": [
+        "the Moon does not spin at all",
+        "the Moon’s rotation period matches its orbital period around Earth",
+        "clouds on Earth block the far side",
+        "the Sun only illuminates one hemisphere forever"
+      ],
+      "answer": "the Moon’s rotation period matches its orbital period around Earth",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "Compared with cooler red stars, hotter stars often appear more bluish because —",
+      "choices": [
+        "blue paint was applied in space",
+        "their shorter wavelengths correspond to higher surface temperatures",
+        "they are always smaller than red stars",
+        "Earth’s atmosphere removes only blue light"
+      ],
+      "answer": "their shorter wavelengths correspond to higher surface temperatures",
+      "hint": false
+    }
+  ]
+}

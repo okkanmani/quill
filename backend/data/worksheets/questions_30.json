@@ -1,0 +1,90 @@
+{
+  "title": "Math — Algebra (linear relationships)",
+  "subject": "math",
+  "learn_subject": "math",
+  "learn_section": "algebra-equations",
+  "scratchpad": true,
+  "created_at": "2026-05-09T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "Solve: 5x + 7 = 32",
+      "choices": ["x = 4", "x = 5", "x = 6", "x = 7"],
+      "answer": "x = 5",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "Which expression is equivalent to 3(2y + 4)?",
+      "choices": ["5y + 7", "6y + 12", "6y + 7", "3y + 4"],
+      "answer": "6y + 12",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "In the sequence 2, 8, 14, 20, … the same number is added each time. What is the next term?",
+      "choices": ["24", "26", "28", "30"],
+      "answer": "26",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "Solve: n/4 − 3 = 5",
+      "choices": ["n = 8", "n = 20", "n = 28", "n = 32"],
+      "answer": "n = 32",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "If 4b − 1 = 2b + 9, what is b?",
+      "choices": ["3", "4", "5", "6"],
+      "answer": "5",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "The length of a rectangle is L metres and the width is W metres. Which expression gives the perimeter?",
+      "choices": ["L × W", "L + W", "2L + 2W", "L² + W²"],
+      "answer": "2L + 2W",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "Evaluate 3m − 8 when m = −2",
+      "choices": ["−14", "14", "−2", "2"],
+      "answer": "−14",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "A number is divided by 2 and then 3 is added. The result is 10. Which equation matches this if x is the number?",
+      "choices": ["x/2 + 3 = 10", "x/3 + 2 = 10", "2x + 3 = 10", "(x + 3)/2 = 10"],
+      "answer": "x/2 + 3 = 10",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Which value of p makes 2p − 5 ≤ 11 true?",
+      "choices": ["p = 10", "p = 9", "p = 8", "p = 12"],
+      "answer": "p = 8",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "The rule is: start at 3, then repeatedly multiply by 2 and subtract 1. The first terms are 3, 5, 9, 17, … What is the next term?",
+      "choices": ["31", "33", "35", "30"],
+      "answer": "33",
+      "hint": false
+    }
+  ]
+}

@@ -25,7 +25,8 @@ def migrate_legacy_from_auth_json(conn) -> None:
     if isinstance(admin_hash_str, bytes):
         admin_hash_str = admin_hash_str.decode()
     cur = conn.execute(
-        "INSERT INTO admins (password_hash) VALUES (?)", (admin_hash_str,)
+        "INSERT INTO admins (name, password_hash) VALUES (?, ?)",
+        ("admin", admin_hash_str),
     )
     admin_id = cur.lastrowid
     student_name = data["student"]["name"].strip()
@@ -84,11 +85,16 @@ def authenticate_admin_for_student(student_name: str, admin_password: str) -> di
     return None
 
 
-def add_admin(password: str) -> int:
+def add_admin(name: str, password: str) -> int:
+    name = name.strip()
+    if not name:
+        raise ValueError("admin name required")
     h = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
     conn = db.connect()
     try:
-        cur = conn.execute("INSERT INTO admins (password_hash) VALUES (?)", (h,))
+        cur = conn.execute(
+            "INSERT INTO admins (name, password_hash) VALUES (?, ?)", (name, h)
+        )
         rid = cur.lastrowid
         conn.commit()
         return rid
@@ -97,6 +103,75 @@ def add_admin(password: str) -> int:
         raise
     finally:
         conn.close()
+
+
+def authenticate_admin_by_name(name: str, password: str) -> dict | None:
+    """Return {admin_id, admin_name} or None."""
+    name = name.strip()
+    if not name or not password:
+        return None
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT id, name, password_hash FROM admins WHERE name = ? COLLATE NOCASE",
+            (name,),
+        ).fetchone()
+    finally:
+        conn.close()
+    if not row:
+        return None
+    if bcrypt.checkpw(password.encode(), row["password_hash"].encode()):
+        return {"admin_id": row["id"], "admin_name": row["name"]}
+    return None
+
+
+def get_admin_name(admin_id: int) -> str | None:
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT name FROM admins WHERE id = ?", (admin_id,)
+        ).fetchone()
+    finally:
+        conn.close()
+    return row["name"] if row else None
+
+
+def list_students_for_admin(admin_id: int) -> list[dict]:
+    """Return [{id, name}, ...] for the given admin (no password fields)."""
+    conn = db.connect()
+    try:
+        rows = conn.execute(
+            """
+            SELECT id, name FROM students
+            WHERE admin_id = ?
+            ORDER BY name COLLATE NOCASE
+            """,
+            (admin_id,),
+        ).fetchall()
+        return [{"id": r["id"], "name": r["name"]} for r in rows]
+    finally:
+        conn.close()
+
+
+def get_student_by_admin_and_name(admin_id: int, name: str) -> dict | None:
+    """Return {id, name} if this student belongs to the admin."""
+    name = name.strip()
+    if not name:
+        return None
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            """
+            SELECT id, name FROM students
+            WHERE admin_id = ? AND name = ?
+            """,
+            (admin_id, name),
+        ).fetchone()
+    finally:
+        conn.close()
+    if not row:
+        return None
+    return {"id": row["id"], "name": row["name"]}
 
 
 def add_student(admin_id: int, name: str, password: str) -> int:

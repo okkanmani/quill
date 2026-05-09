@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import StudentHome from "./pages/StudentHome";
 import AdminHome from "./pages/AdminHome";
 import AdminWorksheets from "./pages/AdminWorksheets";
+import AdminStudents from "./pages/AdminStudents";
 import Worksheet from "./pages/Worksheet";
 import LearnHub from "./pages/LearnHub";
 import LearnSubject from "./pages/LearnSubject";
@@ -64,6 +65,15 @@ export default function App() {
           element={
             <ProtectedRoute role="admin">
               <AdminWorksheets />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/students"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminStudents />
             </ProtectedRoute>
           }
         />

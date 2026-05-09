@@ -1,0 +1,95 @@
+{
+  "title": "Math — Algebra (equations & expressions)",
+  "subject": "math",
+  "learn_subject": "math",
+  "learn_section": "algebra-equations",
+  "scratchpad": true,
+  "created_at": "2026-03-30T12:05:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "Solve: 5x − 3 = 2x + 12",
+      "choices": ["x = 4", "x = 6", "x = 5", "x = 3"],
+      "answer": "x = 5",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "Solve: 2(n − 7) = 10",
+      "choices": ["n = 3", "n = 12", "n = 10", "n = 17"],
+      "answer": "n = 12",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "Which expression is equivalent to 8y − 3y + 2y?",
+      "choices": ["13y", "3y", "7y", "y"],
+      "answer": "7y",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "If 4p + 1 = 21, what is p?",
+      "choices": ["p = 6", "p = 4", "p = 5", "p = 5.5"],
+      "answer": "p = 5",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "The rule for a sequence is: start at 2, then add 5 each time. What is the 5th term?",
+      "choices": ["22", "20", "27", "17"],
+      "answer": "22",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "Solve: z/4 − 1 = 5",
+      "choices": ["z = 20", "z = 24", "z = 16", "z = 22"],
+      "answer": "z = 24",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "Evaluate 9 − 4m when m = 2",
+      "choices": ["17", "1", "−1", "4"],
+      "answer": "1",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "A number is tripled and 4 is subtracted. The result is 17. Which equation matches this if x is the number?",
+      "choices": [
+        "3x + 4 = 17",
+        "3x − 4 = 17",
+        "x/3 − 4 = 17",
+        "3(x − 4) = 17"
+      ],
+      "answer": "3x − 4 = 17",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Which value of w makes 2w + 5 < 15 true?",
+      "choices": ["w = 6", "w = 5", "w = 4", "w = 5.5"],
+      "answer": "w = 4",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "Solve: 7 − 3t = 1",
+      "choices": ["t = 3", "t = −2", "t = 2", "t = 8/3"],
+      "answer": "t = 2",
+      "hint": false
+    }
+  ]
+}

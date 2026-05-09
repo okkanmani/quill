@@ -1,0 +1,90 @@
+{
+  "title": "Math — Geometry (angles, area, & solid figures)",
+  "subject": "math",
+  "learn_subject": "math",
+  "learn_section": "geometry-measurement",
+  "scratchpad": true,
+  "created_at": "2026-05-09T12:05:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "A circle has radius 5 cm. Use π ≈ 3.14. What is the circumference?",
+      "choices": ["15.7 cm", "31.4 cm", "78.5 cm", "62.8 cm"],
+      "answer": "31.4 cm",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "A triangle has base 8 cm and height 6 cm. What is its area?",
+      "choices": ["14 cm²", "24 cm²", "48 cm²", "96 cm²"],
+      "answer": "24 cm²",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "What is the sum of the interior angles of a hexagon?",
+      "choices": ["540°", "720°", "900°", "360°"],
+      "answer": "720°",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "A square has side length 6 cm. What is its area?",
+      "choices": ["12 cm²", "24 cm²", "36 cm²", "72 cm²"],
+      "answer": "36 cm²",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "An angle measures 35°. What is the measure of its complement?",
+      "choices": ["55°", "65°", "145°", "125°"],
+      "answer": "55°",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "Two parallel lines are cut by a transversal. One alternate interior angle measures 70°. What is the measure of the other alternate interior angle?",
+      "choices": ["20°", "70°", "110°", "180°"],
+      "answer": "70°",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "A rectangular prism is 4 cm × 5 cm × 3 cm. What is its volume?",
+      "choices": ["60 cm³", "47 cm³", "26 cm³", "34 cm³"],
+      "answer": "60 cm³",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "On a map, 1 cm represents 50 m in real life. A path on the map is 4 cm long. How long is the real path?",
+      "choices": ["200 m", "12.5 m", "150 m", "250 m"],
+      "answer": "200 m",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Two angles are supplementary. One angle is twice as large as the other. What is the measure of the smaller angle?",
+      "choices": ["45°", "60°", "72°", "90°"],
+      "answer": "60°",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "A cube has edges of length 4 cm. What is the total surface area of the cube?",
+      "choices": ["64 cm²", "96 cm²", "128 cm²", "16 cm²"],
+      "answer": "96 cm²",
+      "hint": false
+    }
+  ]
+}

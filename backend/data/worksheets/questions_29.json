@@ -1,0 +1,138 @@
+{
+  "title": "Science — Ecosystems & energy flow",
+  "subject": "science",
+  "scratchpad": false,
+  "created_at": "2026-03-30T12:10:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "In most terrestrial food chains, which type of organism captures energy from sunlight and makes food?",
+      "choices": [
+        "Decomposer",
+        "Producer (such as a green plant)",
+        "Top carnivore",
+        "Herbivore only"
+      ],
+      "answer": "Producer (such as a green plant)",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "What is the main process plants use to convert light energy into chemical energy stored in sugars?",
+      "choices": [
+        "Respiration",
+        "Photosynthesis",
+        "Fermentation",
+        "Evaporation"
+      ],
+      "answer": "Photosynthesis",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "A rabbit eats grass. In this interaction, the rabbit is acting as a —",
+      "choices": [
+        "producer",
+        "primary consumer (herbivore)",
+        "decomposer",
+        "sun"
+      ],
+      "answer": "primary consumer (herbivore)",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "Why is energy often drawn as a pyramid when moving through trophic levels?",
+      "choices": [
+        "Because each level usually loses a large share of energy as heat and life processes, so less is available for the next level",
+        "Because predators are always smaller than prey",
+        "Because producers weigh the most in every ecosystem",
+        "Because decomposers sit at the top"
+      ],
+      "answer": "Because each level usually loses a large share of energy as heat and life processes, so less is available for the next level",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "Fungi and bacteria that break down dead organisms and recycle nutrients are called —",
+      "choices": [
+        "producers",
+        "consumers",
+        "decomposers",
+        "pollinators"
+      ],
+      "answer": "decomposers",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "Which pair best describes a *habitat* versus a *population*?",
+      "choices": [
+        "Habitat: one organism; population: the whole biosphere",
+        "Habitat: where a species lives; population: all members of one species in an area",
+        "Habitat: only water; population: only land animals",
+        "They mean the same thing in ecology"
+      ],
+      "answer": "Habitat: where a species lives; population: all members of one species in an area",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "In a pond, algae are eaten by small fish, which are eaten by larger fish, which are eaten by herons. If pollution kills most of the algae, what is the most likely short-term effect?",
+      "choices": [
+        "Herons immediately produce more algae",
+        "Energy and matter available to higher levels drop because the base of the food chain is weakened",
+        "Decomposers disappear completely",
+        "The sun stops providing energy to the pond"
+      ],
+      "answer": "Energy and matter available to higher levels drop because the base of the food chain is weakened",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "Which is an example of *competition* between organisms?",
+      "choices": [
+        "Two species of birds using the same nesting sites when suitable trees are scarce",
+        "A bee visiting a flower for nectar while pollen sticks to its body",
+        "A worm breaking down fallen leaves",
+        "A plant making sugar using sunlight"
+      ],
+      "answer": "Two species of birds using the same nesting sites when suitable trees are scarce",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "In a food *web* (compared with a simple chain), multiple feeding links show that —",
+      "choices": [
+        "each species eats only one other species",
+        "species may have more than one food source or predator, so ecosystems are interconnected",
+        "producers do not matter",
+        "energy increases at every level without limit"
+      ],
+      "answer": "species may have more than one food source or predator, so ecosystems are interconnected",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "Which change is most clearly an *adaptation* shaped by natural selection over generations?",
+      "choices": [
+        "A bear learning to open a cooler at a campsite",
+        "A fox having thick fur in a cold-climate population where that trait improves survival and reproduction",
+        "A tree losing leaves in autumn because of shorter daylight today",
+        "A person wearing a coat when it is cold"
+      ],
+      "answer": "A fox having thick fur in a cold-climate population where that trait improves survival and reproduction",
+      "hint": false
+    }
+  ]
+}

@@ -18,14 +18,23 @@ def create_student_token(student_id: int, name: str) -> str:
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def create_admin_token(admin_id: int, student_id: int, student_name: str) -> str:
+def create_admin_token(
+    admin_id: int,
+    student_id: int | None,
+    student_name: str | None,
+    *,
+    admin_name: str | None = None,
+) -> str:
     payload = {
         "role": "admin",
         "admin_id": admin_id,
-        "student_id": student_id,
-        "student_name": student_name,
         "exp": datetime.now(timezone.utc) + timedelta(days=TOKEN_EXPIRE_DAYS),
     }
+    if admin_name:
+        payload["admin_name"] = admin_name
+    if student_id is not None and student_name:
+        payload["student_id"] = student_id
+        payload["student_name"] = student_name
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -42,5 +51,8 @@ def context_student_name(payload: dict) -> str:
     if role == "student":
         return payload["name"]
     if role == "admin":
-        return payload["student_name"]
+        sn = payload.get("student_name")
+        if not sn:
+            raise ValueError("admin token has no student context")
+        return sn
     raise ValueError("invalid token role")

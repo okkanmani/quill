@@ -13,13 +13,31 @@ function authHeaders() {
 
 // --- Auth ---
 
-export async function loginAdmin({ studentName, password }) {
+export async function loginAdmin({ studentName, adminName, password }) {
+  const body = { password };
+  if (studentName) body.student_name = studentName;
+  if (adminName) body.admin_name = adminName;
   const res = await fetch(`${BASE_URL}/auth/admin/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ student_name: studentName, password }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error("Invalid admin login");
+  return res.json();
+}
+
+export async function signupAdmin({ name, password }) {
+  const res = await fetch(`${BASE_URL}/auth/admin/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Sign up failed";
+    throw new Error(msg);
+  }
   return res.json();
 }
 
@@ -48,6 +66,7 @@ export async function logout() {
   localStorage.removeItem("role");
   localStorage.removeItem("name");
   localStorage.removeItem("studentName");
+  localStorage.removeItem("adminName");
 }
 
 export async function getMe() {
@@ -100,6 +119,40 @@ export async function getResults() {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to fetch results");
+  return res.json();
+}
+
+export async function listAdminStudents() {
+  const res = await fetch(`${BASE_URL}/admin/students`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to list students");
+  return res.json();
+}
+
+export async function createAdminStudent({ name, password }) {
+  const res = await fetch(`${BASE_URL}/admin/students`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ name, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg =
+      typeof d === "string" ? d : Array.isArray(d) ? d.map((x) => x.msg).join(" ") : "Failed to create student";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function switchAdminStudent(studentName) {
+  const res = await fetch(`${BASE_URL}/admin/session/student`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ student_name: studentName }),
+  });
+  if (!res.ok) throw new Error("Failed to switch student");
   return res.json();
 }
 

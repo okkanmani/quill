@@ -9,9 +9,13 @@ primary_region = 'yyz'
 [build]
 
 # Persistent SQLite at /data/app.db. Worksheets load from JSON only when DB is empty (first deploy).
-# To add new worksheet JSON after that: run on the machine:
-#   .venv/bin/python seed_worksheets.py --merge
+# To add new worksheet JSON after that, SSH in and run from /app with the image venv
+# (plain `python` is often wrong — no deps, wrong cwd → ModuleNotFoundError):
+#   cd /app && QUILL_DATA_DIR=/data /app/.venv/bin/python seed_worksheets.py --merge
 # Or set secret MERGE_WORKSHEETS_JSON_ON_START=1 for one deploy, then remove it.
+# Scheduled jobs: set fly secret QUILL_CRON_SECRET, header X-Quill-Cron-Key: <secret>
+#   POST /cron/merge-worksheets — merge worksheet JSON from disk; optional ?subjects=math,english
+#     Script: ./scripts/cron_merge_worksheets.sh
 # One-time: fly volumes create quill_data --region yyz --size 1
 [mounts]
   source = "quill_data"
