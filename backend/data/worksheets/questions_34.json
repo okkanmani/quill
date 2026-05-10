@@ -1,0 +1,116 @@
+{
+  "title": "Math — Perimeter & area (squares, rectangles, circles, triangles & quadrilaterals)",
+  "subject": "math",
+  "learn_subject": "math",
+  "learn_section": "geometry-measurement",
+  "scratchpad": true,
+  "created_at": "2026-05-09T18:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "A square has side length 7 cm. What is its perimeter?",
+      "choices": ["14 cm", "21 cm", "28 cm", "49 cm"],
+      "answer": "28 cm",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "A square has side length 6 cm. What is its area?",
+      "choices": ["12 cm²", "24 cm²", "36 cm²", "72 cm²"],
+      "answer": "36 cm²",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "A rectangle is 5 m long and 11 m wide. What is its perimeter?",
+      "choices": ["16 m", "32 m", "55 m", "110 m"],
+      "answer": "32 m",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "A rectangle has length 8 cm and width 3.5 cm. What is its area?",
+      "choices": ["11.5 cm²", "23 cm²", "28 cm²", "56 cm²"],
+      "answer": "28 cm²",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "A circle has radius 15 cm. Use π ≈ 3.14. What is the circumference?",
+      "choices": ["47.1 cm", "94.2 cm", "706.5 cm", "188.4 cm"],
+      "answer": "94.2 cm",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "A circle has diameter 10 cm. Use π ≈ 3.14. What is the area of the circle?",
+      "choices": ["31.4 cm²", "78.5 cm²", "157 cm²", "314 cm²"],
+      "answer": "78.5 cm²",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "A triangle has base 14 cm and height 9 cm. What is its area?",
+      "choices": ["23 cm²", "46 cm²", "63 cm²", "126 cm²"],
+      "answer": "63 cm²",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "A parallelogram has base 7 cm. The perpendicular height to that base is 6 cm. What is its area?",
+      "choices": ["13 cm²", "26 cm²", "42 cm²", "84 cm²"],
+      "answer": "42 cm²",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "A trapezoid has parallel sides of length 4 cm and 10 cm. The perpendicular distance (height) between them is 5 cm. What is its area?",
+      "choices": ["14 cm²", "25 cm²", "35 cm²", "50 cm²"],
+      "answer": "35 cm²",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "A rhombus has diagonals of length 8 cm and 6 cm. What is its area? (Use: area = ½ × d₁ × d₂)",
+      "choices": ["14 cm²", "24 cm²", "48 cm²", "96 cm²"],
+      "answer": "24 cm²",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "A *regular polygon* has all sides equal and all interior angles equal. Which quadrilateral is always regular?",
+      "choices": [
+        "Any rectangle",
+        "Any rhombus",
+        "A square",
+        "Any trapezoid"
+      ],
+      "answer": "A square",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "Two rectangles can have the same perimeter but different areas. Rectangle A is 2 cm × 10 cm. Rectangle B has the same 24 cm perimeter but is 5 cm × 7 cm. Which rectangle has the greater area?",
+      "choices": [
+        "Rectangle A (20 cm²)",
+        "Rectangle B (35 cm²)",
+        "They have the same area",
+        "Not enough information"
+      ],
+      "answer": "Rectangle B (35 cm²)",
+      "hint": false
+    }
+  ]
+}
