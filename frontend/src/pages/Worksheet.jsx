@@ -105,6 +105,7 @@ export default function Worksheet() {
     );
   };
 
+  function renderInput(q) {
     if (q.type === "multiple_choice") {
       return (
         <div className="flex flex-col gap-2 mt-3">
