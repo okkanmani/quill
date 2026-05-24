@@ -3,7 +3,7 @@ import { useRef, useEffect, useState } from "react";
 const BG = "#000000";
 const INK = "#ffffff";
 
-export default function Drawpad() {
+export default function Drawpad({ showHeading = true } = {}) {
   const canvasRef = useRef(null);
   const drawing = useRef(false);
   const lastPos = useRef(null);
@@ -73,8 +73,14 @@ export default function Drawpad() {
 
   return (
     <div className="mt-4">
-      <div className="flex justify-between items-center mb-1 gap-2">
-        <span className="text-amber-500 text-xs">Scratch pad</span>
+      <div
+        className={`flex items-center mb-1 gap-2 ${
+          showHeading ? "justify-between" : "justify-end"
+        }`}
+      >
+        {showHeading && (
+          <span className="text-amber-500 text-xs">Scratch pad</span>
+        )}
         <div className="flex items-center gap-3 shrink-0">
           <button
             type="button"
