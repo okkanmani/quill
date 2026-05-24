@@ -14,10 +14,10 @@ export default function Worksheet() {
   const [score, setScore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [scratchpadOpen, setScratchpadOpen] = useState(true);
+  const [scratchpadsVisible, setScratchpadsVisible] = useState(true);
 
   useEffect(() => {
-    setScratchpadOpen(true);
+    setScratchpadsVisible(true);
     setLoading(true);
     getWorksheet(id)
       .then((data) => {
@@ -88,6 +88,9 @@ export default function Worksheet() {
         <p className="text-amber-900 font-medium mb-3">
           {index + 1}. {q.prompt}
         </p>
+        {scratchpadAllowed && scratchpadsVisible && (
+          <Drawpad key={`scratch-${id}-${q.id}`} showHeading={false} />
+        )}
         {renderInput(q)}
         {submitted && !isCorrect(q) && (
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50/50 p-3 text-sm space-y-2">
@@ -198,37 +201,34 @@ export default function Worksheet() {
         <div className="mb-6 rounded-2xl border border-amber-200 bg-white px-4 py-3 shadow-sm">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-amber-900">Scratch pad</p>
+              <p className="text-sm font-medium text-amber-900">Scratch pads</p>
               <p className="text-xs text-amber-600 mt-0.5">
-                One shared space for the whole worksheet. Toggle off for more room.
+                Each question has its own space to jot work. Toggle off to hide all
+                of them at once.
               </p>
             </div>
             <button
               type="button"
               role="switch"
-              aria-checked={scratchpadOpen}
+              aria-checked={scratchpadsVisible}
               aria-label={
-                scratchpadOpen ? "Hide scratch pad" : "Show scratch pad"
+                scratchpadsVisible
+                  ? "Hide scratch pads below every question"
+                  : "Show scratch pads below every question"
               }
-              onClick={() => setScratchpadOpen((v) => !v)}
+              onClick={() => setScratchpadsVisible((v) => !v)}
               className={`relative h-9 w-14 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 ${
-                scratchpadOpen ? "bg-amber-500" : "bg-amber-200"
+                scratchpadsVisible ? "bg-amber-500" : "bg-amber-200"
               }`}
             >
               <span
                 className={`absolute top-1 left-1 block h-7 w-7 rounded-full bg-white shadow transition-transform ${
-                  scratchpadOpen ? "translate-x-5" : "translate-x-0"
+                  scratchpadsVisible ? "translate-x-5" : "translate-x-0"
                 }`}
                 aria-hidden
               />
             </button>
           </div>
-        </div>
-      )}
-
-      {scratchpadAllowed && scratchpadOpen && (
-        <div className="mb-8 rounded-2xl border border-amber-200 bg-white p-4 shadow-sm">
-          <Drawpad key={`scratch-${id}`} showHeading={false} />
         </div>
       )}
 
