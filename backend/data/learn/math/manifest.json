@@ -24,7 +24,7 @@
       "id": "data",
       "title": "Data",
       "sections": [
-        { "id": "data-graphs", "title": "Graphs & data", "file": "data-graphs.md" },
+        { "id": "data-graphs", "title": "Graphs & data analysis", "file": "data-graphs.md" },
         { "id": "data-probability", "title": "Probability", "file": "probability.md" }
       ]
     },

@@ -1,0 +1,148 @@
+{
+  "title": "Graphs & data — reading tables & charts",
+  "subject": "general",
+  "scratchpad": true,
+  "created_at": "2026-05-13T15:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "A student council polled lunch votes: Pasta 54, Taco 71, Sandwich 38, Salad 47.\nWhich choice was **most frequent**?",
+      "choices": ["Sandwich", "Taco", "Pasta", "Salad"],
+      "answer": "Taco",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "Weekly bike trips recorded Monday through Friday: 5, 7, 2, 4, 12 trips.\nCalculate the **mean** (average) trips across those five days.",
+      "choices": ["6", "30", "5", "14"],
+      "answer": "6",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "The same five readings: 5, 7, 2, 4, 12.\nSorted order: 2, 4, 5, 7, 12.\nThe **median** is which value?",
+      "choices": ["4", "5", "7", "12"],
+      "answer": "5",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "A line graph tracks midday °C Monday–Friday:\nMon 18°, Tue 20°, Wed 26°, Thu 29°, Fri 28°.\nWhich **one-day change** warmed the fastest?",
+      "choices": ["Mon→Tue (+2)", "Tue→Wed (+6)", "Wed→Thu (+3)", "Thu→Fri (−1)"],
+      "answer": "Tue→Wed (+6)",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "A pictograph’s key: one oak leaf drawing = eight seedlings pledged.\nThe Oak Grove row draws **exactly two full oak leaves plus one clearly half-sized leaf.**\nHow many seedlings?",
+      "choices": ["28", "20", "16", "12"],
+      "answer": "20",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "Two posters both cite cafeteria ratings near **93% happy**.\nPoster A graphs bars stretching from a **90% baseline** topping at **93%.**\nPoster B graphs from **0%** up to **93%.**\nReading the labelled percentages honestly, why might Poster **A mislead careless viewers**?",
+      "choices": [
+        "Because truncating vertical axes can inflate how dramatic small wins look visually",
+        "Because Poster B forbids quoting numbers",
+        "Because bar charts cannot show percentages ever",
+        "Because Poster A secretly measures happiness in metres"
+      ],
+      "answer": "Because truncating vertical axes can inflate how dramatic small wins look visually",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "You want to compare **April rainfall THIS year versus LAST year** across **five named cities**, each plotted along the horizontal axis.\nWhich plan matches common classroom practice?",
+      "choices": [
+        "Separate bars (or clustered bars) pairing the two April totals beside each city",
+        "Pie charts with wedges labelled “happiness percentage” unrelated to rain",
+        "Line graph connecting alphabetical city names pretending they behave like clocks",
+        "Dot plot numbering countries from 1–5 only"
+      ],
+      "answer": "Separate bars (or clustered bars) pairing the two April totals beside each city",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "Halftime tally (210 fans total): Cheer 126, Chill 54, Wander 30 near concessions.\n**Simplified fraction** cheering among **all** polled fans?",
+      "choices": ["3/7", "2/5", "3/5", "9/21"],
+      "answer": "3/5",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Score bins from a graded lab (students per interval):\n\n• 71–75 marks → 28 students\n• 76–80 marks → 31 students\n• 81–85 marks → 36 students\n• 86–90 marks → 24 students\n\nWhich interval holds the **mode class** (“most crowded bin”)?",
+      "choices": ["71–75", "76–80", "81–85", "86–90"],
+      "answer": "81–85",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "School clubs Monday signup tallies:\n\n• Robotics: 48\n• Ecology: 61\n• Drama: 53\n• Chess: 43\n\nHow many **more Ecology than Robotics** students signed?",
+      "choices": ["13", "9", "107", "11"],
+      "answer": "13",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "Seven friends quiz scores (percents):\n88, 92, 92, 93, 93, 93, 94.\nWhat is the **mode**?",
+      "choices": ["92", "93", "94", "Both 92 and 93 tie"],
+      "answer": "93",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "**Figure A — bar chart excerpt:** Classroom Phoenix averages Quiz A = 82, Quiz B = 78. Classroom Nova averages Quiz A = 87, Quiz B = 71.\nFor **Nova**, how many percentage points separates the two quiz averages?",
+      "choices": ["8 points gap", "16 points gap", "4 points gap", "9 points gap"],
+      "answer": "16 points gap",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "Regional rainfall (mm):\n\n• March: 54\n• April: 42\n• May: 42\n• June: 58\n• July: 46\n\nWhich months **tie lowest**?",
+      "choices": ["March & June", "April & May", "July only", "May & July"],
+      "answer": "April & May",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "Fun news headline screams: “Buying ice cream **causes** shark attacks—they rise together each July!” Charts show both spikes each summer beaches.\nMost responsible analytic reaction for Grade‑5 sceptics?",
+      "choices": [
+        "Assume ice cream chemically summons sharks",
+        "Suspect summertime beach crowds lurk quietly behind BOTH curves",
+        "Ban scatterplots universally",
+        "Demand pie charts depicting shark flavours"
+      ],
+      "answer": "Suspect summertime beach crowds lurk quietly behind BOTH curves",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "Ms. Rao posts a flashy bar chart—“**Our robotics club doubled in one week!”** Footnote admits chart tracks **Tuesday club block only** ignores virtual members.\nWhat habit makes the infographic more trustworthy?",
+      "choices": [
+        "Clearly state timeframe, sampling limits, plus link raw counts",
+        "Remove axis labels entirely to build mystery",
+        "Ensure every legend icon equals exactly π students",
+        "Replace numbers with unicorn emojis unconditionally"
+      ],
+      "answer": "Clearly state timeframe, sampling limits, plus link raw counts",
+      "hint": false
+    }
+  ]
+}

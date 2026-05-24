@@ -1,0 +1,130 @@
+{
+  "title": "Math — Probability with dice & playing cards",
+  "subject": "math",
+  "learn_subject": "math",
+  "learn_section": "data-probability",
+  "scratchpad": true,
+  "created_at": "2026-05-13T14:30:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "You roll one fair six-sided die once. Its faces show 1 through 6, all equally likely. What is P(rolling a **3**)?",
+      "choices": ["3/6", "1/2", "1/6", "1/3"],
+      "answer": "1/6",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "One fair six-sided die. What is P(rolling a **perfect square**, counting only squares among 1–6)?",
+      "choices": ["1/6 — only 4 qualifies", "2/6 — 1 and 4 qualify", "3/6 — 1, 4 and 9", "4/6 — any even face"],
+      "answer": "2/6 — 1 and 4 qualify",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "Roll **two** fair six-sided dice and add the upward faces. What is P(**sum equals 7**)?",
+      "choices": ["4/36", "5/36", "6/36", "7/36"],
+      "answer": "6/36",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "Same two dice setup (**36 ordered outcomes**). What is P(**sum equals 11**)?",
+      "choices": ["1/36", "2/36", "3/36", "4/36"],
+      "answer": "2/36",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "Same two dice. What is P(**matching numbers — a double** such as rolling 4 twice)?",
+      "choices": ["3/36", "6/36", "12/36", "1/12"],
+      "answer": "6/36",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "Same two labelled dice (**36 equally likely ordered rolls**). What is P(the **number on the red die is strictly less than** the blue die)? Count ordered pairs deliberately.",
+      "choices": ["6/36", "10/36", "15/36", "18/36"],
+      "answer": "15/36",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "Same two dice. What is P(the **product** of the upward faces equals **12**)?",
+      "choices": ["4/36", "3/36", "5/36", "6/36"],
+      "answer": "4/36",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "You shuffle a **standard deck of 52 playing cards**: 4 suits ♠ ♥ ♦ ♣, 13 ranks each (Ace through King), **no jokers**. Randomly reveal **exactly one** card. What is P(**Heart**)?",
+      "choices": ["4/52", "12/52", "13/52", "1/13"],
+      "answer": "13/52",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Same single random card from that **52-card** deck (no reshuffle yet). Treat **Ace** merely as among the four singleton ranks. What is P(drawing **any Ace**)?",
+      "choices": ["4/52", "1/52", "2/52", "8/52"],
+      "answer": "4/52",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "Still one random card from **52**. What is P(**Jack, Queen or King**, **any suit**)? There are twelve such faces in a standard deck.",
+      "choices": ["10/52", "12/52", "16/52", "13/52"],
+      "answer": "12/52",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "One random card from a **standard 52-card** deck. Hearts and diamonds are **red**; spades and clubs are **black**. What is P(drawing a **red** card)?",
+      "choices": ["13/52", "26/52", "39/52", "4/52"],
+      "answer": "26/52",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "One random card from **52**. What is P(**club or diamond**)?",
+      "choices": ["13/52", "26/52", "20/52", "25/52"],
+      "answer": "26/52",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "Draw cards **with replacement** each time—you shuffle meticulously after noting every draw so the deck stays freshly **52**. What is P(**first Ace, then Ace again**)?",
+      "choices": ["4/(52^2)", "(4/52)^2", "3/52", "(4*3)/(52^2)"],
+      "answer": "(4/52)^2",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "Now draw **two cards in a row WITHOUT replacement**. What is P(first card **Ace** **and second card King**)?",
+      "choices": ["(4*4)/(52*52)", "(4*4)/(52*51)", "(4*3)/(52*51)", "(4)/(52^2)"],
+      "answer": "(4*4)/(52*51)",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "**Two dice** again (**36 equally likely outcomes**). What is P(sum is **even**)?",
+      "choices": ["10/36", "16/36", "18/36", "20/36"],
+      "answer": "18/36",
+      "hint": false
+    }
+  ]
+}
