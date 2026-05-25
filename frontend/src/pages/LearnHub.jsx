@@ -23,17 +23,17 @@ export default function LearnHub() {
       onBack={() => navigate(isAdmin ? "/admin/worksheets" : "/student")}
     >
       <div className="max-w-3xl">
-        <h1 className="text-2xl font-bold text-amber-950 mb-2">Learning resources</h1>
-        <p className="text-amber-700 text-sm mb-8 leading-relaxed">
+        <h1 className="text-2xl font-bold text-slate-950 mb-2">Learning resources</h1>
+        <p className="text-slate-700 text-sm mb-8 leading-relaxed">
           Reference pages you can read before worksheets. More subjects can be added under{" "}
-          <code className="text-xs bg-amber-100 px-1 rounded">backend/data/learn/</code>.
+          <code className="text-xs bg-slate-100 px-1 rounded">backend/data/learn/</code>.
         </p>
 
-        {loading && <p className="text-amber-600">Loading…</p>}
+        {loading && <p className="text-slate-600">Loading…</p>}
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
         {!loading && !error && subjects.length === 0 && (
-          <p className="text-amber-600">No topics yet.</p>
+          <p className="text-slate-600">No topics yet.</p>
         )}
 
         <div className="flex flex-col gap-4">
@@ -41,13 +41,13 @@ export default function LearnHub() {
             <Link
               key={s.key}
               to={`/student/learn/${s.key}`}
-              className="block rounded-2xl border border-amber-200 bg-white p-5 shadow-sm hover:border-amber-400 hover:shadow-md transition"
+              className="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-indigo-400 hover:shadow-md transition"
             >
-              <p className="text-lg font-semibold text-amber-900">
+              <p className="text-lg font-semibold text-slate-900">
                 {formatSubjectLabel(s.key)}
               </p>
               {s.description ? (
-                <p className="text-amber-600 text-sm mt-2 leading-relaxed">
+                <p className="text-slate-600 text-sm mt-2 leading-relaxed">
                   {s.description}
                 </p>
               ) : null}

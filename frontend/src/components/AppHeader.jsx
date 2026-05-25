@@ -1,13 +1,13 @@
 import { NavLink, matchPath, useLocation } from "react-router-dom";
 
 const backPillClass =
-  "inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-bold bg-amber-900 text-amber-50 hover:bg-amber-950 border border-amber-950 shadow-sm transition";
+  "inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-bold bg-indigo-700 text-white hover:bg-indigo-800 border border-indigo-800 shadow-sm transition";
 
 const adminNavShellClass =
-  "inline-flex flex-wrap items-center gap-x-5 gap-y-1 rounded-xl border border-amber-300/90 bg-amber-100 px-4 py-2.5 shadow-sm";
-const adminNavTitleClass = "text-base font-bold text-amber-950";
+  "inline-flex flex-wrap items-center gap-x-5 gap-y-1 rounded-xl border border-slate-300/90 bg-slate-100 px-4 py-2.5 shadow-sm";
+const adminNavTitleClass = "text-base font-bold text-slate-950";
 const adminNavLinkClass =
-  "text-base font-medium text-amber-800 underline underline-offset-2 decoration-amber-500/70 hover:text-amber-950 hover:decoration-amber-700";
+  "text-base font-medium text-slate-800 underline underline-offset-2 decoration-indigo-500/70 hover:text-slate-950 hover:decoration-slate-700";
 
 function AdminSectionNav({ navLinks }) {
   const { pathname } = useLocation();
@@ -54,7 +54,7 @@ export default function AppHeader({
       className={`flex justify-between items-start gap-6 mb-8 ${className}`.trim()}
     >
       <div className="min-w-0">
-        <h1 className="text-2xl font-bold text-amber-800">🪶 Quill</h1>
+        <h1 className="text-2xl font-bold text-slate-800">🪶 Quill</h1>
         {subRow ? (
           <div className="mt-2 flex flex-wrap items-baseline gap-x-5 gap-y-2">
             {onBack ? (
@@ -72,7 +72,7 @@ export default function AppHeader({
           <button
             type="button"
             onClick={onLogout}
-            className="text-sm font-semibold text-amber-800 hover:underline px-1 py-1"
+            className="text-sm font-semibold text-slate-800 hover:underline px-1 py-1"
           >
             Log out
           </button>

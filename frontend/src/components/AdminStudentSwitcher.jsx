@@ -54,14 +54,14 @@ export default function AdminStudentSwitcher() {
 
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-      <label htmlFor="admin-student-switch" className="text-amber-800 font-medium">
+      <label htmlFor="admin-student-switch" className="text-slate-800 font-medium">
         Viewing results for
       </label>
       <select
         id="admin-student-switch"
         value={selectValue}
         onChange={(e) => onChange(e.target.value)}
-        className="border border-amber-300 rounded-lg px-3 py-2 bg-white text-amber-950 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
+        className="border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-950 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-400"
       >
         {!selectValue ? (
           <option value="" disabled>

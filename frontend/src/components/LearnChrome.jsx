@@ -18,15 +18,15 @@ export default function LearnChrome({ onBack, children }) {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50">
-      <div className="sticky top-0 z-40 border-b border-amber-200/90 bg-amber-50/95 backdrop-blur-sm shadow-sm supports-[backdrop-filter]:bg-amber-50/85">
+    <div className="min-h-screen bg-slate-50">
+      <div className="sticky top-0 z-40 border-b border-slate-200/90 bg-slate-50/95 backdrop-blur-sm shadow-sm supports-[backdrop-filter]:bg-slate-50/85">
         <div className="px-6 pt-6 pb-4">
           <AppHeader
             navLinks={isAdmin ? ADMIN_MAIN_NAV : STUDENT_MAIN_NAV}
             onBack={onBack}
             className="!mb-0"
             trailing={
-              <span className="text-amber-800 text-sm font-medium">
+              <span className="text-slate-800 text-sm font-medium">
                 {isAdmin ? `Admin · ${formatAdminHeaderTrail()}` : `Hi, ${name}!`}
               </span>
             }

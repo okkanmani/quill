@@ -27,11 +27,11 @@ export default function StudentHome() {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50 p-6">
+    <div className="min-h-screen bg-slate-50 p-6">
       <AppHeader
         navLinks={STUDENT_MAIN_NAV}
         trailing={
-          <span className="text-amber-800 text-sm font-medium">
+          <span className="text-slate-800 text-sm font-medium">
             Hi, {name}!
           </span>
         }
@@ -39,11 +39,11 @@ export default function StudentHome() {
       />
 
       <div className="max-w-3xl">
-        {loading && <p className="text-amber-600">Loading...</p>}
+        {loading && <p className="text-slate-600">Loading...</p>}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && !error && worksheets.length === 0 && (
-          <p className="text-amber-600">No worksheets yet. Check back soon!</p>
+          <p className="text-slate-600">No worksheets yet. Check back soon!</p>
         )}
 
         {!loading && !error && worksheets.length > 0 && (

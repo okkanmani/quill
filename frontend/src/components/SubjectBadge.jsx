@@ -13,7 +13,7 @@ export function formatSubjectLabel(subject) {
 
 export default function SubjectBadge({ subject }) {
   const key = (subject || "general").trim().toLowerCase() || "general";
-  const style = STYLES[key] || "bg-amber-100 text-amber-900 border-amber-200";
+  const style = STYLES[key] || "bg-slate-100 text-slate-900 border-slate-200";
   return (
     <span
       className={`inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${style}`}

@@ -48,49 +48,49 @@ export default function ResultsBySubject({ results, openIds, toggleAnswers }) {
         return (
           <div
             key={subjectKey}
-            className="rounded-2xl border border-amber-300 bg-white shadow-sm overflow-hidden"
+            className="rounded-2xl border border-slate-300 bg-white shadow-sm overflow-hidden"
           >
             <button
               type="button"
               onClick={() => toggleSubject(subjectKey)}
               aria-expanded={isOpen}
-              className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left bg-amber-200/90 hover:bg-amber-200 border-b border-amber-300/80 transition"
+              className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left bg-slate-200/90 hover:bg-slate-200 border-b border-slate-300/80 transition"
             >
-              <span className="font-bold text-amber-950 text-base">
+              <span className="font-bold text-slate-950 text-base">
                 {formatSubjectLabel(subjectKey)}
-                <span className="font-semibold text-amber-800/90 text-sm ml-2">
+                <span className="font-semibold text-slate-800/90 text-sm ml-2">
                   ({items.length})
                 </span>
               </span>
-              <span className="text-amber-900 text-sm font-bold shrink-0 tabular-nums">
+              <span className="text-slate-900 text-sm font-bold shrink-0 tabular-nums">
                 {isOpen ? "▼" : "▶"}
               </span>
             </button>
             {isOpen ? (
-              <div className="p-3 flex flex-col gap-4 bg-amber-50/40">
+              <div className="p-3 flex flex-col gap-4 bg-slate-50/40">
                 {items.map((r) => {
                   const expanded = openIds.has(r.id);
                   return (
                     <div
                       key={r.id}
-                      className="bg-white border border-amber-200 rounded-2xl shadow-sm overflow-hidden"
+                      className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
                     >
                       <button
                         type="button"
                         onClick={() => toggleAnswers(r.id)}
                         aria-expanded={expanded}
-                        className="w-full text-left p-5 hover:bg-amber-50/60 transition flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start sm:gap-4"
+                        className="w-full text-left p-5 hover:bg-slate-50/60 transition flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start sm:gap-4"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="text-amber-900 font-semibold text-lg">
+                          <p className="text-slate-900 font-semibold text-lg">
                             {r.title || r.worksheet_id}
                           </p>
                           {r.student ? (
-                            <p className="text-amber-600 text-sm mt-1">
+                            <p className="text-slate-600 text-sm mt-1">
                               {r.student}
                             </p>
                           ) : null}
-                          <p className="text-amber-400 text-xs mt-2">
+                          <p className="text-slate-400 text-xs mt-2">
                             Submitted:{" "}
                             {new Date(r.submitted_at).toLocaleString()}
                           </p>
@@ -101,37 +101,37 @@ export default function ResultsBySubject({ results, openIds, toggleAnswers }) {
                               r.score === r.total
                                 ? "bg-green-100 text-green-700"
                                 : r.score >= r.total / 2
-                                  ? "bg-amber-100 text-amber-700"
+                                  ? "bg-slate-100 text-slate-700"
                                   : "bg-red-100 text-red-700"
                             }`}
                           >
                             {r.score} / {r.total}
                           </span>
-                          <span className="text-amber-600 text-xs font-semibold underline underline-offset-2">
+                          <span className="text-slate-600 text-xs font-semibold underline underline-offset-2">
                             {expanded ? "Hide answers" : "Show answers"}
                           </span>
                         </div>
                       </button>
 
                       {expanded ? (
-                        <div className="border-t border-amber-100 px-5 pb-5 pt-4 bg-amber-50/30">
+                        <div className="border-t border-slate-100 px-5 pb-5 pt-4 bg-slate-50/30">
                           <ul className="flex flex-col gap-4">
                             {r.answers.map((a, index) => (
                               <li
                                 key={a.question_id}
-                                className="rounded-xl bg-white border border-amber-100 p-4 shadow-sm"
+                                className="rounded-xl bg-white border border-slate-100 p-4 shadow-sm"
                               >
-                                <p className="text-amber-800 text-sm font-medium leading-snug">
-                                  <span className="text-amber-500 font-normal">
+                                <p className="text-slate-800 text-sm font-medium leading-snug">
+                                  <span className="text-indigo-500 font-normal">
                                     {index + 1}.{" "}
                                   </span>
                                   {a.prompt}
                                 </p>
                                 <div className="mt-3 flex flex-col gap-1.5 text-sm sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2">
-                                  <span className="text-amber-600 shrink-0">
+                                  <span className="text-slate-600 shrink-0">
                                     Response:
                                   </span>
-                                  <span className="text-amber-900 font-medium break-words min-w-0">
+                                  <span className="text-slate-900 font-medium break-words min-w-0">
                                     {a.given === "" || a.given == null
                                       ? "(empty)"
                                       : `"${a.given}"`}
@@ -149,7 +149,7 @@ export default function ResultsBySubject({ results, openIds, toggleAnswers }) {
                                 {!a.correct &&
                                 a.expected != null &&
                                 a.expected !== "" ? (
-                                  <p className="mt-2 text-sm text-amber-900">
+                                  <p className="mt-2 text-sm text-slate-900">
                                     <span className="text-red-700 font-semibold">
                                       Correct answer:{" "}
                                     </span>

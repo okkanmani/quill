@@ -79,7 +79,7 @@ export default function Drawpad({ showHeading = true } = {}) {
         }`}
       >
         {showHeading && (
-          <span className="text-amber-500 text-xs">Scratch pad</span>
+          <span className="text-indigo-500 text-xs">Scratch pad</span>
         )}
         <div className="flex items-center gap-3 shrink-0">
           <button
@@ -87,8 +87,8 @@ export default function Drawpad({ showHeading = true } = {}) {
             onClick={() => setEraserMode((v) => !v)}
             className={`rounded-lg p-1.5 border transition ${
               eraserMode
-                ? "bg-amber-200 border-amber-400 text-amber-900"
-                : "bg-white border-amber-200 text-amber-600 hover:border-amber-300"
+                ? "bg-slate-200 border-indigo-400 text-slate-900"
+                : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
             }`}
             aria-pressed={eraserMode}
             aria-label={eraserMode ? "Switch to pen" : "Eraser"}
@@ -107,7 +107,7 @@ export default function Drawpad({ showHeading = true } = {}) {
           <button
             type="button"
             onClick={clearCanvas}
-            className="text-amber-400 text-xs underline"
+            className="text-slate-500 text-xs underline"
           >
             Clear
           </button>
@@ -124,7 +124,7 @@ export default function Drawpad({ showHeading = true } = {}) {
         onTouchStart={startDrawing}
         onTouchMove={draw}
         onTouchEnd={stopDrawing}
-        className="w-full rounded-xl border border-amber-200 touch-none"
+        className="w-full rounded-xl border border-slate-200 touch-none"
         style={{ cursor: eraserMode ? "cell" : "crosshair" }}
       />
     </div>

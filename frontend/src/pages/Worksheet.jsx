@@ -82,10 +82,10 @@ export default function Worksheet() {
             ? isCorrect(q)
               ? "border-green-300"
               : "border-red-300"
-            : "border-amber-200"
+            : "border-slate-200"
         }`}
       >
-        <p className="text-amber-900 font-medium mb-3">
+        <p className="text-slate-900 font-medium mb-3">
           {index + 1}. {q.prompt}
         </p>
         {scratchpadAllowed && scratchpadsVisible && (
@@ -94,13 +94,13 @@ export default function Worksheet() {
         {renderInput(q)}
         {submitted && !isCorrect(q) && (
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50/50 p-3 text-sm space-y-2">
-            <p className="text-amber-900">
+            <p className="text-slate-900">
               <span className="text-red-700 font-semibold">Question</span>
               <span className="block mt-0.5">{q.prompt}</span>
             </p>
             <p>
               <span className="text-red-700 font-semibold">Correct answer</span>
-              <span className="block mt-0.5 text-amber-900">{q.answer}</span>
+              <span className="block mt-0.5 text-slate-900">{q.answer}</span>
             </p>
           </div>
         )}
@@ -117,15 +117,15 @@ export default function Worksheet() {
             const isChoiceCorrect =
               choice.trim().toLowerCase() === q.answer.trim().toLowerCase();
 
-            let choiceStyle = "border-amber-200 text-amber-800";
+            let choiceStyle = "border-slate-200 text-slate-800";
             if (submitted) {
               if (isChoiceCorrect)
                 choiceStyle = "border-green-400 bg-green-50 text-green-800";
               else if (isSelected && !isChoiceCorrect)
                 choiceStyle = "border-red-400 bg-red-50 text-red-800";
-              else choiceStyle = "border-amber-100 text-amber-400";
+              else choiceStyle = "border-slate-100 text-slate-400";
             } else if (isSelected) {
-              choiceStyle = "border-amber-500 bg-amber-50 text-amber-900";
+              choiceStyle = "border-indigo-500 bg-slate-50 text-slate-900";
             }
 
             return (
@@ -150,20 +150,20 @@ export default function Worksheet() {
         onChange={(e) => handleAnswerChange(q.id, e.target.value)}
         disabled={submitted || isAdminPreview}
         placeholder="Your answer..."
-        className="w-full border border-amber-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:bg-amber-50"
+        className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50"
       />
     );
   }
 
   if (loading)
     return (
-      <div className="min-h-screen bg-amber-50 p-6 text-amber-600">
+      <div className="min-h-screen bg-slate-50 p-6 text-slate-600">
         Loading...
       </div>
     );
   if (error)
     return (
-      <div className="min-h-screen bg-amber-50 p-6 text-red-500">{error}</div>
+      <div className="min-h-screen bg-slate-50 p-6 text-red-500">{error}</div>
     );
 
   async function handleLogout() {
@@ -176,33 +176,33 @@ export default function Worksheet() {
   const scratchpadAllowed = worksheet?.scratchpad !== false;
 
   return (
-    <div className="min-h-screen bg-amber-50 p-6">
+    <div className="min-h-screen bg-slate-50 p-6">
       <AppHeader
         onBack={() => navigate(-1)}
         onLogout={handleLogout}
       />
 
       {isAdminPreview && (
-        <div className="mb-6 rounded-xl border border-amber-300 bg-amber-100/80 px-4 py-3 text-sm text-amber-900">
+        <div className="mb-6 rounded-xl border border-slate-300 bg-slate-100/80 px-4 py-3 text-sm text-slate-900">
           You are viewing this worksheet as an admin (read-only). Students can
           submit answers from their own login.
         </div>
       )}
 
       {/* Worksheet title */}
-      <h2 className="text-xl font-semibold text-amber-900 mb-1">
+      <h2 className="text-xl font-semibold text-slate-900 mb-1">
         {worksheet.title}
       </h2>
-      <p className="text-amber-500 text-sm capitalize mb-8">
+      <p className="text-indigo-500 text-sm capitalize mb-8">
         {worksheet.subject} · {worksheet.questions.length} questions
       </p>
 
       {scratchpadAllowed && (
-        <div className="mb-6 rounded-2xl border border-amber-200 bg-white px-4 py-3 shadow-sm">
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-amber-900">Scratch pads</p>
-              <p className="text-xs text-amber-600 mt-0.5">
+              <p className="text-sm font-medium text-slate-900">Scratch pads</p>
+              <p className="text-xs text-slate-600 mt-0.5">
                 Each question has its own space to jot work. Toggle off to hide all
                 of them at once.
               </p>
@@ -217,8 +217,8 @@ export default function Worksheet() {
                   : "Show scratch pads below every question"
               }
               onClick={() => setScratchpadsVisible((v) => !v)}
-              className={`relative h-9 w-14 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 ${
-                scratchpadsVisible ? "bg-amber-500" : "bg-amber-200"
+              className={`relative h-9 w-14 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
+                scratchpadsVisible ? "bg-indigo-500" : "bg-slate-200"
               }`}
             >
               <span
@@ -234,8 +234,8 @@ export default function Worksheet() {
 
       {/* Score banner */}
       {submitted && (
-        <div className="bg-amber-100 border border-amber-300 rounded-2xl p-4 mb-8 text-center">
-          <p className="text-amber-900 font-semibold text-lg">
+        <div className="bg-slate-100 border border-slate-300 rounded-2xl p-4 mb-8 text-center">
+          <p className="text-slate-900 font-semibold text-lg">
             You got {score} out of {worksheet.questions.length} correct!
           </p>
         </div>
@@ -251,11 +251,11 @@ export default function Worksheet() {
               );
               return (
                 <div key={passage.id} className="flex flex-col gap-4">
-                  <div className="sticky top-4 z-10 bg-white border border-amber-200 rounded-2xl p-5 shadow-sm">
-                    <p className="text-amber-800 font-semibold text-base mb-3">
+                  <div className="sticky top-4 z-10 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <p className="text-slate-800 font-semibold text-base mb-3">
                       📖 {passage.title}
                     </p>
-                    <p className="text-amber-900 text-sm leading-relaxed whitespace-pre-line">
+                    <p className="text-slate-900 text-sm leading-relaxed whitespace-pre-line">
                       {passage.body}
                     </p>
                   </div>
@@ -271,10 +271,10 @@ export default function Worksheet() {
             {worksheet.questions.some((q) => !q.passage_id) ? (
               <div className="flex flex-col gap-4">
                 <div>
-                  <p className="text-amber-700 font-semibold text-base">
+                  <p className="text-slate-700 font-semibold text-base">
                     🧠 Critical Reasoning
                   </p>
-                  <p className="text-amber-400 text-xs mt-1">
+                  <p className="text-slate-400 text-xs mt-1">
                     Use what you have read and your own reasoning to answer
                     these questions.
                   </p>
@@ -297,7 +297,7 @@ export default function Worksheet() {
       {!submitted && !isAdminPreview && (
         <button
           onClick={handleSubmit}
-          className="mt-8 w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-4 rounded-2xl shadow transition"
+          className="mt-8 w-full bg-indigo-500 hover:bg-slate-600 text-white font-semibold py-4 rounded-2xl shadow transition"
         >
           Submit Answers
         </button>
@@ -307,7 +307,7 @@ export default function Worksheet() {
       {submitted && (
         <button
           onClick={() => navigate(-1)}
-          className="mt-8 w-full bg-amber-800 hover:bg-amber-900 text-white font-semibold py-4 rounded-2xl shadow transition"
+          className="mt-8 w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-4 rounded-2xl shadow transition"
         >
           Back to Worksheets
         </button>

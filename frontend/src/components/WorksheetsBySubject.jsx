@@ -57,53 +57,53 @@ export default function WorksheetsBySubject({
         return (
           <div
             key={subjectKey}
-            className="rounded-2xl border border-amber-300 bg-white shadow-sm overflow-hidden"
+            className="rounded-2xl border border-slate-300 bg-white shadow-sm overflow-hidden"
           >
             <button
               type="button"
               onClick={() => toggle(subjectKey)}
               aria-expanded={isOpen}
-              className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left bg-amber-200/90 hover:bg-amber-200 border-b border-amber-300/80 transition"
+              className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left bg-slate-200/90 hover:bg-slate-200 border-b border-slate-300/80 transition"
             >
               <span className="min-w-0 flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2">
-                <span className="font-bold text-amber-950 text-base">
+                <span className="font-bold text-slate-950 text-base">
                   {formatSubjectLabel(subjectKey)}
                 </span>
-                <span className="font-semibold text-amber-800/90 text-sm tabular-nums">
+                <span className="font-semibold text-slate-800/90 text-sm tabular-nums">
                   {done}/{total} done
                   {total > 0 ? (
-                    <span className="text-amber-700/85 font-medium">
+                    <span className="text-slate-700/85 font-medium">
                       {" "}
                       · {pct}%
                     </span>
                   ) : null}
                   {avgScore ? (
-                    <span className="text-amber-800 font-semibold">
+                    <span className="text-slate-800 font-semibold">
                       {" "}
                       · avg {avgScore.avgPct}%
                     </span>
                   ) : null}
                 </span>
               </span>
-              <span className="text-amber-900 text-sm font-bold shrink-0 tabular-nums">
+              <span className="text-slate-900 text-sm font-bold shrink-0 tabular-nums">
                 {isOpen ? "▼" : "▶"}
               </span>
             </button>
             {isOpen ? (
-              <div className="p-3 flex flex-col gap-4 bg-amber-50/40">
+              <div className="p-3 flex flex-col gap-4 bg-slate-50/40">
                 {items.map((ws) => (
                   <div
                     key={ws.id}
                     className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4"
                   >
-                    <div className="flex-1 flex flex-col bg-white border border-amber-200 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-400 transition overflow-hidden">
+                    <div className="flex-1 flex flex-col bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:border-indigo-400 transition overflow-hidden">
                       <button
                         type="button"
                         onClick={() => onOpenWorksheet(ws.id)}
                         className="flex-1 p-5 text-left pb-3"
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <p className="text-amber-900 font-semibold text-lg">
+                          <p className="text-slate-900 font-semibold text-lg">
                             {ws.title}
                           </p>
                           {isWorksheetDone(ws) ? (
@@ -131,9 +131,9 @@ export default function WorksheetsBySubject({
                           ) : null}
                         </div>
                       </button>
-                      <div className="px-5 pb-4 flex flex-wrap items-center gap-2 border-t border-amber-100 bg-amber-50/50 pt-3">
+                      <div className="px-5 pb-4 flex flex-wrap items-center gap-2 border-t border-slate-100 bg-slate-50/50 pt-3">
                         <SubjectBadge subject={ws.subject} />
-                        <span className="text-amber-500 text-sm">
+                        <span className="text-indigo-500 text-sm">
                           {ws.question_count} questions
                         </span>
                         {ws.learn_subject ? (
@@ -143,7 +143,7 @@ export default function WorksheetsBySubject({
                                 ? `#${encodeURIComponent(ws.learn_section)}`
                                 : ""
                             }`}
-                            className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900 border border-amber-200 hover:bg-amber-200/80 transition"
+                            className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-900 border border-slate-200 hover:bg-slate-200/80 transition"
                           >
                             Open Resource
                           </Link>

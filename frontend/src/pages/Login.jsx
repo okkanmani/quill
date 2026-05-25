@@ -93,12 +93,12 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50 flex flex-col items-center justify-center gap-8 px-4">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-8 px-4">
       <div className="text-center">
-        <h1 className="text-5xl font-bold text-amber-800 tracking-tight">
+        <h1 className="text-5xl font-bold text-slate-800 tracking-tight">
           🪶 Quill
         </h1>
-        <p className="text-amber-600 mt-2 text-sm">Your learning companion</p>
+        <p className="text-slate-600 mt-2 text-sm">Your learning companion</p>
       </div>
 
       <div className="flex flex-col gap-6 w-full max-w-sm">
@@ -107,7 +107,7 @@ export default function Login() {
             onSubmit={handleStudentLogin}
             className="flex flex-col gap-3"
           >
-            <p className="text-amber-800 text-sm font-semibold text-center">
+            <p className="text-slate-800 text-sm font-semibold text-center">
               Student
             </p>
             <input
@@ -116,7 +116,7 @@ export default function Login() {
               placeholder="Your name"
               value={studentName}
               onChange={(e) => setStudentName(e.target.value)}
-              className="border border-amber-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
             <input
               type="password"
@@ -124,11 +124,11 @@ export default function Login() {
               placeholder="Password"
               value={studentPassword}
               onChange={(e) => setStudentPassword(e.target.value)}
-              className="border border-amber-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
             <button
               type="submit"
-              className="bg-amber-500 hover:bg-amber-600 text-white text-lg font-semibold py-4 rounded-2xl shadow transition"
+              className="bg-indigo-500 hover:bg-slate-600 text-white text-lg font-semibold py-4 rounded-2xl shadow transition"
             >
               Log in as student
             </button>
@@ -137,10 +137,10 @@ export default function Login() {
 
         {screen === "admin" && (
           <form onSubmit={handleAdminLogin} className="flex flex-col gap-3">
-            <p className="text-amber-800 text-sm font-semibold text-center">
+            <p className="text-slate-800 text-sm font-semibold text-center">
               Admin
             </p>
-            <div className="flex rounded-xl border border-amber-200 overflow-hidden text-xs font-semibold">
+            <div className="flex rounded-xl border border-slate-200 overflow-hidden text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => {
@@ -149,8 +149,8 @@ export default function Login() {
                 }}
                 className={`flex-1 py-2.5 transition ${
                   adminLoginMode === "byStudent"
-                    ? "bg-amber-800 text-white"
-                    : "bg-white text-amber-800 hover:bg-amber-50"
+                    ? "bg-slate-800 text-white"
+                    : "bg-white text-slate-800 hover:bg-slate-50"
                 }`}
               >
                 Student + password
@@ -163,8 +163,8 @@ export default function Login() {
                 }}
                 className={`flex-1 py-2.5 transition ${
                   adminLoginMode === "byAccount"
-                    ? "bg-amber-800 text-white"
-                    : "bg-white text-amber-800 hover:bg-amber-50"
+                    ? "bg-slate-800 text-white"
+                    : "bg-white text-slate-800 hover:bg-slate-50"
                 }`}
               >
                 Admin name + password
@@ -172,7 +172,7 @@ export default function Login() {
             </div>
             {adminLoginMode === "byStudent" ? (
               <>
-                <p className="text-amber-600 text-xs text-center leading-snug">
+                <p className="text-slate-600 text-xs text-center leading-snug">
                   Enter a student&apos;s name and your admin password to view
                   that student&apos;s worksheets and results.
                 </p>
@@ -181,12 +181,12 @@ export default function Login() {
                   placeholder="Student name"
                   value={adminStudentName}
                   onChange={(e) => setAdminStudentName(e.target.value)}
-                  className="border border-amber-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 />
               </>
             ) : (
               <>
-                <p className="text-amber-600 text-xs text-center leading-snug">
+                <p className="text-slate-600 text-xs text-center leading-snug">
                   Use the admin name you chose at sign-up. Then add students on
                   the Students page.
                 </p>
@@ -196,7 +196,7 @@ export default function Login() {
                   placeholder="Admin name"
                   value={adminAccountName}
                   onChange={(e) => setAdminAccountName(e.target.value)}
-                  className="border border-amber-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 />
               </>
             )}
@@ -206,11 +206,11 @@ export default function Login() {
               placeholder="Password"
               value={adminPassword}
               onChange={(e) => setAdminPassword(e.target.value)}
-              className="border border-amber-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
             <button
               type="submit"
-              className="bg-amber-800 hover:bg-amber-900 text-white py-3 rounded-xl text-sm font-semibold transition"
+              className="bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-xl text-sm font-semibold transition"
             >
               Log in as admin
             </button>
@@ -219,10 +219,10 @@ export default function Login() {
 
         {screen === "signup" && (
           <form onSubmit={handleSignup} className="flex flex-col gap-3">
-            <p className="text-amber-800 text-sm font-semibold text-center">
+            <p className="text-slate-800 text-sm font-semibold text-center">
               Create admin account
             </p>
-            <p className="text-amber-600 text-xs text-center leading-snug">
+            <p className="text-slate-600 text-xs text-center leading-snug">
               Choose a unique admin name and password. You can verify by email
               later; for now this only creates your account in the database.
             </p>
@@ -233,7 +233,7 @@ export default function Login() {
               value={signupName}
               onChange={(e) => setSignupName(e.target.value)}
               required
-              className="border border-amber-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
             <input
               type="password"
@@ -242,12 +242,12 @@ export default function Login() {
               value={signupPassword}
               onChange={(e) => setSignupPassword(e.target.value)}
               required
-              className="border border-amber-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
             <button
               type="submit"
               disabled={signupBusy}
-              className="bg-amber-800 hover:bg-amber-900 text-white py-3 rounded-xl text-sm font-semibold transition disabled:opacity-50"
+              className="bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-xl text-sm font-semibold transition disabled:opacity-50"
             >
               {signupBusy ? "Creating…" : "Create admin"}
             </button>
@@ -262,7 +262,7 @@ export default function Login() {
                 setScreen("admin");
                 setError("");
               }}
-              className="text-amber-700 text-sm underline text-center"
+              className="text-slate-700 text-sm underline text-center"
             >
               Admin login
             </button>
@@ -272,7 +272,7 @@ export default function Login() {
                 setScreen("signup");
                 setError("");
               }}
-              className="text-amber-700 text-sm underline text-center"
+              className="text-slate-700 text-sm underline text-center"
             >
               Sign up as admin
             </button>
@@ -286,7 +286,7 @@ export default function Login() {
               setScreen("student");
               setError("");
             }}
-            className="text-amber-700 text-sm underline text-center"
+            className="text-slate-700 text-sm underline text-center"
           >
             Back to student login
           </button>
@@ -299,7 +299,7 @@ export default function Login() {
               setScreen("student");
               setError("");
             }}
-            className="text-amber-700 text-sm underline text-center"
+            className="text-slate-700 text-sm underline text-center"
           >
             Back to student login
           </button>
