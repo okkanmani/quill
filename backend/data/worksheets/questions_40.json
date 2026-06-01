@@ -1,0 +1,140 @@
+{
+  "title": "Math — More money word problems (change, savings & smart shopping)",
+  "subject": "math",
+  "learn_subject": "math",
+  "learn_section": "money-basics",
+  "scratchpad": true,
+  "created_at": "2026-06-01T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "Emma buys lunch for $8.45 and a drink for $2.30. How much does she pay in total?",
+      "choices": ["$10.55", "$10.65", "$10.75", "$11.75"],
+      "answer": "$10.75",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "Carlos has $35.00. He buys shoes on sale for $24.99. How much money does he have left?",
+      "choices": ["$9.01", "$10.01", "$10.99", "$11.01"],
+      "answer": "$10.01",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "Stickers cost $0.75 each. Zara buys 8 stickers. What is the total cost?",
+      "choices": ["$5.25", "$6.00", "$6.75", "$8.00"],
+      "answer": "$6.00",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "Round each price to the nearest dollar, then estimate the total:\n• gym bag $3.89\n• socks $4.15\n• water bottle $3.95\nWhat is the best estimate?",
+      "choices": ["$10", "$11", "$12", "$13"],
+      "answer": "$12",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "A student's monthly allowance is $25.00. They spend $9.50 on a book and $6.25 on snacks. How much allowance is left?",
+      "choices": ["$8.25", "$9.25", "$10.25", "$15.75"],
+      "answer": "$9.25",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "Rice is sold as a 5 kg bag for $11.50 or as 1 kg bags for $2.40 each. You need 5 kg. Which option costs less?",
+      "choices": [
+        "One 5 kg bag for $11.50",
+        "Five 1 kg bags for $12.00",
+        "Both cost exactly the same",
+        "Five 1 kg bags for $11.50"
+      ],
+      "answer": "One 5 kg bag for $11.50",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "Ethan saves $3.50 each week for 8 weeks. How much has he saved in total?",
+      "choices": ["$24.00", "$26.00", "$28.00", "$31.50"],
+      "answer": "$28.00",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "A family buys 3 child movie tickets at $9.50 each and 2 adult tickets at $14.00 each. What is the total ticket cost?",
+      "choices": ["$52.50", "$56.50", "$57.50", "$61.50"],
+      "answer": "$56.50",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Apples cost $1.29 per pound. How much do 3 pounds cost?",
+      "choices": ["$3.27", "$3.87", "$3.97", "$4.29"],
+      "answer": "$3.87",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "The total at a bakery is $16.40. You pay with a $20.00 bill. How much change should you get back?",
+      "choices": ["$3.40", "$3.60", "$4.40", "$4.60"],
+      "answer": "$3.60",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "Pens are sold as a 4-pack for $5.96 or as single pens for $1.59 each. You need 4 pens. Which deal costs less?",
+      "choices": [
+        "Buy the 4-pack for $5.96",
+        "Buy four singles for $6.36",
+        "Both cost the same",
+        "Buy four singles for $5.96"
+      ],
+      "answer": "Buy the 4-pack for $5.96",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "A school trip costs $125.00 per student. Sofia has already saved $78.50. How much more does she need?",
+      "choices": ["$45.50", "$46.50", "$47.50", "$203.50"],
+      "answer": "$46.50",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "Morgan earns $12.00 per hour walking dogs. Last week Morgan worked 2.25 hours. How much was earned?",
+      "choices": ["$24.00", "$26.00", "$27.00", "$28.50"],
+      "answer": "$27.00",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "A field trip fee is $18.50 per student. If 23 students go, what is the total fee for the class?",
+      "choices": ["$405.50", "$415.50", "$425.50", "$435.50"],
+      "answer": "$425.50",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "This month Alex receives $40.00 allowance and earns $15.00 babysitting. Alex spends $22.00 on a shirt, $18.75 on a gift, and $9.50 on supplies. How much is left?",
+      "choices": ["$4.75", "$5.25", "$5.75", "$6.25"],
+      "answer": "$4.75",
+      "hint": false
+    }
+  ]
+}
