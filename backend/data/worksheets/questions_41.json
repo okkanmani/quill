@@ -1,0 +1,170 @@
+{
+  "title": "Math — Algebra word problems (two variables & equations, Grade 5)",
+  "subject": "math",
+  "learn_subject": "math",
+  "learn_section": "algebra-equations",
+  "scratchpad": true,
+  "created_at": "2026-06-01T14:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: x + 7 = 15",
+      "choices": ["x = 6", "x = 7", "x = 8", "x = 22"],
+      "answer": "x = 8",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "Solve for y: 3y = 21",
+      "choices": ["y = 3", "y = 6", "y = 7", "y = 18"],
+      "answer": "y = 7",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "A number n is increased by 5 and the result is 23. Which equation matches this story?",
+      "choices": ["n − 5 = 23", "5n = 23", "n + 5 = 23", "n/5 = 23"],
+      "answer": "n + 5 = 23",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "Two whole numbers add to 20. The larger number x is 4 more than the smaller number y. What are x and y?",
+      "choices": ["x = 10, y = 10", "x = 11, y = 9", "x = 12, y = 8", "x = 16, y = 4"],
+      "answer": "x = 12, y = 8",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "Two numbers have a sum of 15 and a difference of 3 (larger minus smaller). If x is the larger and y is the smaller, what are x and y?",
+      "choices": ["x = 7, y = 8", "x = 8, y = 7", "x = 9, y = 6", "x = 6, y = 9"],
+      "answer": "x = 9, y = 6",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "Marco has red marbles (r) and blue marbles (b). He has 12 marbles in all, and 4 more red than blue. How many of each colour?",
+      "choices": ["r = 6, b = 6", "r = 7, b = 5", "r = 8, b = 4", "r = 4, b = 8"],
+      "answer": "r = 8, b = 4",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "Solve for m: 2m + 5 = 17",
+      "choices": ["m = 5", "m = 6", "m = 11", "m = 22"],
+      "answer": "m = 6",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "A shelf has h hardcover books and p paperback books. There are 25 books total and 5 more paperback than hardcover. How many of each type?",
+      "choices": ["h = 8, p = 17", "h = 10, p = 15", "h = 12, p = 13", "h = 15, p = 10"],
+      "answer": "h = 10, p = 15",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "At a school play, adult tickets cost $10 and child tickets cost $6. There were 14 tickets sold for $108 in total. How many adult tickets (x) and child tickets (y)?",
+      "choices": ["x = 5, y = 9", "x = 6, y = 8", "x = 7, y = 7", "x = 8, y = 6"],
+      "answer": "x = 6, y = 8",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "Two numbers have a sum of 30 and a difference of 6 (larger minus smaller). What is the larger number x?",
+      "choices": ["x = 12", "x = 15", "x = 18", "x = 24"],
+      "answer": "x = 18",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "Solve the system: y = 2x and x + y = 18.",
+      "choices": ["x = 4, y = 8", "x = 5, y = 10", "x = 6, y = 12", "x = 9, y = 9"],
+      "answer": "x = 6, y = 12",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "A rectangle has length L and width W (in cm). The length is 5 cm longer than the width, and the perimeter is 34 cm. What are L and W?",
+      "choices": ["L = 10, W = 5", "L = 11, W = 6", "L = 12, W = 7", "L = 14, W = 6"],
+      "answer": "L = 11, W = 6",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "Solve for t: 4t − 6 = 14",
+      "choices": ["t = 2", "t = 4", "t = 5", "t = 8"],
+      "answer": "t = 5",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "A piggy bank has n nickels and q quarters only. There are 12 coins with a total value of $1.80. How many nickels and quarters?",
+      "choices": ["n = 4, q = 8", "n = 5, q = 7", "n = 6, q = 6", "n = 8, q = 4"],
+      "answer": "n = 6, q = 6",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "A pattern starts at 4 and adds 6 each time: 4, 10, 16, … What is the 4th term?",
+      "choices": ["16", "18", "22", "28"],
+      "answer": "22",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "One number is double the other. Their sum is 36. If x is the larger and y is the smaller, what are x and y?",
+      "choices": ["x = 18, y = 18", "x = 20, y = 16", "x = 24, y = 12", "x = 30, y = 6"],
+      "answer": "x = 24, y = 12",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "Solve the system: a + b = 7 and 5a + 2b = 26.",
+      "choices": ["a = 3, b = 4", "a = 4, b = 3", "a = 5, b = 2", "a = 6, b = 1"],
+      "answer": "a = 4, b = 3",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "Think of a number x. Double it and subtract 3. The result is 19. What is x?",
+      "choices": ["x = 8", "x = 9", "x = 10", "x = 11"],
+      "answer": "x = 11",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "The cafeteria sells small snack packs (s) for $2 and large packs (L) for $5. You buy 10 packs for $38. How many small and large packs?",
+      "choices": ["s = 3, L = 7", "s = 4, L = 6", "s = 5, L = 5", "s = 6, L = 4"],
+      "answer": "s = 4, L = 6",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "Solve the system: x + y = 25 and 3x + y = 41.",
+      "choices": ["x = 6, y = 19", "x = 7, y = 18", "x = 8, y = 17", "x = 9, y = 16"],
+      "answer": "x = 8, y = 17",
+      "hint": false
+    }
+  ]
+}
