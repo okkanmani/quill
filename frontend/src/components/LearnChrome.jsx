@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
-import { ADMIN_MAIN_NAV, STUDENT_MAIN_NAV } from "../adminNav";
+import { ADMIN_MAIN_NAV } from "../adminNav";
+import { useStudentNavLinks } from "../useStudentNavLinks";
 import AppHeader from "./AppHeader";
 
 /**
@@ -11,6 +12,7 @@ export default function LearnChrome({ onBack, children }) {
   const navigate = useNavigate();
   const isAdmin = localStorage.getItem("role") === "admin";
   const name = localStorage.getItem("name");
+  const { navLinks: studentNavLinks } = useStudentNavLinks();
 
   async function handleLogout() {
     await logout();
@@ -22,7 +24,7 @@ export default function LearnChrome({ onBack, children }) {
       <div className="sticky top-0 z-40 border-b border-slate-200/90 bg-slate-50/95 backdrop-blur-sm shadow-sm supports-[backdrop-filter]:bg-slate-50/85">
         <div className="px-6 pt-6 pb-4">
           <AppHeader
-            navLinks={isAdmin ? ADMIN_MAIN_NAV : STUDENT_MAIN_NAV}
+            navLinks={isAdmin ? ADMIN_MAIN_NAV : studentNavLinks}
             onBack={onBack}
             className="!mb-0"
             trailing={

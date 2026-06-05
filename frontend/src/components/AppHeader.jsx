@@ -17,11 +17,23 @@ function AdminSectionNav({ navLinks }) {
       className={adminNavShellClass}
       aria-label="Admin sections"
     >
-      {navLinks.map(({ to, label, end }) => {
+      {navLinks.map(({ to, label, end, disabled }) => {
         const isActive = matchPath({ path: to, end: end ?? false }, pathname);
         if (isActive) {
           return (
             <span key={to} className={adminNavTitleClass} aria-current="page">
+              {label}
+            </span>
+          );
+        }
+        if (disabled) {
+          return (
+            <span
+              key={to}
+              aria-disabled="true"
+              className="text-base font-medium text-slate-400 cursor-not-allowed select-none"
+              title="No new worksheets in the last week"
+            >
               {label}
             </span>
           );

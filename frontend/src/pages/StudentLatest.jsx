@@ -1,13 +1,20 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api";
 import AppHeader from "../components/AppHeader";
 import WorksheetsBySubject from "../components/WorksheetsBySubject";
 import { useStudentNavLinks } from "../useStudentNavLinks";
 
-export default function StudentHome() {
+export default function StudentLatest() {
   const navigate = useNavigate();
   const name = localStorage.getItem("name");
-  const { worksheets, navLinks, loading, error } = useStudentNavLinks();
+  const { latest, navLinks, loading, error } = useStudentNavLinks();
+
+  useEffect(() => {
+    if (!loading && latest.length === 0) {
+      navigate("/student", { replace: true });
+    }
+  }, [loading, latest.length, navigate]);
 
   async function handleLogout() {
     await logout();
@@ -27,16 +34,19 @@ export default function StudentHome() {
       />
 
       <div className="max-w-3xl">
+        <h2 className="text-xl font-semibold text-slate-900 mb-1">Latest</h2>
+        <p className="text-slate-600 text-sm mb-6">
+          Worksheets added in the last 7 days — start here when something new
+          is uploaded.
+        </p>
+
         {loading && <p className="text-slate-600">Loading...</p>}
         {error && <p className="text-red-500">{error}</p>}
 
-        {!loading && !error && worksheets.length === 0 && (
-          <p className="text-slate-600">No worksheets yet. Check back soon!</p>
-        )}
-
-        {!loading && !error && worksheets.length > 0 && (
+        {!loading && !error && latest.length > 0 && (
           <WorksheetsBySubject
-            worksheets={worksheets}
+            worksheets={latest}
+            ungrouped
             onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
           />
         )}

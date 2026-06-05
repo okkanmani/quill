@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import StudentHome from "./pages/StudentHome";
+import StudentLatest from "./pages/StudentLatest";
 import AdminHome from "./pages/AdminHome";
 import AdminWorksheets from "./pages/AdminWorksheets";
 import AdminStudents from "./pages/AdminStudents";
@@ -20,6 +21,15 @@ export default function App() {
           element={
             <ProtectedRoute role="student">
               <StudentHome />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/latest"
+          element={
+            <ProtectedRoute role="student">
+              <StudentLatest />
             </ProtectedRoute>
           }
         />

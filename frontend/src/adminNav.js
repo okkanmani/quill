@@ -11,3 +11,17 @@ export const STUDENT_MAIN_NAV = [
   { to: "/student", label: "Your Worksheets", end: true },
   { to: "/student/learn", label: "Learning Resources", end: false },
 ];
+
+/** Student nav with Latest tab (disabled when hasLatest is false). */
+export function buildStudentNavLinks(hasLatest) {
+  return [
+    { to: "/student", label: "Your Worksheets", end: true },
+    {
+      to: "/student/latest",
+      label: "Latest",
+      end: true,
+      disabled: !hasLatest,
+    },
+    { to: "/student/learn", label: "Learning Resources", end: false },
+  ];
+}
