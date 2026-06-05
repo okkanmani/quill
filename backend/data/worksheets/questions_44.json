@@ -1,0 +1,270 @@
+{
+  "title": "English — Reading comprehension (4 passages, vocabulary focus)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-06-01T16:00:00Z",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Life in the Arctic",
+      "body": "The Arctic is a harsh region where winter temperatures can plunge far below freezing and sunlight disappears for weeks. Vegetation is sparse, yet hardy animals such as Arctic foxes, caribou, and wolves have adapted to survive. Wolves often travel in packs, cooperating to track prey across vast stretches of snow and ice. Their thick fur and padded paws help them endure the bitter cold. Scientists study these animals to learn how life can persist in extreme environments."
+    },
+    {
+      "id": "p2",
+      "title": "How a Bicycle Moves",
+      "body": "When you pedal a bicycle, your leg muscles supply energy that turns the chain and spins the rear wheel. This motion helps propel the bike forward. Handlebars let the rider steer, while brakes use friction to slow the wheels. Training wheels or good balance keep the bicycle stable at low speeds. On a hill, gravity can speed you up going down, but you must pedal harder to climb up."
+    },
+    {
+      "id": "p3",
+      "title": "Summer Thunderstorms",
+      "body": "On hot, humid afternoons, towering cumulonimbus clouds may build into thunderstorms. Inside the cloud, ice particles collide and create static electricity. A sudden discharge produces a luminous flash of lightning. The rapid heating of air sends out sound waves we hear as thunder. Because light travels faster than sound, the flash appears before the rumble. Counting the seconds between flash and thunder helps estimate how distant the storm is."
+    },
+    {
+      "id": "p4",
+      "title": "Recycling Aluminum Cans",
+      "body": "Aluminum drink cans are lightweight and easy to carry, but mining new aluminum uses large amounts of energy. Recycling lets manufacturers melt old cans and shape them into new ones. This process can renew the metal many times without losing quality. Communities place blue bins on curbs so families do not discard cans in regular trash. Choosing to recycle reduces landfill waste and saves electricity compared with making cans from raw ore."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "In the passage, the word \"harsh\" most nearly means —",
+      "choices": ["gentle and mild", "severe and difficult", "colourful and bright", "empty and silent"],
+      "answer": "severe and difficult",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "What is the main idea of the passage?",
+      "choices": [
+        "Arctic animals have adaptations that help them survive extreme cold.",
+        "Wolves are the only animals that live in the Arctic.",
+        "Scientists no longer study Arctic wildlife.",
+        "The Arctic has warm weather all year."
+      ],
+      "answer": "Arctic animals have adaptations that help them survive extreme cold.",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Which word is the best antonym (opposite) for \"sparse\" as used in the passage?",
+      "choices": ["abundant", "frozen", "distant", "hungry"],
+      "answer": "abundant",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, how do wolves increase their chances of catching prey?",
+      "choices": [
+        "They travel alone and hide underground.",
+        "They cooperate in packs to track prey.",
+        "They migrate south every winter.",
+        "They eat only plants when snow is deep."
+      ],
+      "answer": "They cooperate in packs to track prey.",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "The author mentions scientists mainly to show that —",
+      "choices": [
+        "Arctic research can teach us about survival in extreme places.",
+        "wolves should be moved to warmer climates.",
+        "the Arctic has no remaining wildlife.",
+        "packs of wolves are dangerous to researchers."
+      ],
+      "answer": "Arctic research can teach us about survival in extreme places.",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "In the passage, \"propel\" most nearly means —",
+      "choices": ["push or drive forward", "fall apart", "freeze in place", "measure carefully"],
+      "answer": "push or drive forward",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "What happens when a rider pedals the bicycle?",
+      "choices": [
+        "Leg energy turns the chain and spins the rear wheel.",
+        "The handlebars automatically pedal for the rider.",
+        "Gravity stops the bike from moving.",
+        "Friction makes the wheels spin faster forever."
+      ],
+      "answer": "Leg energy turns the chain and spins the rear wheel.",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Which word is the best antonym for \"stable\" as used in the passage?",
+      "choices": ["wobbly", "speedy", "heavy", "shiny"],
+      "answer": "wobbly",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, how do brakes slow a bicycle?",
+      "choices": [
+        "They use friction on the wheels.",
+        "They remove all gravity from the hill.",
+        "They add extra pedals to the frame.",
+        "They reflect light from the handlebars."
+      ],
+      "answer": "They use friction on the wheels.",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Why must a rider pedal harder when climbing a hill?",
+      "choices": [
+        "Gravity makes climbing more difficult than riding on flat ground.",
+        "Brakes automatically lock on every hill.",
+        "The chain disappears on slopes.",
+        "Handlebars cannot turn uphill."
+      ],
+      "answer": "Gravity makes climbing more difficult than riding on flat ground.",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "In the passage, \"luminous\" most nearly means —",
+      "choices": ["giving off light", "completely silent", "ice-cold", "far away"],
+      "answer": "giving off light",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "Why do we usually see lightning before we hear thunder?",
+      "choices": [
+        "Light travels faster than sound.",
+        "Thunder happens before lightning forms.",
+        "Clouds block sound but never light.",
+        "Lightning is always closer than thunder."
+      ],
+      "answer": "Light travels faster than sound.",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "Which word is the best antonym for \"rapid\" as used in the passage?",
+      "choices": ["slow", "bright", "loud", "frozen"],
+      "answer": "slow",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, what type of cloud is linked to thunderstorms?",
+      "choices": [
+        "Cumulonimbus clouds",
+        "Thin wispy cirrus clouds only",
+        "Low fog banks at ground level",
+        "Clouds that never contain ice"
+      ],
+      "answer": "Cumulonimbus clouds",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "What causes the sound of thunder, according to the passage?",
+      "choices": [
+        "Rapid heating of air sends out sound waves.",
+        "Ice particles stop moving completely.",
+        "Lightning removes all humidity from the sky.",
+        "Static electricity silences the air."
+      ],
+      "answer": "Rapid heating of air sends out sound waves.",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "In the passage, \"renew\" most nearly means —",
+      "choices": ["make usable again", "bury underground", "shatter into dust", "paint a new colour"],
+      "answer": "make usable again",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "What is one main reason communities recycle aluminum cans?",
+      "choices": [
+        "Recycling saves energy compared with mining new aluminum.",
+        "Cans become heavier after recycling.",
+        "Recycling removes all metal from the cans.",
+        "Landfills are cheaper when cans are thrown away."
+      ],
+      "answer": "Recycling saves energy compared with mining new aluminum.",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "Which word is the best antonym for \"discard\" as used in the passage?",
+      "choices": ["keep", "melt", "carry", "mine"],
+      "answer": "keep",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, what do manufacturers do with recycled cans?",
+      "choices": [
+        "Melt them and shape them into new cans.",
+        "Crush them so they can never be used again.",
+        "Ship them to space for storage.",
+        "Mix them with wood to build houses."
+      ],
+      "answer": "Melt them and shape them into new cans.",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "Blue curbside bins are mentioned to encourage families to —",
+      "choices": [
+        "separate cans for recycling instead of putting them in regular trash.",
+        "discard all metal in regular garbage.",
+        "stop buying drinks in cans.",
+        "store cans indoors forever."
+      ],
+      "answer": "separate cans for recycling instead of putting them in regular trash.",
+      "hint": false
+    }
+  ]
+}

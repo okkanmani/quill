@@ -1,0 +1,253 @@
+{
+  "title": "Science — Physics basics (forces, motion & energy)",
+  "subject": "science",
+  "scratchpad": false,
+  "created_at": "2026-06-01T16:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "Gravity on Earth pulls objects —",
+      "choices": [
+        "toward the centre of Earth",
+        "away from Earth into space",
+        "only sideways along the ground",
+        "only when objects are moving fast"
+      ],
+      "answer": "toward the centre of Earth",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "Friction is a force that —",
+      "choices": [
+        "always speeds objects up",
+        "opposes motion between surfaces that touch",
+        "only happens in water",
+        "makes objects weightless"
+      ],
+      "answer": "opposes motion between surfaces that touch",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "A magnet will strongly attract which material?",
+      "choices": ["Wood", "Plastic", "Iron", "Glass"],
+      "answer": "Iron",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "A force is best described as —",
+      "choices": [
+        "a push or a pull",
+        "the colour of an object",
+        "how loud a sound is",
+        "the amount of space matter takes up"
+      ],
+      "answer": "a push or a pull",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "Sound can travel through —",
+      "choices": [
+        "only empty space with no matter",
+        "solids, liquids, and gases",
+        "only air, never water",
+        "only metal objects"
+      ],
+      "answer": "solids, liquids, and gases",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "During a thunderstorm, you often see lightning before you hear thunder because —",
+      "choices": [
+        "light travels faster than sound",
+        "sound travels faster than light",
+        "thunder happens before lightning",
+        "clouds block sound but not light"
+      ],
+      "answer": "light travels faster than sound",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "A seesaw on a playground is an example of which simple machine?",
+      "choices": ["Pulley", "Lever", "Wedge", "Screw"],
+      "answer": "Lever",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "Energy of a moving soccer ball is called —",
+      "choices": [
+        "kinetic energy",
+        "chemical energy",
+        "nuclear energy",
+        "static electricity"
+      ],
+      "answer": "kinetic energy",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "A battery in a flashlight stores energy mainly as —",
+      "choices": [
+        "chemical energy",
+        "sound energy",
+        "gravitational energy",
+        "magnetic friction"
+      ],
+      "answer": "chemical energy",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "Using a pulley system on a flagpole makes it easier to —",
+      "choices": [
+        "lift a heavy flag upward",
+        "make the flag heavier",
+        "stop wind completely",
+        "change the colour of the flag"
+      ],
+      "answer": "lift a heavy flag upward",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "If you bring the north pole of one bar magnet close to the north pole of another bar magnet, the magnets will —",
+      "choices": ["attract", "repel", "melt", "lose all magnetism"],
+      "answer": "repel",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "When you look at yourself in a flat mirror, light is —",
+      "choices": [
+        "absorbed and destroyed",
+        "reflected back to your eyes",
+        "turned into sound",
+        "stopped completely by the glass"
+      ],
+      "answer": "reflected back to your eyes",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "Two identical balls are held at the same height above the ground. The heavier ball has —",
+      "choices": [
+        "more gravitational potential energy",
+        "less gravitational potential energy",
+        "no potential energy at all",
+        "the same potential energy because height is equal and mass does not matter"
+      ],
+      "answer": "more gravitational potential energy",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "Sound is produced when an object —",
+      "choices": [
+        "vibrates",
+        "freezes solid",
+        "reflects light only",
+        "loses all its mass"
+      ],
+      "answer": "vibrates",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "A long ramp (inclined plane) up to a loading dock helps because it —",
+      "choices": [
+        "reduces the force needed to push a load upward",
+        "eliminates friction completely",
+        "makes the load weigh less",
+        "turns kinetic energy into light"
+      ],
+      "answer": "reduces the force needed to push a load upward",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "Rubbing a balloon on your hair can make it stick to a wall. This is mainly an example of —",
+      "choices": [
+        "static electricity",
+        "chemical digestion",
+        "gravity turning off",
+        "sound reflection"
+      ],
+      "answer": "static electricity",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "A shadow forms when —",
+      "choices": [
+        "light is blocked by an object",
+        "sound waves bounce off a wall",
+        "a magnet touches iron",
+        "water evaporates into a cloud"
+      ],
+      "answer": "light is blocked by an object",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "Sandpaper feels rougher than polished wood. When you slide a block across both surfaces, sandpaper usually has —",
+      "choices": [
+        "more friction",
+        "less friction",
+        "no contact force",
+        "zero effect on motion"
+      ],
+      "answer": "more friction",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "A thermometer is used to measure —",
+      "choices": [
+        "temperature",
+        "magnetic force",
+        "the speed of light",
+        "electrical current in a wire"
+      ],
+      "answer": "temperature",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "Pushing a shopping cart on a smooth floor is easier than on a bumpy sidewalk mainly because the smooth floor has —",
+      "choices": [
+        "less friction",
+        "more gravity",
+        "stronger magnetism",
+        "higher temperature"
+      ],
+      "answer": "less friction",
+      "hint": false
+    }
+  ]
+}
