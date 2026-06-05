@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { getWorksheets } from "./api";
 import { buildStudentNavLinks } from "./adminNav";
-import { filterLatestWorksheets } from "./worksheetUtils";
+import { filterLatestUndoneWorksheets } from "./worksheetUtils";
 
 /** Shared worksheet fetch + student nav links (Latest disabled when nothing new this week). */
 export function useStudentNavLinks() {
@@ -23,7 +23,7 @@ export function useStudentNavLinks() {
   }, [location.key]);
 
   const latest = useMemo(
-    () => filterLatestWorksheets(worksheets),
+    () => filterLatestUndoneWorksheets(worksheets),
     [worksheets],
   );
 

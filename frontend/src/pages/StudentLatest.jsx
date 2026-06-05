@@ -36,8 +36,7 @@ export default function StudentLatest() {
       <div className="max-w-3xl">
         <h2 className="text-xl font-semibold text-slate-900 mb-1">Latest</h2>
         <p className="text-slate-600 text-sm mb-6">
-          Worksheets added in the last 7 days — start here when something new
-          is uploaded.
+          New worksheets from the last 7 days that you have not finished yet.
         </p>
 
         {loading && <p className="text-slate-600">Loading...</p>}
@@ -46,7 +45,6 @@ export default function StudentLatest() {
         {!loading && !error && latest.length > 0 && (
           <WorksheetsBySubject
             worksheets={latest}
-            ungrouped
             onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
           />
         )}
