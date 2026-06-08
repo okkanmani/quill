@@ -1,0 +1,168 @@
+{
+  "title": "Math — Mixed practice (Ontario Grade 5, moderate)",
+  "subject": "math",
+  "scratchpad": true,
+  "created_at": "2026-06-02T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "What is 2/5 + 3/4?",
+      "choices": ["5/9", "5/20", "23/20", "1/10"],
+      "answer": "23/20",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "What is 1.25 × 8?",
+      "choices": ["9.25", "10", "10.25", "16"],
+      "answer": "10",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "What is 45% of 80?",
+      "choices": ["32", "36", "40", "45"],
+      "answer": "36",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "Evaluate: (18 + 6) ÷ 4 × 2",
+      "choices": ["3", "6", "12", "48"],
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "A triangle has a base of 8 cm and a height of 5 cm. What is its area?",
+      "choices": ["13 cm²", "20 cm²", "40 cm²", "26 cm²"],
+      "answer": "20 cm²",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "What is 3.6 − 1.87?",
+      "choices": ["1.73", "1.83", "2.73", "1.93"],
+      "answer": "1.73",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "What is the least common multiple (LCM) of 6 and 8?",
+      "choices": ["14", "24", "48", "2"],
+      "answer": "24",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "After a 15% increase, a price is $46.00. What was the original price?",
+      "choices": ["$38.00", "$39.10", "$40.00", "$52.90"],
+      "answer": "$40.00",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "A ratio of blue to red paint is 3 : 5. If you mix 40 cups in total, how many cups are red?",
+      "choices": ["15", "20", "25", "30"],
+      "answer": "25",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "What is 7/8 − 2/5?",
+      "choices": ["5/3", "9/13", "19/40", "1/2"],
+      "answer": "19/40",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "A box is 6 cm long, 4 cm wide, and 2 cm tall. What is its volume?",
+      "choices": ["12 cm³", "24 cm³", "48 cm³", "52 cm³"],
+      "answer": "48 cm³",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "Find the mean of: 12, 15, 9, 18, 11",
+      "choices": ["12", "13", "14", "15"],
+      "answer": "13",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "What is 3/5 of 90?",
+      "choices": ["45", "54", "60", "27"],
+      "answer": "54",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 2x + 9 = 25",
+      "choices": ["x = 6", "x = 7", "x = 8", "x = 17"],
+      "answer": "x = 8",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "Two angles are supplementary. One measures 125°. What is the other?",
+      "choices": ["45°", "55°", "65°", "125°"],
+      "answer": "55°",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "What is 0.75 ÷ 0.25?",
+      "choices": ["0.3", "2", "3", "4"],
+      "answer": "3",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "A trail mix uses flour and sugar in a 5 : 3 ratio. You make 24 cups total. How many cups of flour?",
+      "choices": ["9", "12", "15", "18"],
+      "answer": "15",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "What is 4² + 3²?",
+      "choices": ["7", "14", "25", "49"],
+      "answer": "25",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "How many metres are in 2.5 km?",
+      "choices": ["250 m", "2,500 m", "25,000 m", "0.25 m"],
+      "answer": "2,500 m",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "A store has 240 items. It sells 3/8 of them. How many items remain?",
+      "choices": ["90", "120", "150", "180"],
+      "answer": "150",
+      "hint": false
+    }
+  ]
+}

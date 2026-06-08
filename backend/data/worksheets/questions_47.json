@@ -1,0 +1,285 @@
+{
+  "title": "English — Reading comprehension (longer passages, vocabulary focus)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-06-02T12:00:00Z",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Water on the Move",
+      "body": "The water cycle connects oceans, lakes, clouds, and living things in a continuous loop. When the sun heats surface water, some of it evaporates and rises as invisible water vapour. High in the atmosphere, the vapour cools and condenses into tiny droplets that cluster to form clouds. Winds may carry those clouds far from where the water first evaporated.\n\nEventually the droplets merge and grow heavy enough to fall as rain, snow, or hail — together called precipitation. Much of this water soaks into soil, feeds plants, or runs into rivers that return it to the sea. Although water changes state among solid, liquid, and gas, the total amount of water on Earth stays nearly the same; it mainly relocates and recycles."
+    },
+    {
+      "id": "p2",
+      "title": "A Fizzing Experiment",
+      "body": "In many classrooms, students mix baking soda with vinegar to observe a lively chemical reaction. Baking soda is a base, and vinegar contains acetic acid. When they combine, they form new substances, including carbon dioxide gas. The gas appears as bubbles that rush upward, which is why the mixture fizzes vigorously.\n\nThis reaction is different from simply stirring sugar into water. Dissolving sugar is a physical change because the sugar molecules remain sugar. In the baking-soda-and-vinegar reaction, new chemicals are produced, so it is a chemical change. Safety goggles are worn because even common kitchen chemicals should be handled carefully in experiments."
+    },
+    {
+      "id": "p3",
+      "title": "Elements Around Us",
+      "body": "Chemists organize pure substances called elements on the periodic table. Each element is made of one kind of atom, identified by a name and symbol such as O for oxygen or Fe for iron. Elements can combine in fixed ratios to form compounds. Water, for example, is always two hydrogen atoms bonded to one oxygen atom.\n\nSome elements, like gold and copper, occur naturally as shiny metals humans have used for tools and jewellery for thousands of years. Others, like nitrogen and oxygen, make up most of the air we breathe. Learning the periodic table helps scientists predict how materials will behave and how they might react when mixed or heated."
+    },
+    {
+      "id": "p4",
+      "title": "Slowing Spoilage",
+      "body": "Fresh fruit and bread spoil when microbes and oxygen break down nutrients over time. People have developed many methods to preserve food. Refrigeration slows bacterial growth by lowering temperature. Sealing food in airtight containers limits oxygen exposure. Pickling uses acidic brine to create an environment where harmful bacteria struggle to multiply.\n\nSome preservatives are natural, such as vitamin E or citric acid from citrus fruits. Others are added in small, regulated amounts during manufacturing. Reading ingredient labels can reveal which methods a company used. Understanding preservation is practical chemistry: it connects molecular change to everyday choices in kitchens and grocery stores."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "In the passage, \"condenses\" most nearly means —",
+      "choices": [
+        "turns from gas into tiny liquid droplets",
+        "disappears forever",
+        "freezes instantly into hail only",
+        "evaporates into invisible vapour"
+      ],
+      "answer": "turns from gas into tiny liquid droplets",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "What is the main idea of the passage?",
+      "choices": [
+        "Water moves through evaporation, cloud formation, and precipitation in a repeating cycle.",
+        "Clouds never travel away from oceans.",
+        "The amount of water on Earth increases every year.",
+        "Plants create new water atoms from sunlight."
+      ],
+      "answer": "Water moves through evaporation, cloud formation, and precipitation in a repeating cycle.",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Which word is the best antonym for \"continuous\" as used in the first paragraph?",
+      "choices": ["interrupted", "invisible", "heavy", "solar"],
+      "answer": "interrupted",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, what happens to most precipitation that reaches the land?",
+      "choices": [
+        "It soaks into soil, feeds plants, or flows into rivers.",
+        "It stays frozen permanently on mountaintops.",
+        "It is destroyed and cannot return to the sea.",
+        "It only remains inside clouds."
+      ],
+      "answer": "It soaks into soil, feeds plants, or flows into rivers.",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "The author states that Earth's total water amount stays nearly the same mainly because water —",
+      "choices": [
+        "recycles among different places and states",
+        "is created anew by every rainfall",
+        "never evaporates from lakes",
+        "exists only as a solid"
+      ],
+      "answer": "recycles among different places and states",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "In the passage, \"vigorously\" most nearly means —",
+      "choices": ["with strong, lively force", "very slowly", "without any bubbles", "in complete silence"],
+      "answer": "with strong, lively force",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Why does the mixture fizz when baking soda and vinegar combine?",
+      "choices": [
+        "Carbon dioxide gas is produced and escapes as bubbles.",
+        "The vinegar freezes into solid ice.",
+        "Sugar molecules dissolve completely.",
+        "No new substances are formed."
+      ],
+      "answer": "Carbon dioxide gas is produced and escapes as bubbles.",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Which word is the best antonym for \"physical\" as used when describing dissolving sugar?",
+      "choices": ["chemical", "common", "careful", "kitchen"],
+      "answer": "chemical",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "How is dissolving sugar in water different from the baking-soda-and-vinegar reaction?",
+      "choices": [
+        "Dissolving sugar is a physical change; the vinegar reaction forms new chemicals.",
+        "Both are chemical changes that create carbon dioxide.",
+        "Only vinegar reactions require goggles.",
+        "Sugar turns into acetic acid when stirred."
+      ],
+      "answer": "Dissolving sugar is a physical change; the vinegar reaction forms new chemicals.",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Why does the passage mention safety goggles?",
+      "choices": [
+        "To remind students to handle even common chemicals carefully.",
+        "Because vinegar always explodes without them.",
+        "Because baking soda is a radioactive element.",
+        "Because goggles make the reaction faster."
+      ],
+      "answer": "To remind students to handle even common chemicals carefully.",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "In the passage, \"pure\" most nearly means —",
+      "choices": [
+        "made of only one kind of substance",
+        "mixed with many rocks",
+        "always a liquid",
+        "impossible to identify"
+      ],
+      "answer": "made of only one kind of substance",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, what is true about water as a compound?",
+      "choices": [
+        "It always has two hydrogen atoms and one oxygen atom.",
+        "It is a single element listed as W on the table.",
+        "It cannot be formed from elements.",
+        "It contains only nitrogen atoms."
+      ],
+      "answer": "It always has two hydrogen atoms and one oxygen atom.",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "Which word is the best antonym for \"predict\" as used in the final sentence?",
+      "choices": ["guess randomly without evidence", "organize", "identify", "combine"],
+      "answer": "guess randomly without evidence",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "Which pair of elements does the passage say make up most of the air we breathe?",
+      "choices": [
+        "Nitrogen and oxygen",
+        "Gold and copper",
+        "Iron and hydrogen only",
+        "Carbon and helium only"
+      ],
+      "answer": "Nitrogen and oxygen",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "Why is the periodic table useful, according to the passage?",
+      "choices": [
+        "It helps scientists understand how materials behave and react.",
+        "It lists only metals used for jewellery.",
+        "It proves that atoms cannot combine.",
+        "It replaces the need for experiments."
+      ],
+      "answer": "It helps scientists understand how materials behave and react.",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "In the passage, \"spoil\" most nearly means —",
+      "choices": [
+        "go bad or break down",
+        "freeze solid",
+        "become sweeter over time",
+        "grow larger and fresher"
+      ],
+      "answer": "go bad or break down",
+      "hint": false
+    },
+    {
+      "id": "p17",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "How does refrigeration help preserve food?",
+      "choices": [
+        "It slows bacterial growth by lowering temperature.",
+        "It removes all oxygen from fruit instantly.",
+        "It turns bread into metal.",
+        "It adds citric acid automatically."
+      ],
+      "answer": "It slows bacterial growth by lowering temperature.",
+      "hint": false
+    },
+    {
+      "id": "p18",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "Which word is the best antonym for \"harmful\" as used when describing bacteria in pickling?",
+      "choices": ["helpful", "acidic", "airtight", "natural"],
+      "answer": "helpful",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, what can ingredient labels tell a shopper?",
+      "choices": [
+        "Which preservation methods a company used",
+        "The exact temperature of every refrigerator",
+        "How to grow microbes at home",
+        "That all preservatives are unsafe in every amount"
+      ],
+      "answer": "Which preservation methods a company used",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "The author connects food preservation to chemistry mainly to show that —",
+      "choices": [
+        "molecular change relates to everyday kitchen and shopping choices",
+        "chemistry only happens in distant laboratories",
+        "labels are never useful to read",
+        "pickling removes all nutrients from fruit"
+      ],
+      "answer": "molecular change relates to everyday kitchen and shopping choices",
+      "hint": false
+    }
+  ]
+}

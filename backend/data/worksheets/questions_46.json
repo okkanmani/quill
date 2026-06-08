@@ -1,0 +1,248 @@
+{
+  "title": "Science — Chemistry basics (matter, mixtures & changes)",
+  "subject": "science",
+  "scratchpad": false,
+  "created_at": "2026-06-02T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "Which state of matter has a fixed volume but takes the shape of its container?",
+      "choices": ["Solid", "Liquid", "Gas", "Plasma only"],
+      "answer": "Liquid",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "The smallest unit of an element that keeps the properties of that element is called —",
+      "choices": ["a molecule", "an atom", "a mixture", "a compound only"],
+      "answer": "an atom",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "Water (H₂O) is an example of —",
+      "choices": [
+        "a pure element",
+        "a compound made of hydrogen and oxygen",
+        "a mechanical mixture of sand",
+        "a metal alloy"
+      ],
+      "answer": "a compound made of hydrogen and oxygen",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "Crushing a chalk stick into powder is best described as —",
+      "choices": [
+        "a chemical change",
+        "a physical change",
+        "a new element forming",
+        "combustion"
+      ],
+      "answer": "a physical change",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "When iron rusts in moist air, the iron —",
+      "choices": [
+        "stays exactly the same material",
+        "undergoes a chemical change to form a new substance",
+        "only changes shape physically",
+        "turns into liquid water"
+      ],
+      "answer": "undergoes a chemical change to form a new substance",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "Salt dissolved in water makes —",
+      "choices": [
+        "a solution",
+        "a new element",
+        "a solid alloy",
+        "an insoluble rock"
+      ],
+      "answer": "a solution",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "Which tool is used to measure the volume of a liquid most accurately in a lab?",
+      "choices": [
+        "A ruler",
+        "A graduated cylinder",
+        "A thermometer",
+        "A magnet"
+      ],
+      "answer": "A graduated cylinder",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "Baking soda mixed with vinegar produces bubbles of —",
+      "choices": ["oxygen gas", "carbon dioxide gas", "liquid metal", "solid salt only"],
+      "answer": "carbon dioxide gas",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Which is a pure substance?",
+      "choices": [
+        "Air in a classroom",
+        "Salt water",
+        "Gold metal",
+        "Trail mix"
+      ],
+      "answer": "Gold metal",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "Melting an ice cube is —",
+      "choices": [
+        "a physical change",
+        "a chemical change that creates a new element",
+        "combustion",
+        "rusting"
+      ],
+      "answer": "a physical change",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "A mixture of iron filings and sand can often be separated using —",
+      "choices": [
+        "a magnet",
+        "a filter paper only",
+        "freezing",
+        "burning"
+      ],
+      "answer": "a magnet",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "The particles in a gas are generally —",
+      "choices": [
+        "close together and vibrating in fixed positions",
+        "far apart and moving freely",
+        "locked in a crystal shape only",
+        "heavier than solid particles always"
+      ],
+      "answer": "far apart and moving freely",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "Lemon juice tastes sour partly because it is —",
+      "choices": [
+        "an acid",
+        "a neutral gas",
+        "a strong base like soap",
+        "a pure metal"
+      ],
+      "answer": "an acid",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "When sugar dissolves in tea, the sugar particles —",
+      "choices": [
+        "spread out among the water particles",
+        "disappear completely from the universe",
+        "turn into gold",
+        "become visible chunks at the bottom only"
+      ],
+      "answer": "spread out among the water particles",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "Burning wood in a campfire is —",
+      "choices": [
+        "a chemical change",
+        "only a physical change",
+        "the same as melting wax with no new substances",
+        "a way to create water from nothing"
+      ],
+      "answer": "a chemical change",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "Which property helps you tell copper wire apart from aluminum wire?",
+      "choices": [
+        "Colour and conductivity",
+        "Only the day of the week",
+        "How loud it sounds when dropped",
+        "Whether it can become a gas instantly"
+      ],
+      "answer": "Colour and conductivity",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "Evaporation happens when liquid water gains enough energy to become —",
+      "choices": ["water vapour (gas)", "solid ice only", "iron", "salt crystals instantly"],
+      "answer": "water vapour (gas)",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "A pH strip turning blue in soapy water suggests the soap is —",
+      "choices": [
+        "basic (alkaline)",
+        "a strong acid",
+        "a pure metal",
+        "always neutral"
+      ],
+      "answer": "basic (alkaline)",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "Which statement about the law of conservation of mass is correct?",
+      "choices": [
+        "Mass is not created or destroyed in a closed chemical reaction",
+        "Mass always disappears when ice melts",
+        "Burning always removes all atoms from existence",
+        "Mixing two liquids always doubles the mass"
+      ],
+      "answer": "Mass is not created or destroyed in a closed chemical reaction",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "Oxygen gas in the air is important for —",
+      "choices": [
+        "burning and cellular respiration",
+        "making rocks melt into metal only",
+        "turning water into salt automatically",
+        "blocking all chemical changes"
+      ],
+      "answer": "burning and cellular respiration",
+      "hint": false
+    }
+  ]
+}
