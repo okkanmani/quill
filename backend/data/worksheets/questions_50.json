@@ -1,0 +1,270 @@
+{
+  "title": "English — Reading comprehension (200–250 words, vocabulary challenge)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-06-03T12:00:00Z",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Nature's Engineers",
+      "body": "Beavers are industrious rodents that transform stream habitats across much of Canada. With sharp incisors they fell young trees, then drag branches to a narrow stretch of water. They pile and weave wood with mud until a sturdy dam forms, spreading water into a calm pond behind it. The sound of trickling water triggers more building, so dams can grow throughout a season.\n\nThe pond shields the beaver lodge from predators and allows underwater entrances to the family home. Other species benefit as well: ducks nest along the shore, fish find shelter among submerged branches, and wetlands store water that can reduce downstream flooding after heavy rain. Beaver ponds also trap sediment, which can improve water quality slowly over time. Still, beavers sometimes conflict with farmers when flooded fields damage crops or when trees along scenic roads are gnawed down.\n\nWildlife managers may install flow devices that lower water levels gently while letting beavers remain. This compromise recognizes that beavers are not mere nuisances but engineers whose dams can increase biodiversity. Observing how one species reshapes its surroundings helps scientists understand keystone roles within an ecosystem. Students who visit wetland parks can often see stumps shaped like hourglasses, evidence of beaver activity that reshaped the land long before people arrived."
+    },
+    {
+      "id": "p2",
+      "title": "Monarchs on the Move",
+      "body": "Each autumn, millions of monarch butterflies begin an arduous migration from Canada and the northern United States toward central Mexico. Individual butterflies do not complete the round trip; instead, several short-lived generations cooperate across seasons. Along the way, adults fuel up on nectar from asters, goldenrod, and other late-blooming flowers that provide energy for long flights.\n\nMigrating monarchs face mounting hazards. Habitat loss removes milkweed, the only plant their caterpillars eat. Pesticides can poison larvae, and severe storms may blow travelers off course. Even bright city lights can confuse navigation at night. Citizen scientists who tag butterflies and record sightings provide data that conservationists use to protect rest stops along the flyway.\n\nWhen monarchs reach oyamel fir forests in Mexico, they cluster in vast, trembling curtains of orange and black. The cool mountain climate slows their metabolism so they can survive the winter without feeding constantly. Local communities and international agreements now guard some forests from illegal logging. School groups in Ontario sometimes raise caterpillars on potted milkweed to witness metamorphosis firsthand. Protecting both breeding grounds in the north and overwintering forests in the south is essential if future generations are to continue this remarkable journey that links three countries on one fragile thread of habitat."
+    },
+    {
+      "id": "p3",
+      "title": "How Vaccines Train the Body",
+      "body": "Vaccines prepare the immune system to recognize dangerous germs before a serious infection occurs. A vaccine may contain weakened or inactive parts of a pathogen, or instructions for cells to build a harmless fragment that resembles the germ. The immune system responds by producing specialized proteins called antibodies and by remembering the invader in memory cells that can persist for years.\n\nIf the real pathogen later enters the body, memory cells mobilize quickly to attack it. This accelerated response can prevent illness or make it milder. Vaccination therefore protects individuals and, when enough people are immunized, can limit how easily a disease spreads through a community. Historians note that widespread vaccination helped control diseases that once disabled or killed large numbers of children.\n\nPublic health campaigns emphasize rigorous testing before vaccines are approved. Researchers monitor trials for safety and effectiveness, then continue tracking rare side effects after release. Side effects are usually minor, such as a sore arm, because the immune reaction shows the system is learning. Understanding vaccines requires distinguishing between temporary discomfort and the far greater risks of unchecked epidemics. In classrooms, this topic links biology to responsible civic choices about protecting neighbors who cannot be vaccinated for medical reasons."
+    },
+    {
+      "id": "p4",
+      "title": "Layers of the Rainforest",
+      "body": "A tropical rainforest is structured like a living skyscraper with distinct layers, each hosting specialized communities. The emergent layer consists of the tallest trees that poke above the main canopy, enduring intense sun and wind. Eagles and bats may roost there, exposed to drying breezes that would wilt shade-loving ferns below.\n\nBeneath them lies the dense canopy, where broad leaves intercept most sunlight and form highways for monkeys, birds, and insects. Epiphytes—plants that grow on branches without soil—collect rainwater in miniature gardens high above the ground. The understory is dimmer and humid. Young trees, ferns, and shade-tolerant plants grow slowly, waiting for a gap when a fallen tree opens a patch of light.\n\nCloser to the ground, the forest floor receives little direct sunlight. Decomposers break down fallen leaves, recycling nutrients that roots capture again. Rainforests occupy a small fraction of Earth's surface yet shelter a disproportionate share of the world's species, including insects scientists have never formally named. Deforestation for logging or agriculture fragments habitats and releases stored carbon that trees had held for decades. Conservation efforts focus on protected reserves, ecotourism that funds guards, and sustainable harvesting so that the layered architecture—and the intricate food webs it supports—can persist for generations rather than vanish within a single lifetime."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "In the passage, \"industrious\" most nearly means —",
+      "choices": ["hard-working and persistent", "lazy and careless", "dangerous and violent", "silent and invisible"],
+      "answer": "hard-working and persistent",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Which word is the best antonym for \"sturdy\" as used to describe the dam?",
+      "choices": ["fragile", "calm", "underwater", "downstream"],
+      "answer": "fragile",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "Why does the passage call beavers \"engineers\"?",
+      "choices": [
+        "They deliberately reshape waterways and create habitats used by many species.",
+        "They design metal machines for farmers.",
+        "They only eat crops planted by humans.",
+        "They prevent all flooding everywhere."
+      ],
+      "answer": "They deliberately reshape waterways and create habitats used by many species.",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "A \"keystone species\" in the final paragraph most likely means an organism that —",
+      "choices": [
+        "has an unusually large effect on its ecosystem relative to its abundance",
+        "is always the largest predator present",
+        "never interacts with other species",
+        "lives only in cities"
+      ],
+      "answer": "has an unusually large effect on its ecosystem relative to its abundance",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "prompt": "What is one reason wildlife managers install flow devices instead of removing all beavers?",
+      "choices": [
+        "To reduce flooding damage while keeping ecological benefits beavers provide.",
+        "To teach beavers to stop building with mud.",
+        "To eliminate biodiversity in wetlands.",
+        "To prevent ducks from nesting near water."
+      ],
+      "answer": "To reduce flooding damage while keeping ecological benefits beavers provide.",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "In the passage, \"arduous\" most nearly means —",
+      "choices": ["difficult and tiring", "short and easy", "colorful and decorative", "silent and secret"],
+      "answer": "difficult and tiring",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Which word is the best antonym for \"mounting\" as used to describe hazards?",
+      "choices": ["decreasing", "migrating", "nectar-rich", "orange"],
+      "answer": "decreasing",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "According to the passage, why is milkweed especially important to monarchs?",
+      "choices": [
+        "It is the only plant their caterpillars eat.",
+        "It provides winter shelter in Mexico.",
+        "It stops butterflies from needing nectar.",
+        "It prevents storms during migration."
+      ],
+      "answer": "It is the only plant their caterpillars eat.",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "What can be inferred about monarch generations and the migration?",
+      "choices": [
+        "No single butterfly lives long enough to complete the entire round trip.",
+        "Each butterfly returns to Canada every winter.",
+        "Only caterpillars, never adults, travel to Mexico.",
+        "Generations refuse to cooperate across seasons."
+      ],
+      "answer": "No single butterfly lives long enough to complete the entire round trip.",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "prompt": "Why does the cool mountain climate in Mexico help overwintering monarchs?",
+      "choices": [
+        "It slows their metabolism so they use less energy.",
+        "It allows them to photosynthesize like plants.",
+        "It forces them to fly north immediately.",
+        "It removes the need to cluster together."
+      ],
+      "answer": "It slows their metabolism so they use less energy.",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "In the passage, \"mobilize\" most nearly means —",
+      "choices": ["activate and move into action", "forget completely", "spread a disease", "remain inactive forever"],
+      "answer": "activate and move into action",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "Which word is the best antonym for \"harmless\" as used to describe the vaccine fragment?",
+      "choices": ["dangerous", "inactive", "specialized", "responsible"],
+      "answer": "dangerous",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "What is the main purpose of a vaccine, according to the passage?",
+      "choices": [
+        "To train the immune system to recognize a germ before a real infection.",
+        "To destroy memory cells in the body.",
+        "To replace antibodies with pathogens.",
+        "To guarantee that germs never exist in a community."
+      ],
+      "answer": "To train the immune system to recognize a germ before a real infection.",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "When \"enough people are immunized\" limits disease spread, this idea is known as —",
+      "choices": [
+        "community protection (herd immunity)",
+        "photosynthesis",
+        "metamorphosis",
+        "deforestation"
+      ],
+      "answer": "community protection (herd immunity)",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "prompt": "The author contrasts a sore arm with epidemic risks mainly to show that —",
+      "choices": [
+        "minor side effects are usually smaller than the dangers of widespread disease.",
+        "vaccines never cause any immune response.",
+        "epidemics are always harmless.",
+        "testing is unnecessary for new vaccines."
+      ],
+      "answer": "minor side effects are usually smaller than the dangers of widespread disease.",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "In the passage, \"intercept\" most nearly means —",
+      "choices": ["catch or block before passing through", "plant deeply underground", "melt into water", "hide inside animal fur"],
+      "answer": "catch or block before passing through",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "Which word is the best antonym for \"tolerant\" as used for understory plants?",
+      "choices": ["intolerant", "humid", "dense", "emergent"],
+      "answer": "intolerant",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "Why do plants on the forest floor grow slowly, according to the passage?",
+      "choices": [
+        "They receive little direct sunlight.",
+        "They are all tall emergent trees.",
+        "Decomposers remove all nutrients permanently.",
+        "Monkeys eat every seed immediately."
+      ],
+      "answer": "They receive little direct sunlight.",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "What does the phrase \"disproportionate share of the world's species\" suggest?",
+      "choices": [
+        "Rainforests hold more kinds of organisms than their small area might predict.",
+        "Rainforests contain fewer species than deserts.",
+        "Species are evenly spread across every biome.",
+        "Only decomposers live in rainforests."
+      ],
+      "answer": "Rainforests hold more kinds of organisms than their small area might predict.",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "prompt": "The author mentions releasing stored carbon during deforestation to imply that —",
+      "choices": [
+        "cutting forests may worsen climate change as well as destroy habitats.",
+        "carbon is harmless and never stored in trees.",
+        "logging automatically increases biodiversity.",
+        "the canopy layer is unimportant to food webs."
+      ],
+      "answer": "cutting forests may worsen climate change as well as destroy habitats.",
+      "hint": false
+    }
+  ]
+}

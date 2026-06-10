@@ -1,0 +1,203 @@
+{
+  "title": "Science — Biology basics (living things, cells & ecosystems)",
+  "subject": "science",
+  "scratchpad": false,
+  "created_at": "2026-06-03T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "Which process allows green plants to make food using sunlight?",
+      "choices": ["Photosynthesis", "Respiration only", "Digestion", "Fermentation"],
+      "answer": "Photosynthesis",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "In a food chain, organisms that make their own food (such as plants) are called —",
+      "choices": ["producers", "consumers", "decomposers", "predators only"],
+      "answer": "producers",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "The basic unit of life in all living things is the —",
+      "choices": ["cell", "atom", "organ only", "ecosystem"],
+      "answer": "cell",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "Which part of a plant anchors it in soil and absorbs water?",
+      "choices": ["Roots", "Petals", "Stomata on leaves only", "Fruit"],
+      "answer": "Roots",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "Animals with a backbone are called —",
+      "choices": ["vertebrates", "invertebrates", "producers", "decomposers"],
+      "answer": "vertebrates",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "A butterfly changing from a caterpillar into an adult is an example of —",
+      "choices": ["metamorphosis", "photosynthesis", "erosion", "evaporation"],
+      "answer": "metamorphosis",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "An ecosystem includes living organisms and their —",
+      "choices": [
+        "non-living surroundings such as water, air, and soil",
+        "only human-made buildings",
+        "only predators",
+        "only the weather on one afternoon"
+      ],
+      "answer": "non-living surroundings such as water, air, and soil",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "Bees carrying pollen from flower to flower help plants —",
+      "choices": ["reproduce", "photosynthesize in the dark", "grow roots underground only", "become animals"],
+      "answer": "reproduce",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "Fungi and bacteria that break down dead plants and animals are often called —",
+      "choices": ["decomposers", "producers", "herbivores only", "migrating birds"],
+      "answer": "decomposers",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "Camouflage helps some animals —",
+      "choices": [
+        "blend in with their surroundings to avoid predators",
+        "produce oxygen for the forest",
+        "change from larva to adult",
+        "digest only meat"
+      ],
+      "answer": "blend in with their surroundings to avoid predators",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "Which organ system includes the brain, spinal cord, and nerves?",
+      "choices": ["Nervous system", "Digestive system", "Circulatory system", "Skeletal system only"],
+      "answer": "Nervous system",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "Fish breathe dissolved oxygen using —",
+      "choices": ["gills", "lungs like mammals", "roots", "stomata"],
+      "answer": "gills",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "When Canada geese fly south for winter, this seasonal movement is called —",
+      "choices": ["migration", "metamorphosis", "pollination", "decomposition"],
+      "answer": "migration",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "A habitat is best described as —",
+      "choices": [
+        "the place where an organism lives and finds what it needs",
+        "only the predators in a forest",
+        "a single cell in a leaf",
+        "the same as a food chain"
+      ],
+      "answer": "the place where an organism lives and finds what it needs",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "Plant cells often have a rigid outer wall and a green structure called a chloroplast. Chloroplasts help plants —",
+      "choices": ["capture light for photosynthesis", "pump blood", "digest meat", "lay eggs"],
+      "answer": "capture light for photosynthesis",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "In a food web, if many rabbits disappear from a meadow, the fox population might —",
+      "choices": [
+        "decline because there is less prey",
+        "double instantly without any change in food",
+        "turn into plants",
+        "stop needing water"
+      ],
+      "answer": "decline because there is less prey",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "Humans and other mammals get oxygen into the blood mainly through the —",
+      "choices": ["lungs", "roots", "chloroplasts", "exoskeleton"],
+      "answer": "lungs",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "Biodiversity means —",
+      "choices": [
+        "many different kinds of living things in an area",
+        "only one species living everywhere",
+        "the absence of decomposers",
+        "rocks with no organisms"
+      ],
+      "answer": "many different kinds of living things in an area",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "Seeds spread when animals eat fruit and later deposit seeds in new places. This helps plants —",
+      "choices": [
+        "colonize new areas away from the parent plant",
+        "photosynthesize without sunlight",
+        "become vertebrates",
+        "avoid water forever"
+      ],
+      "answer": "colonize new areas away from the parent plant",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "Which statement best describes the difference between a food chain and a food web?",
+      "choices": [
+        "A food web shows many connected feeding relationships; a food chain shows one path.",
+        "A food web has only producers; a food chain has only consumers.",
+        "They are exactly the same diagram.",
+        "A food chain includes only non-living things."
+      ],
+      "answer": "A food web shows many connected feeding relationships; a food chain shows one path.",
+      "hint": false
+    }
+  ]
+}

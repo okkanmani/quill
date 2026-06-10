@@ -1,0 +1,168 @@
+{
+  "title": "Math — Mixed practice (Ontario Grade 5, slightly difficult)",
+  "subject": "math",
+  "scratchpad": true,
+  "created_at": "2026-06-03T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "prompt": "What is 1 2/3 + 2 3/4?",
+      "choices": ["3 5/7", "4 1/12", "4 5/12", "53/12"],
+      "answer": "53/12",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "prompt": "65% of a number is 52. What is the number?",
+      "choices": ["65", "72", "80", "84"],
+      "answer": "80",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "prompt": "Evaluate: (16 − 4) ÷ 3 + 5 × 2",
+      "choices": ["10", "12", "14", "18"],
+      "answer": "14",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "prompt": "A rectangular field is 15 m long and 8 m wide. What is its area?",
+      "choices": ["46 m²", "92 m²", "120 m²", "240 m²"],
+      "answer": "120 m²",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "prompt": "What is 4/7 × 3/5?",
+      "choices": ["7/12", "12/35", "7/35", "1/2"],
+      "answer": "12/35",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "prompt": "What is 3.2 × 1.5?",
+      "choices": ["4.5", "4.7", "4.8", "5.8"],
+      "answer": "4.8",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "prompt": "What is the greatest common factor (GCF) of 36 and 54?",
+      "choices": ["6", "9", "18", "36"],
+      "answer": "18",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "prompt": "A jacket costs $72.00. It is discounted by 25%. What is the sale price?",
+      "choices": ["$18.00", "$54.00", "$58.00", "$63.00"],
+      "answer": "$54.00",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "prompt": "What is 5/8 − 1/3?",
+      "choices": ["4/5", "7/24", "1/2", "4/24"],
+      "answer": "7/24",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "prompt": "A box is 5 cm by 4 cm by 3 cm. What is its volume?",
+      "choices": ["12 cm³", "60 cm³", "47 cm³", "120 cm³"],
+      "answer": "60 cm³",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "prompt": "Solve for x: 3(x − 2) = 18",
+      "choices": ["x = 4", "x = 6", "x = 8", "x = 10"],
+      "answer": "x = 8",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "prompt": "Find the mean of: 14, 16, 12, 18, 15",
+      "choices": ["14", "15", "16", "17"],
+      "answer": "15",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "prompt": "A ratio of red : blue : green paint is 2 : 3 : 5. If you mix 60 cups total, how many cups are green?",
+      "choices": ["12", "18", "24", "30"],
+      "answer": "30",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "prompt": "Two angles are supplementary. One measures 138°. What is the other?",
+      "choices": ["32°", "42°", "48°", "52°"],
+      "answer": "42°",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "prompt": "What is 0.48 ÷ 0.6?",
+      "choices": ["0.08", "0.8", "8", "0.288"],
+      "answer": "0.8",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "prompt": "A school buys 8 packs with 12 pencils each. It gives away 37 pencils. How many pencils remain?",
+      "choices": ["49", "55", "59", "63"],
+      "answer": "59",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "prompt": "What is 2/3 ÷ 4/9?",
+      "choices": ["8/27", "1/2", "3/2", "2"],
+      "answer": "3/2",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "prompt": "A pattern starts at 7 and adds 9 each time: 7, 16, 25, … What is the 7th term?",
+      "choices": ["52", "61", "70", "79"],
+      "answer": "61",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "prompt": "How many millilitres are in 1.75 L?",
+      "choices": ["175 mL", "1,750 mL", "17,500 mL", "0.175 mL"],
+      "answer": "1,750 mL",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "prompt": "A store marks up an item that cost $45 by 20%. What is the selling price?",
+      "choices": ["$50.00", "$54.00", "$56.00", "$65.00"],
+      "answer": "$54.00",
+      "hint": false
+    }
+  ]
+}
