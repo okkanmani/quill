@@ -38,6 +38,41 @@ def _apply_learn_section_title(out: dict) -> None:
             break
 
 
+def _difficulty_from_sheet_data(data: dict) -> dict:
+    """Difficulty 1=easy, 2=medium, 3=hard. From worksheet difficulty or per-question stars."""
+    meta: dict = {}
+    root = data.get("difficulty")
+    if isinstance(root, bool):
+        root = None
+    if isinstance(root, (int, float)) and int(root) in (1, 2, 3):
+        d = int(root)
+        meta["difficulty_min"] = d
+        meta["difficulty_max"] = d
+        return meta
+    stars: list[int] = []
+    for q in data.get("questions") or []:
+        s = q.get("stars")
+        if isinstance(s, bool):
+            s = None
+        if isinstance(s, (int, float)) and int(s) in (1, 2, 3):
+            stars.append(int(s))
+    if stars:
+        meta["difficulty_min"] = min(stars)
+        meta["difficulty_max"] = max(stars)
+    return meta
+
+
+def _resolve_difficulty_metadata(worksheet_id: str) -> dict:
+    json_path = WORKSHEETS_DIR / f"{worksheet_id}.json"
+    if not json_path.is_file():
+        return {}
+    try:
+        with open(json_path, encoding="utf-8") as f:
+            return _difficulty_from_sheet_data(json.load(f))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
 def _resolve_learn_metadata(
     worksheet_id: str,
     row_learn_subject,
@@ -261,6 +296,7 @@ def list_worksheets(student_name: str | None = None) -> list:
                     r["id"], r["learn_subject"], r["learn_section"]
                 )
             )
+            item.update(_resolve_difficulty_metadata(r["id"]))
             ls_ = r["last_score"]
             lt_ = r["last_total"]
             if ls_ is not None and lt_ is not None and int(lt_) > 0:
@@ -307,6 +343,7 @@ def get_worksheet(worksheet_id: str) -> dict | None:
                 worksheet_id, row["learn_subject"], row["learn_section"]
             )
         )
+        out.update(_resolve_difficulty_metadata(worksheet_id))
         return out
     finally:
         conn.close()

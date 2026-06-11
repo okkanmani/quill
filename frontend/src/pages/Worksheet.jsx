@@ -3,6 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getWorksheet, submitResult, logout } from "../api";
 import AppHeader from "../components/AppHeader";
 import Drawpad from "../components/Drawpad";
+import {
+  DifficultyStars,
+  QuestionDifficultyStars,
+} from "../components/DifficultyStars";
 
 export default function Worksheet() {
   const { id } = useParams();
@@ -85,9 +89,12 @@ export default function Worksheet() {
             : "border-slate-200"
         }`}
       >
-        <p className="text-slate-900 font-medium mb-3">
-          {index + 1}. {q.prompt}
-        </p>
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <p className="text-slate-900 font-medium flex-1">
+            {index + 1}. {q.prompt}
+          </p>
+          <QuestionDifficultyStars stars={q.stars} />
+        </div>
         {scratchpadAllowed && scratchpadsVisible && (
           <Drawpad key={`scratch-${id}-${q.id}`} showHeading={false} />
         )}
@@ -193,9 +200,16 @@ export default function Worksheet() {
       <h2 className="text-xl font-semibold text-slate-900 mb-1">
         {worksheet.title}
       </h2>
-      <p className="text-indigo-500 text-sm capitalize mb-8">
-        {worksheet.subject} · {worksheet.questions.length} questions
-      </p>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm mb-8">
+        <p className="text-indigo-500 capitalize">
+          {worksheet.subject} · {worksheet.questions.length} questions
+        </p>
+        <DifficultyStars
+          min={worksheet.difficulty_min}
+          max={worksheet.difficulty_max}
+          size="lg"
+        />
+      </div>
 
       {scratchpadAllowed && (
         <div className="mb-6 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">

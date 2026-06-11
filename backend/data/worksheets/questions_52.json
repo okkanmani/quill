@@ -1,0 +1,290 @@
+{
+  "title": "English — Reading comprehension (200–250 words, vocabulary focus)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-06-04T12:00:00Z",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Designing a Fair Experiment",
+      "body": "When Priya noticed her bean plants leaning toward the classroom window, she wondered whether light direction affected growth. Instead of guessing, she designed a fair test. She planted twelve identical bean seeds in the same soil and watered them equally. Half the pots sat on a sunny windowsill; the other half rested under a grow lamp on the opposite wall. Every three days she measured stem height and recorded leaf colour in a notebook, sketching each plant so she could compare subtle changes.\n\nPriya changed only the light source while keeping temperature and water constant. Her classmates suggested adding fertilizer to one group, but Priya refused because that would introduce a second variable. She also rotated the pots a quarter turn daily so stems would not lean toward one side only. After four weeks, the window group grew taller yet paler, while the lamp group stayed shorter but deep green. Priya concluded that both light intensity and direction mattered, and she presented bar graphs with error bars showing measurement ranges. Her teacher praised the careful controls and reminded the class that scientific conclusions remain tentative until others repeat the experiment under similar conditions. Priya posted her methods online so another school could try the same setup in a sunnier climate."
+    },
+    {
+      "id": "p2",
+      "title": "Plastic Paths to the Sea",
+      "body": "Plastic waste often begins on land long before it reaches the ocean. A discarded snack wrapper can slide into a storm drain during rain, travel through underground pipes, and eventually empty into a river. Wind may also tumble lightweight bags into creeks that feed larger waterways. Along the journey, sunlight and waves break bulky items into smaller fragments called microplastics, which persist for years because many plastics do not biodegrade quickly.\n\nMarine animals sometimes mistake colourful bits for food. Seabirds feed plastic to chicks, and fish accumulate particles in their tissues. Scientists even find microplastics in remote Arctic ice, proving that ocean currents connect distant regions. Fishing gear lost at sea adds large, ghost nets that trap whales and turtles long after boats depart. Communities respond with bottle refunds, beach cleanups, and bans on single-use bags. Engineers design biodegradable packaging and improved recycling plants, yet reduction at the source remains the most direct solution. Students who audit their own lunch waste discover how daily habits contribute to a global problem that no single country can solve alone. Even small choices, like packing reusable containers or refusing straws, reduce the steady flow of plastic toward the sea and protect wildlife far from home."
+    },
+    {
+      "id": "p3",
+      "title": "Why Sleep Matters for Learning",
+      "body": "Sleep is not idle downtime; the brain actively reorganizes memories while the body rests. During deep sleep, the brain replays important events from the day, strengthening neural pathways that help you remember vocabulary, math procedures, and piano fingerings. Without adequate rest, attention drifts in class and new information slips away before it can be stored in long-term memory.\n\nTeenagers often sacrifice sleep for screens or homework marathons, but chronic shortage can dull creativity and mood. The hormone melatonin signals nightfall, yet bright phone light can delay this cue, pushing bedtimes later and shortening the deepest sleep stages. Experts recommend consistent daily schedules, dark rooms, cool temperatures, and screen curfews before bed. Athletes notice slower reaction times after short nights, linking rest to physical performance as well as academics. Schools that start later report fewer tardy arrivals and better test focus, suggesting that schedules and health are linked. Parents and students who treat sleep as part of studying—not an enemy of it—often see steadier progress across subjects and fewer careless mistakes on quizzes. Keeping a simple sleep log for two weeks can reveal patterns—late caffeine, noisy rooms, or bright screens—that are easy to fix once they are clearly visible on paper."
+    },
+    {
+      "id": "p4",
+      "title": "Urban Trees and Air Quality",
+      "body": "City planners increasingly plant trees along streets and in pocket parks because urban forests deliver measurable benefits. Leaves absorb carbon dioxide during photosynthesis and intercept fine dust particles that would otherwise enter lungs. Shade from mature canopies lowers sidewalk temperatures in summer, reducing the urban heat island effect that makes downtown neighbourhoods hotter than surrounding farmland.\n\nTree roots also stabilize soil on slopes and soak up rainfall that might overwhelm storm sewers. Birds and insects use street trees as migration stopovers, adding biodiversity amid concrete. However, planting the wrong species in cramped tree wells can crack sidewalks or tangle with power lines. Arborists therefore select hardy native varieties, prune carefully, and monitor soil volume so roots have room to grow. Citizen volunteers who adopt young street trees—watering them through dry spells and mulching their bases—dramatically improve survival rates during the first fragile years. Municipal budgets may seem high for saplings, but long-term health savings from cleaner air and cooler blocks can offset costs. A single block may not transform regional air overnight, but many blocks together can make cities healthier places to breathe, walk, and play. Students who measure sidewalk temperature on tree-lined and bare streets can see the cooling effect with their own data."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"identical\" most nearly means —",
+      "choices": ["the same in type and starting condition", "different in every way", "much larger than average", "unable to grow"],
+      "answer": "the same in type and starting condition",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which word is the best antonym for \"tentative\" in the final sentence?",
+      "choices": ["uncertain", "final and absolute", "careful", "repeated"],
+      "answer": "final and absolute",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Why did Priya refuse to add fertilizer to only one group?",
+      "choices": [
+        "It would add a second variable and ruin the fair test.",
+        "Fertilizer kills all bean plants instantly.",
+        "Her teacher banned notebooks in class.",
+        "The window group already had enough soil."
+      ],
+      "answer": "It would add a second variable and ruin the fair test.",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What can be inferred about the window group compared with the lamp group?",
+      "choices": [
+        "They grew taller but paler, suggesting light direction and intensity both mattered.",
+        "They received no light at all during the experiment.",
+        "They were watered less often than the lamp group.",
+        "They were not measured during the four weeks."
+      ],
+      "answer": "They grew taller but paler, suggesting light direction and intensity both mattered.",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The teacher's final comment mainly emphasizes that strong conclusions require —",
+      "choices": [
+        "repeated testing by others, not just one classroom trial",
+        "avoiding all measurements forever",
+        "changing many variables at once",
+        "ignoring graphs and numbers"
+      ],
+      "answer": "repeated testing by others, not just one classroom trial",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"accumulate\" most nearly means —",
+      "choices": ["build up or collect over time", "disappear instantly", "float only on beaches", "change into metal"],
+      "answer": "build up or collect over time",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which word is the best antonym for \"biodegradable\" as used for packaging?",
+      "choices": ["long-lasting in the environment", "plant-based", "recyclable", "lightweight"],
+      "answer": "long-lasting in the environment",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "According to the passage, how do large plastic items become microplastics?",
+      "choices": [
+        "Sunlight and waves break them into smaller fragments.",
+        "Fish chew them into identical spheres overnight.",
+        "Storm drains chemically dissolve them completely.",
+        "Recycling plants shrink them with magnets only."
+      ],
+      "answer": "Sunlight and waves break them into smaller fragments.",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Finding microplastics in Arctic ice suggests that —",
+      "choices": [
+        "ocean currents can transport pollution to faraway regions",
+        "the Arctic has no wildlife",
+        "plastic only forms in tropical rivers",
+        "beach cleanups are useless everywhere"
+      ],
+      "answer": "ocean currents can transport pollution to faraway regions",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The author states that reduction at the source is the most direct solution because —",
+      "choices": [
+        "less waste entering the system prevents later harm downstream",
+        "engineers refuse to design new packaging",
+        "animals no longer eat any food in the ocean",
+        "storm drains have been removed from cities"
+      ],
+      "answer": "less waste entering the system prevents later harm downstream",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"chronic\" most nearly means —",
+      "choices": ["continuing over a long period", "happening once only", "loud and musical", "unrelated to health"],
+      "answer": "continuing over a long period",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which word is the best antonym for \"adequate\" as used to describe rest?",
+      "choices": ["insufficient", "deep", "organized", "creative"],
+      "answer": "insufficient",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What role does melatonin play according to the passage?",
+      "choices": [
+        "It signals nightfall and helps prepare the body for sleep.",
+        "It strengthens arm muscles during sports.",
+        "It digests homework assignments in the stomach.",
+        "It blocks all memories from forming."
+      ],
+      "answer": "It signals nightfall and helps prepare the body for sleep.",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Bright phone light before bed can harm learning mainly by —",
+      "choices": [
+        "delaying sleep cues and shortening restorative rest",
+        "increasing melatonin too early in the morning only",
+        "erasing all piano skills permanently in one night",
+        "making school start earlier every day"
+      ],
+      "answer": "delaying sleep cues and shortening restorative rest",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The author's main point is that sleep —",
+      "choices": [
+        "actively supports memory and school performance",
+        "is wasted time that slows learning",
+        "only matters for adults, not students",
+        "has no connection to mood or creativity"
+      ],
+      "answer": "actively supports memory and school performance",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"intercept\" most nearly means —",
+      "choices": ["catch or block before passing through", "plant in cramped soil", "melt during winter", "shine brighter at night"],
+      "answer": "catch or block before passing through",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which word is the best antonym for \"hardy\" as used for tree species?",
+      "choices": ["delicate and easily damaged", "native", "shady", "tall"],
+      "answer": "delicate and easily damaged",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the urban heat island effect?",
+      "choices": [
+        "Downtown areas become hotter than nearby rural land.",
+        "Trees remove all carbon dioxide instantly.",
+        "Sidewalks freeze earlier than forests in summer.",
+        "Rainfall stops completely in cities."
+      ],
+      "answer": "Downtown areas become hotter than nearby rural land.",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Why do arborists prefer native hardy varieties in cramped tree wells?",
+      "choices": [
+        "They are less likely to damage sidewalks or fail in local conditions.",
+        "They never need water during droughts.",
+        "They grow only underground without leaves.",
+        "They block all dust permanently with one sapling."
+      ],
+      "answer": "They are less likely to damage sidewalks or fail in local conditions.",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The author ends by suggesting that city health improves when —",
+      "choices": [
+        "many neighbourhoods together plant and care for trees",
+        "citizens remove all street trees to cool sidewalks",
+        "volunteers stop watering young trees during dry spells",
+        "planners choose only the largest exotic species"
+      ],
+      "answer": "many neighbourhoods together plant and care for trees",
+      "hint": false
+    }
+  ]
+}

@@ -1,0 +1,248 @@
+{
+  "title": "Science — Mixed topics (medium)",
+  "subject": "science",
+  "scratchpad": false,
+  "created_at": "2026-06-04T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In a fair test, why should you change only one variable at a time?",
+      "choices": [
+        "So you can tell which change caused the result",
+        "To make the experiment take longer",
+        "Because scientists never use measurements",
+        "To avoid writing a hypothesis"
+      ],
+      "answer": "So you can tell which change caused the result",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which part of a plant cell captures light for photosynthesis?",
+      "choices": ["Chloroplast", "Nucleus only", "Cell wall only", "Root hair"],
+      "answer": "Chloroplast",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A food chain always begins with —",
+      "choices": ["producers such as plants", "top predators", "decomposers only", "fossil fuels"],
+      "answer": "producers such as plants",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Evaporation and condensation are key stages in the —",
+      "choices": ["water cycle", "rock cycle only", "life cycle of a mammal only", "food web"],
+      "answer": "water cycle",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A complete electrical circuit needs a power source, conducting wires, and —",
+      "choices": [
+        "a closed path for current to flow",
+        "only a wooden block",
+        "no load or device ever",
+        "a magnet at each corner"
+      ],
+      "answer": "a closed path for current to flow",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Sound travels fastest through —",
+      "choices": [
+        "solids compared with gases",
+        "empty space with no particles",
+        "a vacuum only",
+        "light beams"
+      ],
+      "answer": "solids compared with gases",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The Moon appears to change shape through the month because —",
+      "choices": [
+        "we see different amounts of its sunlit side",
+        "the Moon produces its own changing light",
+        "Earth stops rotating once a week",
+        "clouds paint the Moon each night"
+      ],
+      "answer": "we see different amounts of its sunlit side",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Fossils found in sedimentary rock layers can help scientists learn —",
+      "choices": [
+        "about ancient life and past environments",
+        "tomorrow's weather exactly",
+        "how to make plastic from air only",
+        "the price of groceries"
+      ],
+      "answer": "about ancient life and past environments",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A wetland habitat is important because it —",
+      "choices": [
+        "stores water and provides homes for many species",
+        "removes all oxygen from the air",
+        "prevents any plants from growing",
+        "stops the water cycle completely"
+      ],
+      "answer": "stores water and provides homes for many species",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "When you see lightning before thunder during a storm, it shows that —",
+      "choices": ["light travels faster than sound", "sound is faster than light", "storms have no electricity", "clouds block all light"],
+      "answer": "light travels faster than sound",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Human skeletal muscles work in pairs because —",
+      "choices": [
+        "muscles can pull but cannot push bones back",
+        "bones have no connection to muscles",
+        "the heart is a voluntary muscle",
+        "ligaments produce electricity"
+      ],
+      "answer": "muscles can pull but cannot push bones back",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A renewable energy source is one that —",
+      "choices": [
+        "can be replaced naturally within a human lifetime",
+        "never produces any heat",
+        "runs out after one day only",
+        "must be mined from coal only"
+      ],
+      "answer": "can be replaced naturally within a human lifetime",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Condensation on the outside of a cold drink glass happens because —",
+      "choices": [
+        "water vapour in the air cools and forms liquid droplets",
+        "the glass creates new water atoms",
+        "ice inside the drink leaks through solid glass",
+        "the drink is always a strong acid"
+      ],
+      "answer": "water vapour in the air cools and forms liquid droplets",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "An invasive species can harm an ecosystem when it —",
+      "choices": [
+        "outcompetes native organisms for food or space",
+        "always helps every native predator",
+        "never reproduces in a new place",
+        "only eats dead leaves"
+      ],
+      "answer": "outcompetes native organisms for food or space",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A shadow forms when an object —",
+      "choices": ["blocks light", "creates sound waves", "dissolves in water", "becomes a liquid metal"],
+      "answer": "blocks light",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The heart and blood vessels belong to which body system?",
+      "choices": ["Circulatory system", "Digestive system", "Respiratory system only", "Skeletal system only"],
+      "answer": "Circulatory system",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Melting butter on warm toast is best classified as —",
+      "choices": ["a physical change", "a chemical change forming a new element", "combustion", "photosynthesis"],
+      "answer": "a physical change",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Earth's rotation on its axis causes —",
+      "choices": ["day and night", "seasons only", "tides only", "volcanic eruptions every hour"],
+      "answer": "day and night",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A hypothesis is —",
+      "choices": [
+        "a testable explanation or prediction based on observations",
+        "the same as a proven law that never changes",
+        "a list of random guesses with no data",
+        "only a drawing of equipment"
+      ],
+      "answer": "a testable explanation or prediction based on observations",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Recycling aluminum cans saves energy mainly because —",
+      "choices": [
+        "melting used metal uses less energy than mining new ore",
+        "aluminum disappears after one use",
+        "recycling removes all atoms from the can",
+        "cans cannot be shaped into new products"
+      ],
+      "answer": "melting used metal uses less energy than mining new ore",
+      "hint": false
+    }
+  ]
+}
