@@ -7,6 +7,17 @@ from learn_content import get_subject
 
 WORKSHEETS_DIR = Path(__file__).parent / "data" / "worksheets"
 
+# Worksheets uploaded within this window appear under Latest (ms).
+LATEST_WINDOW_MS = 14 * 24 * 60 * 60 * 1000
+
+
+def _is_latest_sort_ts(sort_ts: int, now_ms: int | None = None) -> bool:
+    if sort_ts <= 0:
+        return False
+    if now_ms is None:
+        now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+    return now_ms - sort_ts <= LATEST_WINDOW_MS
+
 
 def _learn_fields_from_sheet_data(data: dict) -> tuple[str | None, str | None]:
     ls = data.get("learn_subject")
@@ -297,6 +308,7 @@ def list_worksheets(student_name: str | None = None) -> list:
                 )
             )
             item.update(_resolve_difficulty_metadata(r["id"]))
+            item["is_latest"] = _is_latest_sort_ts(int(r["sort_ts"] or 0))
             ls_ = r["last_score"]
             lt_ = r["last_total"]
             if ls_ is not None and lt_ is not None and int(lt_) > 0:

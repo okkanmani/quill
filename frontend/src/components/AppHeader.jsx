@@ -32,7 +32,7 @@ function AdminSectionNav({ navLinks }) {
               key={to}
               aria-disabled="true"
               className="text-base font-medium text-slate-400 cursor-not-allowed select-none"
-              title="No new worksheets in the last week"
+              title="No new worksheets in the last 14 days (or all are done)"
             >
               {label}
             </span>

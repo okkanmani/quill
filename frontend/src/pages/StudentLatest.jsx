@@ -4,6 +4,7 @@ import { logout } from "../api";
 import AppHeader from "../components/AppHeader";
 import WorksheetsBySubject from "../components/WorksheetsBySubject";
 import { useStudentNavLinks } from "../useStudentNavLinks";
+import { LATEST_WINDOW_LABEL } from "../worksheetUtils";
 
 export default function StudentLatest() {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export default function StudentLatest() {
       <div className="max-w-3xl">
         <h2 className="text-xl font-semibold text-slate-900 mb-1">Latest</h2>
         <p className="text-slate-600 text-sm mb-6">
-          New worksheets from the last 7 days that you have not finished yet.
+          {`New worksheets from the last ${LATEST_WINDOW_LABEL} that you have not finished yet.`}
         </p>
 
         {loading && <p className="text-slate-600">Loading...</p>}
