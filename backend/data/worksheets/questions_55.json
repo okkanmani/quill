@@ -1,0 +1,230 @@
+{
+  "title": "English — Reading comprehension (200–250 words, vocabulary focus)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-06-17T12:00:00Z",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "The Community Garden Project",
+      "body": "Last spring, Ms. Chen's class transformed a vacant lot beside the school into a thriving community garden. Volunteers cleared debris, tested soil pH, and built raised beds from reclaimed lumber. Students planted kale, tomatoes, and herbs, labeling each row with weatherproof signs so visitors could learn plant names. A rain barrel collected runoff from the gym roof, reducing the need for tap water during dry weeks.\n\nNeighbours donated compost and taught students how to layer green and brown materials so nutrients would return to the earth. At first, some classmates complained that digging was tedious, but harvesting changed their attitudes. When they delivered baskets of lettuce to a nearby food bank, the garden felt less like homework and more like civic service. Ms. Chen emphasized that patience was essential: seedlings could not be rushed, and pests required thoughtful solutions rather than harsh sprays.\n\nBy autumn, monarch butterflies visited the milkweed patch, and a local newspaper featured the project on its front page. The class concluded that shared stewardship—cooperation among students, teachers, and neighbours—could revitalize neglected spaces. They drafted a maintenance schedule so next year's students would inherit healthy beds instead of weeds. Even families without yards could participate by watering on weekends or recording growth in a shared digital journal."
+    },
+    {
+      "id": "p2",
+      "title": "How Libraries Adapt",
+      "body": "Public libraries once seemed synonymous with silent rows of hardcover books, yet many branches now bustle with makerspaces, coding clubs, and recording studios. Librarians still curate collections, but they also teach digital literacy, helping patrons distinguish credible sources from misleading posts. Free Wi-Fi draws students who need quiet corners to finish research projects after school.\n\nInterlibrary loans allow readers in small towns to request specialized texts from distant cities within days. E-books and audiobooks expand access for commuters and people with vision challenges. Story hours remain popular for young children, while teen advisory boards suggest graphic novels and podcasts that reflect diverse experiences. During heat waves, libraries serve as cooling centres, proving their role extends beyond shelves.\n\nFunding often depends on municipal budgets and volunteer fundraisers. Advocates argue that libraries democratize knowledge: anyone with a card can explore topics from astronomy to woodworking without paying subscription fees. Critics who predict obsolescence overlook how librarians mediate information overload. A skilled librarian can compress hours of aimless searching into a short, strategic path toward reliable references. Communities that invest in libraries frequently report higher student achievement and stronger civic engagement, suggesting these institutions remain adaptable anchors in a changing media landscape."
+    },
+    {
+      "id": "p3",
+      "title": "Weather on the Great Lakes",
+      "body": "Sailors on the Great Lakes respect sudden squalls that can transform calm water into treacherous chop within minutes. Because the lakes are vast but enclosed, wind can funnel along their length, building waves that strike shores with surprising force. In late autumn, cold Arctic air pours over relatively warm water, generating lake-effect snow bands that bury cities on the leeward shore while neighbouring towns stay dry.\n\nForecasters use buoys, satellites, and radar to track storms, issuing small-craft advisories when gusts threaten kayaks and fishing boats. Historical shipwrecks remind residents that accurate weather knowledge can be lifesaving. Modern vessels carry radios and GPS, yet fog still disorients pilots who cannot see harbour lights until they are dangerously close.\n\nClimate scientists monitor lake temperatures year-round. Warmer surface water may extend the shipping season but can also intensify evaporation, influencing regional humidity. Students who keep daily weather logs learn to connect barometric pressure, cloud types, and wind direction with the conditions they observe outside classroom windows. Understanding local weather patterns helps farmers plan harvests, coaches reschedule outdoor practices, and families prepare emergency kits before winter arrives. Respect for the lakes means checking forecasts even on sunny mornings."
+    },
+    {
+      "id": "p4",
+      "title": "Inventing a Useful Gadget",
+      "body": "When Aisha's grandmother struggled to open tight jar lids, Aisha decided to design a simple assistive tool for the school invention fair. She interviewed seniors at a community centre, noting that arthritis made twisting motions painful. Aisha sketched prototypes with wider grips and rubberized surfaces, then tested them on jars of various sizes. Early models slipped, so she added a hinged strap that transferred force from the wrist rather than fragile finger joints.\n\nHer engineering teacher introduced the term iterative design: each failure supplied data for the next version. Aisha documented torque measurements with a borrowed force meter, proving her final prototype required less effort than a standard rubber grip. Judges praised her user-centred approach—she solved a problem observed in real life instead of inventing a flashy toy with no purpose.\n\nAisha's project did not win first prize, but a local hardware store offered feedback on manufacturing costs. She learned that empathy, persistence, and clear records matter as much as bright ideas. The experience convinced her that engineering is a collaborative conversation between designers and the people who will actually use a product every day."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"stewardship\" most nearly means —",
+      "choices": ["careful shared responsibility for a resource", "refusal to work outdoors", "selling vegetables for profit only", "ignoring community needs"],
+      "answer": "careful shared responsibility for a resource",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which word is the best synonym for \"revitalize\"?",
+      "choices": ["bring new life to", "destroy completely", "hide from view", "measure precisely"],
+      "answer": "bring new life to",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The rain barrel mainly helps the garden by —",
+      "choices": ["collecting roof runoff for watering", "keeping pests away from tomatoes", "warming the soil overnight", "testing pH automatically"],
+      "answer": "collecting roof runoff for watering",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What caused some students to view the project more positively?",
+      "choices": ["delivering produce to a food bank", "canceling all outdoor work", "avoiding cooperation with neighbours", "planting only flowers"],
+      "answer": "delivering produce to a food bank",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which title best summarizes the passage?",
+      "choices": ["Students and Neighbours Build a Lasting Garden", "Why Schools Should Ban Vegetables", "The History of Gym Roofs", "How to Avoid Homework Forever"],
+      "answer": "Students and Neighbours Build a Lasting Garden",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"curate\" most nearly means —",
+      "choices": ["carefully select and organize", "remove all books", "ignore digital media", "charge high fees"],
+      "answer": "carefully select and organize",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which word is the best antonym for \"credible\"?",
+      "choices": ["trustworthy", "unreliable", "helpful", "detailed"],
+      "answer": "unreliable",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "According to the passage, libraries help during heat waves by —",
+      "choices": ["serving as cooling centres", "closing all public services", "storing only winter coats", "banning student research"],
+      "answer": "serving as cooling centres",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The author suggests that librarians are valuable because they —",
+      "choices": ["guide patrons through information overload", "prevent anyone from using the internet", "replace all classroom teachers", "discourage reading ebooks"],
+      "answer": "guide patrons through information overload",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which statement best reflects the author's view of modern libraries?",
+      "choices": ["They adapt to community needs beyond books", "They are obsolete in the digital age", "They should charge subscription fees", "They exist only for toddlers"],
+      "answer": "They adapt to community needs beyond books",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"treacherous\" most nearly means —",
+      "choices": ["dangerous and unpredictable", "perfectly calm", "completely frozen", "easy to navigate"],
+      "answer": "dangerous and unpredictable",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Lake-effect snow often occurs when —",
+      "choices": ["cold air moves over warmer lake water", "the lakes are entirely covered in ice", "there is no wind along the shore", "summer temperatures peak"],
+      "answer": "cold air moves over warmer lake water",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which word is the best synonym for \"advisories\"?",
+      "choices": ["warnings", "celebrations", "contracts", "decorations"],
+      "answer": "warnings",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Why does the author mention historical shipwrecks?",
+      "choices": ["to show why accurate forecasts matter", "to argue against modern GPS", "to describe summer tourism", "to explain how lakes form"],
+      "answer": "to show why accurate forecasts matter",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Keeping a daily weather log helps students —",
+      "choices": ["connect measurements with observed conditions", "avoid learning about clouds", "predict earthquakes exactly", "ignore seasonal changes"],
+      "answer": "connect measurements with observed conditions",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"assistive\" most nearly means —",
+      "choices": ["designed to help someone perform a task", "intended only for decoration", "too expensive to build", "illegal to manufacture"],
+      "answer": "designed to help someone perform a task",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Aisha improved her design by using —",
+      "choices": ["a hinged strap to redirect force", "smaller jars only", "no testing at all", "materials that slipped more easily"],
+      "answer": "a hinged strap to redirect force",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which phrase best defines \"iterative design\" as used in the passage?",
+      "choices": ["repeating improvements based on test results", "finishing a product without revisions", "copying another inventor exactly", "avoiding user feedback"],
+      "answer": "repeating improvements based on test results",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Judges praised Aisha because she —",
+      "choices": ["addressed a real problem observed in users", "built the loudest gadget", "refused to keep records", "ignored seniors' advice"],
+      "answer": "addressed a real problem observed in users",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The main lesson Aisha learned is that engineering requires —",
+      "choices": ["empathy, persistence, and clear records", "luck more than planning", "no collaboration with adults", "avoiding interviews with users"],
+      "answer": "empathy, persistence, and clear records",
+      "hint": false
+    }
+  ]
+}

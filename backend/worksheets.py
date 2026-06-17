@@ -426,9 +426,9 @@ def validate_worksheet_data(data: dict) -> list[str]:
                     errors.append(f"passages[{i}].id is required.")
                 else:
                     passage_ids.add(pid.strip())
-                body = p.get("text")
+                body = p.get("text") or p.get("body")
                 if not isinstance(body, str) or not body.strip():
-                    errors.append(f"passages[{i}].text is required.")
+                    errors.append(f"passages[{i}].text or body is required.")
 
     seen_qids: set[str] = set()
     for i, q in enumerate(questions):

@@ -1,0 +1,188 @@
+{
+  "title": "Science — Mixed topics (medium)",
+  "subject": "science",
+  "scratchpad": false,
+  "created_at": "2026-06-17T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which organ system transports nutrients and oxygen through the blood?",
+      "choices": ["Circulatory system", "Muscular system only", "Skeletal system only", "Reproductive system"],
+      "answer": "Circulatory system",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A chemical change produces —",
+      "choices": ["a new substance with different properties", "only a change in shape with no new material", "always a shadow", "only a sound wave"],
+      "answer": "a new substance with different properties",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The Sun is classified as a —",
+      "choices": ["star", "planet", "moon", "comet made only of ice"],
+      "answer": "star",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Friction between two surfaces depends partly on —",
+      "choices": ["how rough the surfaces are", "the colour of the objects", "whether it is a weekday", "the objects' names"],
+      "answer": "how rough the surfaces are",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Decomposers in an ecosystem mainly —",
+      "choices": ["break down dead material and recycle nutrients", "produce oxygen only at night", "eat only living predators", "stop the water cycle"],
+      "answer": "break down dead material and recycle nutrients",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A bar magnet has two poles called —",
+      "choices": ["north and south", "east and west only", "positive and negative only", "hot and cold"],
+      "answer": "north and south",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Plants release oxygen as a product of —",
+      "choices": ["photosynthesis", "digestion in animals", "volcanic eruptions", "fossil fuel mining"],
+      "answer": "photosynthesis",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A pulley can make work easier by —",
+      "choices": ["changing the direction of a force or providing mechanical advantage", "eliminating all friction forever", "creating electricity from nothing", "turning metal into wood"],
+      "answer": "changing the direction of a force or providing mechanical advantage",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The tilt of Earth's axis is the main reason we have —",
+      "choices": ["seasons", "day and night only", "ocean tides only", "earthquakes every day"],
+      "answer": "seasons",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which state of matter has a definite volume but takes the shape of its container?",
+      "choices": ["Liquid", "Solid", "Gas only with no volume", "Plasma only in all rooms"],
+      "answer": "Liquid",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "An animal that eats only plants is called a —",
+      "choices": ["herbivore", "carnivore", "decomposer", "producer"],
+      "answer": "herbivore",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "When salt dissolves in water, the mixture is best described as a —",
+      "choices": ["solution", "new solid rock", "combustion reaction", "magnetic field"],
+      "answer": "solution",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A thermometer measures —",
+      "choices": ["temperature", "wind direction only", "mass only", "magnetic strength only"],
+      "answer": "temperature",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The respiratory system allows the body to —",
+      "choices": ["take in oxygen and release carbon dioxide", "digest food into fuel only", "pump blood to the brain only", "grow new bones instantly"],
+      "answer": "take in oxygen and release carbon dioxide",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Fossil fuels such as coal and oil formed over —",
+      "choices": ["millions of years from ancient organic matter", "a single afternoon", "only the last decade", "recycling aluminum cans"],
+      "answer": "millions of years from ancient organic matter",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A simple machine made of a ramp is a —",
+      "choices": ["inclined plane", "lever only", "gear only", "battery"],
+      "answer": "inclined plane",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Camouflage helps an animal —",
+      "choices": ["blend into its surroundings to avoid predators or ambush prey", "produce electricity", "fly without wings", "change the weather"],
+      "answer": "blend into its surroundings to avoid predators or ambush prey",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Water expanding when it freezes is an example of —",
+      "choices": ["a physical change", "forming a new element", "nuclear fusion", "photosynthesis in ice"],
+      "answer": "a physical change",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Solar panels convert sunlight into —",
+      "choices": ["electrical energy", "solid rock", "magnetic poles", "fossil fuel underground"],
+      "answer": "electrical energy",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A controlled experiment includes —",
+      "choices": ["a test group and a comparison that keeps other factors the same", "no measurements at all", "as many unplanned variables as possible", "only opinions without data"],
+      "answer": "a test group and a comparison that keeps other factors the same",
+      "hint": false
+    }
+  ]
+}
