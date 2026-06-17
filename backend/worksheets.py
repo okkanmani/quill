@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -6,6 +7,8 @@ import db
 from learn_content import get_subject
 
 WORKSHEETS_DIR = Path(__file__).parent / "data" / "worksheets"
+VALID_SUBJECTS = frozenset({"math", "english", "science", "general"})
+WORKSHEET_ID_RE = re.compile(r"^questions_\d+$")
 
 # Worksheets uploaded within this window appear under Latest (ms).
 LATEST_WINDOW_MS = 14 * 24 * 60 * 60 * 1000
@@ -73,15 +76,31 @@ def _difficulty_from_sheet_data(data: dict) -> dict:
     return meta
 
 
+def _difficulty_from_db_questions(worksheet_id: str) -> dict:
+    conn = db.connect()
+    try:
+        rows = conn.execute(
+            """
+            SELECT payload FROM worksheet_questions
+            WHERE worksheet_id = ? ORDER BY sort_order
+            """,
+            (worksheet_id,),
+        ).fetchall()
+        questions = [json.loads(r["payload"]) for r in rows]
+        return _difficulty_from_sheet_data({"questions": questions})
+    finally:
+        conn.close()
+
+
 def _resolve_difficulty_metadata(worksheet_id: str) -> dict:
     json_path = WORKSHEETS_DIR / f"{worksheet_id}.json"
-    if not json_path.is_file():
-        return {}
-    try:
-        with open(json_path, encoding="utf-8") as f:
-            return _difficulty_from_sheet_data(json.load(f))
-    except (OSError, json.JSONDecodeError):
-        return {}
+    if json_path.is_file():
+        try:
+            with open(json_path, encoding="utf-8") as f:
+                return _difficulty_from_sheet_data(json.load(f))
+        except (OSError, json.JSONDecodeError):
+            pass
+    return _difficulty_from_db_questions(worksheet_id)
 
 
 def _resolve_learn_metadata(
@@ -359,6 +378,133 @@ def get_worksheet(worksheet_id: str) -> dict | None:
         return out
     finally:
         conn.close()
+
+
+def worksheet_id_from_filename(filename: str) -> str | None:
+    """Return worksheet id when filename is ``questions_N.json``."""
+    if not filename or not filename.lower().endswith(".json"):
+        return None
+    stem = Path(filename).stem
+    if WORKSHEET_ID_RE.fullmatch(stem):
+        return stem
+    return None
+
+
+def validate_worksheet_data(data: dict) -> list[str]:
+    """Return human-readable validation errors; empty list means valid."""
+    errors: list[str] = []
+    if not isinstance(data, dict):
+        return ["JSON must be an object."]
+
+    title = data.get("title")
+    if not isinstance(title, str) or not title.strip():
+        errors.append("title is required (non-empty string).")
+
+    subject = data.get("subject", "general")
+    if not isinstance(subject, str) or subject.strip().lower() not in VALID_SUBJECTS:
+        errors.append(
+            f"subject must be one of: {', '.join(sorted(VALID_SUBJECTS))}."
+        )
+
+    questions = data.get("questions")
+    if not isinstance(questions, list) or not questions:
+        errors.append("questions must be a non-empty array.")
+        return errors
+
+    passage_ids: set[str] = set()
+    passages = data.get("passages")
+    if passages is not None:
+        if not isinstance(passages, list):
+            errors.append("passages must be an array when present.")
+        else:
+            for i, p in enumerate(passages):
+                if not isinstance(p, dict):
+                    errors.append(f"passages[{i}] must be an object.")
+                    continue
+                pid = p.get("id")
+                if not isinstance(pid, str) or not pid.strip():
+                    errors.append(f"passages[{i}].id is required.")
+                else:
+                    passage_ids.add(pid.strip())
+                body = p.get("text")
+                if not isinstance(body, str) or not body.strip():
+                    errors.append(f"passages[{i}].text is required.")
+
+    seen_qids: set[str] = set()
+    for i, q in enumerate(questions):
+        if not isinstance(q, dict):
+            errors.append(f"questions[{i}] must be an object.")
+            continue
+        qid = q.get("id")
+        if not isinstance(qid, str) or not qid.strip():
+            errors.append(f"questions[{i}].id is required.")
+        elif qid in seen_qids:
+            errors.append(f"Duplicate question id: {qid}.")
+        else:
+            seen_qids.add(qid)
+
+        qtype = q.get("type")
+        if qtype != "multiple_choice":
+            errors.append(f"questions[{i}].type must be multiple_choice.")
+
+        prompt = q.get("prompt")
+        if not isinstance(prompt, str) or not prompt.strip():
+            errors.append(f"questions[{i}].prompt is required.")
+
+        choices = q.get("choices")
+        if not isinstance(choices, list) or len(choices) < 2:
+            errors.append(f"questions[{i}].choices must have at least 2 items.")
+            continue
+
+        answer = q.get("answer")
+        if not isinstance(answer, str) or not answer.strip():
+            errors.append(f"questions[{i}].answer is required.")
+        elif answer not in choices:
+            errors.append(f"questions[{i}].answer must match one of choices.")
+
+        passage_id = q.get("passage_id")
+        if passage_id is not None:
+            if not isinstance(passage_id, str) or not passage_id.strip():
+                errors.append(f"questions[{i}].passage_id must be a non-empty string.")
+            elif passage_ids and passage_id.strip() not in passage_ids:
+                errors.append(
+                    f"questions[{i}].passage_id references unknown passage: {passage_id}."
+                )
+
+        stars = q.get("stars")
+        if stars is not None and not (
+            isinstance(stars, (int, float)) and int(stars) in (1, 2, 3)
+        ):
+            errors.append(f"questions[{i}].stars must be 1, 2, or 3 when set.")
+
+    return errors
+
+
+def upsert_worksheet_from_data(ws_id: str, data: dict) -> dict:
+    """Validate and upsert one worksheet into SQLite."""
+    errors = validate_worksheet_data(data)
+    if errors:
+        raise ValueError(errors)
+
+    conn = db.connect()
+    try:
+        conn.execute("DELETE FROM worksheets WHERE id = ?", (ws_id,))
+        path = WORKSHEETS_DIR / f"{ws_id}.json"
+        _insert_worksheet(conn, ws_id, data, path)
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    questions = data.get("questions") or []
+    return {
+        "id": ws_id,
+        "title": data.get("title", ws_id),
+        "subject": str(data.get("subject", "general")).strip().lower(),
+        "question_count": len(questions),
+    }
 
 
 def delete_worksheet(worksheet_id: str) -> bool:

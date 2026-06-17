@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { deleteWorksheet, getWorksheets, logout } from "../api";
+import { deleteWorksheet, getWorksheets, logout, uploadWorksheet } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
@@ -13,6 +13,9 @@ export default function AdminWorksheets() {
   const [worksheets, setWorksheets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [uploadPanelOpen, setUploadPanelOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
 
   function loadWorksheets() {
     setLoading(true);
@@ -48,20 +51,94 @@ export default function AdminWorksheets() {
     }
   }
 
+  async function handleUpload(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setUploading(true);
+    setUploadMessage("");
+    setError("");
+    try {
+      const result = await uploadWorksheet(file);
+      setUploadMessage(
+        `Uploaded ${result.id} — “${result.title}” (${result.question_count} questions).`,
+      );
+      setUploadPanelOpen(false);
+      loadWorksheets();
+    } catch (err) {
+      setError(err.message || "Could not upload worksheet.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <AppHeader
         navLinks={ADMIN_MAIN_NAV}
         trailing={
-          <span className="text-slate-800 text-sm font-medium">
-            Admin · {formatAdminHeaderTrail()}
-          </span>
+          <>
+            <span className="text-slate-800 text-sm font-medium">
+              Admin · {formatAdminHeaderTrail()}
+            </span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setUploadPanelOpen((open) => !open);
+                  if (uploadPanelOpen) setUploadMessage("");
+                }}
+                aria-expanded={uploadPanelOpen}
+                aria-controls="add-worksheet-panel"
+                className={`text-sm font-semibold px-1 py-1 ${
+                  uploadPanelOpen
+                    ? "text-indigo-900 underline"
+                    : "text-indigo-700 hover:text-indigo-900 hover:underline"
+                }`}
+              >
+                Add worksheet
+              </button>
+              {uploadPanelOpen ? (
+                <>
+                  <button
+                    type="button"
+                    className="fixed inset-0 z-40 cursor-default"
+                    aria-label="Close add worksheet menu"
+                    tabIndex={-1}
+                    onClick={() => !uploading && setUploadPanelOpen(false)}
+                  />
+                  <div
+                    id="add-worksheet-panel"
+                    className="absolute top-full right-0 z-50 mt-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-lg"
+                  >
+                    <label className="inline-flex items-center cursor-pointer">
+                      <span className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl px-4 py-2 transition whitespace-nowrap">
+                        {uploading ? "Uploading…" : "Choose file"}
+                      </span>
+                      <input
+                        type="file"
+                        accept=".json,application/json"
+                        className="sr-only"
+                        disabled={uploading}
+                        onChange={handleUpload}
+                      />
+                    </label>
+                  </div>
+                </>
+              ) : null}
+            </div>
+          </>
         }
         onLogout={handleLogout}
       />
 
       <div className="max-w-3xl">
         <AdminStudentSwitcher />
+
+        {uploadMessage && (
+          <p className="text-green-700 text-sm mb-4">{uploadMessage}</p>
+        )}
 
         {loading && <p className="text-slate-600">Loading...</p>}
         {error && <p className="text-red-500">{error}</p>}

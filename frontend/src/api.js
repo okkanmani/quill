@@ -104,6 +104,27 @@ export async function deleteWorksheet(id) {
   return res.json();
 }
 
+export async function uploadWorksheet(file) {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${BASE_URL}/admin/worksheets/upload`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: form,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to upload worksheet";
+    if (typeof d === "string") msg = d;
+    else if (Array.isArray(d)) msg = d.join(" ");
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function submitResult(result) {
   const res = await fetch(`${BASE_URL}/results`, {
     method: "POST",

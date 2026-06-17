@@ -1,3 +1,4 @@
+import json
 import os
 import sqlite3
 from contextlib import asynccontextmanager
@@ -13,7 +14,7 @@ from auth_users import (
     get_student_by_admin_and_name,
     list_students_for_admin,
 )
-from fastapi import FastAPI, Header, HTTPException, Query
+from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from learn_content import get_subject, list_subjects
@@ -26,6 +27,8 @@ from worksheets import (
     merge_worksheets_from_json_files,
     save_result,
     seed_worksheets_from_json_if_empty,
+    upsert_worksheet_from_data,
+    worksheet_id_from_filename,
 )
 
 
@@ -233,6 +236,43 @@ def remove_worksheet(worksheet_id: str, authorization: str = Header(...)):
     if not delete_worksheet(worksheet_id):
         raise HTTPException(status_code=404, detail="Worksheet not found")
     return {"message": "Worksheet deleted"}
+
+
+@app.post("/admin/worksheets/upload")
+async def admin_upload_worksheet(
+    file: UploadFile = File(...),
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    ws_id = worksheet_id_from_filename(file.filename or "")
+    if not ws_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Filename must be questions_N.json (e.g. questions_54.json).",
+        )
+
+    raw = await file.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+    try:
+        data = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        raise HTTPException(status_code=400, detail="File must be valid UTF-8 JSON.")
+
+    try:
+        result = upsert_worksheet_from_data(ws_id, data)
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid worksheet data."]
+        if isinstance(errors, list):
+            detail = errors
+        else:
+            detail = [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
+
+    return result
 
 
 @app.post("/results")
