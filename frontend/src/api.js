@@ -167,6 +167,20 @@ export async function createAdminStudent({ name, password }) {
   return res.json();
 }
 
+export async function deleteAdminStudent(studentId) {
+  const res = await fetch(`${BASE_URL}/admin/students/${studentId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to delete student";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function switchAdminStudent(studentName) {
   const res = await fetch(`${BASE_URL}/admin/session/student`, {
     method: "POST",

@@ -191,3 +191,27 @@ def add_student(admin_id: int, name: str, password: str) -> int:
         raise
     finally:
         conn.close()
+
+
+def delete_student(admin_id: int, student_id: int) -> dict | None:
+    """Delete a student owned by this admin and their worksheet results. Returns {id, name} or None."""
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT id, name FROM students WHERE id = ? AND admin_id = ?",
+            (student_id, admin_id),
+        ).fetchone()
+        if not row:
+            return None
+        conn.execute("DELETE FROM results WHERE student = ?", (row["name"],))
+        conn.execute(
+            "DELETE FROM students WHERE id = ? AND admin_id = ?",
+            (student_id, admin_id),
+        )
+        conn.commit()
+        return {"id": row["id"], "name": row["name"]}
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()

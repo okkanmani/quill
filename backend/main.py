@@ -10,6 +10,7 @@ from auth_users import (
     authenticate_admin_by_name,
     authenticate_admin_for_student,
     authenticate_student,
+    delete_student,
     get_admin_name,
     get_student_by_admin_and_name,
     list_students_for_admin,
@@ -340,6 +341,27 @@ def admin_create_student(req: CreateStudentRequest, authorization: str = Header(
             detail="A student with that name already exists for your account",
         )
     return {"id": sid, "name": name}
+
+
+@app.delete("/admin/students/{student_id}")
+def admin_delete_student(student_id: int, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    deleted = delete_student(payload["admin_id"], student_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Student not found")
+    out: dict = {"message": "Student deleted", "deleted": deleted}
+    if payload.get("student_id") == student_id or payload.get("student_name") == deleted["name"]:
+        an = payload.get("admin_name") or get_admin_name(payload["admin_id"])
+        out["token"] = create_admin_token(
+            payload["admin_id"],
+            None,
+            None,
+            admin_name=an,
+        )
+        out["needs_student"] = True
+    return out
 
 
 @app.post("/admin/session/student")

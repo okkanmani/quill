@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createAdminStudent, listAdminStudents, logout, switchAdminStudent } from "../api";
+import { createAdminStudent, deleteAdminStudent, listAdminStudents, logout, switchAdminStudent } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
@@ -58,6 +58,24 @@ export default function AdminStudents() {
       setError(ex.message || "Could not create student.");
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function handleDelete(student) {
+    const ok = window.confirm(
+      `Delete “${student.name}”? This removes their account and all their worksheet results.`,
+    );
+    if (!ok) return;
+    setError("");
+    try {
+      const result = await deleteAdminStudent(student.id);
+      if (result.token) {
+        localStorage.setItem("token", result.token);
+        localStorage.removeItem("studentName");
+      }
+      await load();
+    } catch (ex) {
+      setError(ex.message || "Could not delete student.");
     }
   }
 
@@ -127,14 +145,23 @@ export default function AdminStudents() {
               {students.map((s) => (
                 <li
                   key={s.id}
-                  className="px-4 py-3 text-slate-900 font-medium flex items-center justify-between gap-2"
+                  className="px-4 py-3 text-slate-900 font-medium flex items-center justify-between gap-3"
                 >
-                  <span>{s.name}</span>
-                  {s.name === localStorage.getItem("studentName") ? (
-                    <span className="text-xs font-semibold text-emerald-800 bg-emerald-100 border border-emerald-200 rounded-full px-2 py-0.5">
-                      Current view
-                    </span>
-                  ) : null}
+                  <span className="min-w-0 truncate">{s.name}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {s.name === localStorage.getItem("studentName") ? (
+                      <span className="text-xs font-semibold text-emerald-800 bg-emerald-100 border border-emerald-200 rounded-full px-2 py-0.5">
+                        Current view
+                      </span>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(s)}
+                      className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 text-sm font-semibold rounded-xl px-3 py-1.5 transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
