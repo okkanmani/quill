@@ -18,7 +18,7 @@ from auth_users import (
 from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from learn_content import get_subject, list_subjects
+from learn_content import get_subject, list_learn_hub, list_subjects
 from worksheets import (
     delete_worksheet,
     get_worksheet,
@@ -305,7 +305,7 @@ def get_results(authorization: str = Header(...)):
 @app.get("/learn/subjects")
 def learn_subjects(authorization: str = Header(...)):
     _payload(authorization)
-    return {"subjects": list_subjects()}
+    return list_learn_hub()
 
 
 @app.get("/learn/{subject_key}")

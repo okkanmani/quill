@@ -36,6 +36,34 @@ def _learn_fields_from_sheet_data(data: dict) -> tuple[str | None, str | None]:
     return learn_subject, learn_section
 
 
+def _content_badge_from_sheet_data(data: dict) -> str | None:
+    badge = data.get("content_badge")
+    if badge is not None and str(badge).strip():
+        return str(badge).strip()
+    return None
+
+
+def _resolve_content_badge_metadata(
+    worksheet_id: str,
+    row_content_badge,
+) -> dict:
+    """content_badge from bundled JSON (preferred) or DB."""
+    content_badge = None
+    json_path = WORKSHEETS_DIR / f"{worksheet_id}.json"
+    if json_path.is_file():
+        try:
+            with open(json_path, encoding="utf-8") as f:
+                content_badge = _content_badge_from_sheet_data(json.load(f))
+        except (OSError, json.JSONDecodeError):
+            pass
+    if content_badge is None and row_content_badge is not None and str(row_content_badge).strip():
+        content_badge = str(row_content_badge).strip()
+    meta: dict = {}
+    if content_badge:
+        meta["content_badge"] = content_badge
+    return meta
+
+
 def _apply_learn_section_title(out: dict) -> None:
     """Add learn_section_title when learn_subject + learn_section match the learn manifest."""
     out.pop("learn_section_title", None)
@@ -175,12 +203,13 @@ def _insert_worksheet(conn, ws_id: str, data: dict, path: Path) -> None:
     sort_ts = _worksheet_sort_ts_ms(data, path)
     questions = data.get("questions", [])
     learn_subject, learn_section = _learn_fields_from_sheet_data(data)
+    content_badge = _content_badge_from_sheet_data(data)
     conn.execute(
         """
-        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section),
+        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge),
     )
     for order, q in enumerate(questions):
         conn.execute(
@@ -269,10 +298,10 @@ def list_worksheets(student_name: str | None = None) -> list:
             rows = conn.execute(
                 """
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
-                       t.learn_subject, t.learn_section, t.last_score, t.last_total
+                       t.learn_subject, t.learn_section, t.content_badge, t.last_score, t.last_total
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
-                           w.learn_subject, w.learn_section,
+                           w.learn_subject, w.learn_section, w.content_badge,
                            (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
                            EXISTS (
                              SELECT 1 FROM results r
@@ -294,10 +323,10 @@ def list_worksheets(student_name: str | None = None) -> list:
             rows = conn.execute(
                 """
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
-                       t.learn_subject, t.learn_section, t.last_score, t.last_total
+                       t.learn_subject, t.learn_section, t.content_badge, t.last_score, t.last_total
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
-                           w.learn_subject, w.learn_section,
+                           w.learn_subject, w.learn_section, w.content_badge,
                            (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
                            EXISTS (
                              SELECT 1 FROM results r
@@ -326,6 +355,9 @@ def list_worksheets(student_name: str | None = None) -> list:
                     r["id"], r["learn_subject"], r["learn_section"]
                 )
             )
+            item.update(
+                _resolve_content_badge_metadata(r["id"], r["content_badge"])
+            )
             item.update(_resolve_difficulty_metadata(r["id"]))
             item["is_latest"] = _is_latest_sort_ts(int(r["sort_ts"] or 0))
             ls_ = r["last_score"]
@@ -344,7 +376,7 @@ def get_worksheet(worksheet_id: str) -> dict | None:
     try:
         row = conn.execute(
             """
-            SELECT title, subject, scratchpad, passages, learn_subject, learn_section
+            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge
             FROM worksheets WHERE id = ?
             """,
             (worksheet_id,),
@@ -373,6 +405,9 @@ def get_worksheet(worksheet_id: str) -> dict | None:
             _resolve_learn_metadata(
                 worksheet_id, row["learn_subject"], row["learn_section"]
             )
+        )
+        out.update(
+            _resolve_content_badge_metadata(worksheet_id, row["content_badge"])
         )
         out.update(_resolve_difficulty_metadata(worksheet_id))
         return out
@@ -477,6 +512,10 @@ def validate_worksheet_data(data: dict) -> list[str]:
         ):
             errors.append(f"questions[{i}].stars must be 1, 2, or 3 when set.")
 
+    badge = data.get("content_badge")
+    if badge is not None and (not isinstance(badge, str) or not badge.strip()):
+        errors.append("content_badge must be a non-empty string when set.")
+
     return errors
 
 
@@ -486,11 +525,15 @@ def upsert_worksheet_from_data(ws_id: str, data: dict) -> dict:
     if errors:
         raise ValueError(errors)
 
+    # Portal upload = newly published; use now so Latest tab picks it up.
+    payload = dict(data)
+    payload["sort_ts"] = int(datetime.now(timezone.utc).timestamp() * 1000)
+
     conn = db.connect()
     try:
         conn.execute("DELETE FROM worksheets WHERE id = ?", (ws_id,))
         path = WORKSHEETS_DIR / f"{ws_id}.json"
-        _insert_worksheet(conn, ws_id, data, path)
+        _insert_worksheet(conn, ws_id, payload, path)
         conn.commit()
     except Exception:
         conn.rollback()

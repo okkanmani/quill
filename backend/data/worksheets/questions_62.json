@@ -1,0 +1,288 @@
+{
+  "title": "Science — Mixed topics (hard)",
+  "subject": "science",
+  "scratchpad": false,
+  "created_at": "2026-06-18T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "When an iron nail rusts in moist air, the mass of the nail generally —",
+      "choices": [
+        "decreases because metal disappears",
+        "increases as oxygen combines with iron",
+        "stays exactly the same always",
+        "doubles every hour"
+      ],
+      "answer": "increases as oxygen combines with iron",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "In a food web, energy is lost as heat at each transfer mainly because —",
+      "choices": [
+        "producers create infinite energy",
+        "decomposers destroy all matter",
+        "organisms use energy for life processes and not all is stored",
+        "predators create energy from rocks"
+      ],
+      "answer": "organisms use energy for life processes and not all is stored",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which best explains why metal feels colder than wood at room temperature?",
+      "choices": [
+        "Metal is always at a lower temperature",
+        "Wood contains no atoms",
+        "Wood produces its own heat constantly",
+        "Metal conducts heat away from your skin faster"
+      ],
+      "answer": "Metal conducts heat away from your skin faster",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A student sees the Moon rise in the east at sunset. The Moon is most likely in which phase?",
+      "choices": [
+        "New moon",
+        "First quarter",
+        "Full moon",
+        "Third quarter only at noon"
+      ],
+      "answer": "Full moon",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Density is calculated by —",
+      "choices": [
+        "multiplying mass and volume",
+        "dividing mass by volume",
+        "adding mass and volume",
+        "subtracting volume from mass"
+      ],
+      "answer": "dividing mass by volume",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which change would most likely increase a pendulum’s swing period?",
+      "choices": [
+        "Shortening the string",
+        "Using a lighter bob only",
+        "Lengthening the string",
+        "Painting the bob red"
+      ],
+      "answer": "Lengthening the string",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The ozone layer in the upper atmosphere helps life by —",
+      "choices": [
+        "creating oxygen for fish gills",
+        "preventing all rain from forming",
+        "blocking every radio wave",
+        "absorbing harmful ultraviolet radiation"
+      ],
+      "answer": "absorbing harmful ultraviolet radiation",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Two identical containers hold equal volumes of water and cooking oil. The water container feels heavier mainly because —",
+      "choices": [
+        "oil has more atoms per millilitre",
+        "water is always colder",
+        "water has greater density than the oil",
+        "oil is a solid at room temperature"
+      ],
+      "answer": "water has greater density than the oil",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A species well adapted to a sudden habitat change often has —",
+      "choices": [
+        "no genetic variation",
+        "traits that improve survival and reproduction in the new conditions",
+        "guaranteed immunity to all disease",
+        "identical DNA to every other species"
+      ],
+      "answer": "traits that improve survival and reproduction in the new conditions",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Series circuits differ from parallel circuits because in series —",
+      "choices": [
+        "each branch has its own separate battery",
+        "bulbs always get brighter when one burns out",
+        "one open path stops current through the whole loop",
+        "voltage is zero everywhere instantly"
+      ],
+      "answer": "one open path stops current through the whole loop",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which evidence best supports continental drift over geologic time?",
+      "choices": [
+        "Daily tides in a single bay",
+        "One summer of local rainfall",
+        "A single volcanic eruption",
+        "Matching fossils and coastlines on separated continents"
+      ],
+      "answer": "Matching fossils and coastlines on separated continents",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Photosynthesis and cellular respiration are related because together they —",
+      "choices": [
+        "eliminate all energy loss as heat",
+        "stop the water cycle",
+        "cycle carbon dioxide and oxygen through ecosystems",
+        "create new elements in plants"
+      ],
+      "answer": "cycle carbon dioxide and oxygen through ecosystems",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A vaccine triggers the immune system to —",
+      "choices": [
+        "destroy all bacteria everywhere permanently",
+        "prepare defenses before exposure to a pathogen",
+        "replace white blood cells with water",
+        "prevent any future illness of any kind"
+      ],
+      "answer": "prepare defenses before exposure to a pathogen",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Why do engineers add ribs inside hollow bones in model bridges?",
+      "choices": [
+        "To increase air pollution",
+        "To remove all weight from the structure",
+        "To distribute stress and resist bending",
+        "To block electrical circuits"
+      ],
+      "answer": "To distribute stress and resist bending",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Acid rain can harm lakes primarily by —",
+      "choices": [
+        "increasing oxygen to toxic levels only",
+        "freezing water in summer",
+        "removing all dissolved minerals instantly",
+        "lowering pH and stressing aquatic organisms"
+      ],
+      "answer": "lowering pH and stressing aquatic organisms",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which statement about stars is correct?",
+      "choices": [
+        "All stars are the same distance from Earth",
+        "Blue stars are always cooler than red stars",
+        "A star’s colour relates to its surface temperature",
+        "Stars produce energy by burning wood"
+      ],
+      "answer": "A star’s colour relates to its surface temperature",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "When salt water evaporates from a shallow dish, the salt remains because —",
+      "choices": [
+        "salt turns into oxygen gas",
+        "salt does not evaporate at that temperature; only water vapor leaves",
+        "evaporation creates new salt atoms",
+        "water becomes heavier than salt instantly"
+      ],
+      "answer": "salt does not evaporate at that temperature; only water vapor leaves",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A controlled experiment requires a control group so scientists can —",
+      "choices": [
+        "avoid collecting any data",
+        "change every variable at once",
+        "compare results to a case where the variable was not changed",
+        "guarantee the hypothesis is true"
+      ],
+      "answer": "compare results to a case where the variable was not changed",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Wind turbines generate electricity by using moving air to —",
+      "choices": [
+        "create coal inside the tower",
+        "freeze magnets permanently",
+        "remove carbon dioxide from clouds",
+        "spin blades connected to a generator"
+      ],
+      "answer": "spin blades connected to a generator",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Human lungs increase surface area for gas exchange mainly through —",
+      "choices": [
+        "one large hollow tube only",
+        "thick metal plates in the chest",
+        "millions of tiny alveoli",
+        "digestive enzymes in the trachea"
+      ],
+      "answer": "millions of tiny alveoli",
+      "hint": false
+    }
+  ]
+}

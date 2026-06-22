@@ -28,6 +28,48 @@ def list_subjects() -> list[dict]:
     return out
 
 
+def list_learn_hub() -> dict:
+    """Hub layout for Learn landing page (flat subjects or grouped)."""
+    subjects_by_key = {s["key"]: s for s in list_subjects()}
+    hub_path = LEARN_DIR / "hub.json"
+    if not hub_path.is_file():
+        return {
+            "entries": [{"type": "subject", **s} for s in subjects_by_key.values()]
+        }
+
+    with open(hub_path, encoding="utf-8") as f:
+        raw = json.load(f)
+
+    entries: list[dict] = []
+    for item in raw.get("entries", []):
+        kind = item.get("type", "subject")
+        if kind == "group":
+            group_subjects: list[dict] = []
+            for ref in item.get("items", []):
+                key = ref if isinstance(ref, str) else ref.get("key")
+                if key and key in subjects_by_key:
+                    group_subjects.append(subjects_by_key[key])
+            if group_subjects:
+                entries.append(
+                    {
+                        "type": "group",
+                        "id": item.get("id", ""),
+                        "title": item.get("title", ""),
+                        "description": item.get("description", ""),
+                        "subjects": group_subjects,
+                    }
+                )
+        elif kind == "subject":
+            key = item.get("key")
+            if key and key in subjects_by_key:
+                entries.append({"type": "subject", **subjects_by_key[key]})
+    if not entries:
+        return {
+            "entries": [{"type": "subject", **s} for s in subjects_by_key.values()]
+        }
+    return {"entries": entries}
+
+
 def _load_section(subj_dir: Path, sec: dict) -> dict | None:
     fid = sec.get("file")
     if not fid:

@@ -1,0 +1,230 @@
+{
+  "title": "English — Reading comprehension (200–250 words, vocabulary focus, set 2)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-06-18T12:00:00Z",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Mapping the Night Sky",
+      "body": "For centuries, sailors and farmers relied on constellations to navigate and predict seasons. Today, amateur astronomers still sketch star patterns in notebooks, noting how groups like Orion or Cassiopeia shift across the sky as Earth orbits the Sun. Light pollution from cities can obscure faint stars, so clubs often travel to dark rural sites where the Milky Way appears as a luminous river.\n\nModern planetariums project digital maps that highlight mythological figures connecting the dots between stars. While these stories are ancient, the science behind them remains precise: stars sit at vastly different distances, yet they seem fixed together because they are so far away. Telescopes reveal that many apparent singles are actually binary pairs orbiting each other.\n\nStudents who keep observation logs learn patience and careful notation. Recording the same patch of sky weekly shows how planets wander compared with background stars. Such diligence mirrors professional surveys that catalog millions of objects. Whether using a phone app or a paper chart, mapping the night sky turns a casual glance upward into a structured investigation of motion, distance, and human storytelling woven through the darkness above."
+    },
+    {
+      "id": "p2",
+      "title": "Composting in the City",
+      "body": "Urban composting converts food scraps and yard waste into dark, crumbly humus that enriches soil. Apartment dwellers may use sealed countertop bins with charcoal filters to control odours, while houses with backyards build wooden bins that allow air to circulate. Microorganisms break down organic matter, releasing heat that can steam on cool mornings.\n\nSuccessful compost balances green materials rich in nitrogen—such as fruit peels—with brown materials high in carbon, like dried leaves. Too much moisture produces a sour smell; turning the pile with a pitchfork introduces oxygen that helpful bacteria need. Finished compost reduces landfill waste and lowers the need for chemical fertilizers in community gardens.\n\nSome cities offer curbside collection programs that haul scraps to industrial facilities operating at higher temperatures than backyard bins. These plants process volume quickly but require trucks and sorting lines. Neighbourhood workshops teach residents which items belong in compost and which contaminants, such as glossy stickers or meat bones in small bins, can attract pests. When residents understand the biology of decay, composting becomes less a chore and more a visible cycle returning nutrients to plants that feed the community again."
+    },
+    {
+      "id": "p3",
+      "title": "The Inuit Kayak",
+      "body": "Traditional Inuit kayaks were custom-built to fit each hunter's body, allowing silent travel across icy water while pursuing seals or birds. Builders stretched sealskin over driftwood or whalebone frames, sealing seams with rendered fat to keep water out. The low profile reduced wind resistance and made rolling upright easier after a capsize.\n\nPaddles were narrow and often tipped with bone to grip waves without splashing loudly. Because materials came from the local environment, repairing a crack on the tundra was possible with tools carried on the hunt. Modern recreational kayaks use plastic or fiberglass, yet designers still study historic shapes for stability lessons.\n\nMuseums now preserve fragile skin boats, explaining how kayaks symbolize ingenuity in harsh climates. School programs sometimes include frame-building demonstrations that highlight measurement and proportional thinking. Learning about these vessels connects engineering, culture, and respect for landscapes where every resource had to serve multiple purposes. The word kayak itself enters English from Inuktitut, reminding listeners that innovation often arrives with the language of the people who perfected it."
+    },
+    {
+      "id": "p4",
+      "title": "Honeybees and Pollination",
+      "body": "Honeybees visit flowers to collect nectar and pollen, transferring grains between blossoms as they move. This pollination allows many fruit and vegetable plants to produce seeds and mature crops. A single colony may visit thousands of flowers daily, guided by dances that communicate direction and distance to nestmates.\n\nBeekeepers monitor hives for signs of disease, adequate honey stores, and queen health. Pesticides, habitat loss, and harsh winters threaten wild and managed populations alike. Planting native flowers along field edges creates corridors where bees can rest and feed between agricultural zones.\n\nStudents tasting honey from different seasons notice flavour variations tied to whichever blooms dominated a month—clover, basswood, or goldenrod. Such differences illustrate how ecosystems shape food products humans enjoy. Protecting pollinators is not merely about saving insects; it stabilizes the agricultural systems supplying grocery shelves. Simple actions, like leaving dandelions unmowed for early spring foragers, support bees before larger blossoms appear."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"obscure\" most nearly means —",
+      "choices": ["hide or make hard to see", "brighten dramatically", "measure exactly", "name officially"],
+      "answer": "hide or make hard to see",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which word is the best synonym for \"diligence\"?",
+      "choices": ["careful persistent effort", "sudden luck", "fear of darkness", "refusal to write notes"],
+      "answer": "careful persistent effort",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Why do constellations appear to shift over months?",
+      "choices": ["Earth moves around the Sun, changing the night view", "stars move together in a circle nightly", "the Moon blocks different stars each week", "planetariums change the patterns daily"],
+      "answer": "Earth moves around the Sun, changing the night view",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Astronomers travel to rural sites mainly to —",
+      "choices": ["escape light pollution and see fainter stars", "avoid using any telescopes", "study city buildings", "prevent Earth from orbiting"],
+      "answer": "escape light pollution and see fainter stars",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which title best fits the passage?",
+      "choices": ["Observing and Recording Patterns in the Night Sky", "Why Stars No Longer Exist", "Building Planetariums Without Light", "How to Stop Earth’s Orbit"],
+      "answer": "Observing and Recording Patterns in the Night Sky",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"humus\" refers to —",
+      "choices": ["finished compost that improves soil", "plastic recycling bins", "chemical pesticide spray", "fresh fruit peels only"],
+      "answer": "finished compost that improves soil",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which pair correctly matches material type?",
+      "choices": ["fruit peels = green (nitrogen); dried leaves = brown (carbon)", "dried leaves = green; fruit peels = brown", "both are only carbon", "neither belongs in compost"],
+      "answer": "fruit peels = green (nitrogen); dried leaves = brown (carbon)",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Turning the compost pile helps because it —",
+      "choices": ["adds oxygen for helpful bacteria", "removes all microorganisms", "freezes the material", "prevents any heat from forming"],
+      "answer": "adds oxygen for helpful bacteria",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Industrial composting facilities differ from backyard bins because they —",
+      "choices": ["process large volumes at higher temperatures", "never use trucks", "only accept metal waste", "avoid sorting materials"],
+      "answer": "process large volumes at higher temperatures",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The author’s main purpose is to —",
+      "choices": ["explain how urban composting works and why it matters", "argue against all community gardens", "describe landfill construction", "discourage recycling programs"],
+      "answer": "explain how urban composting works and why it matters",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"custom-built\" most nearly means —",
+      "choices": ["made to fit a specific person", "mass-produced in a factory", "copied from plastic models", "assembled without measurement"],
+      "answer": "made to fit a specific person",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Sealskin was used because it —",
+      "choices": ["could be stretched tight and sealed against water", "was heavier than metal", "prevented paddles from moving", "made the kayak taller"],
+      "answer": "could be stretched tight and sealed against water",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which word is the best antonym for \"fragile\"?",
+      "choices": ["sturdy", "ancient", "narrow", "silent"],
+      "answer": "sturdy",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Modern designers still study traditional kayaks to learn about —",
+      "choices": ["stability and shape", "how to avoid using water", "building with only plastic", "eliminating paddles"],
+      "answer": "stability and shape",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The passage suggests that traditional kayaks show —",
+      "choices": ["ingenuity adapted to a harsh environment", "why hunting should be banned", "that driftwood cannot float", "that repairs were impossible on the tundra"],
+      "answer": "ingenuity adapted to a harsh environment",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"foragers\" are organisms that —",
+      "choices": ["search for food such as nectar and pollen", "build honeycombs only at night", "destroy all fruit crops", "live only in grocery stores"],
+      "answer": "search for food such as nectar and pollen",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Pollination is important because it helps plants —",
+      "choices": ["produce seeds and mature crops", "avoid making flowers", "grow without sunlight", "eliminate nectar"],
+      "answer": "produce seeds and mature crops",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Honey flavours differ across seasons mainly because —",
+      "choices": ["bees visit different dominant flowers", "bees stop collecting pollen in summer", "all nectar tastes identical", "keepers add artificial colours"],
+      "answer": "bees visit different dominant flowers",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Planting native flowers along field edges helps bees by —",
+      "choices": ["providing resting and feeding corridors", "blocking all crop growth", "replacing bees with machines", "increasing pesticide use"],
+      "answer": "providing resting and feeding corridors",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which statement best summarizes the passage?",
+      "choices": ["Protecting pollinators supports agriculture and ecosystems", "Honeybees no longer visit flowers", "Farmers should remove all wild plants", "Pollination happens without bees"],
+      "answer": "Protecting pollinators supports agriculture and ecosystems",
+      "hint": false
+    }
+  ]
+}

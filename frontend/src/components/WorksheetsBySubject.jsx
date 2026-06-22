@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import SubjectBadge, { formatSubjectLabel } from "./SubjectBadge";
+import ContentBadge from "./ContentBadge";
 import { DifficultyStars } from "./DifficultyStars";
 import {
   averagePercentAcrossDoneWorksheets,
@@ -43,6 +44,7 @@ function WorksheetRow({ ws, onOpenWorksheet, renderSideAction }) {
           </div>
         </button>
         <div className="px-5 pb-4 flex flex-wrap items-center gap-2 border-t border-slate-100 bg-slate-50/50 pt-3">
+          <ContentBadge label={ws.content_badge} />
           <SubjectBadge subject={ws.subject} />
           <DifficultyStars min={ws.difficulty_min} max={ws.difficulty_max} />
           <span className="text-indigo-500 text-sm">

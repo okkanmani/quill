@@ -1,0 +1,291 @@
+{
+  "title": "Math — Whole Numbers",
+  "subject": "math",
+  "content_badge": "NCERT",
+  "learn_subject": "math-ncert-g6",
+  "learn_section": "ncert-ch02-whole-numbers",
+  "scratchpad": true,
+  "created_at": "2026-06-21T00:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the successor of 199?",
+      "choices": [
+        "200",
+        "201",
+        "198",
+        "199"
+      ],
+      "answer": "200",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the predecessor of 1,000?",
+      "choices": [
+        "100",
+        "999",
+        "1,001",
+        "998"
+      ],
+      "answer": "999",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which whole number has no predecessor among whole numbers?",
+      "choices": [
+        "1",
+        "0",
+        "2",
+        "10"
+      ],
+      "answer": "0",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 999 + 1?",
+      "choices": [
+        "998",
+        "999",
+        "10,000",
+        "1,000"
+      ],
+      "answer": "1,000",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the smallest 6-digit whole number?",
+      "choices": [
+        "1,000",
+        "99,999",
+        "1,00,000",
+        "10,000"
+      ],
+      "answer": "1,00,000",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which property is shown by 3 + 5 = 5 + 3?",
+      "choices": [
+        "Associative",
+        "Identity",
+        "Distributive",
+        "Commutative"
+      ],
+      "answer": "Commutative",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which number is the identity for addition of whole numbers?",
+      "choices": [
+        "−1",
+        "1",
+        "0",
+        "10"
+      ],
+      "answer": "0",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which expression shows the distributive property?",
+      "choices": [
+        "7 + 3 = 3 + 7",
+        "(2 + 3) + 4 = 2 + (3 + 4)",
+        "n + 0 = n",
+        "7 × (3 + 2) = 7 × 3 + 7 × 2"
+      ],
+      "answer": "7 × (3 + 2) = 7 × 3 + 7 × 2",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which operation is NOT always closed on whole numbers?",
+      "choices": [
+        "Subtraction",
+        "Adding 0",
+        "Multiplication",
+        "Addition"
+      ],
+      "answer": "Subtraction",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "On a number line, which direction shows larger whole numbers?",
+      "choices": [
+        "Right",
+        "Left",
+        "Up",
+        "Down"
+      ],
+      "answer": "Right",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 99 + 1?",
+      "choices": [
+        "98",
+        "100",
+        "1,000",
+        "990"
+      ],
+      "answer": "100",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the greatest 5-digit whole number?",
+      "choices": [
+        "1,00,000",
+        "90,000",
+        "99,990",
+        "99,999"
+      ],
+      "answer": "99,999",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "4 × 7 = 7 × 4 illustrates which property?",
+      "choices": [
+        "Commutative",
+        "Associative",
+        "Closure",
+        "Identity"
+      ],
+      "answer": "Commutative",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "For any whole number n, n + 0 = n shows which property?",
+      "choices": [
+        "Commutative",
+        "Associative",
+        "Distributive",
+        "Identity"
+      ],
+      "answer": "Identity",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "(2 + 3) + 4 = 2 + (3 + 4) shows which property?",
+      "choices": [
+        "Closure",
+        "Identity",
+        "Commutative",
+        "Associative"
+      ],
+      "answer": "Associative",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "For any whole number n, n × 1 = n shows which property?",
+      "choices": [
+        "Associative",
+        "Distributive",
+        "Commutative",
+        "Identity"
+      ],
+      "answer": "Identity",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 9,999 + 1?",
+      "choices": [
+        "9,998",
+        "99,999",
+        "10,000",
+        "1,00,000"
+      ],
+      "answer": "10,000",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which set includes the number 0?",
+      "choices": [
+        "Prime numbers",
+        "Natural numbers only",
+        "Whole numbers",
+        "Negative integers only"
+      ],
+      "answer": "Whole numbers",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Moving left on the number line from 5 takes you to numbers that are:",
+      "choices": [
+        "Larger",
+        "Equal",
+        "Prime only",
+        "Smaller"
+      ],
+      "answer": "Smaller",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 99,999 + 1?",
+      "choices": [
+        "1,00,000",
+        "99,998",
+        "10,00,000",
+        "99,990"
+      ],
+      "answer": "1,00,000",
+      "hint": false
+    }
+  ]
+}

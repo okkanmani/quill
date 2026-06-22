@@ -1,0 +1,188 @@
+{
+  "title": "Science — Mixed topics (medium, set 2)",
+  "subject": "science",
+  "scratchpad": false,
+  "created_at": "2026-06-18T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which gas do plants take in during photosynthesis?",
+      "choices": ["Carbon dioxide", "Nitrogen only", "Helium", "Methane from soil only"],
+      "answer": "Carbon dioxide",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A lever helps you lift a load by —",
+      "choices": ["trading distance for force using a fulcrum", "creating energy from nothing", "removing all friction forever", "changing the load’s mass"],
+      "answer": "trading distance for force using a fulcrum",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which layer of Earth is made mostly of solid rock and includes the crust and upper mantle?",
+      "choices": ["Lithosphere", "Inner core only", "Ozone layer", "Stratosphere only"],
+      "answer": "Lithosphere",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Rust forming on iron is an example of —",
+      "choices": ["a chemical change", "a physical change only", "evaporation", "freezing"],
+      "answer": "a chemical change",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The digestive system breaks food into nutrients that the body can —",
+      "choices": ["absorb and use for energy and growth", "turn directly into bones without blood", "release as light", "store only as water"],
+      "answer": "absorb and use for energy and growth",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which tool would best measure the mass of a textbook?",
+      "choices": ["Balance or scale", "Thermometer", "Rain gauge", "Wind vane"],
+      "answer": "Balance or scale",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "High pressure systems in weather maps often bring —",
+      "choices": ["clearer, calmer conditions", "constant thunderstorms only", "tornadoes every hour", "24 hours of darkness"],
+      "answer": "clearer, calmer conditions",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "An ecosystem is healthiest when it has —",
+      "choices": ["biodiversity among living and nonliving parts", "only one species of plant", "no decomposers", "no water cycle"],
+      "answer": "biodiversity among living and nonliving parts",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Static electricity builds up when electrons —",
+      "choices": ["move or transfer between materials", "stop existing in atoms", "always flow through wires only", "create new elements"],
+      "answer": "move or transfer between materials",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The water cycle includes evaporation, condensation, and —",
+      "choices": ["precipitation", "photosynthesis only", "fossilization only", "magnetism"],
+      "answer": "precipitation",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which organ pumps blood throughout the body?",
+      "choices": ["Heart", "Lungs only", "Stomach", "Skin only"],
+      "answer": "Heart",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A wedge is a simple machine that —",
+      "choices": ["splits or separates objects", "stores electric charge", "measures temperature", "produces oxygen"],
+      "answer": "splits or separates objects",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Fossils of sea creatures found on a mountain suggest that —",
+      "choices": ["the area was once covered by water", "mountains never change height", "fish never lived in oceans", "sediment cannot form rock"],
+      "answer": "the area was once covered by water",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The nucleus of a cell controls —",
+      "choices": ["cell activities and contains genetic material", "only water storage", "photosynthesis in animals", "digestion in plants only"],
+      "answer": "cell activities and contains genetic material",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Wind is caused mainly by —",
+      "choices": ["differences in air pressure and temperature", "Earth stopping its rotation", "the Moon blocking sunlight", "rocks releasing sound waves"],
+      "answer": "differences in air pressure and temperature",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Burning wood in a campfire is —",
+      "choices": ["a chemical change that releases heat and light", "a physical change with no new substances", "condensation", "magnetic attraction only"],
+      "answer": "a chemical change that releases heat and light",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A carnivore in a food web eats mainly —",
+      "choices": ["other animals", "only sunlight", "only dead leaves", "only rocks"],
+      "answer": "other animals",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A thermometer dipped in ice water after being at room temperature shows —",
+      "choices": ["the reading dropping as heat moves to the colder water", "temperature rising because ice creates heat", "no change ever", "mass increasing"],
+      "answer": "the reading dropping as heat moves to the colder water",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Geothermal energy comes from —",
+      "choices": ["heat inside Earth", "cold air in the upper atmosphere only", "lightning stored in batteries", "fossilized plants only"],
+      "answer": "heat inside Earth",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Scientists share results so others can —",
+      "choices": ["repeat tests and verify findings", "hide data permanently", "avoid using evidence", "skip peer review"],
+      "answer": "repeat tests and verify findings",
+      "hint": false
+    }
+  ]
+}

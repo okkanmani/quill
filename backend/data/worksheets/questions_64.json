@@ -1,0 +1,291 @@
+{
+  "title": "Math — Playing with Numbers",
+  "subject": "math",
+  "content_badge": "NCERT",
+  "learn_subject": "math-ncert-g6",
+  "learn_section": "ncert-ch03-playing-with-numbers",
+  "scratchpad": true,
+  "created_at": "2026-06-21T00:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which of these is a factor of 12?",
+      "choices": [
+        "7",
+        "5",
+        "3",
+        "8"
+      ],
+      "answer": "3",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which number is prime?",
+      "choices": [
+        "6",
+        "4",
+        "9",
+        "13"
+      ],
+      "answer": "13",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The number 1 is:",
+      "choices": [
+        "Both prime and composite",
+        "Neither prime nor composite",
+        "Composite",
+        "Prime"
+      ],
+      "answer": "Neither prime nor composite",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the prime factorisation of 18?",
+      "choices": [
+        "2 × 2 × 3",
+        "3 × 6",
+        "2 × 9",
+        "2 × 3 × 3"
+      ],
+      "answer": "2 × 3 × 3",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which number is divisible by 2?",
+      "choices": [
+        "357",
+        "346",
+        "355",
+        "351"
+      ],
+      "answer": "346",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Is 2,394 divisible by 3?",
+      "choices": [
+        "Only if divisible by 2",
+        "Cannot tell",
+        "No",
+        "Yes"
+      ],
+      "answer": "Yes",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which number is divisible by 5?",
+      "choices": [
+        "2,482",
+        "2,483",
+        "2,484",
+        "2,485"
+      ],
+      "answer": "2,485",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which number is divisible by 10?",
+      "choices": [
+        "1,239",
+        "1,235",
+        "1,234",
+        "1,230"
+      ],
+      "answer": "1,230",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the HCF of 12 and 18?",
+      "choices": [
+        "36",
+        "6",
+        "12",
+        "3"
+      ],
+      "answer": "6",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the LCM of 4 and 6?",
+      "choices": [
+        "24",
+        "6",
+        "2",
+        "12"
+      ],
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which number is composite?",
+      "choices": [
+        "3",
+        "2",
+        "10",
+        "7"
+      ],
+      "answer": "10",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which is a multiple of 8?",
+      "choices": [
+        "24",
+        "26",
+        "22",
+        "18"
+      ],
+      "answer": "24",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Is 5,049 divisible by 9?",
+      "choices": [
+        "Yes",
+        "No",
+        "Only divisible by 11",
+        "Only divisible by 3"
+      ],
+      "answer": "Yes",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the HCF of 24 and 36?",
+      "choices": [
+        "12",
+        "6",
+        "72",
+        "24"
+      ],
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which number is divisible by 4?",
+      "choices": [
+        "322",
+        "318",
+        "316",
+        "314"
+      ],
+      "answer": "316",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which number is divisible by 6?",
+      "choices": [
+        "134",
+        "132",
+        "135",
+        "130"
+      ],
+      "answer": "132",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the prime factorisation of 12?",
+      "choices": [
+        "2 × 3 × 3",
+        "2 × 6",
+        "2 × 2 × 3",
+        "3 × 4"
+      ],
+      "answer": "2 × 2 × 3",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the LCM of 3 and 5?",
+      "choices": [
+        "8",
+        "3",
+        "15",
+        "30"
+      ],
+      "answer": "15",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which is NOT a factor of 6?",
+      "choices": [
+        "3",
+        "1",
+        "2",
+        "4"
+      ],
+      "answer": "4",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The sum of digits of 456 is 15. Is 456 divisible by 3?",
+      "choices": [
+        "Only by 9",
+        "No",
+        "Only by 6",
+        "Yes"
+      ],
+      "answer": "Yes",
+      "hint": false
+    }
+  ]
+}

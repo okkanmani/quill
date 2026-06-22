@@ -1,0 +1,18 @@
+const STYLES = {
+  NCERT: "bg-amber-100 text-amber-950 border-amber-200",
+};
+
+export default function ContentBadge({ label }) {
+  const text = (label || "").trim();
+  if (!text) return null;
+  const style =
+    STYLES[text.toUpperCase()] ||
+    "bg-amber-50 text-amber-900 border-amber-200";
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${style}`}
+    >
+      {text}
+    </span>
+  );
+}

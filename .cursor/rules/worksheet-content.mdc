@@ -1,0 +1,40 @@
+---
+description: Worksheet JSON conventions (stars, question counts, answer shuffle)
+globs: backend/data/worksheets/**/*.json
+alwaysApply: false
+---
+
+# Worksheet content conventions
+
+When creating or editing worksheet JSON in `backend/data/worksheets/`:
+
+## Difficulty and question count
+
+All questions in one worksheet use the same `"stars"` value (1, 2, or 3). Question count depends on difficulty:
+
+| Stars | Difficulty | Questions |
+|-------|------------|-----------|
+| 1 | easy | **25** |
+| 2 | medium | **20** |
+| 3 | hard | **15** |
+
+Filename: `questions_N.json` (stem = worksheet id).
+
+## Reading (english)
+
+- Use `"passages"` with `"body"` (not `"text"`).
+- Split questions evenly across passages (e.g. 20 Q → 4×5, 15 Q → 3×5, 25 Q → 5×5).
+- Vocabulary / inference focus; match difficulty to stars.
+
+## Multiple choice
+
+- Shuffle `"choices"` so the correct `"answer"` is not always first — spread across positions B/C/D.
+- Every `"answer"` must exactly match one choice string.
+
+## Other fields
+
+- Include `"created_at"` (ISO) for Latest tab sorting.
+- `"subject"`: `math`, `english`, `science`, or `general`.
+- Math worksheets: `"scratchpad": true` unless reading-only style.
+- NCERT-based worksheets: set `"content_badge": "NCERT"` (shown before the subject badge).
+- **Latest tab:** worksheets appear for 14 days from `sort_ts`. Portal upload sets `sort_ts` to upload time; bundled JSON uses `created_at` (or file mtime).

@@ -17,11 +17,11 @@ export default function AdminWorksheets() {
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
 
-  function loadWorksheets() {
+  function loadWorksheets({ preserveError = false } = {}) {
     setLoading(true);
     getWorksheets()
       .then((data) => {
-        setError("");
+        if (!preserveError) setError("");
         setWorksheets(data);
       })
       .catch(() => setError("Could not load worksheets."))
@@ -52,22 +52,51 @@ export default function AdminWorksheets() {
   }
 
   async function handleUpload(event) {
-    const file = event.target.files?.[0];
+    const files = Array.from(event.target.files || []);
     event.target.value = "";
-    if (!file) return;
+    if (files.length === 0) return;
 
     setUploading(true);
     setUploadMessage("");
     setError("");
+
+    const uploaded = [];
+    const failed = [];
+
     try {
-      const result = await uploadWorksheet(file);
-      setUploadMessage(
-        `Uploaded ${result.id} — “${result.title}” (${result.question_count} questions).`,
-      );
-      setUploadPanelOpen(false);
-      loadWorksheets();
-    } catch (err) {
-      setError(err.message || "Could not upload worksheet.");
+      for (const file of files) {
+        try {
+          const result = await uploadWorksheet(file);
+          uploaded.push(result);
+        } catch (err) {
+          failed.push({
+            name: file.name,
+            message: err.message || "Upload failed",
+          });
+        }
+      }
+
+      if (uploaded.length > 0) {
+        if (uploaded.length === 1) {
+          const r = uploaded[0];
+          setUploadMessage(
+            `Uploaded ${r.id} — “${r.title}” (${r.question_count} questions).`,
+          );
+        } else {
+          setUploadMessage(
+            `Uploaded ${uploaded.length} worksheets: ${uploaded.map((r) => r.id).join(", ")}.`,
+          );
+        }
+        loadWorksheets({ preserveError: failed.length > 0 });
+      }
+
+      if (failed.length > 0) {
+        setError(
+          failed.map((f) => `${f.name}: ${f.message}`).join(" "),
+        );
+      } else {
+        setUploadPanelOpen(false);
+      }
     } finally {
       setUploading(false);
     }
@@ -114,11 +143,12 @@ export default function AdminWorksheets() {
                   >
                     <label className="inline-flex items-center cursor-pointer">
                       <span className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl px-4 py-2 transition whitespace-nowrap">
-                        {uploading ? "Uploading…" : "Choose file"}
+                        {uploading ? "Uploading…" : "Choose files"}
                       </span>
                       <input
                         type="file"
                         accept=".json,application/json"
+                        multiple
                         className="sr-only"
                         disabled={uploading}
                         onChange={handleUpload}
