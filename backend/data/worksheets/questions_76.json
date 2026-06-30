@@ -1,0 +1,221 @@
+{
+  "title": "Math — Algebra (NCERT)",
+  "subject": "math",
+  "content_badge": "NCERT",
+  "learn_subject": "math-ncert-g6",
+  "learn_section": "ncert-ch11-algebra",
+  "scratchpad": true,
+  "created_at": "2026-06-23T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "If n matchsticks make n L-shapes and each L uses 2 sticks, how many for 9 Ls?",
+      "choices": [
+        "11",
+        "18",
+        "16",
+        "20"
+      ],
+      "answer": "18",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which is an algebraic expression (not an equation)?",
+      "choices": [
+        "x + 4 = 9",
+        "2m = 14",
+        "3x + 5",
+        "y − 3 = 10"
+      ],
+      "answer": "3x + 5",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Solve: n + 8 = 21",
+      "choices": [
+        "n = 29",
+        "n = 13",
+        "n = 7",
+        "n = 11"
+      ],
+      "answer": "n = 13",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Solve: y − 6 = 15",
+      "choices": [
+        "y = 9",
+        "y = 19",
+        "y = 21",
+        "y = 24"
+      ],
+      "answer": "y = 21",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Solve: 4p = 36",
+      "choices": [
+        "p = 32",
+        "p = 9",
+        "p = 40",
+        "p = 6"
+      ],
+      "answer": "p = 9",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A number plus 12 equals 30. Which equation fits?",
+      "choices": [
+        "n + 12 = 30",
+        "12n = 30",
+        "n − 12 = 30",
+        "n + 30 = 12"
+      ],
+      "answer": "n + 12 = 30",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "If 2n + 1 = 17, what is n?",
+      "choices": [
+        "7",
+        "9",
+        "8",
+        "16"
+      ],
+      "answer": "8",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which inverse operation undoes multiplying by 5?",
+      "choices": [
+        "Add 5",
+        "Subtract 5",
+        "Multiply by 5 again",
+        "Divide by 5"
+      ],
+      "answer": "Divide by 5",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Ravi has x rupees. After spending ₹25 he has ₹40. Which equation is correct?",
+      "choices": [
+        "x − 25 = 40",
+        "x + 25 = 40",
+        "25x = 40",
+        "x − 40 = 25"
+      ],
+      "answer": "x − 25 = 40",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is the solution of m + 15 = 15?",
+      "choices": [
+        "m = 0",
+        "m = 30",
+        "m = 15",
+        "m = 1"
+      ],
+      "answer": "m = 0",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which expression means '5 more than a number y'?",
+      "choices": [
+        "y + 5",
+        "5y",
+        "y − 5",
+        "y ÷ 5"
+      ],
+      "answer": "y + 5",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Solve: x + 19 = 50",
+      "choices": [
+        "x = 69",
+        "x = 29",
+        "x = 41",
+        "x = 31"
+      ],
+      "answer": "x = 31",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "If 3n = 27, check which value of n works.",
+      "choices": [
+        "6",
+        "8",
+        "9",
+        "10"
+      ],
+      "answer": "9",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which is an equation?",
+      "choices": [
+        "7 − k",
+        "3a + 1",
+        "2m",
+        "7 − k = 2"
+      ],
+      "answer": "7 − k = 2",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Meena thinks of a number, doubles it, and gets 24. Which equation matches?",
+      "choices": [
+        "n + 2 = 24",
+        "2n = 24",
+        "n − 2 = 24",
+        "n ÷ 2 = 24"
+      ],
+      "answer": "2n = 24",
+      "hint": false
+    }
+  ]
+}

@@ -1,0 +1,250 @@
+{
+  "title": "English — Reading comprehension (hard)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-06-23T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A seed library differs from a shop because patrons —",
+      "choices": [
+        "buy seeds permanently",
+        "only read about plants",
+        "trade books for money",
+        "borrow seeds and return seeds from later harvests"
+      ],
+      "answer": "borrow seeds and return seeds from later harvests",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Early planting failures led Kai to —",
+      "choices": [
+        "close the library",
+        "add a soil thermometer loan program",
+        "stop labeling envelopes",
+        "ban tomatoes"
+      ],
+      "answer": "add a soil thermometer loan program",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Heirloom varieties entered the catalog when —",
+      "choices": [
+        "the frost ended",
+        "Kai false-started",
+        "elderly gardeners shared seeds they had saved for years",
+        "invoices were unpaid"
+      ],
+      "answer": "elderly gardeners shared seeds they had saved for years",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "By the third year, returned seeds were —",
+      "choices": [
+        "twice the number taken out",
+        "half the number taken out",
+        "exactly equal to books checked out",
+        "unused"
+      ],
+      "answer": "twice the number taken out",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Frost warnings on envelopes helped families —",
+      "choices": [
+        "run faster",
+        "find theatre contracts",
+        "avoid planting too early",
+        "measure moths"
+      ],
+      "answer": "avoid planting too early",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Dina's starts improved when she —",
+      "choices": [
+        "counted breaths instead of watching rivals",
+        "skipped sleep",
+        "lengthened her first stride",
+        "stared at moths"
+      ],
+      "answer": "counted breaths instead of watching rivals",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Film showed Dina's problem was —",
+      "choices": [
+        "officials denying a trial",
+        "her rear foot lifting slightly too early",
+        "long jump shoes",
+        "ledger dust"
+      ],
+      "answer": "her rear foot lifting slightly too early",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Alvarez and Dina changed her first stride to —",
+      "choices": [
+        "keep her torso lower",
+        "raise her torso",
+        "slow the long jump",
+        "plant seeds earlier"
+      ],
+      "answer": "keep her torso lower",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Dina's notebook linked performance to —",
+      "choices": [
+        "brick suppliers",
+        "seed envelopes",
+        "sleep hours around exam weeks",
+        "1924 postcards"
+      ],
+      "answer": "sleep hours around exam weeks",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "After the denied time trial, Dina —",
+      "choices": [
+        "quit track",
+        "opened a seed library",
+        "published about fountains",
+        "set a personal best in the long jump"
+      ],
+      "answer": "set a personal best in the long jump",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Priya noticed the fountain on —",
+      "choices": [
+        "a seed envelope",
+        "a track starting block",
+        "a 1924 postcard missing from an 1898 map",
+        "a soil thermometer"
+      ],
+      "answer": "a 1924 postcard missing from an 1898 map",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Tax records helped her connect —",
+      "choices": [
+        "brick suppliers to a cancelled theatre",
+        "moths to sleep",
+        "tomatoes to frost",
+        "runners to breath counts"
+      ],
+      "answer": "brick suppliers to a cancelled theatre",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Invoices showed the fountain was built in 1911 to —",
+      "choices": [
+        "water seed libraries",
+        "promote a silent cinema",
+        "time sprinters",
+        "repair ledgers"
+      ],
+      "answer": "promote a silent cinema",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Priya argued the heritage walk should include —",
+      "choices": [
+        "only the fountain",
+        "only moths",
+        "only district meets",
+        "the cinema site as well as the fountain"
+      ],
+      "answer": "the cinema site as well as the fountain",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Her article stressed that stories follow —",
+      "choices": [
+        "only athletic drills",
+        "money and brick, not just water",
+        "only planting dates",
+        "only unpaid fines"
+      ],
+      "answer": "money and brick, not just water",
+      "hint": false,
+      "passage_id": "p3"
+    }
+  ],
+  "passages": [
+    {
+      "id": "p1",
+      "title": "The seed library",
+      "body": "In a town where winters lasted half the year, Ms. Ortiz opened a seed library inside the public library's back room. Patrons checked out envelopes of tomato, bean, and sunflower seeds with the same card they used for books. They promised to return seeds from their healthiest plants in autumn. Teen volunteer Kai labeled each envelope with sowing dates and frost warnings. Some families failed the first season because they planted too early; Kai added a soil thermometer loan program. By the third year, borrowers brought back twice as many seeds as they had taken, and the catalog included drought-tolerant varieties suggested by elderly gardeners who had kept heirlooms in biscuit tins for decades."
+    },
+    {
+      "id": "p2",
+      "title": "Under the stadium lights",
+      "body": "Track coach Alvarez timed hundred-metre repeats under lights that attracted moths the size of thumbs. Sprinter Dina noticed her starts improved when she counted breaths instead of staring at rivals. Alvarez filmed her blocks from a low angle and saw her rear foot lifting a fraction early. They drilled a shorter first stride so her torso stayed lower. Dina kept a notebook of sleep hours, noting that seven and a half hours beat six when exams stacked up. At the district meet she false-started once, then asked officials to let her run a time trial after the heat; the request was denied, but she channelled the frustration into a personal best in the long jump later that day."
+    },
+    {
+      "id": "p3",
+      "title": "The archive detective",
+      "body": "Historian Priya searched municipal archives for the origin of a fountain that appeared on a 1924 postcard but not on an 1898 map. Dust on ledger spines smelled of vinegar from old repairs. She matched brick suppliers in tax records to a cancelled theatre contract. A clerk pointed her to a box of unpaid invoices showing the fountain installed in 1911 as a publicity stunt for a silent cinema. Priya scanned brittle programmes advertising matinee prices in cents. She published a short article arguing the city's heritage walk should include the cinema site, not only the fountain, because stories travel with money and brick, not just water."
+    }
+  ]
+}

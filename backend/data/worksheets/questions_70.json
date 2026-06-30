@@ -1,0 +1,330 @@
+{
+  "title": "English — Reading comprehension (medium)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-06-22T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "In the passage, \"balance\" most nearly refers to —",
+      "choices": [
+        "keeping the bin level on a scale",
+        "equal numbers of worms",
+        "hiding smells",
+        "mixing types of compost materials correctly"
+      ],
+      "answer": "mixing types of compost materials correctly",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Why did Bin B break down carrot tops faster?",
+      "choices": [
+        "It stayed warmer and had more microbes and worms",
+        "It had no fruit peels",
+        "It was in the sun only",
+        "It was never turned"
+      ],
+      "answer": "It stayed warmer and had more microbes and worms",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What can be inferred about paper towels in Bin B?",
+      "choices": [
+        "They add carbon that helps the compost work better",
+        "They should never be used",
+        "They kill worms",
+        "They make compost colder"
+      ],
+      "answer": "They add carbon that helps the compost work better",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which title best fits the passage?",
+      "choices": [
+        "Balancing a classroom compost bin",
+        "Selling worms online",
+        "Cooking with carrot tops",
+        "Building a greenhouse"
+      ],
+      "answer": "Balancing a classroom compost bin",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The chart in the hallway was meant to —",
+      "choices": [
+        "measure temperature daily",
+        "teach younger students what to add besides fruit cores",
+        "count students",
+        "replace the teacher's notes"
+      ],
+      "answer": "teach younger students what to add besides fruit cores",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Volume and pitch differ because —",
+      "choices": [
+        "yelling is louder but not necessarily higher in pitch",
+        "pitch always equals volume",
+        "tuning forks cannot be loud",
+        "rubber bands only change volume"
+      ],
+      "answer": "yelling is louder but not necessarily higher in pitch",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "When Amira plucked quickly, the slow-motion video showed —",
+      "choices": [
+        "no movement",
+        "lower pitch only",
+        "a flat line",
+        "tighter peaks on the wave"
+      ],
+      "answer": "tighter peaks on the wave",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Shorter free ruler length made pitch —",
+      "choices": [
+        "drop lower",
+        "stay the same always",
+        "climb higher",
+        "stop"
+      ],
+      "answer": "climb higher",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Mr. Lee used a tuning fork mainly to show —",
+      "choices": [
+        "maps are waterproof",
+        "compost needs paper",
+        "fog hides ridges",
+        "vibration creates sound"
+      ],
+      "answer": "vibration creates sound",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which sense did students use when touching the fork stem?",
+      "choices": [
+        "Smell",
+        "Taste",
+        "Touch",
+        "Sight only"
+      ],
+      "answer": "Touch",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Jonah found the shelter by —",
+      "choices": [
+        "guessing a random direction",
+        "following louder birds",
+        "turning off the compass",
+        "matching creek bends to the map"
+      ],
+      "answer": "matching creek bends to the map",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "They had walked east too long without —",
+      "choices": [
+        "using ink",
+        "carrying paper",
+        "gaining elevation",
+        "seeing pine trees"
+      ],
+      "answer": "gaining elevation",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Laminating spare maps helps because —",
+      "choices": [
+        "fog cannot form",
+        "compasses read maps",
+        "ink survives if kept dry when batteries fail",
+        "rain stops"
+      ],
+      "answer": "ink survives if kept dry when batteries fail",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The three pine blazes marked —",
+      "choices": [
+        "the shelter door",
+        "a fork on the trail",
+        "a compost bin",
+        "a music room"
+      ],
+      "answer": "a fork on the trail",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Leena's compass was useful for checking —",
+      "choices": [
+        "worm counts",
+        "direction of travel",
+        "pitch of rulers",
+        "sparked wires"
+      ],
+      "answer": "direction of travel",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Gus fixed the lamp by —",
+      "choices": [
+        "replacing a frayed wire",
+        "painting the base",
+        "adding fruit peels",
+        "tightening a rubber band"
+      ],
+      "answer": "replacing a frayed wire",
+      "hint": false,
+      "passage_id": "p4"
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Reinforcing inside jeans stops —",
+      "choices": [
+        "all washing",
+        "new holes from forming at weak spots",
+        "color fading only",
+        "sparks"
+      ],
+      "answer": "new holes from forming at weak spots",
+      "hint": false,
+      "passage_id": "p4"
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The repair café kept metal out of —",
+      "choices": [
+        "maps",
+        "music boxes only",
+        "landfill",
+        "trail shelters"
+      ],
+      "answer": "landfill",
+      "hint": false,
+      "passage_id": "p4"
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Priya signed up to —",
+      "choices": [
+        "sell toasters",
+        "log repairs for a future school clinic",
+        "laminate maps",
+        "measure compost heat"
+      ],
+      "answer": "log repairs for a future school clinic",
+      "hint": false,
+      "passage_id": "p4"
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Strain relief on a cord prevents —",
+      "choices": [
+        "sound waves",
+        "higher pitch",
+        "fog",
+        "sharp bends that break wires"
+      ],
+      "answer": "sharp bends that break wires",
+      "hint": false,
+      "passage_id": "p4"
+    }
+  ],
+  "passages": [
+    {
+      "id": "p1",
+      "title": "The compost experiment",
+      "body": "Maya's class built two compost bins. Bin A held fruit peels and tea leaves; Bin B added shredded newspaper for balance. Each week they turned the piles with a fork and measured temperature with a probe. Maya noticed Bin B stayed warmer in cold weather and broke down carrot tops faster. She recorded worm counts too—Bin B had twice as many red wigglers by week four. Their teacher explained that carbon-rich paper balanced nitrogen-rich scraps, keeping microbes active. Maya posted a chart in the hallway so younger students would add paper towels instead of dumping only apple cores."
+    },
+    {
+      "id": "p2",
+      "title": "Sound in the music room",
+      "body": "During music, Mr. Lee demonstrated how a tuning fork vibrates. Students felt the buzz on their lips when they touched the stem lightly. He stretched a rubber band around a box to show pitch: tighter bands sang higher notes. When Amira plucked slowly, the wave looked lazy on the phone slow-motion video; a quick pluck made tight peaks. Mr. Lee warned that volume and pitch are different—yelling does not make your voice higher. The class tested rulers overhanging the desk, changing length to hear pitch climb as the free part shortened."
+    },
+    {
+      "id": "p3",
+      "title": "The lost trail map",
+      "body": "On a hiking trip, Jonah unfolded a waterproof map while his partner Leena checked the compass. Fog rolled in, hiding the ridge they had followed uphill. Jonah matched creek bends to blue lines on the map and spotted a shelter symbol two centimetres north of their dot. Leena confirmed they had been walking east too long without gaining elevation. They backtracked to the fork with three pine blazes and reached the shelter before rain. Jonah later laminated spare maps for the club, noting that batteries die but ink survives if kept dry."
+    },
+    {
+      "id": "p4",
+      "title": "Repair café afternoon",
+      "body": "At the community repair café, volunteers fixed toasters, jeans, and wobbly chairs. Priya brought a lamp whose switch sparked. An electrician named Gus opened the base, replaced a frayed wire, and showed Priya how strain relief prevents bends. Nearby, a seamstress patched knees while explaining that reinforcing inside stops new holes. Priya's grandmother fixed a music box by realigning a spring she cleaned with mild soap. The event kept kilograms of metal out of landfill. Priya signed up to log repairs in a shared spreadsheet so the school could start its own monthly clinic."
+    }
+  ]
+}

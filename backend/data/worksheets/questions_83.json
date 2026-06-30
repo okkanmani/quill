@@ -1,0 +1,169 @@
+{
+  "title": "Math — Algebra (written answers)",
+  "subject": "math",
+  "evaluation": "manual",
+  "scratchpad": true,
+  "created_at": "2026-06-25T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for n: n + 6 = 14",
+      "answer": "8",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for y: y − 4 = 11",
+      "answer": "15",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for p: 3p = 24",
+      "answer": "8",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for m: m + 9 = 20",
+      "answer": "11",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for x: x − 7 = 5",
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for n: 5n = 45",
+      "answer": "9",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Each L-shape uses 2 matchsticks. How many matchsticks for 6 L-shapes?",
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Write an expression for “5 more than a number t”.",
+      "answer": "t + 5",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "If 2n + 1 = 13, what is n?",
+      "answer": "6",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "A number plus 10 equals 25. What is the number?",
+      "answer": "15",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for k: k + 18 = 30",
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for m: 4m = 36",
+      "answer": "9",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for w: w − 9 = 16",
+      "answer": "25",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "If 3x = 21, what is x?",
+      "answer": "7",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Ravi had x rupees, spent ₹20, and has ₹35 left. What is x?",
+      "answer": "55",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for n: n + 13 = 13",
+      "answer": "0",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "7 more than y is 19. What is y?",
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for n: 2n = 18",
+      "answer": "9",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for x: x − 5 = 12",
+      "answer": "17",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Solve for n: 6 + n = 25",
+      "answer": "19",
+      "hint": false
+    }
+  ]
+}

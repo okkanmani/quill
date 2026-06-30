@@ -1,0 +1,169 @@
+{
+  "title": "Math — Geometry (written answers)",
+  "subject": "math",
+  "evaluation": "manual",
+  "scratchpad": true,
+  "created_at": "2026-06-25T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "A square has sides of 9 cm. What is its perimeter?",
+      "answer": "36 cm",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "A rectangle is 8 cm long and 5 cm wide. What is its area?",
+      "answer": "40 cm²",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the sum of the three angles in any triangle?",
+      "answer": "180°",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "How many degrees are in a right angle?",
+      "answer": "90°",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "A circle has radius 5 cm. What is its diameter?",
+      "answer": "10 cm",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "A square has sides of 7 cm. What is its area?",
+      "answer": "49 cm²",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "A rectangle is 12 cm long and 4 cm wide. What is its perimeter?",
+      "answer": "32 cm",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Which tool is used to draw circles in geometry constructions?",
+      "answer": "Compasses",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Two lines that meet at 90° are called —",
+      "answer": "Perpendicular",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "How many degrees are in a straight angle?",
+      "answer": "180°",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Each angle in an equilateral triangle measures how many degrees?",
+      "answer": "60°",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "A triangle has base 10 cm and height 6 cm. What is its area?",
+      "answer": "30 cm²",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "How many sides does a hexagon have?",
+      "answer": "6",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "An equilateral triangle has sides of 5 cm. What is its perimeter?",
+      "answer": "15 cm",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Two lines in a plane that never meet are —",
+      "answer": "Parallel",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "How many vertices does a cube have?",
+      "answer": "8",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "A parallelogram has base 9 cm and height 4 cm. What is its area?",
+      "answer": "36 cm²",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Half of a full turn is how many degrees?",
+      "answer": "180°",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "A square has perimeter 28 cm. What is the length of one side?",
+      "answer": "7 cm",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "A circle has diameter 12 cm. What is its radius?",
+      "answer": "6 cm",
+      "hint": false
+    }
+  ]
+}

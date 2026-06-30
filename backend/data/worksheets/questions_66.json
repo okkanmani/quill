@@ -1,0 +1,371 @@
+{
+  "title": "Data analysis — Sales, water use & growth (medium)",
+  "subject": "data",
+  "learn_subject": "math",
+  "learn_section": "data-graphs",
+  "scratchpad": true,
+  "created_at": "2026-06-21T14:00:00Z",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Fruit sold at the market",
+      "body": "The bar chart shows the number of kilograms sold in one day.",
+      "chart": {
+        "type": "bar",
+        "title": "Fruit sales (kg)",
+        "labels": [
+          "Apple",
+          "Mango",
+          "Banana",
+          "Orange"
+        ],
+        "values": [
+          45,
+          60,
+          35,
+          50
+        ],
+        "xLabel": "Fruit",
+        "yLabel": "Kilograms"
+      }
+    },
+    {
+      "id": "p2",
+      "title": "Household water use",
+      "body": "The pie chart shows how a family uses 200 litres of water in a day.",
+      "chart": {
+        "type": "pie",
+        "title": "Daily water use (200 L)",
+        "labels": [
+          "Drinking & cooking",
+          "Bathing",
+          "Laundry",
+          "Garden"
+        ],
+        "values": [
+          40,
+          80,
+          50,
+          30
+        ]
+      }
+    },
+    {
+      "id": "p3",
+      "title": "Plant growth experiment",
+      "body": "Heights of Plant A were recorded each week (centimetres).",
+      "chart": {
+        "type": "line",
+        "title": "Plant A height (cm)",
+        "labels": [
+          "Week 1",
+          "Week 2",
+          "Week 3",
+          "Week 4"
+        ],
+        "values": [
+          5,
+          8,
+          11,
+          15
+        ],
+        "xLabel": "Week",
+        "yLabel": "Height (cm)"
+      }
+    },
+    {
+      "id": "p4",
+      "title": "Visitors to a science fair",
+      "body": "Use the table and bar chart together. Each bar shows total visitors that day.",
+      "chart": {
+        "type": "bar",
+        "title": "Science fair visitors",
+        "labels": ["Fri", "Sat", "Sun"],
+        "values": [320, 480, 410],
+        "xLabel": "Day",
+        "yLabel": "Visitors"
+      },
+      "table": {
+        "headers": ["Day", "Visitors"],
+        "rows": [["Friday", "320"], ["Saturday", "480"], ["Sunday", "410"]]
+      }
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which fruit sold the most kilograms?",
+      "choices": [
+        "Orange",
+        "Banana",
+        "Apple",
+        "Mango"
+      ],
+      "answer": "Mango",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many kg of bananas were sold?",
+      "choices": [
+        "35",
+        "50",
+        "60",
+        "45"
+      ],
+      "answer": "35",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many more kg of mangoes than oranges were sold?",
+      "choices": [
+        "5",
+        "10",
+        "20",
+        "15"
+      ],
+      "answer": "10",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the total kg of fruit sold?",
+      "choices": [
+        "200",
+        "180",
+        "190",
+        "175"
+      ],
+      "answer": "190",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which fruit sold 50 kg?",
+      "choices": [
+        "Banana",
+        "Orange",
+        "Mango",
+        "Apple"
+      ],
+      "answer": "Orange",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which use takes the most water?",
+      "choices": [
+        "Drinking & cooking",
+        "Bathing",
+        "Garden",
+        "Laundry"
+      ],
+      "answer": "Bathing",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many litres are used for laundry?",
+      "choices": [
+        "50",
+        "30",
+        "40",
+        "80"
+      ],
+      "answer": "50",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many litres are used for bathing and garden together?",
+      "choices": [
+        "90",
+        "70",
+        "130",
+        "110"
+      ],
+      "answer": "110",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What fraction of the 200 L is used for drinking and cooking?",
+      "choices": [
+        "2/5",
+        "1/4",
+        "1/5",
+        "3/10"
+      ],
+      "answer": "1/5",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many more litres are used for bathing than for garden?",
+      "choices": [
+        "30",
+        "40",
+        "60",
+        "50"
+      ],
+      "answer": "50",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What was the plant's height at Week 3?",
+      "choices": [
+        "8 cm",
+        "11 cm",
+        "15 cm",
+        "5 cm"
+      ],
+      "answer": "11 cm",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How much did the plant grow from Week 1 to Week 2?",
+      "choices": [
+        "3 cm",
+        "2 cm",
+        "6 cm",
+        "5 cm"
+      ],
+      "answer": "3 cm",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "During which week did the plant grow the most?",
+      "choices": [
+        "Week 1",
+        "Week 2",
+        "Week 4",
+        "Week 3"
+      ],
+      "answer": "Week 4",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What was the total growth from Week 1 to Week 4?",
+      "choices": [
+        "11 cm",
+        "8 cm",
+        "15 cm",
+        "10 cm"
+      ],
+      "answer": "10 cm",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What was the height at Week 2?",
+      "choices": [
+        "15 cm",
+        "8 cm",
+        "5 cm",
+        "11 cm"
+      ],
+      "answer": "8 cm",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which day had the most visitors?",
+      "choices": ["Sunday", "Saturday", "Friday", "Monday"],
+      "answer": "Saturday",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many visitors came on Friday?",
+      "choices": ["410", "320", "480", "350"],
+      "answer": "320",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many more visitors came on Saturday than on Friday?",
+      "choices": ["160", "120", "70", "90"],
+      "answer": "160",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the total number of visitors over the three days?",
+      "choices": ["1,210", "1,100", "1,300", "1,150"],
+      "answer": "1,210",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many fewer visitors came on Sunday than on Saturday?",
+      "choices": ["70", "160", "90", "50"],
+      "answer": "70",
+      "hint": false
+    }
+  ]
+}

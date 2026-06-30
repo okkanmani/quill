@@ -1,0 +1,288 @@
+{
+  "title": "Math — Mixed practice (medium)",
+  "subject": "math",
+  "scratchpad": true,
+  "created_at": "2026-06-22T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 3/5 + 1/10?",
+      "choices": [
+        "4/15",
+        "7/10",
+        "2/5",
+        "4/5"
+      ],
+      "answer": "7/10",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 24% of 150?",
+      "choices": [
+        "30",
+        "40",
+        "36",
+        "24"
+      ],
+      "answer": "36",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Evaluate: 48 ÷ 6 + 7 × 2",
+      "choices": [
+        "18",
+        "26",
+        "22",
+        "14"
+      ],
+      "answer": "22",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A square has perimeter 36 cm. What is the length of one side?",
+      "choices": [
+        "6 cm",
+        "9 cm",
+        "12 cm",
+        "18 cm"
+      ],
+      "answer": "9 cm",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 5.6 − 2.75?",
+      "choices": [
+        "2.85",
+        "3.15",
+        "2.95",
+        "3.35"
+      ],
+      "answer": "2.85",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Solve for n: n − 14 = 29",
+      "choices": [
+        "n = 15",
+        "n = 33",
+        "n = 45",
+        "n = 43"
+      ],
+      "answer": "n = 43",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which fraction is equivalent to 0.6?",
+      "choices": [
+        "1/2",
+        "3/5",
+        "2/5",
+        "6/100"
+      ],
+      "answer": "3/5",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A triangle has base 12 cm and height 8 cm. What is its area?",
+      "choices": [
+        "48 cm²",
+        "96 cm²",
+        "20 cm²",
+        "40 cm²"
+      ],
+      "answer": "48 cm²",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the LCM of 6 and 8?",
+      "choices": [
+        "24",
+        "14",
+        "48",
+        "12"
+      ],
+      "answer": "24",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Round 7.849 to the nearest tenth.",
+      "choices": [
+        "7.9",
+        "7.85",
+        "8.0",
+        "7.8"
+      ],
+      "answer": "7.8",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 2³?",
+      "choices": [
+        "6",
+        "8",
+        "9",
+        "12"
+      ],
+      "answer": "8",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A ratio of cats to dogs is 3 : 5. If there are 15 cats, how many dogs?",
+      "choices": [
+        "20",
+        "9",
+        "25",
+        "30"
+      ],
+      "answer": "25",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 1/4 of 96?",
+      "choices": [
+        "48",
+        "32",
+        "12",
+        "24"
+      ],
+      "answer": "24",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many degrees in a straight angle?",
+      "choices": [
+        "180°",
+        "90°",
+        "360°",
+        "270°"
+      ],
+      "answer": "180°",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 4.2 × 0.5?",
+      "choices": [
+        "21",
+        "0.21",
+        "2.1",
+        "8.4"
+      ],
+      "answer": "2.1",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Solve for y: 4y = 52",
+      "choices": [
+        "y = 48",
+        "y = 13",
+        "y = 16",
+        "y = 11"
+      ],
+      "answer": "y = 13",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which is greater: 3/8 or 2/5?",
+      "choices": [
+        "3/8",
+        "They are equal",
+        "Cannot tell",
+        "2/5"
+      ],
+      "answer": "2/5",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A cube has edges of 5 cm. What is its volume?",
+      "choices": [
+        "25 cm³",
+        "75 cm³",
+        "150 cm³",
+        "125 cm³"
+      ],
+      "answer": "125 cm³",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 15% of 200?",
+      "choices": [
+        "30",
+        "25",
+        "35",
+        "20"
+      ],
+      "answer": "30",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Evaluate: 100 − 4 × (6 + 4)",
+      "choices": [
+        "40",
+        "80",
+        "60",
+        "96"
+      ],
+      "answer": "60",
+      "hint": false
+    }
+  ]
+}

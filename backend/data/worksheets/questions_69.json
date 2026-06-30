@@ -1,0 +1,288 @@
+{
+  "title": "Math — Mixed practice (hard)",
+  "subject": "math",
+  "scratchpad": true,
+  "created_at": "2026-06-22T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is 2/3 × 3/4?",
+      "choices": [
+        "6/12 wrong path",
+        "5/7",
+        "1/2",
+        "2/3"
+      ],
+      "answer": "1/2",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A shirt costs $40. It is discounted by 30%. What is the sale price?",
+      "choices": [
+        "$30",
+        "$12",
+        "$32",
+        "$28"
+      ],
+      "answer": "$28",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Evaluate: (5 + 3)² − 4 × 6",
+      "choices": [
+        "40",
+        "64",
+        "28",
+        "52"
+      ],
+      "answer": "40",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A parallelogram has base 11 cm and height 9 cm. What is its area?",
+      "choices": [
+        "20 cm²",
+        "88 cm²",
+        "99 cm²",
+        "110 cm²"
+      ],
+      "answer": "99 cm²",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is 0.375 as a fraction in simplest form?",
+      "choices": [
+        "3/8",
+        "375/1000",
+        "3/7",
+        "5/8"
+      ],
+      "answer": "3/8",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Solve for x: 2x + 5 = 3x − 7",
+      "choices": [
+        "x = 12",
+        "x = 2",
+        "x = −12",
+        "x = 7"
+      ],
+      "answer": "x = 12",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is the HCF of 36 and 48?",
+      "choices": [
+        "6",
+        "24",
+        "18",
+        "12"
+      ],
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A train travels 240 km in 4 hours. How far in 7 hours at the same speed?",
+      "choices": [
+        "360 km",
+        "420 km",
+        "280 km",
+        "480 km"
+      ],
+      "answer": "420 km",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is 5/6 − 1/4?",
+      "choices": [
+        "1/2",
+        "4/10",
+        "7/12",
+        "1/3"
+      ],
+      "answer": "7/12",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The ratio of boys to girls is 4 : 5. If there are 36 boys, how many students in total?",
+      "choices": [
+        "45",
+        "72",
+        "64",
+        "81"
+      ],
+      "answer": "81",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is the value of 3 + 4 × 2²?",
+      "choices": [
+        "28",
+        "14",
+        "19",
+        "49"
+      ],
+      "answer": "19",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A circle has radius 7 cm. What is its diameter?",
+      "choices": [
+        "14 cm",
+        "7 cm",
+        "21 cm",
+        "3.5 cm"
+      ],
+      "answer": "14 cm",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Convert 2.5 hours to minutes.",
+      "choices": [
+        "150 minutes",
+        "125 minutes",
+        "250 minutes",
+        "120 minutes"
+      ],
+      "answer": "150 minutes",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is 3/4 of 2/3?",
+      "choices": [
+        "6/12 unsimplified as answer",
+        "1/2",
+        "2/4",
+        "5/6"
+      ],
+      "answer": "1/2",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Solve: 3(n + 4) = 27",
+      "choices": [
+        "n = 9",
+        "n = 5",
+        "n = 7",
+        "n = 4"
+      ],
+      "answer": "n = 5",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A bag has 3 red, 5 blue, and 2 green marbles. What fraction are blue?",
+      "choices": [
+        "5/8",
+        "5/10",
+        "2/5",
+        "1/2"
+      ],
+      "answer": "1/2",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is 1.25 × 1.25?",
+      "choices": [
+        "2.5",
+        "1.5",
+        "1.5625",
+        "2.25"
+      ],
+      "answer": "1.5625",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The average of 8, 12, and 16 is:",
+      "choices": [
+        "10",
+        "12",
+        "14",
+        "36"
+      ],
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A rectangular prism is 4 cm × 5 cm × 6 cm. What is its volume?",
+      "choices": [
+        "60 cm³",
+        "90 cm³",
+        "150 cm³",
+        "120 cm³"
+      ],
+      "answer": "120 cm³",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "If 5 workers finish a job in 12 days, how many days for 8 workers at the same rate?",
+      "choices": [
+        "15 days",
+        "7.5 days",
+        "8 days",
+        "10 days"
+      ],
+      "answer": "7.5 days",
+      "hint": false
+    }
+  ]
+}

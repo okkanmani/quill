@@ -1,0 +1,288 @@
+{
+  "title": "Science — Animal kingdom (hard)",
+  "subject": "science",
+  "scratchpad": true,
+  "created_at": "2026-06-22T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Animals that maintain constant body temperature are —",
+      "choices": [
+        "warm-blooded (endothermic)",
+        "cold-blooded only",
+        "always amphibians",
+        "always invertebrates"
+      ],
+      "answer": "warm-blooded (endothermic)",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which group has hair or fur and feeds young with milk?",
+      "choices": [
+        "Reptiles",
+        "Mammals",
+        "Birds",
+        "Insects"
+      ],
+      "answer": "Mammals",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "An animal that eats only plants is a —",
+      "choices": [
+        "carnivore",
+        "omnivore",
+        "decomposer",
+        "herbivore"
+      ],
+      "answer": "herbivore",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Camouflage helps an animal —",
+      "choices": [
+        "digest cellulose",
+        "fly faster than sound",
+        "avoid predators or ambush prey",
+        "produce milk"
+      ],
+      "answer": "avoid predators or ambush prey",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which is a vertebrate?",
+      "choices": [
+        "Earthworm",
+        "Frog",
+        "Jellyfish",
+        "Spider"
+      ],
+      "answer": "Frog",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Migration is best defined as —",
+      "choices": [
+        "seasonal movement to find food or breed",
+        "sleeping through winter only",
+        "changing colour in autumn",
+        "growing a new shell"
+      ],
+      "answer": "seasonal movement to find food or breed",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "In a food chain, plants are usually —",
+      "choices": [
+        "top predators",
+        "decomposers only",
+        "producers",
+        "secondary consumers"
+      ],
+      "answer": "producers",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Gills are adapted for —",
+      "choices": [
+        "flying long distances",
+        "digging burrows",
+        "breathing dissolved oxygen in water",
+        "storing fat in desert"
+      ],
+      "answer": "breathing dissolved oxygen in water",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which trait belongs to reptiles?",
+      "choices": [
+        "Feathers",
+        "Moist skin with no scales",
+        "Six jointed legs",
+        "Dry scaly skin"
+      ],
+      "answer": "Dry scaly skin",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A habitat provides —",
+      "choices": [
+        "only mates",
+        "only sunlight",
+        "food, water, shelter, and space",
+        "magnetic north"
+      ],
+      "answer": "food, water, shelter, and space",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Endangered species have populations that are —",
+      "choices": [
+        "always invasive",
+        "only found in zoos by definition",
+        "at serious risk of extinction",
+        "unable to migrate"
+      ],
+      "answer": "at serious risk of extinction",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Ants communicating with chemical trails is an example of —",
+      "choices": [
+        "photosynthesis",
+        "behavioural adaptation",
+        "hibernation in fish",
+        "moulting in birds"
+      ],
+      "answer": "behavioural adaptation",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which pair is predator and prey?",
+      "choices": [
+        "Cow and grass",
+        "Owl and mouse",
+        "Bee and flower",
+        "Fungus and dead leaf"
+      ],
+      "answer": "Owl and mouse",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Amphibians often begin life in —",
+      "choices": [
+        "water with gills, then may live on land",
+        "deserts only",
+        "deep ocean trenches",
+        "polar ice caps only"
+      ],
+      "answer": "water with gills, then may live on land",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Birds are adapted for flight partly because they have —",
+      "choices": [
+        "gills and fins",
+        "eight legs",
+        "dry scales only",
+        "light hollow bones and feathers"
+      ],
+      "answer": "light hollow bones and feathers",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "An invasive species can harm an ecosystem by —",
+      "choices": [
+        "increasing biodiversity always",
+        "outcompeting native species",
+        "cleaning water automatically",
+        "preventing all disease"
+      ],
+      "answer": "outcompeting native species",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Metamorphosis occurs in many —",
+      "choices": [
+        "mammals only",
+        "adult birds",
+        "mature fish only",
+        "insects and amphibians"
+      ],
+      "answer": "insects and amphibians",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A food web differs from a food chain because it —",
+      "choices": [
+        "shows many linked feeding relationships",
+        "has only one producer",
+        "excludes decomposers always",
+        "ignores habitats"
+      ],
+      "answer": "shows many linked feeding relationships",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Whiskers on a cat help it —",
+      "choices": [
+        "digest meat in stomach",
+        "regulate body temperature",
+        "lay eggs",
+        "sense nearby objects especially in the dark"
+      ],
+      "answer": "sense nearby objects especially in the dark",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Conservation efforts aim to —",
+      "choices": [
+        "protect species and their habitats",
+        "remove all predators",
+        "stop migration",
+        "end all farming"
+      ],
+      "answer": "protect species and their habitats",
+      "hint": false
+    }
+  ]
+}

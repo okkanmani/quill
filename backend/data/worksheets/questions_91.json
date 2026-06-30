@@ -1,0 +1,280 @@
+{
+  "title": "Math — Grade 5 overall (timed test)",
+  "subject": "math",
+  "timed": true,
+  "time_limit_minutes": 60,
+  "scratchpad": true,
+  "created_at": "2026-06-28T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 347 + 256?",
+      "choices": ["593", "603", "613", "583"],
+      "answer": "603",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 72 × 8?",
+      "choices": ["576", "566", "586", "496"],
+      "answer": "576",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 144 ÷ 12?",
+      "choices": ["11", "13", "12", "14"],
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which fraction is equivalent to 1/2?",
+      "choices": ["2/5", "3/6", "4/10", "2/3"],
+      "answer": "3/6",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 3/8 + 2/8?",
+      "choices": ["5/16", "5/8", "6/8", "1/2"],
+      "answer": "5/8",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which is greater: 0.45 or 0.5?",
+      "choices": ["0.45", "0.5", "They are equal", "Cannot tell"],
+      "answer": "0.5",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 2.3 + 1.75?",
+      "choices": ["3.95", "4.05", "3.05", "4.95"],
+      "answer": "4.05",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Round 4,682 to the nearest hundred.",
+      "choices": ["4,600", "4,700", "4,680", "5,000"],
+      "answer": "4,700",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the value of the digit 7 in 57,241?",
+      "choices": ["7", "70", "700", "7,000"],
+      "answer": "7,000",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A rectangle is 9 cm long and 4 cm wide. What is its perimeter?",
+      "choices": ["36 cm", "26 cm", "13 cm", "18 cm"],
+      "answer": "26 cm",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A rectangle is 8 m long and 5 m wide. What is its area?",
+      "choices": ["26 m²", "40 m²", "13 m²", "45 m²"],
+      "answer": "40 m²",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many edges does a rectangular prism have?",
+      "choices": ["6", "8", "12", "10"],
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 25% of 80?",
+      "choices": ["15", "20", "25", "30"],
+      "answer": "20",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Evaluate: 18 − 3 × 4 + 2",
+      "choices": ["8", "14", "20", "62"],
+      "answer": "8",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the next number in the pattern 3, 7, 11, 15, …?",
+      "choices": ["17", "18", "19", "20"],
+      "answer": "19",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Maya buys 4 notebooks at $3 each and 1 pen for $2. What is the total cost?",
+      "choices": ["$12", "$14", "$16", "$10"],
+      "answer": "$14",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A rope is 5/6 m long. How many centimetres is that? (1 m = 100 cm)",
+      "choices": ["56 cm", "83 cm", "90 cm", "500 cm"],
+      "answer": "83 cm",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which number is a prime number?",
+      "choices": ["21", "29", "33", "39"],
+      "answer": "29",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the least common multiple (LCM) of 4 and 6?",
+      "choices": ["10", "12", "24", "2"],
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Convert 3 1/4 to an improper fraction.",
+      "choices": ["7/4", "13/4", "12/4", "9/4"],
+      "answer": "13/4",
+      "hint": false
+    },
+    {
+      "id": "q21",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A square has a side length of 6 cm. What is its area?",
+      "choices": ["24 cm²", "36 cm²", "12 cm²", "30 cm²"],
+      "answer": "36 cm²",
+      "hint": false
+    },
+    {
+      "id": "q22",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 0.6 × 10?",
+      "choices": ["0.06", "6", "60", "0.6"],
+      "answer": "6",
+      "hint": false
+    },
+    {
+      "id": "q23",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which point is at (3, 2) on a coordinate grid?",
+      "choices": ["3 units up, 2 units right", "2 units up, 3 units right", "3 units left, 2 units down", "2 units left, 3 units up"],
+      "answer": "2 units up, 3 units right",
+      "hint": false
+    },
+    {
+      "id": "q24",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A tank holds 24 L. You pour out 3/8 of the water. How many litres are left?",
+      "choices": ["9 L", "15 L", "18 L", "21 L"],
+      "answer": "15 L",
+      "hint": false
+    },
+    {
+      "id": "q25",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 56 − 29?",
+      "choices": ["27", "37", "33", "25"],
+      "answer": "27",
+      "hint": false
+    },
+    {
+      "id": "q26",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many minutes are in 2.5 hours?",
+      "choices": ["120 min", "150 min", "250 min", "125 min"],
+      "answer": "150 min",
+      "hint": false
+    },
+    {
+      "id": "q27",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The temperature was −2°C in the morning and rose by 7°C. What is the new temperature?",
+      "choices": ["5°C", "9°C", "−9°C", "−5°C"],
+      "answer": "5°C",
+      "hint": false
+    },
+    {
+      "id": "q28",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A class has 28 students. They split into 4 equal teams. How many students per team?",
+      "choices": ["6", "7", "8", "9"],
+      "answer": "7",
+      "hint": false
+    },
+    {
+      "id": "q29",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which measurement is best for the mass of an apple?",
+      "choices": ["12 kg", "120 g", "12 mg", "1.2 t"],
+      "answer": "120 g",
+      "hint": false
+    },
+    {
+      "id": "q30",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A number is multiplied by 5, then 12 is added. The result is 47. What was the number?",
+      "choices": ["5", "6", "7", "8"],
+      "answer": "7",
+      "hint": false
+    }
+  ]
+}

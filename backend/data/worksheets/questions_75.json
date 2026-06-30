@@ -1,0 +1,410 @@
+{
+  "title": "Data analysis — Charts & tables (hard)",
+  "subject": "data",
+  "scratchpad": true,
+  "learn_subject": "math",
+  "learn_section": "data-graphs",
+  "created_at": "2026-06-22T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which class had the highest average?",
+      "choices": [
+        "6D",
+        "6A",
+        "6B",
+        "6C"
+      ],
+      "answer": "6D",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What was class 6B's average?",
+      "choices": [
+        "38",
+        "44",
+        "35",
+        "42"
+      ],
+      "answer": "42",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How many points higher is 6D than 6C?",
+      "choices": [
+        "6",
+        "9",
+        "7",
+        "4"
+      ],
+      "answer": "9",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is the sum of all four averages?",
+      "choices": [
+        "155",
+        "164",
+        "159",
+        "150"
+      ],
+      "answer": "159",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which class scored 4 points above 6A?",
+      "choices": [
+        "6B",
+        "6C",
+        "6D",
+        "None"
+      ],
+      "answer": "6B",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which waste type was largest?",
+      "choices": [
+        "Food",
+        "Paper",
+        "Recycling",
+        "Other"
+      ],
+      "answer": "Recycling",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How many kg of food waste?",
+      "choices": [
+        "40",
+        "50",
+        "70",
+        "60"
+      ],
+      "answer": "50",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Recycling and food together are what fraction of 200 kg?",
+      "choices": [
+        "1/2",
+        "2/5",
+        "7/10",
+        "3/5"
+      ],
+      "answer": "3/5",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Paper and other waste combined equal how many kg?",
+      "choices": [
+        "70",
+        "80",
+        "90",
+        "60"
+      ],
+      "answer": "80",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How many kg more recycling than paper?",
+      "choices": [
+        "20",
+        "40",
+        "10",
+        "30"
+      ],
+      "answer": "30",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "On which day were visitors highest?",
+      "choices": [
+        "Day 5",
+        "Day 3",
+        "Day 4",
+        "Day 2"
+      ],
+      "answer": "Day 5",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How many visitors on Day 2?",
+      "choices": [
+        "120",
+        "220",
+        "180",
+        "250"
+      ],
+      "answer": "180",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Increase from Day 1 to Day 3?",
+      "choices": [
+        "130",
+        "100",
+        "70",
+        "160"
+      ],
+      "answer": "130",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Total visitors Day 1–Day 5?",
+      "choices": [
+        "1070",
+        "1000",
+        "1100",
+        "970"
+      ],
+      "answer": "1070",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Day 4 had how many fewer than Day 5?",
+      "choices": [
+        "30",
+        "50",
+        "100",
+        "80"
+      ],
+      "answer": "80",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which region had most rain?",
+      "choices": [
+        "North",
+        "South",
+        "East",
+        "West"
+      ],
+      "answer": "South",
+      "hint": false,
+      "passage_id": "p4"
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How much rain in the East?",
+      "choices": [
+        "78 mm",
+        "85 mm",
+        "110 mm",
+        "62 mm"
+      ],
+      "answer": "62 mm",
+      "hint": false,
+      "passage_id": "p4"
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How much more in South than West?",
+      "choices": [
+        "28 mm",
+        "32 mm",
+        "12 mm",
+        "48 mm"
+      ],
+      "answer": "32 mm",
+      "hint": false,
+      "passage_id": "p4"
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Total rainfall all regions?",
+      "choices": [
+        "320 mm",
+        "350 mm",
+        "335 mm",
+        "310 mm"
+      ],
+      "answer": "335 mm",
+      "hint": false,
+      "passage_id": "p4"
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How many regions had at least 80 mm?",
+      "choices": [
+        "1",
+        "3",
+        "2",
+        "4"
+      ],
+      "answer": "2",
+      "hint": false,
+      "passage_id": "p4"
+    }
+  ],
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Test score comparison",
+      "body": "Scores out of 50 for two classes on the same quiz.",
+      "chart": {
+        "type": "bar",
+        "title": "Average score by class",
+        "labels": [
+          "6A",
+          "6B",
+          "6C",
+          "6D"
+        ],
+        "values": [
+          38,
+          42,
+          35,
+          44
+        ],
+        "xLabel": "Class",
+        "yLabel": "Average score"
+      }
+    },
+    {
+      "id": "p2",
+      "title": "Household waste",
+      "body": "Waste collected from 200 homes in one week (kg).",
+      "chart": {
+        "type": "pie",
+        "title": "Waste types",
+        "labels": [
+          "Recycling",
+          "Food",
+          "Paper",
+          "Other"
+        ],
+        "values": [
+          70,
+          50,
+          40,
+          40
+        ]
+      }
+    },
+    {
+      "id": "p3",
+      "title": "Website visits",
+      "body": "Daily visitors during a product launch.",
+      "chart": {
+        "type": "line",
+        "title": "Visitors",
+        "labels": [
+          "Day 1",
+          "Day 2",
+          "Day 3",
+          "Day 4",
+          "Day 5"
+        ],
+        "values": [
+          120,
+          180,
+          250,
+          220,
+          300
+        ],
+        "xLabel": "Day",
+        "yLabel": "Visitors"
+      }
+    },
+    {
+      "id": "p4",
+      "title": "Regional rainfall",
+      "body": "Rainfall in millimetres last month.",
+      "table": {
+        "headers": [
+          "Region",
+          "Rainfall (mm)"
+        ],
+        "rows": [
+          [
+            "North",
+            "85"
+          ],
+          [
+            "East",
+            "62"
+          ],
+          [
+            "South",
+            "110"
+          ],
+          [
+            "West",
+            "78"
+          ]
+        ]
+      }
+    }
+  ]
+}

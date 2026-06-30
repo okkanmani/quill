@@ -1,0 +1,288 @@
+{
+  "title": "Science — Physics (medium)",
+  "subject": "science",
+  "scratchpad": true,
+  "created_at": "2026-06-22T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What unit is used to measure force?",
+      "choices": [
+        "Newton",
+        "Joule",
+        "Watt",
+        "Metre"
+      ],
+      "answer": "Newton",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A ball at rest stays at rest unless acted on by an unbalanced force. This is —",
+      "choices": [
+        "Newton's first law of inertia",
+        "Newton's third law only",
+        "The law of conservation of mass",
+        "Archimedes' principle"
+      ],
+      "answer": "Newton's first law of inertia",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which is a contact force?",
+      "choices": [
+        "Friction",
+        "Gravity",
+        "Magnetic attraction at a distance",
+        "Electrostatic force"
+      ],
+      "answer": "Friction",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Work is done when a force moves an object in the direction of the force. Unit of work?",
+      "choices": [
+        "Newton",
+        "Pascal",
+        "Hertz",
+        "Joule"
+      ],
+      "answer": "Joule",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A lever helps lift a load with less effort by trading —",
+      "choices": [
+        "distance for force",
+        "mass for colour",
+        "time for temperature",
+        "sound for light"
+      ],
+      "answer": "distance for force",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which surface likely has the most friction?",
+      "choices": [
+        "Ice",
+        "Rough concrete",
+        "Oiled glass",
+        "Wet soapy tile"
+      ],
+      "answer": "Rough concrete",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Speed equals —",
+      "choices": [
+        "time divided by distance",
+        "distance divided by time",
+        "force times mass",
+        "mass divided by volume"
+      ],
+      "answer": "distance divided by time",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Heat flows from —",
+      "choices": [
+        "cold to hot only",
+        "only solids to liquids",
+        "hotter objects to cooler ones",
+        "light to dark colours only"
+      ],
+      "answer": "hotter objects to cooler ones",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which is the best conductor of heat?",
+      "choices": [
+        "Wooden stick",
+        "Plastic foam",
+        "Wool scarf",
+        "Metal spoon"
+      ],
+      "answer": "Metal spoon",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A pulley can change the —",
+      "choices": [
+        "mass of an object",
+        "gravity on Earth",
+        "direction of a force",
+        "melting point of ice"
+      ],
+      "answer": "direction of a force",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Gravity on Earth pulls objects —",
+      "choices": [
+        "only sideways",
+        "away from Earth",
+        "only in water",
+        "toward the centre of Earth"
+      ],
+      "answer": "toward the centre of Earth",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which has more kinetic energy at the same speed?",
+      "choices": [
+        "A lighter bicycle",
+        "They always have equal energy",
+        "Neither has kinetic energy",
+        "A heavier truck"
+      ],
+      "answer": "A heavier truck",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Light travels fastest in —",
+      "choices": [
+        "water",
+        "glass",
+        "vacuum",
+        "diamond only"
+      ],
+      "answer": "vacuum",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A shadow forms when light is —",
+      "choices": [
+        "refracted only",
+        "reflected twice",
+        "blocked by an opaque object",
+        "converted to heat only"
+      ],
+      "answer": "blocked by an opaque object",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "The pitch of a sound depends on —",
+      "choices": [
+        "frequency of vibration",
+        "the colour of the object",
+        "how heavy the air is only",
+        "distance from the equator"
+      ],
+      "answer": "frequency of vibration",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A thermostat uses expansion of metal to —",
+      "choices": [
+        "create magnetic fields",
+        "switch heating on or off",
+        "measure mass",
+        "produce light"
+      ],
+      "answer": "switch heating on or off",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which simple machine is a ramp?",
+      "choices": [
+        "Wheel and axle",
+        "Inclined plane",
+        "Pulley",
+        "Wedge only if split"
+      ],
+      "answer": "Inclined plane",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Pressure equals force divided by —",
+      "choices": [
+        "volume",
+        "speed",
+        "temperature",
+        "area"
+      ],
+      "answer": "area",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Magnets attract —",
+      "choices": [
+        "all plastics",
+        "some metals like iron and nickel",
+        "all wood",
+        "pure copper always"
+      ],
+      "answer": "some metals like iron and nickel",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Energy cannot be created or destroyed, only transformed. This is the —",
+      "choices": [
+        "law of inertia",
+        "law of floating",
+        "law of conservation of energy",
+        "law of reflection only"
+      ],
+      "answer": "law of conservation of energy",
+      "hint": false
+    }
+  ]
+}

@@ -1,0 +1,221 @@
+{
+  "title": "Math — Practical geometry (NCERT)",
+  "subject": "math",
+  "content_badge": "NCERT",
+  "learn_subject": "math-ncert-g6",
+  "learn_section": "ncert-ch14-practical-geometry",
+  "scratchpad": true,
+  "created_at": "2026-06-23T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which tool is used to draw arcs and circles in classical constructions?",
+      "choices": [
+        "Protractor",
+        "Divider only",
+        "Compasses",
+        "Set-square only"
+      ],
+      "answer": "Compasses",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A circle is the set of points at a fixed distance from the —",
+      "choices": [
+        "diameter",
+        "chord",
+        "centre",
+        "tangent"
+      ],
+      "answer": "centre",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "To construct a circle of radius 4 cm, compasses should be opened to —",
+      "choices": [
+        "4 cm",
+        "2 cm",
+        "8 cm",
+        "Any length"
+      ],
+      "answer": "4 cm",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The perpendicular bisector of segment AB meets AB at —",
+      "choices": [
+        "90°",
+        "45°",
+        "60°",
+        "180° only at endpoints"
+      ],
+      "answer": "90°",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Every point on the perpendicular bisector of AB is —",
+      "choices": [
+        "closer to A",
+        "closer to B",
+        "equidistant from A and B",
+        "on segment AB only"
+      ],
+      "answer": "equidistant from A and B",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which angle is often built by constructing an equilateral triangle?",
+      "choices": [
+        "45°",
+        "90°",
+        "120° only without steps",
+        "60°"
+      ],
+      "answer": "60°",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A protractor is mainly used to —",
+      "choices": [
+        "draw circles only",
+        "measure and draw angles",
+        "compare masses",
+        "bisect segments without arcs"
+      ],
+      "answer": "measure and draw angles",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "To copy an angle ∠X at point P, you must keep the —",
+      "choices": [
+        "ruler tilted",
+        "same compass opening for corresponding arcs",
+        "protractor at X only",
+        "segment length doubled"
+      ],
+      "answer": "same compass opening for corresponding arcs",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "120° can be constructed by placing two — adjacent on a line.",
+      "choices": [
+        "30° angles",
+        "60° angles",
+        "90° angles",
+        "45° angles"
+      ],
+      "answer": "60° angles",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "In classical construction, a ruler (straight edge) is used to draw —",
+      "choices": [
+        "circles",
+        "measured arcs",
+        "straight lines",
+        "angles without tools"
+      ],
+      "answer": "straight lines",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "When bisecting AB, compass openings must be —",
+      "choices": [
+        "exactly half of AB",
+        "less than half of AB",
+        "equal to AB",
+        "more than half of AB"
+      ],
+      "answer": "more than half of AB",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A set-square helps draw lines that are —",
+      "choices": [
+        "always curved",
+        "only horizontal",
+        "random slants",
+        "perpendicular or at fixed angles"
+      ],
+      "answer": "perpendicular or at fixed angles",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The fixed distance from centre to any point on a circle is the —",
+      "choices": [
+        "diameter",
+        "radius",
+        "perimeter",
+        "arc length"
+      ],
+      "answer": "radius",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "To construct a perpendicular from a point on a line, equal arcs are drawn —",
+      "choices": [
+        "on both sides of the point on the line",
+        "only above the line",
+        "only from off the line",
+        "without using the point"
+      ],
+      "answer": "on both sides of the point on the line",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A divider is mainly used to —",
+      "choices": [
+        "compare lengths",
+        "measure angles",
+        "draw 60°",
+        "shade regions"
+      ],
+      "answer": "compare lengths",
+      "hint": false
+    }
+  ]
+}

@@ -1,0 +1,330 @@
+{
+  "title": "English — Reading comprehension (hard)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-06-22T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Ice cores help scientists study —",
+      "choices": [
+        "only current weather",
+        "air from past centuries trapped in bubbles",
+        "narwhal diets alone",
+        "debate club scores"
+      ],
+      "answer": "air from past centuries trapped in bubbles",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Melt ponds speed thaw because dark water —",
+      "choices": [
+        "freezes faster",
+        "absorbs more sunlight than reflective ice",
+        "blocks all light",
+        "cools the core drill"
+      ],
+      "answer": "absorbs more sunlight than reflective ice",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Singh warned reporters not to confuse —",
+      "choices": [
+        "gears with springs",
+        "spices with maps",
+        "weather with climate",
+        "volume with pitch"
+      ],
+      "answer": "weather with climate",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Lina argued policy should follow —",
+      "choices": [
+        "single cold winters",
+        "tourist photos only",
+        "unchecked suppliers",
+        "data rather than slogans"
+      ],
+      "answer": "data rather than slogans",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Narwhal tags showed migration —",
+      "choices": [
+        "stopped completely",
+        "followed compost bins",
+        "shifted earlier as passages opened",
+        "depended on lamp switches"
+      ],
+      "answer": "shifted earlier as passages opened",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Amir supported bans by noting —",
+      "choices": [
+        "higher spice prices",
+        "broken pendulums",
+        "ice drill thickness",
+        "innovation in biodegradable packaging"
+      ],
+      "answer": "innovation in biodegradable packaging",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Zoe worried bans could —",
+      "choices": [
+        "increase narwhal counts",
+        "stop clock ticks",
+        "melt all ice instantly",
+        "burden small vendors on cost"
+      ],
+      "answer": "burden small vendors on cost",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Zoe proposed —",
+      "choices": [
+        "more single-use cups",
+        "tiered fines and grants instead of a flat ban",
+        "ending debate club",
+        "dyeing chili powder"
+      ],
+      "answer": "tiered fines and grants instead of a flat ban",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Amir challenged Zoe's chart for —",
+      "choices": [
+        "using too many colors",
+        "listing compass directions",
+        "missing post-2018 data",
+        "measuring worm heat"
+      ],
+      "answer": "missing post-2018 data",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Judges scored evidence separately from —",
+      "choices": [
+        "gear filing",
+        "spice toasting",
+        "delivery",
+        "map laminating"
+      ],
+      "answer": "delivery",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Burrs on a gear caused —",
+      "choices": [
+        "brighter turmeric",
+        "scraping uneven ticks",
+        "earlier narwhal migration",
+        "debate rebuttals"
+      ],
+      "answer": "scraping uneven ticks",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Too much oil on pivots —",
+      "choices": [
+        "stops all sound",
+        "dyes chili red",
+        "laminate maps",
+        "attracts dust that increases friction"
+      ],
+      "answer": "attracts dust that increases friction",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Tempering metal changes —",
+      "choices": [
+        "pitch of rulers",
+        "CO₂ in bubbles",
+        "ban enforcement",
+        "brittleness of springs"
+      ],
+      "answer": "brittleness of springs",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The school clock stopped because —",
+      "choices": [
+        "a bent pendulum rod after a storm",
+        "spice filler clouded water",
+        "lack of biodegradable cups",
+        "fog on the ridge"
+      ],
+      "answer": "a bent pendulum rod after a storm",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Vo emphasized patience over —",
+      "choices": [
+        "measuring coriander",
+        "strength when using precision tools",
+        "winning debates",
+        "drilling ice"
+      ],
+      "answer": "strength when using precision tools",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Whole spice seeds stay fragrant if —",
+      "choices": [
+        "stored whole until toasting and grinding",
+        "dyed brighter",
+        "mixed with filler",
+        "left in melt ponds"
+      ],
+      "answer": "stored whole until toasting and grinding",
+      "hint": false,
+      "passage_id": "p4"
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Rafiq tested chili purity by —",
+      "choices": [
+        "mixing samples in water to see cloudiness",
+        "listening for ticks",
+        "using a compass",
+        "drilling ice cores"
+      ],
+      "answer": "mixing samples in water to see cloudiness",
+      "hint": false,
+      "passage_id": "p4"
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Origin cards increased sales among —",
+      "choices": [
+        "chefs who valued traceability",
+        "judges scoring delivery",
+        "tourists only taking photos",
+        "clockmakers filing gears"
+      ],
+      "answer": "chefs who valued traceability",
+      "hint": false,
+      "passage_id": "p4"
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Rafiq refused to —",
+      "choices": [
+        "dye chili powder brighter red",
+        "measure coriander",
+        "toast seeds",
+        "label jars"
+      ],
+      "answer": "dye chili powder brighter red",
+      "hint": false,
+      "passage_id": "p4"
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Trust beat appearance because —",
+      "choices": [
+        "bans were enforced",
+        "springs never snapped",
+        "customers returned when quality was honest",
+        "fog never formed"
+      ],
+      "answer": "customers returned when quality was honest",
+      "hint": false,
+      "passage_id": "p4"
+    }
+  ],
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Arctic expedition journal",
+      "body": "Dr. Singh's team drilled ice cores thinner than drinking straws yet packed centuries of dust. Each layer's bubbles trapped ancient air; lab machines measured carbon dioxide rising after the industrial age. Graduate student Lina charted melt ponds spreading across the surface—dark water absorbed more sunlight than reflective ice, accelerating thaw. Singh cautioned reporters not to confuse weather with climate: one cold winter does not erase a long trend. The team also tagged narwhals whose migration shifted weeks earlier as passages opened. Lina wrote that data, not slogans, should guide policy."
+    },
+    {
+      "id": "p2",
+      "title": "Debate club semifinals",
+      "body": "The topic was whether cities should ban single-use plastics. Amir argued that bans push innovation in biodegradable packaging, citing a pilot where cafés saved money after switching to reusable cups with small deposits. Zoe countered that enforcement unfairly burdens small vendors who cannot bulk-order alternatives. She proposed tiered fines and grants instead. Both teams used rebuttal time to question sources: Amir challenged a Zoe chart missing post-2018 data; Zoe noted Amir's study was funded by a reusable-bottle company. Judges scored evidence and refutation separately from delivery."
+    },
+    {
+      "id": "p3",
+      "title": "The clockmaker's apprentice",
+      "body": "Elena filed a brass gear whose teeth had burrs catching the escapement. Master Vo taught her to listen: a healthy tick spaced evenly, while a scrape meant friction somewhere unseen. She cleaned pivots with pegwood and oiled sparingly—too much oil attracted dust that acted like sandpaper. When the mainspring snapped, Vo showed how tempering metal changed brittleness. Elena repaired a school tower clock that had stopped at 3:17 during a storm, replacing a bent pendulum rod. Vo reminded her that precision tools demand patience more than strength."
+    },
+    {
+      "id": "p4",
+      "title": "Night market spices",
+      "body": "Rafiq inherited his uncle's spice stall measuring coriander by the scoop. Tourists photographed piles of turmeric; locals asked for specific grinds for dal. Rafiq explained that whole seeds stay fragrant longer but need toasting before grinding. He refused to dye chili powder brighter red, saying trust beat appearance. When a supplier offered cheap filler, Rafiq tested samples in water—pure turmeric sank cleanly while adulterated dust clouded. He posted handwritten origin cards beside each jar, sales rising among chefs who valued traceability over discounts."
+    }
+  ]
+}

@@ -1,0 +1,410 @@
+{
+  "title": "Data analysis — Library, weather & scores (medium)",
+  "subject": "data",
+  "learn_subject": "math",
+  "learn_section": "data-graphs",
+  "scratchpad": true,
+  "created_at": "2026-06-21T14:00:00Z",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Books borrowed each month",
+      "body": "The bar chart shows books borrowed from the school library.",
+      "chart": {
+        "type": "bar",
+        "title": "Books borrowed",
+        "labels": [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr"
+        ],
+        "values": [
+          120,
+          95,
+          140,
+          115
+        ],
+        "xLabel": "Month",
+        "yLabel": "Books"
+      }
+    },
+    {
+      "id": "p2",
+      "title": "How students spend free time",
+      "body": "One hundred students were asked about their favourite free-time activity.",
+      "chart": {
+        "type": "pie",
+        "title": "Favourite activity (100 students)",
+        "labels": [
+          "Reading",
+          "Sports",
+          "Games",
+          "Music"
+        ],
+        "values": [
+          30,
+          25,
+          28,
+          17
+        ]
+      }
+    },
+    {
+      "id": "p3",
+      "title": "Rainfall this week",
+      "body": "Daily rainfall in millimetres is shown on the line graph.",
+      "chart": {
+        "type": "line",
+        "title": "Daily rainfall (mm)",
+        "labels": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "values": [
+          4,
+          0,
+          6,
+          3,
+          8
+        ],
+        "xLabel": "Day",
+        "yLabel": "Rainfall (mm)"
+      }
+    },
+    {
+      "id": "p4",
+      "title": "Cricket team runs",
+      "body": "Runs scored by four players in one match.",
+      "table": {
+        "headers": [
+          "Player",
+          "Runs"
+        ],
+        "rows": [
+          [
+            "Arjun",
+            "42"
+          ],
+          [
+            "Ben",
+            "38"
+          ],
+          [
+            "Cara",
+            "55"
+          ],
+          [
+            "Dev",
+            "47"
+          ]
+        ]
+      }
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which month had the most books borrowed?",
+      "choices": [
+        "March",
+        "April",
+        "January",
+        "February"
+      ],
+      "answer": "March",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many books were borrowed in February?",
+      "choices": [
+        "95",
+        "140",
+        "120",
+        "115"
+      ],
+      "answer": "95",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many more books were borrowed in March than in February?",
+      "choices": [
+        "45",
+        "25",
+        "35",
+        "55"
+      ],
+      "answer": "45",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the total books borrowed over all four months?",
+      "choices": [
+        "450",
+        "420",
+        "470",
+        "490"
+      ],
+      "answer": "470",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "passage_id": "p1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many fewer books were borrowed in February than in March?",
+      "choices": [
+        "35",
+        "45",
+        "25",
+        "55"
+      ],
+      "answer": "45",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which activity was chosen by the most students?",
+      "choices": [
+        "Sports",
+        "Reading",
+        "Games",
+        "Music"
+      ],
+      "answer": "Reading",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many students chose Games?",
+      "choices": [
+        "25",
+        "17",
+        "28",
+        "30"
+      ],
+      "answer": "28",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many students chose Sports or Music together?",
+      "choices": [
+        "45",
+        "42",
+        "38",
+        "53"
+      ],
+      "answer": "42",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What fraction of students chose Reading?",
+      "choices": [
+        "3/10",
+        "1/3",
+        "2/5",
+        "1/4"
+      ],
+      "answer": "3/10",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "passage_id": "p2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many more students chose Reading than Music?",
+      "choices": [
+        "13",
+        "11",
+        "8",
+        "15"
+      ],
+      "answer": "13",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "On which day was there no rainfall?",
+      "choices": [
+        "Friday",
+        "Tuesday",
+        "Wednesday",
+        "Monday"
+      ],
+      "answer": "Tuesday",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How much rain fell on Friday?",
+      "choices": [
+        "8 mm",
+        "3 mm",
+        "6 mm",
+        "4 mm"
+      ],
+      "answer": "8 mm",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What was the total rainfall from Monday to Friday?",
+      "choices": [
+        "18 mm",
+        "19 mm",
+        "24 mm",
+        "21 mm"
+      ],
+      "answer": "21 mm",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which day had twice as much rain as Thursday?",
+      "choices": [
+        "Tuesday",
+        "Monday",
+        "Wednesday",
+        "Friday"
+      ],
+      "answer": "Friday",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "passage_id": "p3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How much more rain fell on Wednesday than on Monday?",
+      "choices": [
+        "1 mm",
+        "2 mm",
+        "4 mm",
+        "6 mm"
+      ],
+      "answer": "2 mm",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Who scored the most runs?",
+      "choices": [
+        "Cara",
+        "Ben",
+        "Dev",
+        "Arjun"
+      ],
+      "answer": "Cara",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many runs did Ben score?",
+      "choices": [
+        "47",
+        "55",
+        "42",
+        "38"
+      ],
+      "answer": "38",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many more runs did Cara score than Ben?",
+      "choices": [
+        "12",
+        "7",
+        "17",
+        "9"
+      ],
+      "answer": "17",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the total runs scored by all four players?",
+      "choices": [
+        "190",
+        "172",
+        "182",
+        "168"
+      ],
+      "answer": "182",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "passage_id": "p4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many players scored more than 40 runs?",
+      "choices": [
+        "2",
+        "1",
+        "3",
+        "4"
+      ],
+      "answer": "3",
+      "hint": false
+    }
+  ]
+}

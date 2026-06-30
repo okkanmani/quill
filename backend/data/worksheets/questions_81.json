@@ -1,0 +1,218 @@
+{
+  "title": "Science — Biology (hard)",
+  "subject": "science",
+  "scratchpad": true,
+  "created_at": "2026-06-23T12:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The basic unit of life is the —",
+      "choices": [
+        "tissue",
+        "organ",
+        "cell",
+        "organ system"
+      ],
+      "answer": "cell",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which organelle is called the powerhouse of the cell?",
+      "choices": [
+        "Nucleus",
+        "Cell wall",
+        "Chloroplast in animals",
+        "Mitochondria"
+      ],
+      "answer": "Mitochondria",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Plants make food by —",
+      "choices": [
+        "respiration only",
+        "digestion",
+        "circulation",
+        "photosynthesis"
+      ],
+      "answer": "photosynthesis",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The green pigment in leaves is —",
+      "choices": [
+        "chlorophyll",
+        "hemoglobin",
+        "melanin",
+        "cellulose"
+      ],
+      "answer": "chlorophyll",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which blood vessel carries blood away from the heart?",
+      "choices": [
+        "Vein",
+        "Artery",
+        "Capillary only",
+        "Valve"
+      ],
+      "answer": "Artery",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The human heart has how many chambers?",
+      "choices": [
+        "4",
+        "2",
+        "3",
+        "6"
+      ],
+      "answer": "4",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which system breaks down food into absorbable nutrients?",
+      "choices": [
+        "Respiratory system",
+        "Digestive system",
+        "Skeletal system",
+        "Nervous system"
+      ],
+      "answer": "Digestive system",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Exchange of gases in humans mainly happens in the —",
+      "choices": [
+        "lungs",
+        "stomach",
+        "bones",
+        "skin only"
+      ],
+      "answer": "lungs",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which part of the brain helps with balance?",
+      "choices": [
+        "Cerebrum only",
+        "Spinal cord tip",
+        "Cerebellum",
+        "Rib cage"
+      ],
+      "answer": "Cerebellum",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Xylem in plants mainly transports —",
+      "choices": [
+        "sugar only",
+        "oxygen in blood",
+        "water and minerals",
+        "waste in urine"
+      ],
+      "answer": "water and minerals",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A group of similar cells doing one job is a —",
+      "choices": [
+        "organ",
+        "organism",
+        "tissue",
+        "molecule"
+      ],
+      "answer": "tissue",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which is a vertebrate?",
+      "choices": [
+        "Insect",
+        "Fish",
+        "Jellyfish",
+        "Spider"
+      ],
+      "answer": "Fish",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Vaccines help the body —",
+      "choices": [
+        "digest faster",
+        "grow taller instantly",
+        "produce chlorophyll",
+        "develop immunity to diseases"
+      ],
+      "answer": "develop immunity to diseases",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Decomposers such as fungi —",
+      "choices": [
+        "only eat living prey",
+        "break down dead matter",
+        "make oxygen in lungs",
+        "pump blood"
+      ],
+      "answer": "break down dead matter",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Stomata on leaves mainly allow —",
+      "choices": [
+        "gas exchange",
+        "blood flow",
+        "bone growth",
+        "sound production"
+      ],
+      "answer": "gas exchange",
+      "hint": false
+    }
+  ]
+}
