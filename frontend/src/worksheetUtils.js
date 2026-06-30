@@ -18,9 +18,12 @@ export function filterLatestWorksheets(worksheets, now = Date.now()) {
   return worksheets.filter((ws) => isLatestWorksheet(ws, now));
 }
 
-/** Latest worksheets the student has not submitted yet. */
+/** Latest practice (non-timed) worksheets the student has not submitted yet. */
 export function filterLatestUndoneWorksheets(worksheets, now = Date.now()) {
   return worksheets.filter(
-    (ws) => isLatestWorksheet(ws, now) && !isWorksheetDone(ws),
+    (ws) =>
+      isLatestWorksheet(ws, now) &&
+      !isWorksheetDone(ws) &&
+      !ws.timed,
   );
 }

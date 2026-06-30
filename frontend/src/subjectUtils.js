@@ -3,9 +3,22 @@ export const SUBJECT_ORDER = [
   "math",
   "english",
   "science",
+  "data",
   "social studies",
   "general",
 ];
+
+/** Display labels for worksheet subject keys. */
+export const SUBJECT_LABELS = {
+  data: "Data analysis",
+};
+
+export function formatSubjectLabel(subject) {
+  const key = normalizeSubjectKey(subject);
+  if (SUBJECT_LABELS[key]) return SUBJECT_LABELS[key];
+  if (!key) return "General";
+  return key.charAt(0).toUpperCase() + key.slice(1);
+}
 
 export function subjectSortKey(key) {
   const i = SUBJECT_ORDER.indexOf(key);
@@ -29,6 +42,7 @@ export function averagePercentAcrossDoneWorksheets(worksheets) {
   const scored = worksheets.filter(
     (ws) =>
       isWorksheetDone(ws) &&
+      ws.last_status !== "pending" &&
       typeof ws.last_score === "number" &&
       typeof ws.last_total === "number" &&
       ws.last_total > 0,

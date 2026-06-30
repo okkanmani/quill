@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api";
 import AppHeader from "../components/AppHeader";
-import WorksheetsBySubject from "../components/WorksheetsBySubject";
+import WorksheetsByMode from "../components/WorksheetsByMode";
 import { useStudentNavLinks } from "../useStudentNavLinks";
 
 export default function StudentHome() {
@@ -35,7 +35,7 @@ export default function StudentHome() {
         )}
 
         {!loading && !error && worksheets.length > 0 && (
-          <WorksheetsBySubject
+          <WorksheetsByMode
             worksheets={worksheets}
             onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
           />
