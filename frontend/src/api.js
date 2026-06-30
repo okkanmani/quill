@@ -67,6 +67,8 @@ export async function logout() {
   localStorage.removeItem("name");
   localStorage.removeItem("studentName");
   localStorage.removeItem("adminName");
+  localStorage.removeItem("grade");
+  localStorage.removeItem("studentGrade");
 }
 
 export async function getMe() {
@@ -125,13 +127,124 @@ export async function uploadWorksheet(file) {
   return res.json();
 }
 
+export async function createWorksheetFromBuilder(payload) {
+  const res = await fetch(`${BASE_URL}/admin/worksheets/create`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to create worksheet";
+    if (typeof d === "string") msg = d;
+    else if (Array.isArray(d)) msg = d.join(" ");
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function submitResult(result) {
   const res = await fetch(`${BASE_URL}/results`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(result),
   });
-  if (!res.ok) throw new Error("Failed to submit result");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to submit result";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function getWorksheetMyResult(worksheetId) {
+  const res = await fetch(`${BASE_URL}/worksheets/${worksheetId}/my-result`, {
+    headers: authHeaders(),
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("Failed to fetch submission");
+  return res.json();
+}
+
+export async function getWorksheetDraft(worksheetId) {
+  const res = await fetch(`${BASE_URL}/worksheets/${worksheetId}/draft`, {
+    headers: authHeaders(),
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("Failed to fetch saved progress");
+  return res.json();
+}
+
+export async function saveWorksheetDraft(worksheetId, answers) {
+  const res = await fetch(`${BASE_URL}/worksheets/${worksheetId}/draft`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify({ answers }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to save progress";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function getTimedSession(worksheetId, resume = false) {
+  const url = new URL(`${BASE_URL}/worksheets/${worksheetId}/timed-session`);
+  if (resume) url.searchParams.set("resume", "1");
+  const res = await fetch(url, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to start timed session";
+    const error = new Error(msg);
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
+
+export function lockTimedWorksheet(worksheetId) {
+  const token = getToken();
+  if (!token || !BASE_URL) return;
+  fetch(`${BASE_URL}/worksheets/${worksheetId}/lock-timed`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    keepalive: true,
+  }).catch(() => {});
+}
+
+export async function unlockTimedWorksheet(worksheetId) {
+  const res = await fetch(
+    `${BASE_URL}/admin/worksheets/${worksheetId}/unlock-timed`,
+    { method: "POST", headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to unlock";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function evaluateResult(resultId, marks) {
+  const res = await fetch(`${BASE_URL}/results/${resultId}/evaluate`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ marks }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to save marks";
+    throw new Error(msg);
+  }
   return res.json();
 }
 
@@ -151,11 +264,11 @@ export async function listAdminStudents() {
   return res.json();
 }
 
-export async function createAdminStudent({ name, password }) {
+export async function createAdminStudent({ name, password, grade }) {
   const res = await fetch(`${BASE_URL}/admin/students`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({ name, password }),
+    body: JSON.stringify({ name, password, grade }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -178,6 +291,69 @@ export async function deleteAdminStudent(studentId) {
     const msg = typeof d === "string" ? d : "Failed to delete student";
     throw new Error(msg);
   }
+  return res.json();
+}
+
+export async function updateAdminStudentGrade(studentId, grade) {
+  const res = await fetch(`${BASE_URL}/admin/students/${studentId}`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify({ grade }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to update student";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function generateWorksheetDraft(payload) {
+  const res = await fetch(`${BASE_URL}/admin/worksheets/generate-draft`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to generate worksheet draft";
+    if (typeof d === "string") msg = d;
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function getAdminSettings() {
+  const res = await fetch(`${BASE_URL}/admin/settings`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to load settings");
+  return res.json();
+}
+
+export async function saveAdminOpenAiKey(apiKey) {
+  const res = await fetch(`${BASE_URL}/admin/settings/openai-key`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify({ api_key: apiKey }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to save API key";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function clearAdminOpenAiKey() {
+  const res = await fetch(`${BASE_URL}/admin/settings/openai-key`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to remove API key");
   return res.json();
 }
 

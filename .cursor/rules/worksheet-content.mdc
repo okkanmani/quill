@@ -34,7 +34,20 @@ Filename: `questions_N.json` (stem = worksheet id).
 ## Other fields
 
 - Include `"created_at"` (ISO) for Latest tab sorting.
-- `"subject"`: `math`, `english`, `science`, or `general`.
+- `"subject"`: `math`, `english`, `science`, `data`, or `general`.
 - Math worksheets: `"scratchpad": true` unless reading-only style.
+- **Save progress:** only on **non-timed** worksheets (server draft). Students use **Save progress** / **Save & exit** on the worksheet page.
+- **Timed worksheets:** set `"timed": true` and `"time_limit_minutes"` (positive integer). Save is disabled; timer starts on first open and auto-submits at zero. Leaving before submit **locks** the worksheet until an admin unlocks it. Listed under **Timed** on the student home (not Latest).
+- **Data analysis** worksheets: use `"subject": "data"`. Scratch pads stay available but are **hidden by default** (students can turn them on). Chart/table passages below.
 - NCERT-based worksheets: set `"content_badge": "NCERT"` (shown before the subject badge).
 - **Latest tab:** worksheets appear for 14 days from `sort_ts`. Portal upload sets `sort_ts` to upload time; bundled JSON uses `created_at` (or file mtime).
+
+## Data passages (charts & tables)
+
+Reading worksheets can include visual data in `passages[]`:
+
+- **`body`** or **`text`** — intro (optional if `chart` or `table` is present)
+- **`chart`** — `{ "type": "bar"|"line"|"pie", "labels": [...], "values": [...], "title"?, "xLabel"?, "yLabel"? }`
+- **`table`** — `{ "headers": [...], "rows": [[...], ...] }`
+
+Link questions with `"passage_id"`. Labels and values must match in length; values are numbers ≥ 0.

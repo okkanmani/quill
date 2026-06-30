@@ -1,0 +1,129 @@
+export const BUILDER_SUBJECTS = [
+  { value: "math", label: "Math" },
+  { value: "english", label: "English" },
+  { value: "science", label: "Science" },
+  { value: "data", label: "Data analysis" },
+  { value: "general", label: "General" },
+];
+
+export const STARS_OPTIONS = [
+  { value: 1, label: "★ Easy", count: 25 },
+  { value: 2, label: "★★ Medium", count: 20 },
+  { value: 3, label: "★★★ Hard", count: 15 },
+];
+
+export const GRADE_OPTIONS = Array.from({ length: 12 }, (_, i) => ({
+  value: i + 1,
+  label: `Grade ${i + 1}`,
+}));
+
+export const CHOICE_LABELS = ["A", "B", "C", "D"];
+
+export function defaultQuestionCount(stars) {
+  return STARS_OPTIONS.find((o) => o.value === stars)?.count ?? 20;
+}
+
+export function emptyMcqQuestion() {
+  return {
+    prompt: "",
+    choices: ["", "", "", ""],
+    correctIndex: 0,
+  };
+}
+
+export function emptyShortAnswerQuestion() {
+  return {
+    prompt: "",
+    answer: "",
+  };
+}
+
+export function buildQuestionList(count, format) {
+  const factory =
+    format === "short_answer" ? emptyShortAnswerQuestion : emptyMcqQuestion;
+  return Array.from({ length: count }, factory);
+}
+
+export function resizeQuestions(questions, count, format) {
+  if (questions.length === count) return questions;
+  if (questions.length > count) return questions.slice(0, count);
+  const factory =
+    format === "short_answer" ? emptyShortAnswerQuestion : emptyMcqQuestion;
+  return [
+    ...questions,
+    ...Array.from({ length: count - questions.length }, factory),
+  ];
+}
+
+export function validateBuilderForm({
+  title,
+  subject,
+  format,
+  timed,
+  timeLimitMinutes,
+  questions,
+}) {
+  const errors = [];
+  if (!title.trim()) errors.push("Title is required.");
+  if (format === "short_answer" && subject !== "math") {
+    errors.push("Short answer worksheets must use Math subject.");
+  }
+  if (timed && (!timeLimitMinutes || Number(timeLimitMinutes) <= 0)) {
+    errors.push("Enter a positive time limit for timed worksheets.");
+  }
+
+  questions.forEach((q, i) => {
+    const n = i + 1;
+    if (!q.prompt.trim()) {
+      errors.push(`Question ${n}: prompt is required.`);
+    }
+    if (format === "multiple_choice") {
+      const emptyChoice = q.choices.findIndex((c) => !c.trim());
+      if (emptyChoice >= 0) {
+        errors.push(`Question ${n}: all four choices are required.`);
+      }
+      const unique = new Set(q.choices.map((c) => c.trim()));
+      if (unique.size < 4) {
+        errors.push(`Question ${n}: choices must be unique.`);
+      }
+    } else if (!q.answer.trim()) {
+      errors.push(`Question ${n}: reference answer is required.`);
+    }
+  });
+
+  return errors;
+}
+
+export function builderPayload({
+  title,
+  subject,
+  stars,
+  format,
+  questionCount,
+  timed,
+  timeLimitMinutes,
+  questions,
+}) {
+  return {
+    title: title.trim(),
+    subject,
+    stars,
+    format,
+    question_count: questionCount,
+    timed,
+    time_limit_minutes: timed ? Number(timeLimitMinutes) : null,
+    questions: questions.map((q) => {
+      if (format === "multiple_choice") {
+        return {
+          prompt: q.prompt.trim(),
+          choices: q.choices.map((c) => c.trim()),
+          correct_index: q.correctIndex,
+        };
+      }
+      return {
+        prompt: q.prompt.trim(),
+        answer: q.answer.trim(),
+      };
+    }),
+  };
+}

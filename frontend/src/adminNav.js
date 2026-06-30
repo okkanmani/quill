@@ -3,6 +3,7 @@ export const ADMIN_MAIN_NAV = [
   { to: "/admin", label: "Results", end: true },
   { to: "/admin/worksheets", label: "Worksheets", end: false },
   { to: "/admin/students", label: "Students", end: true },
+  { to: "/admin/settings", label: "Settings", end: true },
   { to: "/student/learn", label: "Learn", end: false },
 ];
 

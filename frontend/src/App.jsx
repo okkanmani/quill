@@ -4,7 +4,9 @@ import StudentHome from "./pages/StudentHome";
 import StudentLatest from "./pages/StudentLatest";
 import AdminHome from "./pages/AdminHome";
 import AdminWorksheets from "./pages/AdminWorksheets";
+import AdminQuestionBuilder from "./pages/AdminQuestionBuilder";
 import AdminStudents from "./pages/AdminStudents";
+import AdminSettings from "./pages/AdminSettings";
 import Worksheet from "./pages/Worksheet";
 import LearnHub from "./pages/LearnHub";
 import LearnSubject from "./pages/LearnSubject";
@@ -71,10 +73,28 @@ export default function App() {
         />
 
         <Route
+          path="/admin/worksheets/builder"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminQuestionBuilder />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/admin/worksheets"
           element={
             <ProtectedRoute role="admin">
               <AdminWorksheets />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminSettings />
             </ProtectedRoute>
           }
         />
