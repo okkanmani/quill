@@ -63,6 +63,11 @@ export default function AdminHome() {
             results={results}
             openIds={openIds}
             toggleAnswers={toggleAnswers}
+            onResultEvaluated={(updated) =>
+              setResults((prev) =>
+                prev.map((r) => (r.id === updated.id ? updated : r)),
+              )
+            }
           />
         )}
       </div>

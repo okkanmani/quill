@@ -26,6 +26,7 @@ export default function AdminStudentSwitcher() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("studentName", data.student_name);
         if (data.admin_name) localStorage.setItem("adminName", data.admin_name);
+        if (data.grade != null) localStorage.setItem("studentGrade", String(data.grade));
         window.location.reload();
       })
       .catch(() => setErr("Could not select your student."));
@@ -39,6 +40,8 @@ export default function AdminStudentSwitcher() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("studentName", data.student_name);
       if (data.admin_name) localStorage.setItem("adminName", data.admin_name);
+      if (data.grade != null) localStorage.setItem("studentGrade", String(data.grade));
+      else localStorage.removeItem("studentGrade");
       window.location.reload();
     } catch {
       setErr("Could not switch student.");
@@ -70,7 +73,7 @@ export default function AdminStudentSwitcher() {
         ) : null}
         {students.map((s) => (
           <option key={s.id} value={s.name}>
-            {s.name}
+            {s.grade ? `${s.name} (Gr. ${s.grade})` : s.name}
           </option>
         ))}
       </select>

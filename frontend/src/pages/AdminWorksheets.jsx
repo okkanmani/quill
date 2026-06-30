@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { deleteWorksheet, getWorksheets, logout, uploadWorksheet } from "../api";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { deleteWorksheet, getWorksheets, logout, unlockTimedWorksheet, uploadWorksheet } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
-import WorksheetsBySubject from "../components/WorksheetsBySubject";
+import WorksheetsByMode from "../components/WorksheetsByMode";
 
 export default function AdminWorksheets() {
   const navigate = useNavigate();
@@ -35,6 +35,20 @@ export default function AdminWorksheets() {
   async function handleLogout() {
     await logout();
     navigate("/");
+  }
+
+  async function handleUnlock(ws) {
+    const ok = window.confirm(
+      `Unlock “${ws.title}”? The student will be able to start this timed worksheet again from scratch.`,
+    );
+    if (!ok) return;
+    try {
+      await unlockTimedWorksheet(ws.id);
+      setUploadMessage(`Unlocked ${ws.id} — “${ws.title}”.`);
+      loadWorksheets();
+    } catch (err) {
+      setError(err.message || "Could not unlock worksheet.");
+    }
   }
 
   async function handleDelete(ws) {
@@ -139,11 +153,18 @@ export default function AdminWorksheets() {
                   />
                   <div
                     id="add-worksheet-panel"
-                    className="absolute top-full right-0 z-50 mt-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-lg"
+                    className="absolute top-full right-0 z-50 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-3 shadow-lg flex flex-col gap-2"
                   >
-                    <label className="inline-flex items-center cursor-pointer">
-                      <span className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl px-4 py-2 transition whitespace-nowrap">
-                        {uploading ? "Uploading…" : "Choose files"}
+                    <Link
+                      to="/admin/worksheets/builder"
+                      onClick={() => setUploadPanelOpen(false)}
+                      className="block text-center bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl px-4 py-2 transition"
+                    >
+                      Build worksheet
+                    </Link>
+                    <label className="inline-flex items-center justify-center cursor-pointer">
+                      <span className="w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-900 text-sm font-semibold rounded-xl px-4 py-2 transition whitespace-nowrap">
+                        {uploading ? "Uploading…" : "Upload JSON"}
                       </span>
                       <input
                         type="file"
@@ -178,17 +199,28 @@ export default function AdminWorksheets() {
         )}
 
         {!loading && !error && worksheets.length > 0 && (
-          <WorksheetsBySubject
+          <WorksheetsByMode
             worksheets={worksheets}
             onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
             renderSideAction={(ws) => (
-              <button
-                type="button"
-                onClick={() => handleDelete(ws)}
-                className="sm:w-28 shrink-0 self-stretch flex items-center justify-center bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 text-sm font-semibold rounded-2xl px-4 py-3 transition"
-              >
-                Delete
-              </button>
+              <div className="flex flex-col sm:w-32 shrink-0 gap-2 self-stretch">
+                {ws.timed_locked ? (
+                  <button
+                    type="button"
+                    onClick={() => handleUnlock(ws)}
+                    className="flex-1 flex items-center justify-center bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 text-sm font-semibold rounded-2xl px-3 py-3 transition"
+                  >
+                    Unlock
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => handleDelete(ws)}
+                  className="flex-1 flex items-center justify-center bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 text-sm font-semibold rounded-2xl px-3 py-3 transition"
+                >
+                  Delete
+                </button>
+              </div>
             )}
           />
         )}

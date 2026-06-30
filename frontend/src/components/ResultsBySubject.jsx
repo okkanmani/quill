@@ -1,8 +1,12 @@
 import { useMemo, useState } from "react";
-import { formatSubjectLabel } from "./SubjectBadge";
+import AdminResultGrader from "./AdminResultGrader";
+import { formatSubjectLabel } from "../subjectUtils";
 import { normalizeSubjectKey, subjectSortKey } from "../subjectUtils";
 
 function sortResultsInGroup(a, b) {
+  const pendingA = a.status === "pending" ? 1 : 0;
+  const pendingB = b.status === "pending" ? 1 : 0;
+  if (pendingA !== pendingB) return pendingB - pendingA;
   return (b.submitted_at || "").localeCompare(a.submitted_at || "");
 }
 
@@ -22,13 +26,30 @@ function groupResults(results) {
   );
 }
 
+function scoreBadgeClass(r) {
+  if (r.status === "pending") {
+    return "bg-amber-100 text-amber-900";
+  }
+  if (r.score === r.total) return "bg-green-100 text-green-700";
+  if (typeof r.score === "number" && r.score >= r.total / 2) {
+    return "bg-slate-100 text-slate-700";
+  }
+  return "bg-red-100 text-red-700";
+}
+
 /**
  * Admin results: accordion by subject, collapsed by default.
- * Within each subject: newest submission first.
+ * Within each subject: pending first, then newest submission.
  */
-export default function ResultsBySubject({ results, openIds, toggleAnswers }) {
+export default function ResultsBySubject({
+  results,
+  openIds,
+  toggleAnswers,
+  onResultEvaluated,
+}) {
   const groups = useMemo(() => groupResults(results), [results]);
   const [openSubjects, setOpenSubjects] = useState(() => new Set());
+  const pendingCount = results.filter((r) => r.status === "pending").length;
 
   function toggleSubject(subjectKey) {
     setOpenSubjects((prev) => {
@@ -43,6 +64,12 @@ export default function ResultsBySubject({ results, openIds, toggleAnswers }) {
 
   return (
     <div className="flex flex-col gap-3">
+      {pendingCount > 0 ? (
+        <p className="text-sm font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2">
+          {pendingCount} submission{pendingCount === 1 ? "" : "s"} awaiting your
+          review
+        </p>
+      ) : null}
       {groups.map(([subjectKey, items]) => {
         const isOpen = openSubjects.has(subjectKey);
         return (
@@ -70,10 +97,13 @@ export default function ResultsBySubject({ results, openIds, toggleAnswers }) {
               <div className="p-3 flex flex-col gap-4 bg-slate-50/40">
                 {items.map((r) => {
                   const expanded = openIds.has(r.id);
+                  const isPending = r.status === "pending";
                   return (
                     <div
                       key={r.id}
-                      className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
+                      className={`bg-white border rounded-2xl shadow-sm overflow-hidden ${
+                        isPending ? "border-amber-300" : "border-slate-200"
+                      }`}
                     >
                       <button
                         type="button"
@@ -97,23 +127,32 @@ export default function ResultsBySubject({ results, openIds, toggleAnswers }) {
                         </div>
                         <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end sm:gap-2">
                           <span
-                            className={`inline-flex text-sm font-semibold px-3 py-1 rounded-full ${
-                              r.score === r.total
-                                ? "bg-green-100 text-green-700"
-                                : r.score >= r.total / 2
-                                  ? "bg-slate-100 text-slate-700"
-                                  : "bg-red-100 text-red-700"
-                            }`}
+                            className={`inline-flex text-sm font-semibold px-3 py-1 rounded-full ${scoreBadgeClass(r)}`}
                           >
-                            {r.score} / {r.total}
+                            {isPending
+                              ? "Pending review"
+                              : `${r.score} / ${r.total}`}
                           </span>
                           <span className="text-slate-600 text-xs font-semibold underline underline-offset-2">
-                            {expanded ? "Hide answers" : "Show answers"}
+                            {expanded
+                              ? isPending
+                                ? "Hide"
+                                : "Hide answers"
+                              : isPending
+                                ? "Mark answers"
+                                : "Show answers"}
                           </span>
                         </div>
                       </button>
 
-                      {expanded ? (
+                      {expanded && isPending ? (
+                        <AdminResultGrader
+                          result={r}
+                          onEvaluated={onResultEvaluated}
+                        />
+                      ) : null}
+
+                      {expanded && !isPending ? (
                         <div className="border-t border-slate-100 px-5 pb-5 pt-4 bg-slate-50/30">
                           <ul className="flex flex-col gap-4">
                             {r.answers.map((a, index) => (
@@ -151,7 +190,7 @@ export default function ResultsBySubject({ results, openIds, toggleAnswers }) {
                                 a.expected !== "" ? (
                                   <p className="mt-2 text-sm text-slate-900">
                                     <span className="text-red-700 font-semibold">
-                                      Correct answer:{" "}
+                                      Expected answer:{" "}
                                     </span>
                                     {a.expected}
                                   </p>

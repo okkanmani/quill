@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createAdminStudent, deleteAdminStudent, listAdminStudents, logout, switchAdminStudent } from "../api";
+import { createAdminStudent, deleteAdminStudent, listAdminStudents, logout, switchAdminStudent, updateAdminStudentGrade } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
+import { GRADE_OPTIONS } from "../questionBuilderUtils";
 
 export default function AdminStudents() {
   const navigate = useNavigate();
@@ -12,7 +13,9 @@ export default function AdminStudents() {
   const [error, setError] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [grade, setGrade] = useState(5);
   const [creating, setCreating] = useState(false);
+  const [savingGradeId, setSavingGradeId] = useState(null);
 
   function load() {
     setLoading(true);
@@ -42,6 +45,7 @@ export default function AdminStudents() {
       const created = await createAdminStudent({
         name: name.trim(),
         password,
+        grade: Number(grade),
       });
       setName("");
       setPassword("");
@@ -52,12 +56,33 @@ export default function AdminStudents() {
         if (sw.admin_name) {
           localStorage.setItem("adminName", sw.admin_name);
         }
+        if (sw.grade != null) {
+          localStorage.setItem("studentGrade", String(sw.grade));
+        }
       }
       await load();
     } catch (ex) {
       setError(ex.message || "Could not create student.");
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function handleGradeChange(student, nextGrade) {
+    setSavingGradeId(student.id);
+    setError("");
+    try {
+      const updated = await updateAdminStudentGrade(student.id, Number(nextGrade));
+      setStudents((prev) =>
+        prev.map((s) => (s.id === student.id ? { ...s, grade: updated.grade } : s)),
+      );
+      if (student.name === localStorage.getItem("studentName")) {
+        localStorage.setItem("studentGrade", String(updated.grade));
+      }
+    } catch (ex) {
+      setError(ex.message || "Could not update grade.");
+    } finally {
+      setSavingGradeId(null);
     }
   }
 
@@ -117,6 +142,17 @@ export default function AdminStudents() {
               autoComplete="new-password"
               className="flex-1 min-w-[10rem] border border-slate-300 rounded-xl px-4 py-2.5 text-sm"
             />
+            <select
+              value={grade}
+              onChange={(e) => setGrade(Number(e.target.value))}
+              className="border border-slate-300 rounded-xl px-4 py-2.5 text-sm bg-white"
+            >
+              {GRADE_OPTIONS.map((g) => (
+                <option key={g.value} value={g.value}>
+                  {g.label}
+                </option>
+              ))}
+            </select>
             <button
               type="submit"
               disabled={creating}
@@ -145,10 +181,30 @@ export default function AdminStudents() {
               {students.map((s) => (
                 <li
                   key={s.id}
-                  className="px-4 py-3 text-slate-900 font-medium flex items-center justify-between gap-3"
+                  className="px-4 py-3 text-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 >
-                  <span className="min-w-0 truncate">{s.name}</span>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <span className="min-w-0 truncate font-medium">{s.name}</span>
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                    <label className="flex items-center gap-2 text-sm text-slate-700">
+                      Grade
+                      <select
+                        value={s.grade ?? ""}
+                        disabled={savingGradeId === s.id}
+                        onChange={(e) => handleGradeChange(s, e.target.value)}
+                        className="border border-slate-300 rounded-lg px-2 py-1 bg-white text-slate-950 font-medium"
+                      >
+                        {!s.grade ? (
+                          <option value="" disabled>
+                            Set grade…
+                          </option>
+                        ) : null}
+                        {GRADE_OPTIONS.map((g) => (
+                          <option key={g.value} value={g.value}>
+                            {g.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                     {s.name === localStorage.getItem("studentName") ? (
                       <span className="text-xs font-semibold text-emerald-800 bg-emerald-100 border border-emerald-200 rounded-full px-2 py-0.5">
                         Current view

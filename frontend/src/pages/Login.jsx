@@ -30,6 +30,8 @@ export default function Login() {
       localStorage.setItem("name", data.name);
       localStorage.removeItem("studentName");
       localStorage.removeItem("adminName");
+      if (data.grade != null) localStorage.setItem("grade", String(data.grade));
+      else localStorage.removeItem("grade");
       navigate("/student");
     } catch {
       setError("Invalid name or password.");
@@ -60,6 +62,8 @@ export default function Login() {
       } else {
         localStorage.removeItem("studentName");
       }
+      if (data.grade != null) localStorage.setItem("studentGrade", String(data.grade));
+      else localStorage.removeItem("studentGrade");
       navigate("/admin");
     } catch {
       setError(

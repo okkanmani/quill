@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import SubjectBadge, { formatSubjectLabel } from "./SubjectBadge";
+import SubjectBadge from "./SubjectBadge";
+import { formatSubjectLabel } from "../subjectUtils";
 import ContentBadge from "./ContentBadge";
 import { DifficultyStars } from "./DifficultyStars";
 import {
@@ -10,10 +11,66 @@ import {
   subjectSortKey,
 } from "../subjectUtils";
 
+function TimedPadlockStatus({ locked }) {
+  const label = locked
+    ? "Locked — ask your teacher to unlock"
+    : "Ready to start";
+  return (
+    <span
+      className={`shrink-0 inline-flex items-center justify-center rounded-full border w-9 h-9 ${
+        locked
+          ? "bg-rose-100 border-rose-200 text-rose-700"
+          : "bg-slate-100 border-slate-200 text-slate-600"
+      }`}
+      title={label}
+      aria-label={label}
+    >
+      {locked ? (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="w-[18px] h-[18px]"
+          aria-hidden
+        >
+          <rect x="5" y="11" width="14" height="10" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+        </svg>
+      ) : (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="w-[18px] h-[18px]"
+          aria-hidden
+        >
+          <rect x="5" y="11" width="14" height="10" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 7.5-1" />
+        </svg>
+      )}
+    </span>
+  );
+}
+
 function WorksheetRow({ ws, onOpenWorksheet, renderSideAction }) {
+  const showTimedPadlock = ws.timed && !isWorksheetDone(ws);
   return (
     <div className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4">
-      <div className="flex-1 flex flex-col bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:border-indigo-400 transition overflow-hidden">
+      <div
+        className={`flex-1 flex flex-col bg-white border rounded-2xl shadow-sm transition overflow-hidden ${
+          ws.timed_locked
+            ? "border-rose-300 opacity-90"
+            : "border-slate-200 hover:shadow-md hover:border-indigo-400"
+        }`}
+      >
         <button
           type="button"
           onClick={() => onOpenWorksheet(ws.id)}
@@ -23,9 +80,15 @@ function WorksheetRow({ ws, onOpenWorksheet, renderSideAction }) {
             <p className="text-slate-900 font-semibold text-lg">{ws.title}</p>
             {isWorksheetDone(ws) ? (
               <span className="shrink-0 inline-flex items-center gap-2 flex-wrap justify-end">
+                {ws.last_status === "pending" ? (
+                  <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900 border border-amber-200">
+                    Awaiting review
+                  </span>
+                ) : null}
                 {typeof ws.last_score === "number" &&
                 typeof ws.last_total === "number" &&
-                ws.last_total > 0 ? (
+                ws.last_total > 0 &&
+                ws.last_status !== "pending" ? (
                   <span className="inline-flex items-baseline gap-x-4 text-sm font-bold text-emerald-950 tabular-nums">
                     <span className="shrink-0">Score:</span>
                     <span>
@@ -40,6 +103,12 @@ function WorksheetRow({ ws, onOpenWorksheet, renderSideAction }) {
                   Done
                 </span>
               </span>
+            ) : showTimedPadlock ? (
+              <TimedPadlockStatus locked={Boolean(ws.timed_locked)} />
+            ) : ws.has_draft ? (
+              <span className="shrink-0 inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-semibold text-sky-900 border border-sky-200">
+                Saved progress
+              </span>
             ) : null}
           </div>
         </button>
@@ -47,6 +116,11 @@ function WorksheetRow({ ws, onOpenWorksheet, renderSideAction }) {
           <ContentBadge label={ws.content_badge} />
           <SubjectBadge subject={ws.subject} />
           <DifficultyStars min={ws.difficulty_min} max={ws.difficulty_max} />
+          {ws.timed && ws.time_limit_minutes ? (
+            <span className="text-rose-700 text-xs font-semibold rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5">
+              {ws.time_limit_minutes} min limit
+            </span>
+          ) : null}
           <span className="text-indigo-500 text-sm">
             {ws.question_count} questions
           </span>
