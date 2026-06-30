@@ -13,32 +13,77 @@ from auth_users import (
     delete_student,
     get_admin_name,
     get_student_by_admin_and_name,
+    get_student_profile,
     list_students_for_admin,
+    update_student_grade,
 )
+from admin_secrets import (
+    admin_openai_key_configured,
+    clear_admin_openai_api_key,
+    resolve_openai_api_key,
+    set_admin_openai_api_key,
+)
+from ai_worksheet import generate_worksheet_draft
 from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from learn_content import get_subject, list_learn_hub, list_subjects
 from worksheets import (
+    create_worksheet_from_builder,
     delete_worksheet,
+    evaluate_result,
+    get_or_start_timed_session,
+    get_student_result_for_worksheet,
     get_worksheet,
+    get_worksheet_draft,
     init_worksheet_tables,
     list_results,
     list_worksheets,
+    lock_timed_worksheet,
     merge_worksheets_from_json_files,
     save_result,
+    save_worksheet_draft,
     seed_worksheets_from_json_if_empty,
+    student_has_result_for_worksheet,
+    unlock_timed_worksheet,
     upsert_worksheet_from_data,
     worksheet_id_from_filename,
+    strip_reference_answers_for_student,
 )
 
 
 class SubmitResultRequest(BaseModel):
     worksheet_id: str
     title: str
-    score: int
+    score: int | None = None
     total: int
     answers: list
+
+
+class EvaluateResultRequest(BaseModel):
+    marks: list
+
+
+class SaveDraftRequest(BaseModel):
+    answers: dict
+
+
+class WorksheetBuilderQuestionRequest(BaseModel):
+    prompt: str
+    choices: list[str] | None = None
+    correct_index: int | None = None
+    answer: str | None = None
+
+
+class CreateWorksheetBuilderRequest(BaseModel):
+    title: str
+    subject: str
+    stars: int
+    format: str
+    question_count: int
+    timed: bool = False
+    time_limit_minutes: int | None = None
+    questions: list[WorksheetBuilderQuestionRequest]
 
 
 class StudentLoginRequest(BaseModel):
@@ -62,6 +107,23 @@ class CreateAdminSignupRequest(BaseModel):
 class CreateStudentRequest(BaseModel):
     name: str
     password: str
+    grade: int
+
+
+class UpdateStudentRequest(BaseModel):
+    grade: int
+
+
+class GenerateWorksheetDraftRequest(BaseModel):
+    subject: str
+    grade: int
+    stars: int
+    format: str
+    question_count: int | None = None
+
+
+class AdminOpenAiKeyRequest(BaseModel):
+    api_key: str
 
 
 class SwitchAdminStudentRequest(BaseModel):
@@ -122,7 +184,10 @@ def student_login(req: StudentLoginRequest):
     if not row:
         raise HTTPException(status_code=401, detail="Invalid name or password")
     token = create_student_token(row["id"], row["name"])
-    return {"token": token, "role": "student", "name": row["name"]}
+    out = {"token": token, "role": "student", "name": row["name"]}
+    if row.get("grade") is not None:
+        out["grade"] = row["grade"]
+    return out
 
 
 @app.post("/auth/admin/signup")
@@ -202,7 +267,11 @@ def logout():
 def me(authorization: str = Header(...)):
     payload = _payload(authorization)
     if payload["role"] == "student":
-        return {"role": "student", "name": payload["name"]}
+        out = {"role": "student", "name": payload["name"]}
+        profile = get_student_profile(payload.get("student_id"))
+        if profile and profile.get("grade") is not None:
+            out["grade"] = profile["grade"]
+        return out
     an = payload.get("admin_name") or get_admin_name(payload["admin_id"])
     return {
         "role": "admin",
@@ -221,12 +290,31 @@ def get_worksheets(authorization: str = Header(...)):
 
 @app.get("/worksheets/{worksheet_id}")
 def get_worksheet_by_id(worksheet_id: str, authorization: str = Header(...)):
-    if not verify_token(authorization.replace("Bearer ", "")):
-        raise HTTPException(status_code=401, detail="Not authenticated")
+    payload = _payload(authorization)
     worksheet = get_worksheet(worksheet_id)
     if not worksheet:
         raise HTTPException(status_code=404, detail="Worksheet not found")
+    if payload.get("role") == "student":
+        worksheet = strip_reference_answers_for_student(worksheet)
     return worksheet
+
+
+@app.get("/worksheets/{worksheet_id}/my-result")
+def get_worksheet_my_result(worksheet_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    who = (
+        payload["name"]
+        if payload.get("role") == "student"
+        else _student_context_name(payload)
+    )
+    result = get_student_result_for_worksheet(who, worksheet_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="No submission yet")
+    if payload.get("role") == "student" and result.get("status") == "pending":
+        for a in result.get("answers") or []:
+            a.pop("expected", None)
+            a.pop("correct", None)
+    return result
 
 
 @app.delete("/worksheets/{worksheet_id}")
@@ -276,21 +364,251 @@ async def admin_upload_worksheet(
     return result
 
 
+@app.post("/admin/worksheets/create")
+def admin_create_worksheet_from_builder(
+    req: CreateWorksheetBuilderRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return create_worksheet_from_builder(req.model_dump())
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid worksheet data."]
+        if isinstance(errors, list):
+            detail = errors
+        else:
+            detail = [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
+
+
+@app.post("/admin/worksheets/generate-draft")
+def admin_generate_worksheet_draft(
+    req: GenerateWorksheetDraftRequest,
+    authorization: str = Header(...),
+):
+    """Parked until AI is re-enabled via QUILL_AI_ENABLED=1."""
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    if os.environ.get("QUILL_AI_ENABLED", "").strip().lower() not in ("1", "true", "yes"):
+        raise HTTPException(
+            status_code=503,
+            detail="AI worksheet generation is not enabled.",
+        )
+    try:
+        api_key = resolve_openai_api_key(payload["admin_id"])
+        if not api_key:
+            raise HTTPException(
+                status_code=400,
+                detail="Add your OpenAI API key under Admin → Settings.",
+            )
+        return generate_worksheet_draft(
+            subject=req.subject,
+            grade=req.grade,
+            stars=req.stars,
+            fmt=req.format,
+            question_count=req.question_count,
+            api_key=api_key,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/admin/settings")
+def admin_get_settings(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    return {
+        "openai_key_configured": admin_openai_key_configured(payload["admin_id"]),
+        "ai_enabled": os.environ.get("QUILL_AI_ENABLED", "").strip().lower()
+        in ("1", "true", "yes"),
+    }
+
+
+@app.put("/admin/settings/openai-key")
+def admin_set_openai_key(
+    req: AdminOpenAiKeyRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        set_admin_openai_api_key(payload["admin_id"], req.api_key)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"message": "OpenAI API key saved.", "openai_key_configured": True}
+
+
+@app.delete("/admin/settings/openai-key")
+def admin_clear_openai_key(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    clear_admin_openai_api_key(payload["admin_id"])
+    return {"message": "OpenAI API key removed.", "openai_key_configured": False}
+
+
+@app.get("/worksheets/{worksheet_id}/draft")
+def get_worksheet_draft_route(worksheet_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can load drafts")
+    draft = get_worksheet_draft(payload["name"], worksheet_id)
+    if not draft:
+        raise HTTPException(status_code=404, detail="No saved progress")
+    return draft
+
+
+@app.put("/worksheets/{worksheet_id}/draft")
+def save_worksheet_draft_route(
+    worksheet_id: str, req: SaveDraftRequest, authorization: str = Header(...)
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can save drafts")
+    try:
+        return save_worksheet_draft(payload["name"], worksheet_id, req.answers)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/worksheets/{worksheet_id}/timed-session")
+def start_timed_session_route(
+    worksheet_id: str,
+    resume: bool = False,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can start timed sessions")
+    try:
+        return get_or_start_timed_session(payload["name"], worksheet_id, resume=resume)
+    except ValueError as exc:
+        msg = str(exc)
+        if "locked" in msg.lower():
+            raise HTTPException(status_code=423, detail=msg)
+        code = 409 if "already submitted" in msg else 400
+        raise HTTPException(status_code=code, detail=msg)
+
+
+@app.get("/worksheets/{worksheet_id}/timed-session")
+def get_timed_session_route(
+    worksheet_id: str,
+    resume: bool = False,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can access timed sessions")
+    try:
+        return get_or_start_timed_session(payload["name"], worksheet_id, resume=resume)
+    except ValueError as exc:
+        msg = str(exc)
+        if "locked" in msg.lower():
+            raise HTTPException(status_code=423, detail=msg)
+        code = 409 if "already submitted" in msg else 400
+        raise HTTPException(status_code=code, detail=msg)
+
+
+@app.post("/worksheets/{worksheet_id}/lock-timed")
+def lock_timed_worksheet_route(worksheet_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can lock timed worksheets")
+    lock_timed_worksheet(payload["name"], worksheet_id)
+    return {"message": "Locked"}
+
+
+@app.post("/admin/worksheets/{worksheet_id}/unlock-timed")
+def admin_unlock_timed_worksheet(worksheet_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    try:
+        unlock_timed_worksheet(who, worksheet_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"message": "Unlocked"}
+
+
 @app.post("/results")
 def submit_result(req: SubmitResultRequest, authorization: str = Header(...)):
     payload = _payload(authorization)
     if payload["role"] != "student":
         raise HTTPException(status_code=403, detail="Only students can submit results")
-    result = {
-        "worksheet_id": req.worksheet_id,
-        "title": req.title,
-        "student": context_student_name(payload),
-        "score": req.score,
-        "total": req.total,
-        "answers": req.answers,
+
+    worksheet = get_worksheet(req.worksheet_id)
+    if not worksheet:
+        raise HTTPException(status_code=404, detail="Worksheet not found")
+
+    student = context_student_name(payload)
+    if student_has_result_for_worksheet(student, req.worksheet_id):
+        raise HTTPException(status_code=409, detail="You already submitted this worksheet")
+
+    manual = worksheet.get("evaluation") == "manual"
+    given_by_qid = {
+        a.get("question_id"): a.get("given", "")
+        for a in req.answers
+        if isinstance(a, dict) and a.get("question_id")
     }
+
+    if manual:
+        answers_payload = []
+        for q in worksheet.get("questions") or []:
+            qid = q.get("id")
+            answers_payload.append(
+                {
+                    "question_id": qid,
+                    "prompt": q.get("prompt", ""),
+                    "given": given_by_qid.get(qid, ""),
+                    "correct": None,
+                    "expected": q.get("answer", ""),
+                }
+            )
+        result = {
+            "worksheet_id": req.worksheet_id,
+            "title": req.title,
+            "student": student,
+            "score": None,
+            "total": req.total,
+            "answers": answers_payload,
+            "status": "pending",
+        }
+    else:
+        answers_payload = req.answers
+        score = req.score if req.score is not None else 0
+        result = {
+            "worksheet_id": req.worksheet_id,
+            "title": req.title,
+            "student": student,
+            "score": score,
+            "total": req.total,
+            "answers": answers_payload,
+            "status": "evaluated",
+        }
+
     save_result(result)
-    return {"message": "Result saved"}
+    return {"message": "Result saved", "status": result["status"]}
+
+
+@app.post("/results/{result_id}/evaluate")
+def evaluate_submission(
+    result_id: int, req: EvaluateResultRequest, authorization: str = Header(...)
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    try:
+        updated = evaluate_result(result_id, who, req.marks)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return updated
 
 
 @app.get("/results")
@@ -334,13 +652,33 @@ def admin_create_student(req: CreateStudentRequest, authorization: str = Header(
     if not name or not req.password:
         raise HTTPException(status_code=400, detail="Name and password required")
     try:
-        sid = add_student(payload["admin_id"], name, req.password)
+        sid = add_student(payload["admin_id"], name, req.password, req.grade)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     except sqlite3.IntegrityError:
         raise HTTPException(
             status_code=409,
             detail="A student with that name already exists for your account",
         )
-    return {"id": sid, "name": name}
+    return {"id": sid, "name": name, "grade": req.grade}
+
+
+@app.patch("/admin/students/{student_id}")
+def admin_update_student(
+    student_id: int,
+    req: UpdateStudentRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        updated = update_student_grade(payload["admin_id"], student_id, req.grade)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if not updated:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return updated
 
 
 @app.delete("/admin/students/{student_id}")
@@ -387,6 +725,7 @@ def admin_switch_student_context(
         "student_name": row["name"],
         "admin_name": an,
         "needs_student": False,
+        "grade": row.get("grade"),
     }
 
 

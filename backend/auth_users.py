@@ -11,6 +11,20 @@ import bcrypt
 import db
 
 AUTH_JSON = Path(__file__).parent / "data" / "auth.json"
+VALID_GRADES = frozenset(range(1, 13))
+
+
+def validate_grade(grade: int | None) -> int:
+    if not isinstance(grade, int) or grade not in VALID_GRADES:
+        raise ValueError("grade must be an integer from 1 to 12.")
+    return grade
+
+
+def _student_row_dict(row) -> dict:
+    out = {"id": row["id"], "name": row["name"]}
+    if row["grade"] is not None:
+        out["grade"] = int(row["grade"])
+    return out
 
 
 def migrate_legacy_from_auth_json(conn) -> None:
@@ -46,14 +60,17 @@ def authenticate_student(name: str, password: str) -> dict | None:
     conn = db.connect()
     try:
         rows = conn.execute(
-            "SELECT id, admin_id, name, password_hash FROM students WHERE name = ?",
+            "SELECT id, admin_id, name, password_hash, grade FROM students WHERE name = ?",
             (name,),
         ).fetchall()
     finally:
         conn.close()
     for r in rows:
         if bcrypt.checkpw(password.encode(), r["password_hash"].encode()):
-            return {"id": r["id"], "name": r["name"], "admin_id": r["admin_id"]}
+            out = {"id": r["id"], "name": r["name"], "admin_id": r["admin_id"]}
+            if r["grade"] is not None:
+                out["grade"] = int(r["grade"])
+            return out
     return None
 
 
@@ -142,13 +159,13 @@ def list_students_for_admin(admin_id: int) -> list[dict]:
     try:
         rows = conn.execute(
             """
-            SELECT id, name FROM students
+            SELECT id, name, grade FROM students
             WHERE admin_id = ?
             ORDER BY name COLLATE NOCASE
             """,
             (admin_id,),
         ).fetchall()
-        return [{"id": r["id"], "name": r["name"]} for r in rows]
+        return [_student_row_dict(r) for r in rows]
     finally:
         conn.close()
 
@@ -162,7 +179,7 @@ def get_student_by_admin_and_name(admin_id: int, name: str) -> dict | None:
     try:
         row = conn.execute(
             """
-            SELECT id, name FROM students
+            SELECT id, name, grade FROM students
             WHERE admin_id = ? AND name = ?
             """,
             (admin_id, name),
@@ -171,21 +188,59 @@ def get_student_by_admin_and_name(admin_id: int, name: str) -> dict | None:
         conn.close()
     if not row:
         return None
-    return {"id": row["id"], "name": row["name"]}
+    return _student_row_dict(row)
 
 
-def add_student(admin_id: int, name: str, password: str) -> int:
+def add_student(admin_id: int, name: str, password: str, grade: int) -> int:
     name = name.strip()
+    grade = validate_grade(grade)
     h = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
     conn = db.connect()
     try:
         cur = conn.execute(
-            "INSERT INTO students (admin_id, name, password_hash) VALUES (?, ?, ?)",
-            (admin_id, name, h),
+            "INSERT INTO students (admin_id, name, password_hash, grade) VALUES (?, ?, ?, ?)",
+            (admin_id, name, h, grade),
         )
         rid = cur.lastrowid
         conn.commit()
         return rid
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def get_student_profile(student_id: int) -> dict | None:
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT id, name, grade FROM students WHERE id = ?",
+            (student_id,),
+        ).fetchone()
+    finally:
+        conn.close()
+    if not row:
+        return None
+    return _student_row_dict(row)
+
+
+def update_student_grade(admin_id: int, student_id: int, grade: int) -> dict | None:
+    grade = validate_grade(grade)
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT id, name, grade FROM students WHERE id = ? AND admin_id = ?",
+            (student_id, admin_id),
+        ).fetchone()
+        if not row:
+            return None
+        conn.execute(
+            "UPDATE students SET grade = ? WHERE id = ? AND admin_id = ?",
+            (grade, student_id, admin_id),
+        )
+        conn.commit()
+        return {"id": row["id"], "name": row["name"], "grade": grade}
     except Exception:
         conn.rollback()
         raise
