@@ -83,6 +83,10 @@ def init_schema() -> None:
             )
         if "time_limit_minutes" not in cols:
             conn.execute("ALTER TABLE worksheets ADD COLUMN time_limit_minutes INTEGER")
+        if "is_math_enrichment" not in cols:
+            conn.execute(
+                "ALTER TABLE worksheets ADD COLUMN is_math_enrichment INTEGER NOT NULL DEFAULT 0"
+            )
         result_cols = {row[1] for row in conn.execute("PRAGMA table_info(results)")}
         if "status" not in result_cols:
             conn.execute(

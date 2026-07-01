@@ -96,6 +96,19 @@ def _timed_from_sheet_data(data: dict) -> tuple[bool, int | None]:
     return False, None
 
 
+def _math_enrichment_from_sheet_data(data: dict) -> bool:
+    return data.get("math_enrichment") is True
+
+
+def _resolve_math_enrichment(worksheet_id: str, row_flag) -> dict:
+    data = _load_bundled_sheet_data(worksheet_id)
+    if data:
+        flag = _math_enrichment_from_sheet_data(data)
+    else:
+        flag = bool(row_flag)
+    return {"math_enrichment": flag}
+
+
 def _resolve_timed(worksheet_id: str, row_is_timed, row_limit) -> dict:
     data = _load_bundled_sheet_data(worksheet_id)
     if data:
@@ -373,12 +386,13 @@ def _insert_worksheet(conn, ws_id: str, data: dict, path: Path) -> None:
     content_badge = _content_badge_from_sheet_data(data)
     evaluation = _evaluation_from_sheet_data(data)
     is_timed, time_limit = _timed_from_sheet_data(data)
+    is_enrichment = _math_enrichment_from_sheet_data(data)
     conn.execute(
         """
-        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, 1 if is_timed else 0, time_limit),
+        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, 1 if is_timed else 0, time_limit, 1 if is_enrichment else 0),
     )
     for order, q in enumerate(questions):
         conn.execute(
@@ -468,13 +482,13 @@ def list_worksheets(student_name: str | None = None) -> list:
                 """
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
                        t.learn_subject, t.learn_section, t.content_badge, t.evaluation,
-                       t.is_timed, t.time_limit_minutes,
+                       t.is_timed, t.time_limit_minutes, t.is_math_enrichment,
                        t.last_score, t.last_total, t.last_status, t.draft_saved_at,
                        t.timed_locked, t.timed_started
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section, w.content_badge, w.evaluation,
-                           w.is_timed, w.time_limit_minutes,
+                           w.is_timed, w.time_limit_minutes, w.is_math_enrichment,
                            (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
                            EXISTS (
                              SELECT 1 FROM results r
@@ -506,12 +520,12 @@ def list_worksheets(student_name: str | None = None) -> list:
                 """
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
                        t.learn_subject, t.learn_section, t.content_badge, t.evaluation,
-                       t.is_timed, t.time_limit_minutes,
+                       t.is_timed, t.time_limit_minutes, t.is_math_enrichment,
                        t.last_score, t.last_total
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section, w.content_badge, w.evaluation,
-                           w.is_timed, w.time_limit_minutes,
+                           w.is_timed, w.time_limit_minutes, w.is_math_enrichment,
                            (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
                            EXISTS (
                              SELECT 1 FROM results r
@@ -554,6 +568,7 @@ def list_worksheets(student_name: str | None = None) -> list:
             last_status = r["last_status"] or "evaluated"
             item["evaluation"] = _resolve_evaluation(r["id"], r["evaluation"])
             item.update(_resolve_timed(r["id"], r["is_timed"], r["time_limit_minutes"]))
+            item.update(_resolve_math_enrichment(r["id"], r["is_math_enrichment"]))
             draft_at = r["draft_saved_at"] if student_name is not None else None
             if draft_at and not item["done"] and not item.get("timed"):
                 item["has_draft"] = True
@@ -585,7 +600,7 @@ def get_worksheet(worksheet_id: str) -> dict | None:
     try:
         row = conn.execute(
             """
-            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes
+            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment
             FROM worksheets WHERE id = ?
             """,
             (worksheet_id,),
@@ -621,6 +636,7 @@ def get_worksheet(worksheet_id: str) -> dict | None:
         out.update(_resolve_difficulty_metadata(worksheet_id))
         out["evaluation"] = _resolve_evaluation(worksheet_id, row["evaluation"])
         out.update(_resolve_timed(worksheet_id, row["is_timed"], row["time_limit_minutes"]))
+        out.update(_resolve_math_enrichment(worksheet_id, row["is_math_enrichment"]))
         return out
     finally:
         conn.close()
@@ -864,6 +880,11 @@ def validate_worksheet_data(data: dict) -> list[str]:
         errors.append("time_limit_minutes must be a positive integer when timed is true.")
     if is_timed and evaluation == "manual":
         pass  # allowed: timed written-answer worksheets
+
+    if data.get("math_enrichment") is True:
+        subj = subject.strip().lower() if isinstance(subject, str) else "general"
+        if subj != "math":
+            errors.append("math_enrichment is only allowed for math worksheets.")
 
     seen_qids: set[str] = set()
     for i, q in enumerate(questions):

@@ -1,16 +1,28 @@
 import { useMemo, useState } from "react";
 import WorksheetsBySubject from "./WorksheetsBySubject";
 
+const SECTION_STYLES = {
+  practice:
+    "bg-indigo-100/90 hover:bg-indigo-100 border-indigo-200/80",
+  timed: "bg-rose-100/90 hover:bg-rose-100 border-rose-200/80",
+  enrichment:
+    "bg-amber-100/90 hover:bg-amber-100 border-amber-200/80",
+};
+
 /**
- * Top-level Practice vs Timed section with subject accordions inside.
+ * Practice, Timed, and Math Enrichment sections.
  */
 export default function WorksheetsByMode({ worksheets, onOpenWorksheet, renderSideAction }) {
   const practice = useMemo(
-    () => worksheets.filter((ws) => !ws.timed),
+    () => worksheets.filter((ws) => !ws.timed && !ws.math_enrichment),
     [worksheets],
   );
   const timed = useMemo(
-    () => worksheets.filter((ws) => ws.timed),
+    () => worksheets.filter((ws) => ws.timed && !ws.math_enrichment),
+    [worksheets],
+  );
+  const mathEnrichment = useMemo(
+    () => worksheets.filter((ws) => ws.math_enrichment),
     [worksheets],
   );
   const [openModes, setOpenModes] = useState(() => new Set());
@@ -37,15 +49,25 @@ export default function WorksheetsByMode({ worksheets, onOpenWorksheet, renderSi
       description: "Complete within the time limit. Progress cannot be saved.",
       items: timed,
     },
+    {
+      key: "enrichment",
+      title: "Math Enrichment",
+      description:
+        "Extra-challenging math puzzles — great prep for contests like Gauss and Pascal.",
+      items: mathEnrichment,
+    },
   ];
 
-  if (practice.length === 0 && timed.length === 0) return null;
+  if (practice.length === 0 && timed.length === 0 && mathEnrichment.length === 0) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-4">
       {sections.map(({ key, title, description, items }) => {
         if (items.length === 0) return null;
         const isOpen = openModes.has(key);
+        const flatList = key === "enrichment";
         return (
           <div
             key={key}
@@ -56,9 +78,7 @@ export default function WorksheetsByMode({ worksheets, onOpenWorksheet, renderSi
               onClick={() => toggleMode(key)}
               aria-expanded={isOpen}
               className={`w-full text-left px-4 py-4 border-b transition ${
-                key === "timed"
-                  ? "bg-rose-100/90 hover:bg-rose-100 border-rose-200/80"
-                  : "bg-indigo-100/90 hover:bg-indigo-100 border-indigo-200/80"
+                SECTION_STYLES[key] || SECTION_STYLES.practice
               }`}
             >
               <div className="flex items-start justify-between gap-3">
@@ -80,6 +100,7 @@ export default function WorksheetsByMode({ worksheets, onOpenWorksheet, renderSi
                   worksheets={items}
                   onOpenWorksheet={onOpenWorksheet}
                   renderSideAction={renderSideAction}
+                  ungrouped={flatList}
                 />
               </div>
             ) : null}

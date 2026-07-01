@@ -24,6 +24,7 @@ export function filterLatestUndoneWorksheets(worksheets, now = Date.now()) {
     (ws) =>
       isLatestWorksheet(ws, now) &&
       !isWorksheetDone(ws) &&
-      !ws.timed,
+      !ws.timed &&
+      !ws.math_enrichment,
   );
 }

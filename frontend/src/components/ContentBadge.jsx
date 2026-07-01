@@ -1,5 +1,6 @@
 const STYLES = {
   NCERT: "bg-amber-100 text-amber-950 border-amber-200",
+  Contest: "bg-violet-100 text-violet-950 border-violet-200",
 };
 
 export default function ContentBadge({ label }) {
