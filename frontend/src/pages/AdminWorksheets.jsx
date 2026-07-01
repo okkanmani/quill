@@ -5,6 +5,7 @@ import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
+import RecycleBinButton from "../components/RecycleBinButton";
 import WorksheetsByMode from "../components/WorksheetsByMode";
 
 export default function AdminWorksheets() {
@@ -16,6 +17,8 @@ export default function AdminWorksheets() {
   const [uploadPanelOpen, setUploadPanelOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [deleting, setDeleting] = useState(false);
 
   function loadWorksheets({ preserveError = false } = {}) {
     setLoading(true);
@@ -31,6 +34,81 @@ export default function AdminWorksheets() {
   useEffect(() => {
     loadWorksheets();
   }, [location.key]);
+
+  function toggleSelected(id) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function clearSelection() {
+    setSelectedIds(new Set());
+  }
+
+  async function deleteWorksheets(ids) {
+    const list = [...ids];
+    if (list.length === 0) return;
+
+    const preview =
+      list.length === 1
+        ? worksheets.find((w) => w.id === list[0])?.title || list[0]
+        : `${list.length} worksheets`;
+
+    const ok = window.confirm(
+      list.length === 1
+        ? `Delete “${preview}”? This removes it from the database. It will not come back unless you import it again from JSON.`
+        : `Delete ${list.length} worksheets? They will not come back unless you import them again from JSON.`,
+    );
+    if (!ok) return;
+
+    setDeleting(true);
+    setError("");
+    const removed = [];
+    const failed = [];
+
+    try {
+      for (const id of list) {
+        try {
+          await deleteWorksheet(id);
+          removed.push(id);
+        } catch {
+          const ws = worksheets.find((w) => w.id === id);
+          failed.push(ws?.title || id);
+        }
+      }
+
+      if (removed.length > 0) {
+        setWorksheets((prev) => prev.filter((w) => !removed.includes(w.id)));
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          for (const id of removed) next.delete(id);
+          return next;
+        });
+        setUploadMessage(
+          removed.length === 1
+            ? `Deleted ${removed[0]}.`
+            : `Deleted ${removed.length} worksheets.`,
+        );
+      }
+
+      if (failed.length > 0) {
+        setError(`Could not delete: ${failed.join(", ")}.`);
+      }
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  async function handleDelete(ws) {
+    await deleteWorksheets([ws.id]);
+  }
+
+  async function handleDeleteSelected() {
+    await deleteWorksheets(selectedIds);
+  }
 
   async function handleLogout() {
     await logout();
@@ -48,20 +126,6 @@ export default function AdminWorksheets() {
       loadWorksheets();
     } catch (err) {
       setError(err.message || "Could not unlock worksheet.");
-    }
-  }
-
-  async function handleDelete(ws) {
-    const ok = window.confirm(
-      `Delete “${ws.title}”? This removes it from the database. It will not come back unless you import it again from JSON.`,
-    );
-    if (!ok) return;
-    try {
-      await deleteWorksheet(ws.id);
-      setError("");
-      setWorksheets((prev) => prev.filter((w) => w.id !== ws.id));
-    } catch {
-      setError("Could not delete worksheet.");
     }
   }
 
@@ -115,6 +179,8 @@ export default function AdminWorksheets() {
       setUploading(false);
     }
   }
+
+  const selectedCount = selectedIds.size;
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
@@ -199,30 +265,84 @@ export default function AdminWorksheets() {
         )}
 
         {!loading && !error && worksheets.length > 0 && (
-          <WorksheetsByMode
-            worksheets={worksheets}
-            onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
-            renderSideAction={(ws) => (
-              <div className="flex flex-col sm:w-32 shrink-0 gap-2 self-stretch">
-                {ws.timed_locked ? (
-                  <button
-                    type="button"
-                    onClick={() => handleUnlock(ws)}
-                    className="flex-1 flex items-center justify-center bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 text-sm font-semibold rounded-2xl px-3 py-3 transition"
-                  >
-                    Unlock
-                  </button>
-                ) : null}
+          <>
+            {selectedCount > 0 ? (
+              <div className="sticky top-0 z-30 -mx-1 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-3 shadow-md">
+                <span className="text-sm font-semibold text-slate-800 tabular-nums">
+                  {selectedCount} selected
+                </span>
                 <button
                   type="button"
-                  onClick={() => handleDelete(ws)}
-                  className="flex-1 flex items-center justify-center bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 text-sm font-semibold rounded-2xl px-3 py-3 transition"
+                  onClick={handleDeleteSelected}
+                  disabled={deleting}
+                  className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-800 hover:bg-red-100 disabled:opacity-50 transition"
                 >
-                  Delete
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-4 h-4"
+                    aria-hidden
+                  >
+                    <path d="M3 6h18" />
+                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    <path d="M10 11v6" />
+                    <path d="M14 11v6" />
+                  </svg>
+                  {deleting ? "Deleting…" : "Delete selected"}
+                </button>
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  disabled={deleting}
+                  className="text-sm font-semibold text-slate-600 hover:text-slate-900 disabled:opacity-50"
+                >
+                  Clear
                 </button>
               </div>
-            )}
-          />
+            ) : null}
+
+            <WorksheetsByMode
+              worksheets={worksheets}
+              onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
+              renderSideAction={(ws) => (
+                <div className="flex flex-row sm:flex-col shrink-0 gap-2 self-center sm:self-stretch items-center sm:items-stretch sm:w-11">
+                  <label
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition"
+                    title={`Select ${ws.title}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(ws.id)}
+                      onChange={() => toggleSelected(ws.id)}
+                      disabled={deleting}
+                      aria-label={`Select ${ws.title}`}
+                      className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </label>
+                  {ws.timed_locked ? (
+                    <button
+                      type="button"
+                      onClick={() => handleUnlock(ws)}
+                      className="inline-flex items-center justify-center bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 text-xs font-semibold rounded-xl px-2 py-1.5 sm:py-2 transition whitespace-nowrap"
+                    >
+                      Unlock
+                    </button>
+                  ) : null}
+                  <RecycleBinButton
+                    onClick={() => handleDelete(ws)}
+                    label={`Delete ${ws.title}`}
+                    disabled={deleting}
+                  />
+                </div>
+              )}
+            />
+          </>
         )}
       </div>
     </div>
