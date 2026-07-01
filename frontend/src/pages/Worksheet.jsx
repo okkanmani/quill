@@ -357,13 +357,13 @@ export default function Worksheet() {
     }
 
     return (
-      <input
-        type="text"
+      <textarea
         value={answers[q.id]}
         onChange={(e) => handleAnswerChange(q.id, e.target.value)}
         disabled={locked}
-        placeholder="Type your answer..."
-        className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 mt-3"
+        placeholder="Type your answer and show your reasoning..."
+        rows={4}
+        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 mt-3 resize-y min-h-[6rem]"
       />
     );
   }
