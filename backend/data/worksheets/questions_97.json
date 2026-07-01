@@ -1,0 +1,178 @@
+{
+  "title": "Thinking Quest — Shape Shifters",
+  "subject": "math",
+  "gifted_track": true,
+  "content_badge": "Quest 4",
+  "scratchpad": true,
+  "created_at": "2026-07-01T14:07:22.753235+00:00",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A square has perimeter 32 cm. What is its area?",
+      "choices": [
+        "64 cm²",
+        "16 cm²",
+        "32 cm²",
+        "128 cm²"
+      ],
+      "answer": "64 cm²",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A rectangle is 9 cm by 4 cm. What is its area?",
+      "choices": [
+        "36 cm²",
+        "26 cm²",
+        "13 cm²",
+        "18 cm²"
+      ],
+      "answer": "36 cm²",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many lines of symmetry does a square have?",
+      "choices": [
+        "4",
+        "2",
+        "1",
+        "8"
+      ],
+      "answer": "4",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A triangle has base 10 cm and height 6 cm. Area?",
+      "choices": [
+        "30 cm²",
+        "60 cm²",
+        "16 cm²",
+        "36 cm²"
+      ],
+      "answer": "30 cm²",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many cubes of side 1 cm fit in a box 3×4×2 cm?",
+      "choices": [
+        "24",
+        "12",
+        "9",
+        "20"
+      ],
+      "answer": "24",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "An L-shape is made from two rectangles: 4×2 and 2×3 (no overlap). Total area?",
+      "choices": [
+        "14 cm²",
+        "12 cm²",
+        "10 cm²",
+        "20 cm²"
+      ],
+      "answer": "14 cm²",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A circle’s diameter is 10 cm. What is its radius?",
+      "choices": [
+        "5 cm",
+        "10 cm",
+        "20 cm",
+        "2.5 cm"
+      ],
+      "answer": "5 cm",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "You fold a square sheet in half twice. How many layers when you cut a small hole?",
+      "choices": [
+        "4 holes when unfolded",
+        "1 hole",
+        "2 holes",
+        "8 holes"
+      ],
+      "answer": "4 holes when unfolded",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Perimeter of an equilateral triangle with side 7 cm?",
+      "choices": [
+        "21 cm",
+        "14 cm",
+        "49 cm",
+        "7 cm"
+      ],
+      "answer": "21 cm",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A room is 5 m long and 4 m wide. How many 1 m² floor tiles cover it?",
+      "choices": [
+        "20",
+        "9",
+        "18",
+        "10"
+      ],
+      "answer": "20",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which 3D shape has 6 faces that are all squares?",
+      "choices": [
+        "Cube",
+        "Sphere",
+        "Cylinder",
+        "Cone"
+      ],
+      "answer": "Cube",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Two identical squares overlap. Each side is 6 cm. Overlap is a 2×2 square. Shaded area (both squares, no double count)?",
+      "choices": [
+        "68 cm²",
+        "72 cm²",
+        "64 cm²",
+        "60 cm²"
+      ],
+      "answer": "68 cm²",
+      "hint": false
+    }
+  ]
+}

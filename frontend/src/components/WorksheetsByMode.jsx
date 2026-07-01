@@ -7,22 +7,32 @@ const SECTION_STYLES = {
   timed: "bg-rose-100/90 hover:bg-rose-100 border-rose-200/80",
   enrichment:
     "bg-amber-100/90 hover:bg-amber-100 border-amber-200/80",
+  gifted:
+    "bg-violet-100/90 hover:bg-violet-100 border-violet-200/80",
 };
 
+function isSpecialTrack(ws) {
+  return Boolean(ws.math_enrichment || ws.gifted_track);
+}
+
 /**
- * Practice, Timed, and Math Enrichment sections.
+ * Practice, Timed, Math Enrichment, and Thinking Quest (gifted prep track).
  */
 export default function WorksheetsByMode({ worksheets, onOpenWorksheet, renderSideAction }) {
   const practice = useMemo(
-    () => worksheets.filter((ws) => !ws.timed && !ws.math_enrichment),
+    () => worksheets.filter((ws) => !ws.timed && !isSpecialTrack(ws)),
     [worksheets],
   );
   const timed = useMemo(
-    () => worksheets.filter((ws) => ws.timed && !ws.math_enrichment),
+    () => worksheets.filter((ws) => ws.timed && !isSpecialTrack(ws)),
     [worksheets],
   );
   const mathEnrichment = useMemo(
-    () => worksheets.filter((ws) => ws.math_enrichment),
+    () => worksheets.filter((ws) => ws.math_enrichment && !ws.gifted_track),
+    [worksheets],
+  );
+  const thinkingQuest = useMemo(
+    () => worksheets.filter((ws) => ws.gifted_track),
     [worksheets],
   );
   const [openModes, setOpenModes] = useState(() => new Set());
@@ -56,9 +66,21 @@ export default function WorksheetsByMode({ worksheets, onOpenWorksheet, renderSi
         "Extra-challenging math puzzles — great prep for contests like Gauss and Pascal.",
       items: mathEnrichment,
     },
+    {
+      key: "gifted",
+      title: "Thinking Quest",
+      description:
+        "A 12-week brain-building path — patterns, logic, and problem-solving for special-program style challenges.",
+      items: thinkingQuest,
+    },
   ];
 
-  if (practice.length === 0 && timed.length === 0 && mathEnrichment.length === 0) {
+  if (
+    practice.length === 0 &&
+    timed.length === 0 &&
+    mathEnrichment.length === 0 &&
+    thinkingQuest.length === 0
+  ) {
     return null;
   }
 
@@ -67,7 +89,7 @@ export default function WorksheetsByMode({ worksheets, onOpenWorksheet, renderSi
       {sections.map(({ key, title, description, items }) => {
         if (items.length === 0) return null;
         const isOpen = openModes.has(key);
-        const flatList = key === "enrichment";
+        const flatList = key === "enrichment" || key === "gifted";
         return (
           <div
             key={key}

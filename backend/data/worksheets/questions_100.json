@@ -1,0 +1,178 @@
+{
+  "title": "Thinking Quest — Boss Level Review",
+  "subject": "math",
+  "gifted_track": true,
+  "content_badge": "Quest 7",
+  "scratchpad": true,
+  "created_at": "2026-07-01T14:07:22.754023+00:00",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 12 × 11?",
+      "choices": [
+        "132",
+        "122",
+        "142",
+        "112"
+      ],
+      "answer": "132",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How many paths from A to B on a 2×2 grid (right/up only)?",
+      "choices": [
+        "6",
+        "4",
+        "8",
+        "2"
+      ],
+      "answer": "6",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 2/3 + 1/6?",
+      "choices": [
+        "5/6",
+        "3/9",
+        "1/2",
+        "3/6"
+      ],
+      "answer": "5/6",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Average of 5 numbers is 8. Four numbers average 7. Fifth number?",
+      "choices": [
+        "12",
+        "10",
+        "11",
+        "9"
+      ],
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Perimeter of rectangle 12 m by 5 m?",
+      "choices": [
+        "34 m",
+        "60 m",
+        "17 m",
+        "30 m"
+      ],
+      "answer": "34 m",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "If 5 workers finish a job in 12 days, how long for 10 workers (same work rate)?",
+      "choices": [
+        "6 days",
+        "24 days",
+        "10 days",
+        "8 days"
+      ],
+      "answer": "6 days",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 0.4 + 0.35?",
+      "choices": [
+        "0.75",
+        "0.39",
+        "0.85",
+        "0.7"
+      ],
+      "answer": "0.75",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Digits 2, 4, 6 used once each. How many 3-digit numbers?",
+      "choices": [
+        "6",
+        "3",
+        "9",
+        "12"
+      ],
+      "answer": "6",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 144 ÷ 16?",
+      "choices": [
+        "9",
+        "8",
+        "12",
+        "10"
+      ],
+      "answer": "9",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Clock shows 4:00. Smaller angle between hands?",
+      "choices": [
+        "120°",
+        "90°",
+        "60°",
+        "150°"
+      ],
+      "answer": "120°",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Ratio 3:2, total 25 parts. How many are the larger share?",
+      "choices": [
+        "15",
+        "10",
+        "12",
+        "18"
+      ],
+      "answer": "15",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Think of a number, double it, add 10, get 30. Original number?",
+      "choices": [
+        "10",
+        "20",
+        "5",
+        "15"
+      ],
+      "answer": "10",
+      "hint": false
+    }
+  ]
+}

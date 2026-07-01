@@ -25,6 +25,7 @@ export function filterLatestUndoneWorksheets(worksheets, now = Date.now()) {
       isLatestWorksheet(ws, now) &&
       !isWorksheetDone(ws) &&
       !ws.timed &&
-      !ws.math_enrichment,
+      !ws.math_enrichment &&
+      !ws.gifted_track,
   );
 }

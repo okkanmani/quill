@@ -87,6 +87,10 @@ def init_schema() -> None:
             conn.execute(
                 "ALTER TABLE worksheets ADD COLUMN is_math_enrichment INTEGER NOT NULL DEFAULT 0"
             )
+        if "is_gifted_track" not in cols:
+            conn.execute(
+                "ALTER TABLE worksheets ADD COLUMN is_gifted_track INTEGER NOT NULL DEFAULT 0"
+            )
         result_cols = {row[1] for row in conn.execute("PRAGMA table_info(results)")}
         if "status" not in result_cols:
             conn.execute(
