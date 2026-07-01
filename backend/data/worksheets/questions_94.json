@@ -3,176 +3,105 @@
   "subject": "math",
   "gifted_track": true,
   "gifted_track_week": 1,
+  "evaluation": "manual",
   "content_badge": "Quest 1",
   "scratchpad": true,
-  "created_at": "2026-07-01T14:21:47.970174+00:00",
+  "created_at": "2026-07-01T14:27:11.595251+00:00",
   "questions": [
     {
       "id": "q1",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "What is the next number: 4, 9, 14, 19, …?",
-      "choices": [
-        "24",
-        "23",
-        "25",
-        "22"
-      ],
+      "prompt": "What is the next number in 4, 9, 14, 19, …? Explain the rule you used.",
       "answer": "24",
       "hint": false
     },
     {
       "id": "q2",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "What is the next number: 3, 6, 12, 24, …?",
-      "choices": [
-        "36",
-        "48",
-        "30",
-        "42"
-      ],
+      "prompt": "What is the next number in 3, 6, 12, 24, …? Show how you figured it out.",
       "answer": "48",
       "hint": false
     },
     {
       "id": "q3",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "What is the next number: 100, 95, 90, 85, …?",
-      "choices": [
-        "80",
-        "75",
-        "84",
-        "70"
-      ],
+      "prompt": "What is the next number in 100, 95, 90, 85, …? Explain your pattern.",
       "answer": "80",
       "hint": false
     },
     {
       "id": "q4",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "What is the missing number: 2, 5, 10, 17, 26, ?",
-      "choices": [
-        "35",
-        "37",
-        "36",
-        "34"
-      ],
+      "prompt": "Find the missing number: 2, 5, 10, 17, 26, ? Explain why it fits.",
       "answer": "37",
       "hint": false
     },
     {
       "id": "q5",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "What is 25 × 4 mentally?",
-      "choices": [
-        "100",
-        "90",
-        "80",
-        "120"
-      ],
+      "prompt": "What is 25 × 4? Show your mental math steps.",
       "answer": "100",
       "hint": false
     },
     {
       "id": "q6",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "What is 15 × 6?",
-      "choices": [
-        "80",
-        "90",
-        "85",
-        "95"
-      ],
+      "prompt": "What is 15 × 6? Show your work.",
       "answer": "90",
       "hint": false
     },
     {
       "id": "q7",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "What is 144 ÷ 12?",
-      "choices": [
-        "11",
-        "12",
-        "13",
-        "14"
-      ],
+      "prompt": "What is 144 ÷ 12? Show your work.",
       "answer": "12",
       "hint": false
     },
     {
       "id": "q8",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "What is the next number: 1, 4, 9, 16, 25, …?",
-      "choices": [
-        "30",
-        "36",
-        "35",
-        "49"
-      ],
+      "prompt": "What is the next number in 1, 4, 9, 16, 25, …? Name the pattern.",
       "answer": "36",
       "hint": false
     },
     {
       "id": "q9",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "A rule is “add 7 each time.” If you start at 5, what is the 4th term?",
-      "choices": [
-        "26",
-        "19",
-        "33",
-        "20"
-      ],
+      "prompt": "A rule is “add 7 each time,” starting at 5. What is the 4th term? Show the sequence.",
       "answer": "26",
       "hint": false
     },
     {
       "id": "q10",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "What is the next number: 2, 3, 5, 8, 12, …?",
-      "choices": [
-        "15",
-        "16",
-        "17",
-        "18"
-      ],
+      "prompt": "What is the next number in 2, 3, 5, 8, 12, …? Explain the pattern.",
       "answer": "17",
       "hint": false
     },
     {
       "id": "q11",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "Which number completes the pattern 50, 45, 40, …, 30?",
-      "choices": [
-        "35",
-        "25",
-        "32",
-        "38"
-      ],
+      "prompt": "Which number completes 50, 45, 40, …, 30? Explain.",
       "answer": "35",
       "hint": false
     },
     {
       "id": "q12",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "What is 999 + 1?",
-      "choices": [
-        "1,000",
-        "990",
-        "100",
-        "10,000"
-      ],
-      "answer": "1,000",
+      "prompt": "What is 999 + 1? Show how you know.",
+      "answer": "1000",
       "hint": false
     }
   ]

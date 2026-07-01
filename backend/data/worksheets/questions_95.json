@@ -3,175 +3,104 @@
   "subject": "general",
   "gifted_track": true,
   "gifted_track_week": 3,
+  "evaluation": "manual",
   "content_badge": "Quest 2",
   "scratchpad": true,
-  "created_at": "2026-07-01T14:21:47.970550+00:00",
+  "created_at": "2026-07-01T14:27:11.595621+00:00",
   "questions": [
     {
       "id": "q1",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "All bloops are razzies. Some razzies are lazzies. Which must be true?",
-      "choices": [
-        "Some bloops might be lazzies",
-        "All lazzies are bloops",
-        "No bloops are lazzies",
-        "All razzies are bloops"
-      ],
+      "prompt": "All bloops are razzies. Some razzies are lazzies. Which statement must be true? Explain.",
       "answer": "Some bloops might be lazzies",
       "hint": false
     },
     {
       "id": "q2",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "If it rains, soccer is cancelled. Soccer was not cancelled. What can you conclude?",
-      "choices": [
-        "It did not rain",
-        "It rained",
-        "Soccer always runs",
-        "Nothing"
-      ],
+      "prompt": "If it rains, soccer is cancelled. Soccer was not cancelled. What can you conclude? Explain.",
       "answer": "It did not rain",
       "hint": false
     },
     {
       "id": "q3",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "Amy is taller than Ben. Ben is taller than Cal. Who is shortest?",
-      "choices": [
-        "Cal",
-        "Ben",
-        "Amy",
-        "Cannot tell"
-      ],
+      "prompt": "Amy is taller than Ben. Ben is taller than Cal. Who is shortest? Explain.",
       "answer": "Cal",
       "hint": false
     },
     {
       "id": "q4",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "Three friends each have a different pet: cat, dog, fish. Sam has the dog. Jo does not have the cat. What pet does Jo have?",
-      "choices": [
-        "Fish",
-        "Cat",
-        "Dog",
-        "Bird"
-      ],
+      "prompt": "Three friends each have a different pet: cat, dog, fish. Sam has the dog. Jo does not have the cat. What pet does Jo have? Show your reasoning.",
       "answer": "Fish",
       "hint": false
     },
     {
       "id": "q5",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "Exactly one of these statements is true: (A) 2+2=5  (B) 3×4=12  (C) 10−6=3. Which is true?",
-      "choices": [
-        "B",
-        "A",
-        "C",
-        "None"
-      ],
+      "prompt": "Exactly one statement is true: (A) 2+2=5  (B) 3×4=12  (C) 10−6=3. Which one? Explain.",
       "answer": "B",
       "hint": false
     },
     {
       "id": "q6",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "A number is doubled, then 3 is added. The result is 19. What was the number?",
-      "choices": [
-        "8",
-        "11",
-        "16",
-        "22"
-      ],
+      "prompt": "A number is doubled, then 3 is added. The result is 19. What was the number? Show your steps.",
       "answer": "8",
       "hint": false
     },
     {
       "id": "q7",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "Red, blue, and green pencils are in a row. Red is not next to green. Blue is in the middle. Which colors are on the ends?",
-      "choices": [
-        "Red and green",
-        "Red and blue",
-        "Blue and green",
-        "All red"
-      ],
+      "prompt": "Red, blue, and green pencils are in a row. Red is not next to green. Blue is in the middle. What colors are on the ends? Explain.",
       "answer": "Red and green",
       "hint": false
     },
     {
       "id": "q8",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "If today is Wednesday, what day will it be 10 days from now?",
-      "choices": [
-        "Saturday",
-        "Sunday",
-        "Friday",
-        "Monday"
-      ],
+      "prompt": "If today is Wednesday, what day will it be 10 days from now? Show how you counted.",
       "answer": "Saturday",
       "hint": false
     },
     {
       "id": "q9",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "Two kids tell you: One always lies, one always tells the truth. Alex says “I am the liar.” What is Alex?",
-      "choices": [
-        "The liar",
-        "The truth-teller",
-        "Both",
-        "Neither"
-      ],
+      "prompt": "One kid always lies, one always tells the truth. Alex says “I am the liar.” Is Alex the liar or the truth-teller? Explain.",
       "answer": "The liar",
       "hint": false
     },
     {
       "id": "q10",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "You need 3 tokens for a prize. You have 7 tokens. How many complete prizes can you get?",
-      "choices": [
-        "2",
-        "3",
-        "1",
-        "4"
-      ],
+      "prompt": "You need 3 tokens for a prize. You have 7 tokens. How many complete prizes can you get? Explain.",
       "answer": "2",
       "hint": false
     },
     {
       "id": "q11",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "A code uses A=1, B=2, C=3… What is the sum of the letter values in “BAD”?",
-      "choices": [
-        "6",
-        "7",
-        "8",
-        "5"
-      ],
+      "prompt": "A=1, B=2, C=3… What is the sum of the letter values in “BAD”? Show your work.",
       "answer": "7",
       "hint": false
     },
     {
       "id": "q12",
-      "type": "multiple_choice",
+      "type": "short_answer",
       "stars": 2,
-      "prompt": "Five students sit in a line. Maya is 2nd. Jordan is to Maya’s right. Who could be 1st?",
-      "choices": [
-        "Anyone except Maya",
-        "Only Jordan",
-        "Only Maya",
-        "No one"
-      ],
+      "prompt": "Five students sit in a line. Maya is 2nd. Jordan is to Maya’s right. Who could be 1st? Explain.",
       "answer": "Anyone except Maya",
       "hint": false
     }

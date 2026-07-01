@@ -941,8 +941,12 @@ def validate_worksheet_data(data: dict) -> list[str]:
     evaluation = _evaluation_from_sheet_data(data)
     if evaluation == "manual":
         subj = subject.strip().lower() if isinstance(subject, str) else "general"
-        if subj != "math":
-            errors.append("evaluation manual is only allowed for math worksheets.")
+        gifted = data.get("gifted_track") is True
+        if subj != "math" and not (gifted and subj == "general"):
+            errors.append(
+                "evaluation manual is only allowed for math worksheets, or general "
+                "Thinking Quest (gifted_track) worksheets."
+            )
 
     is_timed, time_limit = _timed_from_sheet_data(data)
     if data.get("timed") is True and not is_timed:
@@ -964,6 +968,8 @@ def validate_worksheet_data(data: dict) -> list[str]:
                 f"gifted_track_week is required (integer {GIFTED_TRACK_WEEK_MIN}–"
                 f"{GIFTED_TRACK_WEEK_MAX}) when gifted_track is true."
             )
+        if evaluation != "manual":
+            errors.append("gifted_track worksheets must use evaluation manual.")
     elif data.get("gifted_track_week") is not None:
         errors.append("gifted_track_week is only allowed when gifted_track is true.")
 
