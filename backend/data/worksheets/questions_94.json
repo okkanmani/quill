@@ -2,9 +2,10 @@
   "title": "Thinking Quest — Pattern Powers",
   "subject": "math",
   "gifted_track": true,
+  "gifted_track_week": 1,
   "content_badge": "Quest 1",
   "scratchpad": true,
-  "created_at": "2026-07-01T14:07:22.752441+00:00",
+  "created_at": "2026-07-01T14:21:47.970174+00:00",
   "questions": [
     {
       "id": "q1",

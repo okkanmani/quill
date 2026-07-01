@@ -29,3 +29,51 @@ export function filterLatestUndoneWorksheets(worksheets, now = Date.now()) {
       !ws.gifted_track,
   );
 }
+
+/** Quest number from content_badge (e.g. "Quest 3" → 3). */
+export function questTrackOrder(ws) {
+  const badge = String(ws?.content_badge || "").trim();
+  const match = /^Quest\s*(\d+)/i.exec(badge);
+  if (match) return parseInt(match[1], 10);
+  const idMatch = /^questions_(\d+)$/.exec(String(ws?.id || ""));
+  if (idMatch) return parseInt(idMatch[1], 10);
+  return Number.MAX_SAFE_INTEGER;
+}
+
+const GIFTED_TRACK_WEEK_MIN = 1;
+const GIFTED_TRACK_WEEK_MAX = 12;
+
+/** Program week for a Thinking Quest worksheet (API field or Quest-badge fallback). */
+export function giftedTrackWeek(ws) {
+  const raw = ws?.gifted_track_week;
+  if (typeof raw === "number" && raw >= GIFTED_TRACK_WEEK_MIN && raw <= GIFTED_TRACK_WEEK_MAX) {
+    return raw;
+  }
+  const quest = questTrackOrder(ws);
+  if (quest >= 1 && quest <= 6) return quest * 2 - 1;
+  if (quest === 7) return GIFTED_TRACK_WEEK_MAX;
+  return GIFTED_TRACK_WEEK_MAX + 1;
+}
+
+/** Thinking Quest path order within a week: Quest badge, then id. */
+export function sortGiftedTrackWorksheets(worksheets) {
+  return [...worksheets].sort(
+    (a, b) =>
+      questTrackOrder(a) - questTrackOrder(b) ||
+      String(a.id).localeCompare(String(b.id)),
+  );
+}
+
+/** Group gifted-track worksheets by week (ascending); empty weeks omitted. */
+export function groupGiftedTrackByWeek(worksheets) {
+  const byWeek = new Map();
+  for (const ws of worksheets) {
+    const week = giftedTrackWeek(ws);
+    if (week > GIFTED_TRACK_WEEK_MAX) continue;
+    if (!byWeek.has(week)) byWeek.set(week, []);
+    byWeek.get(week).push(ws);
+  }
+  return [...byWeek.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([week, items]) => [week, sortGiftedTrackWorksheets(items)]);
+}

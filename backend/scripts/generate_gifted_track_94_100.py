@@ -2,6 +2,7 @@
 """Generate Thinking Quest (gifted_track) worksheets 94–100."""
 
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -20,11 +21,19 @@ def mcq(qid, stars, prompt, choices, answer):
     }
 
 
+def start_week(weeks: str | int) -> int:
+    if isinstance(weeks, int):
+        return weeks
+    m = re.match(r"^(\d+)", str(weeks).strip())
+    return int(m.group(1)) if m else 1
+
+
 def sheet(ws_id, title, subject, quest, weeks, questions, **extra):
     data = {
         "title": title,
         "subject": subject,
         "gifted_track": True,
+        "gifted_track_week": start_week(weeks),
         "content_badge": quest,
         "scratchpad": True,
         "created_at": datetime.now(timezone.utc).isoformat(),

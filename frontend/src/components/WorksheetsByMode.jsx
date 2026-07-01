@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import WorksheetsBySubject from "./WorksheetsBySubject";
+import ThinkingQuestByWeek from "./ThinkingQuestByWeek";
 
 const SECTION_STYLES = {
   practice:
@@ -89,7 +90,8 @@ export default function WorksheetsByMode({ worksheets, onOpenWorksheet, renderSi
       {sections.map(({ key, title, description, items }) => {
         if (items.length === 0) return null;
         const isOpen = openModes.has(key);
-        const flatList = key === "enrichment" || key === "gifted";
+        const flatList = key === "enrichment";
+        const isThinkingQuest = key === "gifted";
         return (
           <div
             key={key}
@@ -118,12 +120,20 @@ export default function WorksheetsByMode({ worksheets, onOpenWorksheet, renderSi
             </button>
             {isOpen ? (
               <div className="p-3 bg-slate-50/40">
-                <WorksheetsBySubject
-                  worksheets={items}
-                  onOpenWorksheet={onOpenWorksheet}
-                  renderSideAction={renderSideAction}
-                  ungrouped={flatList}
-                />
+                {isThinkingQuest ? (
+                  <ThinkingQuestByWeek
+                    worksheets={items}
+                    onOpenWorksheet={onOpenWorksheet}
+                    renderSideAction={renderSideAction}
+                  />
+                ) : (
+                  <WorksheetsBySubject
+                    worksheets={items}
+                    onOpenWorksheet={onOpenWorksheet}
+                    renderSideAction={renderSideAction}
+                    ungrouped={flatList}
+                  />
+                )}
               </div>
             ) : null}
           </div>

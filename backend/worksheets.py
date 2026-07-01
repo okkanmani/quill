@@ -122,6 +122,56 @@ def _resolve_gifted_track(worksheet_id: str, row_flag) -> dict:
     return {"gifted_track": flag}
 
 
+GIFTED_TRACK_WEEK_MIN = 1
+GIFTED_TRACK_WEEK_MAX = 12
+_QUEST_BADGE_RE = re.compile(r"^Quest\s*(\d+)\s*$", re.I)
+
+
+def _parse_gifted_track_week_value(raw) -> int | None:
+    if raw is None or isinstance(raw, bool):
+        return None
+    if isinstance(raw, (int, float)):
+        w = int(raw)
+        if GIFTED_TRACK_WEEK_MIN <= w <= GIFTED_TRACK_WEEK_MAX:
+            return w
+    return None
+
+
+def _infer_gifted_track_week_from_quest_badge(data: dict) -> int | None:
+    badge = data.get("content_badge")
+    if not isinstance(badge, str):
+        return None
+    m = _QUEST_BADGE_RE.match(badge.strip())
+    if not m:
+        return None
+    n = int(m.group(1))
+    if 1 <= n <= 6:
+        return n * 2 - 1
+    if n == 7:
+        return GIFTED_TRACK_WEEK_MAX
+    return None
+
+
+def _gifted_track_week_from_sheet_data(data: dict) -> int | None:
+    if not _gifted_track_from_sheet_data(data):
+        return None
+    week = _parse_gifted_track_week_value(data.get("gifted_track_week"))
+    if week is not None:
+        return week
+    return _infer_gifted_track_week_from_quest_badge(data)
+
+
+def _resolve_gifted_track_week(worksheet_id: str, row_week) -> dict:
+    data = _load_bundled_sheet_data(worksheet_id)
+    if data:
+        week = _gifted_track_week_from_sheet_data(data)
+    else:
+        week = _parse_gifted_track_week_value(row_week)
+    if week is not None:
+        return {"gifted_track_week": week}
+    return {}
+
+
 def _resolve_timed(worksheet_id: str, row_is_timed, row_limit) -> dict:
     data = _load_bundled_sheet_data(worksheet_id)
     if data:
@@ -401,12 +451,13 @@ def _insert_worksheet(conn, ws_id: str, data: dict, path: Path) -> None:
     is_timed, time_limit = _timed_from_sheet_data(data)
     is_enrichment = _math_enrichment_from_sheet_data(data)
     is_gifted = _gifted_track_from_sheet_data(data)
+    gifted_week = _gifted_track_week_from_sheet_data(data) if is_gifted else None
     conn.execute(
         """
-        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, 1 if is_timed else 0, time_limit, 1 if is_enrichment else 0, 1 if is_gifted else 0),
+        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, 1 if is_timed else 0, time_limit, 1 if is_enrichment else 0, 1 if is_gifted else 0, gifted_week),
     )
     for order, q in enumerate(questions):
         conn.execute(
@@ -496,13 +547,13 @@ def list_worksheets(student_name: str | None = None) -> list:
                 """
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
                        t.learn_subject, t.learn_section, t.content_badge, t.evaluation,
-                       t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track,
+                       t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track, t.gifted_track_week,
                        t.last_score, t.last_total, t.last_status, t.draft_saved_at,
                        t.timed_locked, t.timed_started
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section, w.content_badge, w.evaluation,
-                           w.is_timed, w.time_limit_minutes, w.is_math_enrichment, w.is_gifted_track,
+                           w.is_timed, w.time_limit_minutes, w.is_math_enrichment, w.is_gifted_track, w.gifted_track_week,
                            (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
                            EXISTS (
                              SELECT 1 FROM results r
@@ -534,12 +585,12 @@ def list_worksheets(student_name: str | None = None) -> list:
                 """
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
                        t.learn_subject, t.learn_section, t.content_badge, t.evaluation,
-                       t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track,
+                       t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track, t.gifted_track_week,
                        t.last_score, t.last_total
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section, w.content_badge, w.evaluation,
-                           w.is_timed, w.time_limit_minutes, w.is_math_enrichment, w.is_gifted_track,
+                           w.is_timed, w.time_limit_minutes, w.is_math_enrichment, w.is_gifted_track, w.gifted_track_week,
                            (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
                            EXISTS (
                              SELECT 1 FROM results r
@@ -584,6 +635,7 @@ def list_worksheets(student_name: str | None = None) -> list:
             item.update(_resolve_timed(r["id"], r["is_timed"], r["time_limit_minutes"]))
             item.update(_resolve_math_enrichment(r["id"], r["is_math_enrichment"]))
             item.update(_resolve_gifted_track(r["id"], r["is_gifted_track"]))
+            item.update(_resolve_gifted_track_week(r["id"], r["gifted_track_week"]))
             draft_at = r["draft_saved_at"] if student_name is not None else None
             if draft_at and not item["done"] and not item.get("timed"):
                 item["has_draft"] = True
@@ -615,7 +667,7 @@ def get_worksheet(worksheet_id: str) -> dict | None:
     try:
         row = conn.execute(
             """
-            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track
+            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week
             FROM worksheets WHERE id = ?
             """,
             (worksheet_id,),
@@ -653,6 +705,7 @@ def get_worksheet(worksheet_id: str) -> dict | None:
         out.update(_resolve_timed(worksheet_id, row["is_timed"], row["time_limit_minutes"]))
         out.update(_resolve_math_enrichment(worksheet_id, row["is_math_enrichment"]))
         out.update(_resolve_gifted_track(worksheet_id, row["is_gifted_track"]))
+        out.update(_resolve_gifted_track_week(worksheet_id, row["gifted_track_week"]))
         return out
     finally:
         conn.close()
@@ -904,6 +957,15 @@ def validate_worksheet_data(data: dict) -> list[str]:
         subj = subject.strip().lower() if isinstance(subject, str) else "general"
         if subj != "math":
             errors.append("math_enrichment is only allowed for math worksheets.")
+
+    if data.get("gifted_track") is True:
+        if _parse_gifted_track_week_value(data.get("gifted_track_week")) is None:
+            errors.append(
+                f"gifted_track_week is required (integer {GIFTED_TRACK_WEEK_MIN}–"
+                f"{GIFTED_TRACK_WEEK_MAX}) when gifted_track is true."
+            )
+    elif data.get("gifted_track_week") is not None:
+        errors.append("gifted_track_week is only allowed when gifted_track is true.")
 
     seen_qids: set[str] = set()
     for i, q in enumerate(questions):
