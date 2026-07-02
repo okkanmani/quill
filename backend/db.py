@@ -94,6 +94,8 @@ def init_schema() -> None:
         if "gifted_track_week" not in cols:
             conn.execute("ALTER TABLE worksheets ADD COLUMN gifted_track_week INTEGER")
         result_cols = {row[1] for row in conn.execute("PRAGMA table_info(results)")}
+        if "duration_seconds" not in result_cols:
+            conn.execute("ALTER TABLE results ADD COLUMN duration_seconds INTEGER")
         if "status" not in result_cols:
             conn.execute(
                 "ALTER TABLE results ADD COLUMN status TEXT NOT NULL DEFAULT 'evaluated'"

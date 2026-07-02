@@ -549,7 +549,7 @@ def list_worksheets(student_name: str | None = None) -> list:
                        t.learn_subject, t.learn_section, t.content_badge, t.evaluation,
                        t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track, t.gifted_track_week,
                        t.last_score, t.last_total, t.last_status, t.draft_saved_at,
-                       t.timed_locked, t.timed_started
+                       t.timed_locked, t.timed_started, t.last_duration_seconds
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section, w.content_badge, w.evaluation,
@@ -568,6 +568,9 @@ def list_worksheets(student_name: str | None = None) -> list:
                            (SELECT r.status FROM results r
                             WHERE r.worksheet_id = w.id AND r.student = ?
                             ORDER BY r.submitted_at DESC LIMIT 1) AS last_status,
+                           (SELECT r.duration_seconds FROM results r
+                            WHERE r.worksheet_id = w.id AND r.student = ?
+                            ORDER BY r.submitted_at DESC LIMIT 1) AS last_duration_seconds,
                            (SELECT d.saved_at FROM worksheet_drafts d
                             WHERE d.worksheet_id = w.id AND d.student = ?) AS draft_saved_at,
                            (SELECT t.locked FROM timed_attempts t
@@ -578,7 +581,7 @@ def list_worksheets(student_name: str | None = None) -> list:
                 ) t
                 ORDER BY t.done ASC, t.sort_ts DESC, t.id DESC
                 """,
-                (student_name, student_name, student_name, student_name, student_name, student_name, student_name),
+                (student_name, student_name, student_name, student_name, student_name, student_name, student_name, student_name),
             ).fetchall()
         else:
             rows = conn.execute(
@@ -586,7 +589,8 @@ def list_worksheets(student_name: str | None = None) -> list:
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
                        t.learn_subject, t.learn_section, t.content_badge, t.evaluation,
                        t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track, t.gifted_track_week,
-                       t.last_score, t.last_total
+                       t.last_score, t.last_total, t.last_status, t.draft_saved_at,
+                       t.timed_locked, t.timed_started, t.last_duration_seconds
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section, w.content_badge, w.evaluation,
@@ -601,7 +605,8 @@ def list_worksheets(student_name: str | None = None) -> list:
                            CAST(NULL AS TEXT) AS last_status,
                            CAST(NULL AS TEXT) AS draft_saved_at,
                            CAST(NULL AS INTEGER) AS timed_locked,
-                           CAST(NULL AS INTEGER) AS timed_started
+                           CAST(NULL AS INTEGER) AS timed_started,
+                           CAST(NULL AS INTEGER) AS last_duration_seconds
                     FROM worksheets w
                 ) t
                 ORDER BY t.done ASC, t.sort_ts DESC, t.id DESC
@@ -630,20 +635,20 @@ def list_worksheets(student_name: str | None = None) -> list:
             item["is_latest"] = _is_latest_sort_ts(int(r["sort_ts"] or 0))
             ls_ = r["last_score"]
             lt_ = r["last_total"]
-            last_status = r["last_status"] or "evaluated"
+            last_status = (r["last_status"] if "last_status" in r.keys() else None) or "evaluated"
             item["evaluation"] = _resolve_evaluation(r["id"], r["evaluation"])
             item.update(_resolve_timed(r["id"], r["is_timed"], r["time_limit_minutes"]))
             item.update(_resolve_math_enrichment(r["id"], r["is_math_enrichment"]))
             item.update(_resolve_gifted_track(r["id"], r["is_gifted_track"]))
             item.update(_resolve_gifted_track_week(r["id"], r["gifted_track_week"]))
-            draft_at = r["draft_saved_at"] if student_name is not None else None
+            draft_at = r["draft_saved_at"] if "draft_saved_at" in r.keys() else None
             if draft_at and not item["done"] and not item.get("timed"):
                 item["has_draft"] = True
                 item["draft_saved_at"] = draft_at
             if student_name is not None and item.get("timed") and not item["done"]:
-                if r["timed_started"]:
+                if r["timed_started"] if "timed_started" in r.keys() else None:
                     item["timed_started"] = True
-                if r["timed_locked"]:
+                if r["timed_locked"] if "timed_locked" in r.keys() else None:
                     item["timed_locked"] = True
             if last_status:
                 item["last_status"] = last_status
@@ -656,6 +661,14 @@ def list_worksheets(student_name: str | None = None) -> list:
             ):
                 item["last_score"] = int(ls_)
                 item["last_total"] = int(lt_)
+            lds = r["last_duration_seconds"] if "last_duration_seconds" in r.keys() else None
+            if lds is not None and item.get("timed") and item["done"]:
+                try:
+                    ds = int(lds)
+                    if ds >= 0:
+                        item["last_duration_seconds"] = ds
+                except (TypeError, ValueError):
+                    pass
             out_list.append(item)
         return out_list
     finally:
@@ -1083,8 +1096,10 @@ def delete_worksheet(worksheet_id: str) -> bool:
     return deleted
 
 
-def clear_student_progress(student_name: str, worksheet_id: str) -> None:
-    conn = db.connect()
+def clear_student_progress(student_name: str, worksheet_id: str, conn=None) -> None:
+    own_conn = conn is None
+    if own_conn:
+        conn = db.connect()
     try:
         conn.execute(
             "DELETE FROM worksheet_drafts WHERE student = ? AND worksheet_id = ?",
@@ -1094,12 +1109,32 @@ def clear_student_progress(student_name: str, worksheet_id: str) -> None:
             "DELETE FROM timed_attempts WHERE student = ? AND worksheet_id = ?",
             (student_name, worksheet_id),
         )
-        conn.commit()
+        if own_conn:
+            conn.commit()
     except Exception:
-        conn.rollback()
+        if own_conn:
+            conn.rollback()
         raise
     finally:
-        conn.close()
+        if own_conn:
+            conn.close()
+
+
+def _timed_duration_from_attempt(conn, student_name: str, worksheet_id: str) -> int | None:
+    row = conn.execute(
+        """
+        SELECT started_at FROM timed_attempts
+        WHERE student = ? AND worksheet_id = ?
+        """,
+        (student_name, worksheet_id),
+    ).fetchone()
+    if not row or not row["started_at"]:
+        return None
+    started = datetime.fromisoformat(str(row["started_at"]).replace("Z", "+00:00"))
+    if started.tzinfo is None:
+        started = started.replace(tzinfo=timezone.utc)
+    elapsed = (datetime.now(timezone.utc) - started).total_seconds()
+    return max(0, int(round(elapsed)))
 
 
 def get_worksheet_draft(student_name: str, worksheet_id: str) -> dict | None:
@@ -1299,12 +1334,19 @@ def save_result(result: dict):
     elif score is None:
         score = 0
     evaluated_at = result.get("evaluated_at")
+    duration = result.get("duration_seconds")
     conn = db.connect()
     try:
+        if duration is None:
+            ws = get_worksheet(result["worksheet_id"])
+            if ws and ws.get("timed"):
+                duration = _timed_duration_from_attempt(
+                    conn, result["student"], result["worksheet_id"]
+                )
         conn.execute(
             """
-            INSERT INTO results (worksheet_id, title, student, score, total, answers, submitted_at, status, evaluated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO results (worksheet_id, title, student, score, total, answers, submitted_at, status, evaluated_at, duration_seconds)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 result["worksheet_id"],
@@ -1316,15 +1358,16 @@ def save_result(result: dict):
                 submitted_at,
                 status,
                 evaluated_at,
+                duration,
             ),
         )
+        clear_student_progress(result["student"], result["worksheet_id"], conn=conn)
         conn.commit()
     except Exception:
         conn.rollback()
         raise
     finally:
         conn.close()
-    clear_student_progress(result["student"], result["worksheet_id"])
 
 
 def _result_row_to_dict(r) -> dict:
@@ -1346,6 +1389,15 @@ def _result_row_to_dict(r) -> dict:
     }
     if r["evaluated_at"]:
         out["evaluated_at"] = r["evaluated_at"]
+    if "duration_seconds" in r.keys() and r["duration_seconds"] is not None:
+        try:
+            ds = int(r["duration_seconds"])
+            if ds >= 0:
+                out["duration_seconds"] = ds
+        except (TypeError, ValueError):
+            pass
+    if "is_timed" in r.keys() and int(r["is_timed"] or 0):
+        out["timed"] = True
     return out
 
 
@@ -1457,8 +1509,9 @@ def list_results(student_name: str) -> list:
         rows = conn.execute(
             """
             SELECT r.id, r.worksheet_id, r.title, r.student, r.score, r.total,
-                   r.answers, r.submitted_at, r.status, r.evaluated_at,
+                   r.answers, r.submitted_at, r.status, r.evaluated_at, r.duration_seconds,
                    COALESCE(NULLIF(TRIM(w.subject), ''), 'general') AS subject,
+                   COALESCE(w.is_timed, 0) AS is_timed,
                    COALESCE(w.evaluation, 'auto') AS evaluation
             FROM results r
             LEFT JOIN worksheets w ON w.id = r.worksheet_id

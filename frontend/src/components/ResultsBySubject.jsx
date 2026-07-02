@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import AdminResultGrader from "./AdminResultGrader";
 import { formatSubjectLabel } from "../subjectUtils";
 import { normalizeSubjectKey, subjectSortKey } from "../subjectUtils";
+import { formatDurationSeconds } from "../worksheetUtils";
 
 function sortResultsInGroup(a, b) {
   const pendingA = a.status === "pending" ? 1 : 0;
@@ -126,6 +127,11 @@ export default function ResultsBySubject({
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end sm:gap-2">
+                          {r.timed && r.duration_seconds != null ? (
+                            <span className="inline-flex text-xs font-semibold px-2.5 py-1 rounded-full bg-sky-50 text-sky-900 border border-sky-200 tabular-nums">
+                              Completed in {formatDurationSeconds(r.duration_seconds)}
+                            </span>
+                          ) : null}
                           <span
                             className={`inline-flex text-sm font-semibold px-3 py-1 rounded-full ${scoreBadgeClass(r)}`}
                           >

@@ -10,6 +10,7 @@ import {
   normalizeSubjectKey,
   subjectSortKey,
 } from "../subjectUtils";
+import { formatDurationSeconds } from "../worksheetUtils";
 
 function TimedPadlockStatus({ locked }) {
   const label = locked
@@ -119,6 +120,11 @@ function WorksheetRow({ ws, onOpenWorksheet, renderSideAction }) {
           {ws.timed && ws.time_limit_minutes ? (
             <span className="text-rose-700 text-xs font-semibold rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5">
               {ws.time_limit_minutes} min limit
+            </span>
+          ) : null}
+          {ws.timed && ws.last_duration_seconds != null ? (
+            <span className="text-sky-800 text-xs font-semibold rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 tabular-nums">
+              Completed in {formatDurationSeconds(ws.last_duration_seconds)}
             </span>
           ) : null}
           <span className="text-indigo-500 text-sm">
