@@ -19,7 +19,13 @@ function isSpecialTrack(ws) {
 /**
  * Practice, Timed, Math Enrichment, and Thinking Quest (gifted prep track).
  */
-export default function WorksheetsByMode({ worksheets, onOpenWorksheet, renderSideAction }) {
+export default function WorksheetsByMode({
+  worksheets,
+  onOpenWorksheet,
+  renderSideAction,
+  renderWeekAction,
+  giftedTrackUnlockedThroughWeek,
+}) {
   const practice = useMemo(
     () => worksheets.filter((ws) => !ws.timed && !isSpecialTrack(ws)),
     [worksheets],
@@ -125,6 +131,8 @@ export default function WorksheetsByMode({ worksheets, onOpenWorksheet, renderSi
                     worksheets={items}
                     onOpenWorksheet={onOpenWorksheet}
                     renderSideAction={renderSideAction}
+                    renderWeekAction={renderWeekAction}
+                    giftedTrackUnlockedThroughWeek={giftedTrackUnlockedThroughWeek}
                   />
                 ) : (
                   <WorksheetsBySubject

@@ -160,6 +160,27 @@ def init_schema() -> None:
         student_cols = {row[1] for row in conn.execute("PRAGMA table_info(students)")}
         if "grade" not in student_cols:
             conn.execute("ALTER TABLE students ADD COLUMN grade INTEGER")
+        if "gifted_track_unlocked_through_week" not in student_cols:
+            conn.execute(
+                "ALTER TABLE students ADD COLUMN gifted_track_unlocked_through_week INTEGER NOT NULL DEFAULT 1"
+            )
+        conn.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS student_worksheet_locks (
+                student TEXT NOT NULL,
+                worksheet_id TEXT NOT NULL,
+                locked INTEGER NOT NULL,
+                updated_at TEXT NOT NULL,
+                PRIMARY KEY (student, worksheet_id)
+            );
+            CREATE TABLE IF NOT EXISTS student_gifted_week_locks (
+                student TEXT NOT NULL,
+                week INTEGER NOT NULL,
+                updated_at TEXT NOT NULL,
+                PRIMARY KEY (student, week)
+            );
+            """
+        )
         from auth_users import migrate_legacy_from_auth_json
 
         migrate_legacy_from_auth_json(conn)

@@ -93,7 +93,14 @@ export async function getWorksheet(id) {
   const res = await fetch(`${BASE_URL}/worksheets/${id}`, {
     headers: authHeaders(),
   });
-  if (!res.ok) throw new Error("Failed to fetch worksheet");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to fetch worksheet";
+    const error = new Error(msg);
+    error.status = res.status;
+    throw error;
+  }
   return res.json();
 }
 
@@ -228,6 +235,68 @@ export async function unlockTimedWorksheet(worksheetId) {
     const err = await res.json().catch(() => ({}));
     const d = err.detail;
     const msg = typeof d === "string" ? d : "Failed to unlock";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function unlockGiftedTrackWeek(week) {
+  const res = await fetch(`${BASE_URL}/admin/gifted-track/unlock-week`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ week }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to unlock week";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function lockGiftedTrackWeek(week) {
+  const res = await fetch(`${BASE_URL}/admin/gifted-track/lock-week`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ week }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to lock week";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function setWorksheetAccessLock(worksheetId, locked) {
+  const res = await fetch(
+    `${BASE_URL}/admin/worksheets/${worksheetId}/access-lock`,
+    {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ locked }),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to update lock";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function clearWorksheetAccessLock(worksheetId) {
+  const res = await fetch(
+    `${BASE_URL}/admin/worksheets/${worksheetId}/clear-access-lock`,
+    { method: "POST", headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to clear lock";
     throw new Error(msg);
   }
   return res.json();

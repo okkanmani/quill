@@ -1,12 +1,36 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { deleteWorksheet, getWorksheets, logout, unlockTimedWorksheet, uploadWorksheet } from "../api";
+import { deleteWorksheet, getWorksheets, logout, unlockTimedWorksheet, uploadWorksheet, unlockGiftedTrackWeek, lockGiftedTrackWeek, setWorksheetAccessLock, clearWorksheetAccessLock } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import RecycleBinButton from "../components/RecycleBinButton";
+import WorksheetLockButton from "../components/WorksheetLockButton";
 import WorksheetsByMode from "../components/WorksheetsByMode";
+
+function adminWorksheetLockInfo(ws) {
+  if (ws.done) return null;
+  if (ws.access_locked) {
+    return {
+      locked: true,
+      variant: "access",
+      label: "Unlock worksheet access",
+    };
+  }
+  if (ws.timed && (ws.timed_locked || ws.timed_started)) {
+    return {
+      locked: true,
+      variant: "timed",
+      label: "Reset timed attempt",
+    };
+  }
+  return {
+    locked: false,
+    variant: "neutral",
+    label: `Lock ${ws.title}`,
+  };
+}
 
 export default function AdminWorksheets() {
   const navigate = useNavigate();
@@ -128,6 +152,86 @@ export default function AdminWorksheets() {
       setError(err.message || "Could not unlock worksheet.");
     }
   }
+
+  async function handleUnlockWeek(week) {
+    const ok = window.confirm(
+      `Unlock Week ${week} for this student? They will be able to start all Thinking Quest worksheets in this week.`,
+    );
+    if (!ok) return;
+    try {
+      await unlockGiftedTrackWeek(week);
+      setUploadMessage(`Unlocked Thinking Quest Week ${week}.`);
+      loadWorksheets();
+    } catch (err) {
+      setError(err.message || "Could not unlock week.");
+    }
+  }
+
+  async function handleLockWeek(week) {
+    const ok = window.confirm(
+      `Lock Week ${week} for this student? They will not be able to open worksheets in this week until you unlock it.`,
+    );
+    if (!ok) return;
+    try {
+      await lockGiftedTrackWeek(week);
+      setUploadMessage(`Locked Thinking Quest Week ${week}.`);
+      loadWorksheets();
+    } catch (err) {
+      setError(err.message || "Could not lock week.");
+    }
+  }
+
+  async function handleToggleWeekLock(week, locked) {
+    if (locked) await handleUnlockWeek(week);
+    else await handleLockWeek(week);
+  }
+
+  async function handleAllowAccess(ws) {
+    try {
+      if (ws.lock_reason === "admin") {
+        await clearWorksheetAccessLock(ws.id);
+      } else {
+        await setWorksheetAccessLock(ws.id, false);
+      }
+      setUploadMessage(`Unlocked access to “${ws.title}”.`);
+      loadWorksheets();
+    } catch (err) {
+      setError(err.message || "Could not unlock worksheet access.");
+    }
+  }
+
+  async function handleLockAccess(ws) {
+    const ok = window.confirm(
+      `Lock “${ws.title}” for this student? They will not be able to open it until you unlock it.`,
+    );
+    if (!ok) return;
+    try {
+      await setWorksheetAccessLock(ws.id, true);
+      setUploadMessage(`Locked “${ws.title}”.`);
+      loadWorksheets();
+    } catch (err) {
+      setError(err.message || "Could not lock worksheet.");
+    }
+  }
+
+  async function handleToggleLock(ws) {
+    const info = adminWorksheetLockInfo(ws);
+    if (!info) return;
+    if (info.locked) {
+      if (ws.timed && (ws.timed_locked || ws.timed_started)) {
+        await handleUnlock(ws);
+      } else if (ws.access_locked) {
+        await handleAllowAccess(ws);
+      }
+      return;
+    }
+    await handleLockAccess(ws);
+  }
+
+  const giftedTrackUnlockedThroughWeek = useMemo(() => {
+    const gifted = worksheets.find((ws) => ws.gifted_track);
+    return gifted?.gifted_track_unlocked_through_week ?? null;
+  }, [worksheets]);
 
   async function handleUpload(event) {
     const files = Array.from(event.target.files || []);
@@ -310,6 +414,19 @@ export default function AdminWorksheets() {
             <WorksheetsByMode
               worksheets={worksheets}
               onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
+              giftedTrackUnlockedThroughWeek={giftedTrackUnlockedThroughWeek}
+              renderWeekAction={(week, _items, info) => (
+                <WorksheetLockButton
+                  locked={info.weekLockedForAdmin}
+                  variant="access"
+                  label={
+                    info.weekLockedForAdmin
+                      ? `Unlock Week ${week} for this student`
+                      : `Lock Week ${week} for this student`
+                  }
+                  onClick={() => handleToggleWeekLock(week, info.weekLockedForAdmin)}
+                />
+              )}
               renderSideAction={(ws) => (
                 <div className="flex flex-row sm:flex-col shrink-0 gap-2 self-center sm:self-stretch items-center sm:items-stretch sm:w-11">
                   <label
@@ -325,15 +442,19 @@ export default function AdminWorksheets() {
                       className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                     />
                   </label>
-                  {ws.timed_locked ? (
-                    <button
-                      type="button"
-                      onClick={() => handleUnlock(ws)}
-                      className="inline-flex items-center justify-center bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 text-xs font-semibold rounded-xl px-2 py-1.5 sm:py-2 transition whitespace-nowrap"
-                    >
-                      Unlock
-                    </button>
-                  ) : null}
+                  {(() => {
+                    const lockInfo = adminWorksheetLockInfo(ws);
+                    if (!lockInfo) return null;
+                    return (
+                      <WorksheetLockButton
+                        locked={lockInfo.locked}
+                        variant={lockInfo.variant}
+                        label={lockInfo.label}
+                        disabled={deleting}
+                        onClick={() => handleToggleLock(ws)}
+                      />
+                    );
+                  })()}
                   <RecycleBinButton
                     onClick={() => handleDelete(ws)}
                     label={`Delete ${ws.title}`}

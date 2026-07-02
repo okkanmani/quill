@@ -11,71 +11,83 @@ import {
   subjectSortKey,
 } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
+import PadlockIcon from "./PadlockIcon";
 
-function TimedPadlockStatus({ locked }) {
-  const label = locked
-    ? "Locked — ask your teacher to unlock"
-    : "Ready to start";
+function worksheetLockState(ws) {
+  if (isWorksheetDone(ws)) return null;
+  if (ws.access_locked) {
+    return { kind: "access", reason: ws.lock_reason || "admin" };
+  }
+  if (ws.timed && ws.timed_locked) {
+    return { kind: "timed", reason: "abandoned" };
+  }
+  if (ws.timed && ws.timed_started) {
+    return { kind: "timed", reason: "active" };
+  }
+  return null;
+}
+
+function lockBadgeLabel(state) {
+  if (!state) return "";
+  if (state.kind === "access") {
+    return state.reason === "week"
+      ? "This week is locked — complete earlier weeks or ask your teacher"
+      : "Locked — ask your teacher to unlock";
+  }
+  if (state.reason === "abandoned") {
+    return "Locked — ask your teacher to unlock";
+  }
+  return "Timed worksheet in progress";
+}
+
+function LockedPadlockBadge({ state }) {
+  const label = lockBadgeLabel(state);
+  const accessStyle = state.kind === "access";
   return (
     <span
       className={`shrink-0 inline-flex items-center justify-center rounded-full border w-9 h-9 ${
-        locked
-          ? "bg-rose-100 border-rose-200 text-rose-700"
-          : "bg-slate-100 border-slate-200 text-slate-600"
+        accessStyle
+          ? "bg-violet-100 border-violet-200 text-violet-700"
+          : "bg-amber-100 border-amber-200 text-amber-800"
       }`}
       title={label}
       aria-label={label}
     >
-      {locked ? (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="w-[18px] h-[18px]"
-          aria-hidden
-        >
-          <rect x="5" y="11" width="14" height="10" rx="2" />
-          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-        </svg>
-      ) : (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="w-[18px] h-[18px]"
-          aria-hidden
-        >
-          <rect x="5" y="11" width="14" height="10" rx="2" />
-          <path d="M8 11V7a4 4 0 0 1 7.5-1" />
-        </svg>
-      )}
+      <PadlockIcon className="w-[18px] h-[18px]" />
     </span>
   );
 }
 
 function WorksheetRow({ ws, onOpenWorksheet, renderSideAction }) {
-  const showTimedPadlock = ws.timed && !isWorksheetDone(ws);
+  const lockState = worksheetLockState(ws);
+  const accessLocked = Boolean(ws.access_locked) && !isWorksheetDone(ws);
+  const timedBlocked = Boolean(ws.timed && ws.timed_locked && !isWorksheetDone(ws));
+
+  function handleOpen() {
+    if (accessLocked || timedBlocked) return;
+    onOpenWorksheet(ws.id);
+  }
+
   return (
     <div className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4">
       <div
         className={`flex-1 flex flex-col bg-white border rounded-2xl shadow-sm transition overflow-hidden ${
-          ws.timed_locked
-            ? "border-rose-300 opacity-90"
-            : "border-slate-200 hover:shadow-md hover:border-indigo-400"
+          accessLocked
+            ? "border-violet-300 opacity-90"
+            : timedBlocked
+              ? "border-amber-300 opacity-90"
+              : lockState?.kind === "timed"
+                ? "border-amber-200"
+                : "border-slate-200 hover:shadow-md hover:border-indigo-400"
         }`}
       >
         <button
           type="button"
-          onClick={() => onOpenWorksheet(ws.id)}
-          className="flex-1 p-5 text-left pb-3"
+          onClick={handleOpen}
+          disabled={accessLocked || timedBlocked}
+          className={`flex-1 p-5 text-left pb-3 ${
+            accessLocked || timedBlocked ? "cursor-not-allowed" : ""
+          }`}
         >
           <div className="flex items-start justify-between gap-3">
             <p className="text-slate-900 font-semibold text-lg">{ws.title}</p>
@@ -104,8 +116,8 @@ function WorksheetRow({ ws, onOpenWorksheet, renderSideAction }) {
                   Done
                 </span>
               </span>
-            ) : showTimedPadlock ? (
-              <TimedPadlockStatus locked={Boolean(ws.timed_locked)} />
+            ) : lockState ? (
+              <LockedPadlockBadge state={lockState} />
             ) : ws.has_draft ? (
               <span className="shrink-0 inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-semibold text-sky-900 border border-sky-200">
                 Saved progress

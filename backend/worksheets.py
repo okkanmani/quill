@@ -172,6 +172,206 @@ def _resolve_gifted_track_week(worksheet_id: str, row_week) -> dict:
     return {}
 
 
+def _validate_gifted_track_week(week: int) -> int:
+    if not isinstance(week, int) or week < GIFTED_TRACK_WEEK_MIN or week > GIFTED_TRACK_WEEK_MAX:
+        raise ValueError(
+            f"week must be an integer from {GIFTED_TRACK_WEEK_MIN} to {GIFTED_TRACK_WEEK_MAX}."
+        )
+    return week
+
+
+def get_gifted_track_unlocked_through_week(conn, student_name: str) -> int:
+    row = conn.execute(
+        "SELECT gifted_track_unlocked_through_week FROM students WHERE name = ?",
+        (student_name,),
+    ).fetchone()
+    if not row:
+        return GIFTED_TRACK_WEEK_MAX
+    try:
+        week = int(row["gifted_track_unlocked_through_week"])
+    except (TypeError, ValueError):
+        return GIFTED_TRACK_WEEK_MIN
+    return max(GIFTED_TRACK_WEEK_MIN, min(week, GIFTED_TRACK_WEEK_MAX))
+
+
+def get_worksheet_lock_overrides(conn, student_name: str) -> dict[str, int]:
+    rows = conn.execute(
+        "SELECT worksheet_id, locked FROM student_worksheet_locks WHERE student = ?",
+        (student_name,),
+    ).fetchall()
+    return {r["worksheet_id"]: int(r["locked"]) for r in rows}
+
+
+def get_gifted_track_locked_weeks(conn, student_name: str) -> set[int]:
+    rows = conn.execute(
+        "SELECT week FROM student_gifted_week_locks WHERE student = ?",
+        (student_name,),
+    ).fetchall()
+    out: set[int] = set()
+    for row in rows:
+        try:
+            w = int(row["week"])
+        except (TypeError, ValueError):
+            continue
+        if GIFTED_TRACK_WEEK_MIN <= w <= GIFTED_TRACK_WEEK_MAX:
+            out.add(w)
+    return out
+
+
+def compute_worksheet_access_lock(
+    worksheet_id: str,
+    gifted_track: bool,
+    gifted_track_week: int | None,
+    unlocked_through_week: int,
+    lock_overrides: dict[str, int],
+    locked_weeks: set[int] | None = None,
+) -> tuple[bool, str | None]:
+    if worksheet_id in lock_overrides:
+        override = lock_overrides[worksheet_id]
+        if override == 0:
+            return False, None
+        return True, "admin"
+    if gifted_track and gifted_track_week is not None:
+        if locked_weeks and gifted_track_week in locked_weeks:
+            return True, "week"
+        if gifted_track_week > unlocked_through_week:
+            return True, "week"
+    return False, None
+
+
+def assert_worksheet_accessible(student_name: str, worksheet_id: str) -> None:
+    ws = get_worksheet(worksheet_id)
+    if not ws:
+        raise ValueError("Worksheet not found.")
+    conn = db.connect()
+    try:
+        unlocked_through = get_gifted_track_unlocked_through_week(conn, student_name)
+        overrides = get_worksheet_lock_overrides(conn, student_name)
+        locked_weeks = get_gifted_track_locked_weeks(conn, student_name)
+        locked, reason = compute_worksheet_access_lock(
+            worksheet_id,
+            bool(ws.get("gifted_track")),
+            ws.get("gifted_track_week"),
+            unlocked_through,
+            overrides,
+            locked_weeks,
+        )
+    finally:
+        conn.close()
+    if locked:
+        if reason == "week":
+            raise ValueError(
+                "This Thinking Quest week is locked. Complete earlier weeks or ask your teacher to unlock it."
+            )
+        raise ValueError("This worksheet is locked. Ask your teacher to unlock it.")
+
+
+def unlock_gifted_track_week(student_name: str, week: int) -> int:
+    week = _validate_gifted_track_week(week)
+    conn = db.connect()
+    try:
+        current = get_gifted_track_unlocked_through_week(conn, student_name)
+        new_week = max(current, week)
+        cur = conn.execute(
+            "UPDATE students SET gifted_track_unlocked_through_week = ? WHERE name = ?",
+            (new_week, student_name),
+        )
+        if cur.rowcount == 0:
+            raise ValueError("Student not found.")
+        conn.execute(
+            "DELETE FROM student_gifted_week_locks WHERE student = ? AND week = ?",
+            (student_name, week),
+        )
+        conn.commit()
+        return new_week
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def lock_gifted_track_week(student_name: str, week: int) -> None:
+    week = _validate_gifted_track_week(week)
+    updated_at = datetime.now(timezone.utc).isoformat()
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT 1 FROM students WHERE name = ?",
+            (student_name,),
+        ).fetchone()
+        if not row:
+            raise ValueError("Student not found.")
+        conn.execute(
+            """
+            INSERT INTO student_gifted_week_locks (student, week, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(student, week) DO UPDATE SET
+              updated_at = excluded.updated_at
+            """,
+            (student_name, week, updated_at),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def set_worksheet_access_lock(
+    student_name: str, worksheet_id: str, *, locked: bool
+) -> None:
+    if not get_worksheet(worksheet_id):
+        raise ValueError("Worksheet not found.")
+    updated_at = datetime.now(timezone.utc).isoformat()
+    conn = db.connect()
+    try:
+        if locked:
+            conn.execute(
+                """
+                INSERT INTO student_worksheet_locks (student, worksheet_id, locked, updated_at)
+                VALUES (?, ?, 1, ?)
+                ON CONFLICT(student, worksheet_id) DO UPDATE SET
+                  locked = 1,
+                  updated_at = excluded.updated_at
+                """,
+                (student_name, worksheet_id, updated_at),
+            )
+        else:
+            conn.execute(
+                """
+                INSERT INTO student_worksheet_locks (student, worksheet_id, locked, updated_at)
+                VALUES (?, ?, 0, ?)
+                ON CONFLICT(student, worksheet_id) DO UPDATE SET
+                  locked = 0,
+                  updated_at = excluded.updated_at
+                """,
+                (student_name, worksheet_id, updated_at),
+            )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def clear_worksheet_access_lock(student_name: str, worksheet_id: str) -> None:
+    conn = db.connect()
+    try:
+        conn.execute(
+            "DELETE FROM student_worksheet_locks WHERE student = ? AND worksheet_id = ?",
+            (student_name, worksheet_id),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def _resolve_timed(worksheet_id: str, row_is_timed, row_limit) -> dict:
     data = _load_bundled_sheet_data(worksheet_id)
     if data:
@@ -613,6 +813,15 @@ def list_worksheets(student_name: str | None = None) -> list:
                 """
             ).fetchall()
         out_list = []
+        unlocked_through_week = None
+        lock_overrides: dict[str, int] = {}
+        locked_weeks: set[int] = set()
+        if student_name is not None:
+            unlocked_through_week = get_gifted_track_unlocked_through_week(
+                conn, student_name
+            )
+            lock_overrides = get_worksheet_lock_overrides(conn, student_name)
+            locked_weeks = get_gifted_track_locked_weeks(conn, student_name)
         for r in rows:
             item = {
                 "id": r["id"],
@@ -669,6 +878,24 @@ def list_worksheets(student_name: str | None = None) -> list:
                         item["last_duration_seconds"] = ds
                 except (TypeError, ValueError):
                     pass
+            if student_name is not None and unlocked_through_week is not None:
+                item["gifted_track_unlocked_through_week"] = unlocked_through_week
+                if item.get("gifted_track"):
+                    item["gifted_track_locked_weeks"] = sorted(locked_weeks)
+                    week_num = item.get("gifted_track_week")
+                    if isinstance(week_num, int):
+                        item["week_explicitly_locked"] = week_num in locked_weeks
+                access_locked, lock_reason = compute_worksheet_access_lock(
+                    r["id"],
+                    bool(item.get("gifted_track")),
+                    item.get("gifted_track_week"),
+                    unlocked_through_week,
+                    lock_overrides,
+                    locked_weeks,
+                )
+                if access_locked:
+                    item["access_locked"] = True
+                    item["lock_reason"] = lock_reason
             out_list.append(item)
         return out_list
     finally:
@@ -1158,6 +1385,7 @@ def get_worksheet_draft(student_name: str, worksheet_id: str) -> dict | None:
 
 
 def save_worksheet_draft(student_name: str, worksheet_id: str, answers: dict) -> dict:
+    assert_worksheet_accessible(student_name, worksheet_id)
     ws = get_worksheet(worksheet_id)
     if not ws:
         raise ValueError("Worksheet not found.")
@@ -1201,6 +1429,7 @@ def _timed_remaining_seconds(started_at_iso: str, limit_minutes: int) -> tuple[i
 def get_or_start_timed_session(
     student_name: str, worksheet_id: str, *, resume: bool = False
 ) -> dict:
+    assert_worksheet_accessible(student_name, worksheet_id)
     ws = get_worksheet(worksheet_id)
     if not ws:
         raise ValueError("Worksheet not found.")

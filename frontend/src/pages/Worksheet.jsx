@@ -58,6 +58,8 @@ export default function Worksheet() {
   const [remainingSeconds, setRemainingSeconds] = useState(null);
   const [timeExpired, setTimeExpired] = useState(false);
   const [timedLocked, setTimedLocked] = useState(false);
+  const [accessLocked, setAccessLocked] = useState(false);
+  const [accessLockMessage, setAccessLockMessage] = useState("");
   const autoSubmitStarted = useRef(false);
   const submittedRef = useRef(false);
   const timedActiveRef = useRef(false);
@@ -89,6 +91,8 @@ export default function Worksheet() {
   useEffect(() => {
     setLoading(true);
     setError("");
+    setAccessLocked(false);
+    setAccessLockMessage("");
     autoSubmitStarted.current = false;
 
     async function load() {
@@ -155,8 +159,16 @@ export default function Worksheet() {
         }
 
         setAnswers(initial);
-      } catch {
-        setError("Could not load worksheet.");
+      } catch (e) {
+        if (e.status === 423 && !isAdminPreview) {
+          setAccessLocked(true);
+          setAccessLockMessage(
+            e.message ||
+              "This worksheet is locked. Ask your teacher to unlock it.",
+          );
+        } else {
+          setError("Could not load worksheet.");
+        }
       } finally {
         setLoading(false);
       }
@@ -447,7 +459,7 @@ export default function Worksheet() {
     navigate("/");
   }
 
-  if (timedLocked && !isAdminPreview) {
+  if ((timedLocked || accessLocked) && !isAdminPreview) {
     return (
       <div className="min-h-screen bg-slate-50 p-6">
         <AppHeader onBack={handleBack} onLogout={handleLogoutNav} />
@@ -457,8 +469,9 @@ export default function Worksheet() {
           </p>
           <h2 className="text-xl font-semibold text-rose-950">Worksheet locked</h2>
           <p className="text-rose-900/80 text-sm mt-3 leading-relaxed">
-            You left this timed worksheet before submitting. Ask your teacher to
-            unlock it so you can try again.
+            {accessLocked
+              ? accessLockMessage
+              : "You left this timed worksheet before submitting. Ask your teacher to unlock it so you can try again."}
           </p>
           <button
             type="button"

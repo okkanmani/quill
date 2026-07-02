@@ -29,6 +29,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from learn_content import get_subject, list_learn_hub, list_subjects
 from worksheets import (
+    assert_worksheet_accessible,
+    clear_worksheet_access_lock,
     create_worksheet_from_builder,
     delete_worksheet,
     evaluate_result,
@@ -44,7 +46,10 @@ from worksheets import (
     save_result,
     save_worksheet_draft,
     seed_worksheets_from_json_if_empty,
+    set_worksheet_access_lock,
     student_has_result_for_worksheet,
+    lock_gifted_track_week,
+    unlock_gifted_track_week,
     unlock_timed_worksheet,
     upsert_worksheet_from_data,
     worksheet_id_from_filename,
@@ -178,6 +183,13 @@ def _student_context_name(payload: dict) -> str:
     raise HTTPException(status_code=403, detail="Invalid role")
 
 
+def _raise_if_access_locked(exc: ValueError) -> None:
+    msg = str(exc)
+    if "locked" in msg.lower():
+        raise HTTPException(status_code=423, detail=msg)
+    raise HTTPException(status_code=400, detail=msg)
+
+
 @app.post("/auth/student/login")
 def student_login(req: StudentLoginRequest):
     row = authenticate_student(req.name, req.password)
@@ -291,6 +303,11 @@ def get_worksheets(authorization: str = Header(...)):
 @app.get("/worksheets/{worksheet_id}")
 def get_worksheet_by_id(worksheet_id: str, authorization: str = Header(...)):
     payload = _payload(authorization)
+    if payload.get("role") == "student":
+        try:
+            assert_worksheet_accessible(payload["name"], worksheet_id)
+        except ValueError as exc:
+            _raise_if_access_locked(exc)
     worksheet = get_worksheet(worksheet_id)
     if not worksheet:
         raise HTTPException(status_code=404, detail="Worksheet not found")
@@ -457,6 +474,10 @@ def get_worksheet_draft_route(worksheet_id: str, authorization: str = Header(...
     payload = _payload(authorization)
     if payload.get("role") != "student":
         raise HTTPException(status_code=403, detail="Only students can load drafts")
+    try:
+        assert_worksheet_accessible(payload["name"], worksheet_id)
+    except ValueError as exc:
+        _raise_if_access_locked(exc)
     draft = get_worksheet_draft(payload["name"], worksheet_id)
     if not draft:
         raise HTTPException(status_code=404, detail="No saved progress")
@@ -473,7 +494,10 @@ def save_worksheet_draft_route(
     try:
         return save_worksheet_draft(payload["name"], worksheet_id, req.answers)
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        msg = str(exc)
+        if "locked" in msg.lower():
+            raise HTTPException(status_code=423, detail=msg)
+        raise HTTPException(status_code=400, detail=msg)
 
 
 @app.post("/worksheets/{worksheet_id}/timed-session")
@@ -536,6 +560,80 @@ def admin_unlock_timed_worksheet(worksheet_id: str, authorization: str = Header(
     return {"message": "Unlocked"}
 
 
+class UnlockGiftedWeekRequest(BaseModel):
+    week: int
+
+
+class WorksheetAccessLockRequest(BaseModel):
+    locked: bool
+
+
+class LockGiftedWeekRequest(BaseModel):
+    week: int
+
+
+@app.post("/admin/gifted-track/lock-week")
+def admin_lock_gifted_track_week(
+    req: LockGiftedWeekRequest, authorization: str = Header(...)
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    try:
+        lock_gifted_track_week(who, req.week)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"message": f"Week {req.week} locked."}
+
+
+@app.post("/admin/gifted-track/unlock-week")
+def admin_unlock_gifted_track_week(
+    req: UnlockGiftedWeekRequest, authorization: str = Header(...)
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    try:
+        through = unlock_gifted_track_week(who, req.week)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"message": f"Week {req.week} unlocked.", "gifted_track_unlocked_through_week": through}
+
+
+@app.post("/admin/worksheets/{worksheet_id}/access-lock")
+def admin_set_worksheet_access_lock(
+    worksheet_id: str,
+    req: WorksheetAccessLockRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    try:
+        if req.locked:
+            set_worksheet_access_lock(who, worksheet_id, locked=True)
+        else:
+            set_worksheet_access_lock(who, worksheet_id, locked=False)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"message": "Locked" if req.locked else "Unlocked"}
+
+
+@app.post("/admin/worksheets/{worksheet_id}/clear-access-lock")
+def admin_clear_worksheet_access_lock(
+    worksheet_id: str, authorization: str = Header(...)
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    clear_worksheet_access_lock(who, worksheet_id)
+    return {"message": "Access override cleared"}
+
+
 @app.post("/results")
 def submit_result(req: SubmitResultRequest, authorization: str = Header(...)):
     payload = _payload(authorization)
@@ -547,6 +645,10 @@ def submit_result(req: SubmitResultRequest, authorization: str = Header(...)):
         raise HTTPException(status_code=404, detail="Worksheet not found")
 
     student = context_student_name(payload)
+    try:
+        assert_worksheet_accessible(student, req.worksheet_id)
+    except ValueError as exc:
+        _raise_if_access_locked(exc)
     if student_has_result_for_worksheet(student, req.worksheet_id):
         raise HTTPException(status_code=409, detail="You already submitted this worksheet")
 
