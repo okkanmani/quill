@@ -213,6 +213,72 @@ def main():
         ],
     )
 
+    sheet(
+        "questions_102",
+        "Thinking Quest — Pattern Puzzles",
+        "math",
+        "Quest 1 · Set 3",
+        1,
+        [
+            sa("q1", 2, "What is the next number in 8, 15, 22, 29, …? Explain the rule you used.", "36"),
+            sa("q2", 2, "What is the next number in 5, 10, 20, 40, …? Show how you figured it out.", "80"),
+            sa("q3", 2, "What is the next number in 75, 70, 65, 60, …? Explain your pattern.", "55"),
+            sa("q4", 2, "Find the missing number: 4, 9, 16, 25, 36, ? Explain why it fits.", "49"),
+            sa("q5", 2, "What is 35 × 2? Show your mental math steps.", "70"),
+            sa("q6", 2, "What is 96 ÷ 8? Show your work.", "12"),
+            sa("q7", 2, "What is the next number in 10, 20, 30, 40, …? Name the pattern.", "50"),
+            sa("q8", 2, "What is the next number in 7, 14, 28, 56, …? Show how you figured it out.", "112"),
+            sa("q9", 2, "A rule is “add 8 each time,” starting at 4. What is the 6th term? Show the sequence.", "44"),
+            sa("q10", 2, "What is the next number in 1, 3, 6, 10, 15, …? Explain the pattern.", "21"),
+            sa("q11", 2, "Which number completes 60, 55, 50, …, 40? Explain.", "45"),
+            sa("q12", 2, "What is 499 + 1? Show how you know.", "500"),
+        ],
+    )
+
+    sheet(
+        "questions_103",
+        "Thinking Quest — Pattern Practice",
+        "math",
+        "Quest 1 · Set 4",
+        1,
+        [
+            sa("q1", 2, "What is the next number in 11, 18, 25, 32, …? Explain the rule you used.", "39"),
+            sa("q2", 2, "What is the next number in 6, 12, 24, 48, …? Show how you figured it out.", "96"),
+            sa("q3", 2, "What is the next number in 200, 195, 190, 185, …? Explain your pattern.", "180"),
+            sa("q4", 2, "Find the missing number: 5, 11, 19, 29, 41, ? Explain why it fits.", "55"),
+            sa("q5", 2, "What is 12 × 8? Show your mental math steps.", "96"),
+            sa("q6", 2, "What is 108 ÷ 9? Show your work.", "12"),
+            sa("q7", 2, "What is the next number in 1, 3, 5, 7, 9, …? Name the pattern.", "11"),
+            sa("q8", 2, "What is the next number in 20, 40, 80, 160, …? Show how you figured it out.", "320"),
+            sa("q9", 2, "A rule is “add 6 each time,” starting at 7. What is the 4th term? Show the sequence.", "25"),
+            sa("q10", 2, "What is the next number in 4, 5, 7, 10, 14, …? Explain the pattern.", "19"),
+            sa("q11", 2, "Which number completes 100, 90, 80, …, 60? Explain.", "70"),
+            sa("q12", 2, "What is 888 + 12? Show how you know.", "900"),
+        ],
+    )
+
+    sheet(
+        "questions_104",
+        "Thinking Quest — Pattern Pro",
+        "math",
+        "Quest 1 · Set 5",
+        1,
+        [
+            sa("q1", 2, "What is the next number in 13, 21, 29, 37, …? Explain the rule you used.", "45"),
+            sa("q2", 2, "What is the next number in 8, 16, 32, 64, …? Show how you figured it out.", "128"),
+            sa("q3", 2, "What is the next number in 250, 240, 230, 220, …? Explain your pattern.", "210"),
+            sa("q4", 2, "Find the missing number: 6, 12, 20, 30, 42, ? Explain why it fits.", "56"),
+            sa("q5", 2, "What is 16 × 5? Show your mental math steps.", "80"),
+            sa("q6", 2, "What is 121 ÷ 11? Show your work.", "11"),
+            sa("q7", 2, "What is the next number in 1, 2, 3, 5, 8, …? Name the pattern.", "13"),
+            sa("q8", 2, "What is the next number in 9, 18, 36, 72, …? Show how you figured it out.", "144"),
+            sa("q9", 2, "A rule is “add 11 each time,” starting at 2. What is the 5th term? Show the sequence.", "46"),
+            sa("q10", 2, "What is the next number in 7, 8, 10, 13, 17, …? Explain the pattern.", "22"),
+            sa("q11", 2, "Which number completes 90, 85, 80, …, 70? Explain.", "75"),
+            sa("q12", 2, "What is 1250 − 250? Show how you know.", "1000"),
+        ],
+    )
+
 
 if __name__ == "__main__":
     main()

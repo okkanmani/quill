@@ -33,6 +33,7 @@ from worksheets import (
     clear_worksheet_access_lock,
     create_worksheet_from_builder,
     delete_worksheet,
+    delete_result,
     evaluate_result,
     get_or_start_timed_session,
     get_student_result_for_worksheet,
@@ -711,6 +712,17 @@ def evaluate_submission(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return updated
+
+
+@app.delete("/results/{result_id}")
+def remove_result(result_id: int, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    if not delete_result(result_id, who):
+        raise HTTPException(status_code=404, detail="Result not found")
+    return {"message": "Result deleted"}
 
 
 @app.get("/results")

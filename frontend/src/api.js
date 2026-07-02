@@ -325,6 +325,20 @@ export async function getResults() {
   return res.json();
 }
 
+export async function deleteResult(resultId) {
+  const res = await fetch(`${BASE_URL}/results/${resultId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to delete result";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function listAdminStudents() {
   const res = await fetch(`${BASE_URL}/admin/students`, {
     headers: authHeaders(),

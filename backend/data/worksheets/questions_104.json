@@ -1,0 +1,108 @@
+{
+  "title": "Thinking Quest — Pattern Pro",
+  "subject": "math",
+  "gifted_track": true,
+  "gifted_track_week": 1,
+  "evaluation": "manual",
+  "content_badge": "Quest 1 · Set 5",
+  "scratchpad": true,
+  "created_at": "2026-07-02T21:10:00+00:00",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the next number in 13, 21, 29, 37, …? Explain the rule you used.",
+      "answer": "45",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the next number in 8, 16, 32, 64, …? Show how you figured it out.",
+      "answer": "128",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the next number in 250, 240, 230, 220, …? Explain your pattern.",
+      "answer": "210",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Find the missing number: 6, 12, 20, 30, 42, ? Explain why it fits.",
+      "answer": "56",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is 16 × 5? Show your mental math steps.",
+      "answer": "80",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is 121 ÷ 11? Show your work.",
+      "answer": "11",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the next number in 1, 2, 3, 5, 8, …? Name the pattern.",
+      "answer": "13",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the next number in 9, 18, 36, 72, …? Show how you figured it out.",
+      "answer": "144",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "A rule is “add 11 each time,” starting at 2. What is the 5th term? Show the sequence.",
+      "answer": "46",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the next number in 7, 8, 10, 13, 17, …? Explain the pattern.",
+      "answer": "22",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Which number completes 90, 85, 80, …, 70? Explain.",
+      "answer": "75",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is 1250 − 250? Show how you know.",
+      "answer": "1000",
+      "hint": false
+    }
+  ]
+}

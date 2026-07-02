@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import AdminResultGrader from "./AdminResultGrader";
+import RecycleBinButton from "./RecycleBinButton";
 import { formatSubjectLabel } from "../subjectUtils";
 import { normalizeSubjectKey, subjectSortKey } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
@@ -47,6 +48,8 @@ export default function ResultsBySubject({
   openIds,
   toggleAnswers,
   onResultEvaluated,
+  onDeleteResult,
+  deletingResultId,
 }) {
   const groups = useMemo(() => groupResults(results), [results]);
   const [openSubjects, setOpenSubjects] = useState(() => new Set());
@@ -102,16 +105,19 @@ export default function ResultsBySubject({
                   return (
                     <div
                       key={r.id}
-                      className={`bg-white border rounded-2xl shadow-sm overflow-hidden ${
-                        isPending ? "border-amber-300" : "border-slate-200"
-                      }`}
+                      className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4"
                     >
-                      <button
-                        type="button"
-                        onClick={() => toggleAnswers(r.id)}
-                        aria-expanded={expanded}
-                        className="w-full text-left p-5 hover:bg-slate-50/60 transition flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start sm:gap-4"
+                      <div
+                        className={`flex-1 bg-white border rounded-2xl shadow-sm overflow-hidden ${
+                          isPending ? "border-amber-300" : "border-slate-200"
+                        }`}
                       >
+                        <button
+                          type="button"
+                          onClick={() => toggleAnswers(r.id)}
+                          aria-expanded={expanded}
+                          className="w-full text-left p-5 hover:bg-slate-50/60 transition flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start sm:gap-4"
+                        >
                         <div className="min-w-0 flex-1">
                           <p className="text-slate-900 font-semibold text-lg">
                             {r.title || r.worksheet_id}
@@ -204,6 +210,16 @@ export default function ResultsBySubject({
                               </li>
                             ))}
                           </ul>
+                        </div>
+                      ) : null}
+                      </div>
+                      {onDeleteResult ? (
+                        <div className="flex shrink-0 self-center sm:self-stretch sm:items-stretch sm:w-11">
+                          <RecycleBinButton
+                            onClick={() => onDeleteResult(r)}
+                            label={`Delete result for ${r.title || r.worksheet_id}`}
+                            disabled={deletingResultId === r.id}
+                          />
                         </div>
                       ) : null}
                     </div>

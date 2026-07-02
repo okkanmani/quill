@@ -1759,3 +1759,22 @@ def list_results(student_name: str) -> list:
         return out
     finally:
         conn.close()
+
+
+def delete_result(result_id: int, student_name: str) -> bool:
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT id FROM results WHERE id = ? AND student = ?",
+            (result_id, student_name),
+        ).fetchone()
+        if not row:
+            return False
+        conn.execute("DELETE FROM results WHERE id = ?", (result_id,))
+        conn.commit()
+        return True
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
