@@ -1,0 +1,108 @@
+{
+  "title": "Thinking Quest — Pattern Paths",
+  "subject": "math",
+  "gifted_track": true,
+  "gifted_track_week": 1,
+  "evaluation": "manual",
+  "content_badge": "Quest 1 · Set 2",
+  "scratchpad": true,
+  "created_at": "2026-07-02T20:45:00+00:00",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the next number in 6, 12, 18, 24, …? Explain the rule you used.",
+      "answer": "30",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the next number in 4, 8, 16, 32, …? Show how you figured it out.",
+      "answer": "64",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the next number in 150, 140, 130, 120, …? Explain your pattern.",
+      "answer": "110",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Find the missing number: 3, 7, 13, 21, 31, ? Explain why it fits.",
+      "answer": "43",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is 40 × 5? Show your mental math steps.",
+      "answer": "200",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is 84 ÷ 7? Show your work.",
+      "answer": "12",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the next number in 1, 8, 27, 64, …? Name the pattern.",
+      "answer": "125",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the next number in 2, 6, 18, 54, …? Show how you figured it out.",
+      "answer": "162",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "A rule is “add 9 each time,” starting at 3. What is the 5th term? Show the sequence.",
+      "answer": "39",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is the next number in 5, 6, 8, 11, 15, …? Explain the pattern.",
+      "answer": "20",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "Which number completes 120, 110, 100, …, 80? Explain.",
+      "answer": "90",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "short_answer",
+      "stars": 2,
+      "prompt": "What is 750 + 250? Show how you know.",
+      "answer": "1000",
+      "hint": false
+    }
+  ]
+}

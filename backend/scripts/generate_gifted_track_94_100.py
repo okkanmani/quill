@@ -191,6 +191,28 @@ def main():
     ]
     sheet("questions_100", "Thinking Quest — Boss Level Review", "math", "Quest 7", "12", q100)
 
+    sheet(
+        "questions_101",
+        "Thinking Quest — Pattern Paths",
+        "math",
+        "Quest 1 · Set 2",
+        1,
+        [
+            sa("q1", 2, "What is the next number in 6, 12, 18, 24, …? Explain the rule you used.", "30"),
+            sa("q2", 2, "What is the next number in 4, 8, 16, 32, …? Show how you figured it out.", "64"),
+            sa("q3", 2, "What is the next number in 150, 140, 130, 120, …? Explain your pattern.", "110"),
+            sa("q4", 2, "Find the missing number: 3, 7, 13, 21, 31, ? Explain why it fits.", "43"),
+            sa("q5", 2, "What is 40 × 5? Show your mental math steps.", "200"),
+            sa("q6", 2, "What is 84 ÷ 7? Show your work.", "12"),
+            sa("q7", 2, "What is the next number in 1, 8, 27, 64, …? Name the pattern.", "125"),
+            sa("q8", 2, "What is the next number in 2, 6, 18, 54, …? Show how you figured it out.", "162"),
+            sa("q9", 2, "A rule is “add 9 each time,” starting at 3. What is the 5th term? Show the sequence.", "39"),
+            sa("q10", 2, "What is the next number in 5, 6, 8, 11, 15, …? Explain the pattern.", "20"),
+            sa("q11", 2, "Which number completes 120, 110, 100, …, 80? Explain.", "90"),
+            sa("q12", 2, "What is 750 + 250? Show how you know.", "1000"),
+        ],
+    )
+
 
 if __name__ == "__main__":
     main()
