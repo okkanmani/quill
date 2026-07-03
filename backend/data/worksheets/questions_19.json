@@ -1,5 +1,5 @@
 {
-  "title": "Math \u2013 Fractions & Multiplication/Division Word Problems",
+  "title": "Math – Fractions & Multiplication/Division Word Problems",
   "subject": "math",
   "learn_subject": "math",
   "learn_section": "number-fractions",
@@ -17,7 +17,8 @@
       ],
       "answer": "3/6",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q2",
@@ -31,7 +32,8 @@
       ],
       "answer": "2/3",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q3",
@@ -45,7 +47,8 @@
       ],
       "answer": "1",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q4",
@@ -59,7 +62,8 @@
       ],
       "answer": "2 1/4 cups",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q5",
@@ -73,7 +77,8 @@
       ],
       "answer": "3/5",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q6",
@@ -87,7 +92,8 @@
       ],
       "answer": "6 students",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q7",
@@ -101,12 +107,13 @@
       ],
       "answer": "3/8",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q8",
       "type": "multiple_choice",
-      "prompt": "What is 5 \u00d7 7?",
+      "prompt": "What is 5 × 7?",
       "choices": [
         "30",
         "42",
@@ -115,7 +122,8 @@
       ],
       "answer": "35",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q9",
@@ -129,7 +137,8 @@
       ],
       "answer": "8 crayons",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q10",
@@ -143,7 +152,8 @@
       ],
       "answer": "108 pages",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q11",
@@ -157,12 +167,13 @@
       ],
       "answer": "3 metres",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q12",
       "type": "multiple_choice",
-      "prompt": "What is 72 \u00f7 8?",
+      "prompt": "What is 72 ÷ 8?",
       "choices": [
         "7",
         "8",
@@ -171,12 +182,13 @@
       ],
       "answer": "9",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q13",
       "type": "multiple_choice",
-      "prompt": "Liam has 2/5 of a metre of tape. Ava has 1/10 of a metre. Together they have \u2014",
+      "prompt": "Liam has 2/5 of a metre of tape. Ava has 1/10 of a metre. Together they have —",
       "choices": [
         "1/2 metre",
         "3/10 metre",
@@ -185,7 +197,8 @@
       ],
       "answer": "1/2 metre",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q14",
@@ -199,7 +212,8 @@
       ],
       "answer": "2 litres",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     },
     {
       "id": "q15",
@@ -213,7 +227,8 @@
       ],
       "answer": "7 bags",
       "hint": true,
-      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps."
+      "hintContext": "Read the question carefully; draw a picture or use multiplication/division facts if it helps.",
+      "area": "numbers"
     }
   ]
 }

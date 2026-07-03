@@ -9,180 +9,300 @@
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 3/5 + 1/2?",
-      "choices": ["4/7", "11/10", "4/10", "8/10"],
+      "choices": [
+        "4/7",
+        "11/10",
+        "4/10",
+        "8/10"
+      ],
       "answer": "11/10",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q2",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 35% of 60?",
-      "choices": ["18", "21", "24", "35"],
+      "choices": [
+        "18",
+        "21",
+        "24",
+        "35"
+      ],
       "answer": "21",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q3",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Evaluate: 4 × (3 + 2)",
-      "choices": ["9", "14", "20", "24"],
+      "choices": [
+        "9",
+        "14",
+        "20",
+        "24"
+      ],
       "answer": "20",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q4",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A triangle has a base of 9 cm and a height of 4 cm. What is its area?",
-      "choices": ["13 cm²", "18 cm²", "36 cm²", "72 cm²"],
+      "choices": [
+        "13 cm²",
+        "18 cm²",
+        "36 cm²",
+        "72 cm²"
+      ],
       "answer": "18 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q5",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 5.6 − 2.34?",
-      "choices": ["3.22", "3.26", "3.32", "3.36"],
+      "choices": [
+        "3.22",
+        "3.26",
+        "3.32",
+        "3.36"
+      ],
       "answer": "3.26",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q6",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is the least common multiple (LCM) of 5 and 6?",
-      "choices": ["11", "30", "60", "1"],
+      "choices": [
+        "11",
+        "30",
+        "60",
+        "1"
+      ],
       "answer": "30",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q7",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Solve for x: 2x + 5 = 17",
-      "choices": ["x = 5", "x = 6", "x = 7", "x = 11"],
+      "choices": [
+        "x = 5",
+        "x = 6",
+        "x = 7",
+        "x = 11"
+      ],
       "answer": "x = 6",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q8",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Find the mean of: 10, 12, 8, 14",
-      "choices": ["10", "11", "12", "13"],
+      "choices": [
+        "10",
+        "11",
+        "12",
+        "13"
+      ],
       "answer": "11",
-      "hint": false
+      "hint": false,
+      "area": "data"
     },
     {
       "id": "q9",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 2/3 of 45?",
-      "choices": ["15", "25", "30", "35"],
+      "choices": [
+        "15",
+        "25",
+        "30",
+        "35"
+      ],
       "answer": "30",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q10",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A square has a side length of 9 cm. What is its perimeter?",
-      "choices": ["18 cm", "27 cm", "36 cm", "81 cm"],
+      "choices": [
+        "18 cm",
+        "27 cm",
+        "36 cm",
+        "81 cm"
+      ],
       "answer": "36 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q11",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "What is 2 1/4 + 1 5/6?",
-      "choices": ["3 11/12", "4 1/12", "49/12", "3 1/2"],
+      "choices": [
+        "3 11/12",
+        "4 1/12",
+        "49/12",
+        "3 1/2"
+      ],
       "answer": "49/12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q12",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "72 is 60% of what number?",
-      "choices": ["108", "115", "120", "132"],
+      "choices": [
+        "108",
+        "115",
+        "120",
+        "132"
+      ],
       "answer": "120",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q13",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Evaluate: (5² + 3) ÷ 2 × 4",
-      "choices": ["16", "32", "56", "64"],
+      "choices": [
+        "16",
+        "32",
+        "56",
+        "64"
+      ],
       "answer": "56",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q14",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "A trapezoid has parallel sides of 8 cm and 12 cm, and a height of 5 cm. What is its area?",
-      "choices": ["40 cm²", "50 cm²", "60 cm²", "100 cm²"],
+      "choices": [
+        "40 cm²",
+        "50 cm²",
+        "60 cm²",
+        "100 cm²"
+      ],
       "answer": "50 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q15",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "What is 4.8 × 2.5?",
-      "choices": ["10.2", "11.0", "12.0", "12.5"],
+      "choices": [
+        "10.2",
+        "11.0",
+        "12.0",
+        "12.5"
+      ],
       "answer": "12.0",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q16",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "What is the greatest common factor (GCF) of 42 and 70?",
-      "choices": ["7", "14", "21", "28"],
+      "choices": [
+        "7",
+        "14",
+        "21",
+        "28"
+      ],
       "answer": "14",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q17",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "What is 5/6 ÷ 3/4?",
-      "choices": ["5/8", "10/9", "15/24", "1/2"],
+      "choices": [
+        "5/8",
+        "10/9",
+        "15/24",
+        "1/2"
+      ],
       "answer": "10/9",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q18",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Solve for x: 4(x + 1) − 3 = 2x + 9",
-      "choices": ["x = 3", "x = 4", "x = 5", "x = 6"],
+      "choices": [
+        "x = 3",
+        "x = 4",
+        "x = 5",
+        "x = 6"
+      ],
       "answer": "x = 4",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q19",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "A ratio of red : blue : green paint is 3 : 4 : 5. If you mix 96 cups total, how many cups are green?",
-      "choices": ["32", "36", "40", "48"],
+      "choices": [
+        "32",
+        "36",
+        "40",
+        "48"
+      ],
       "answer": "40",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q20",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "A store marks up an item that cost $80 by 15%. What is the selling price?",
-      "choices": ["$88.00", "$90.00", "$92.00", "$95.00"],
+      "choices": [
+        "$88.00",
+        "$90.00",
+        "$92.00",
+        "$95.00"
+      ],
       "answer": "$92.00",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     }
   ]
 }

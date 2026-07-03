@@ -17,7 +17,8 @@
         "60°"
       ],
       "answer": "70°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q2",
@@ -30,7 +31,8 @@
         "62°"
       ],
       "answer": "52°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q3",
@@ -43,7 +45,8 @@
         "36 cm²"
       ],
       "answer": "54 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q4",
@@ -56,7 +59,8 @@
         "35 cm²"
       ],
       "answer": "35 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q5",
@@ -69,7 +73,8 @@
         "34 cm³"
       ],
       "answer": "60 cm³",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q6",
@@ -82,7 +87,8 @@
         "102°"
       ],
       "answer": "112°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q7",
@@ -95,7 +101,8 @@
         "Scalene but not right"
       ],
       "answer": "Scalene and right",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q8",
@@ -108,7 +115,8 @@
         "10"
       ],
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q9",
@@ -121,7 +129,8 @@
         "90°"
       ],
       "answer": "60°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q10",
@@ -134,7 +143,8 @@
         "4 cm"
       ],
       "answer": "5 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     }
   ]
 }

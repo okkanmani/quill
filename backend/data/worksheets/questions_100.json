@@ -14,7 +14,8 @@
       "stars": 2,
       "prompt": "What is 12 × 11? Show your work.",
       "answer": "132",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q2",
@@ -22,7 +23,8 @@
       "stars": 3,
       "prompt": "How many paths from A to B on a 2×2 grid (right and up only)? Explain with a sketch or list.",
       "answer": "6",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q3",
@@ -30,7 +32,8 @@
       "stars": 2,
       "prompt": "What is 2/3 + 1/6? Show your work.",
       "answer": "5/6",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q4",
@@ -38,7 +41,8 @@
       "stars": 3,
       "prompt": "Average of 5 numbers is 8. Four numbers average 7. What is the fifth number? Show work.",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q5",
@@ -46,7 +50,8 @@
       "stars": 2,
       "prompt": "Perimeter of a rectangle 12 m by 5 m? Show your work.",
       "answer": "34 m",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q6",
@@ -54,7 +59,8 @@
       "stars": 3,
       "prompt": "5 workers finish a job in 12 days. How long for 10 workers (same rate)? Explain.",
       "answer": "6 days",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q7",
@@ -62,7 +68,8 @@
       "stars": 2,
       "prompt": "What is 0.4 + 0.35? Show your work.",
       "answer": "0.75",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q8",
@@ -70,7 +77,8 @@
       "stars": 3,
       "prompt": "Using digits 2, 4, 6 once each, how many 3-digit numbers can you make? Explain.",
       "answer": "6",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q9",
@@ -78,7 +86,8 @@
       "stars": 2,
       "prompt": "What is 144 ÷ 16? Show your work.",
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q10",
@@ -86,7 +95,8 @@
       "stars": 3,
       "prompt": "A clock shows 4:00. What is the smaller angle between the hands? Explain.",
       "answer": "120°",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q11",
@@ -94,7 +104,8 @@
       "stars": 2,
       "prompt": "Ratio 3:2, total 25 parts. How many are in the larger share? Show work.",
       "answer": "15",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q12",
@@ -102,7 +113,8 @@
       "stars": 3,
       "prompt": "Think of a number, double it, add 10, get 30. What was the number? Show your steps.",
       "answer": "10",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     }
   ]
 }

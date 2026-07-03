@@ -17,7 +17,8 @@
         "k = 6"
       ],
       "answer": "k = 7",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q2",
@@ -30,7 +31,8 @@
         "3x − 6"
       ],
       "answer": "6x − 12",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q3",
@@ -43,7 +45,8 @@
         "31"
       ],
       "answer": "33",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q4",
@@ -56,7 +59,8 @@
         "m = 15"
       ],
       "answer": "m = 21",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q5",
@@ -69,7 +73,8 @@
         "3"
       ],
       "answer": "6",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q6",
@@ -82,7 +87,8 @@
         "P²"
       ],
       "answer": "P ÷ 4",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q7",
@@ -95,7 +101,8 @@
         "−17"
       ],
       "answer": "−3",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q8",
@@ -108,7 +115,8 @@
         "2x − 8 = 34"
       ],
       "answer": "2x + 8 = 34",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q9",
@@ -121,7 +129,8 @@
         "t = 5.5"
       ],
       "answer": "t = 3",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q10",
@@ -134,7 +143,8 @@
         "37"
       ],
       "answer": "40",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     }
   ]
 }

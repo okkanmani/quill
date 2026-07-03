@@ -11,7 +11,8 @@
       "stars": 2,
       "prompt": "Solve for n: n + 6 = 14",
       "answer": "8",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q2",
@@ -19,7 +20,8 @@
       "stars": 2,
       "prompt": "Solve for y: y − 4 = 11",
       "answer": "15",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q3",
@@ -27,7 +29,8 @@
       "stars": 2,
       "prompt": "Solve for p: 3p = 24",
       "answer": "8",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q4",
@@ -35,7 +38,8 @@
       "stars": 2,
       "prompt": "Solve for m: m + 9 = 20",
       "answer": "11",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q5",
@@ -43,7 +47,8 @@
       "stars": 2,
       "prompt": "Solve for x: x − 7 = 5",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q6",
@@ -51,7 +56,8 @@
       "stars": 2,
       "prompt": "Solve for n: 5n = 45",
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q7",
@@ -59,7 +65,8 @@
       "stars": 2,
       "prompt": "Each L-shape uses 2 matchsticks. How many matchsticks for 6 L-shapes?",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q8",
@@ -67,7 +74,8 @@
       "stars": 2,
       "prompt": "Write an expression for “5 more than a number t”.",
       "answer": "t + 5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q9",
@@ -75,7 +83,8 @@
       "stars": 2,
       "prompt": "If 2n + 1 = 13, what is n?",
       "answer": "6",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q10",
@@ -83,7 +92,8 @@
       "stars": 2,
       "prompt": "A number plus 10 equals 25. What is the number?",
       "answer": "15",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q11",
@@ -91,7 +101,8 @@
       "stars": 2,
       "prompt": "Solve for k: k + 18 = 30",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q12",
@@ -99,7 +110,8 @@
       "stars": 2,
       "prompt": "Solve for m: 4m = 36",
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q13",
@@ -107,7 +119,8 @@
       "stars": 2,
       "prompt": "Solve for w: w − 9 = 16",
       "answer": "25",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q14",
@@ -115,7 +128,8 @@
       "stars": 2,
       "prompt": "If 3x = 21, what is x?",
       "answer": "7",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q15",
@@ -123,7 +137,8 @@
       "stars": 2,
       "prompt": "Ravi had x rupees, spent ₹20, and has ₹35 left. What is x?",
       "answer": "55",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q16",
@@ -131,7 +146,8 @@
       "stars": 2,
       "prompt": "Solve for n: n + 13 = 13",
       "answer": "0",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q17",
@@ -139,7 +155,8 @@
       "stars": 2,
       "prompt": "7 more than y is 19. What is y?",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q18",
@@ -147,7 +164,8 @@
       "stars": 2,
       "prompt": "Solve for n: 2n = 18",
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q19",
@@ -155,7 +173,8 @@
       "stars": 2,
       "prompt": "Solve for x: x − 5 = 12",
       "answer": "17",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q20",
@@ -163,7 +182,8 @@
       "stars": 2,
       "prompt": "Solve for n: 6 + n = 25",
       "answer": "19",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     }
   ]
 }

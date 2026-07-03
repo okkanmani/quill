@@ -10,57 +10,99 @@
       "id": "q1",
       "type": "multiple_choice",
       "prompt": "A rectangular garden is 11 m long and 4 m wide. What is its perimeter?",
-      "choices": ["30 m", "44 m", "15 m", "28 m"],
+      "choices": [
+        "30 m",
+        "44 m",
+        "15 m",
+        "28 m"
+      ],
       "answer": "30 m",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q2",
       "type": "multiple_choice",
       "prompt": "A trapezoid has parallel sides of length 5 cm and 9 cm. The distance (height) between them is 4 cm. What is its area?",
-      "choices": ["56 cm²", "14 cm²", "28 cm²", "36 cm²"],
+      "choices": [
+        "56 cm²",
+        "14 cm²",
+        "28 cm²",
+        "36 cm²"
+      ],
       "answer": "28 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q3",
       "type": "multiple_choice",
       "prompt": "What is the sum of the interior angles of a pentagon?",
-      "choices": ["360°", "720°", "540°", "450°"],
+      "choices": [
+        "360°",
+        "720°",
+        "540°",
+        "450°"
+      ],
       "answer": "540°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q4",
       "type": "multiple_choice",
       "prompt": "A cube has edges of length 3 cm. What is the total surface area of the cube?",
-      "choices": ["27 cm²", "72 cm²", "54 cm²", "36 cm²"],
+      "choices": [
+        "27 cm²",
+        "72 cm²",
+        "54 cm²",
+        "36 cm²"
+      ],
       "answer": "54 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q5",
       "type": "multiple_choice",
       "prompt": "An angle measures 118°. What is the measure of its supplement?",
-      "choices": ["72°", "62°", "52°", "118°"],
+      "choices": [
+        "72°",
+        "62°",
+        "52°",
+        "118°"
+      ],
       "answer": "62°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q6",
       "type": "multiple_choice",
       "prompt": "How many millimetres are in 2.4 centimetres?",
-      "choices": ["240 mm", "24 mm", "2.4 mm", "0.24 mm"],
+      "choices": [
+        "240 mm",
+        "24 mm",
+        "2.4 mm",
+        "0.24 mm"
+      ],
       "answer": "24 mm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q7",
       "type": "multiple_choice",
       "prompt": "A right prism has a rectangular base 2 cm by 3 cm and a length (height of the prism) of 5 cm. What is its volume?",
-      "choices": ["10 cm³", "30 cm³", "25 cm³", "16 cm³"],
+      "choices": [
+        "10 cm³",
+        "30 cm³",
+        "25 cm³",
+        "16 cm³"
+      ],
       "answer": "30 cm³",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q8",
@@ -73,23 +115,36 @@
         "2 hours 5 minutes"
       ],
       "answer": "1 hour 35 minutes",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q9",
       "type": "multiple_choice",
       "prompt": "A square has a side length of 6 cm. What is its area?",
-      "choices": ["24 cm²", "36 cm²", "12 cm²", "18 cm²"],
+      "choices": [
+        "24 cm²",
+        "36 cm²",
+        "12 cm²",
+        "18 cm²"
+      ],
       "answer": "36 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q10",
       "type": "multiple_choice",
       "prompt": "Which capacity is closest to 1 litre?",
-      "choices": ["A teaspoon of water", "A large water bottle (about 1 L)", "A swimming pool", "A raindrop"],
+      "choices": [
+        "A teaspoon of water",
+        "A large water bottle (about 1 L)",
+        "A swimming pool",
+        "A raindrop"
+      ],
       "answer": "A large water bottle (about 1 L)",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     }
   ]
 }

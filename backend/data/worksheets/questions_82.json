@@ -11,7 +11,8 @@
       "stars": 2,
       "prompt": "What is 15 + 27?",
       "answer": "42",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q2",
@@ -19,7 +20,8 @@
       "stars": 2,
       "prompt": "What is 8 × 7?",
       "answer": "56",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q3",
@@ -27,7 +29,8 @@
       "stars": 2,
       "prompt": "Solve for x: x + 9 = 20",
       "answer": "11",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q4",
@@ -35,7 +38,8 @@
       "stars": 2,
       "prompt": "What is 3/4 of 24?",
       "answer": "18",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q5",
@@ -43,7 +47,8 @@
       "stars": 2,
       "prompt": "A rectangle is 6 cm long and 5 cm wide. What is its area in cm²?",
       "answer": "30",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     }
   ]
 }

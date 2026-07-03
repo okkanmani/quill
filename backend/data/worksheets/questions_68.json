@@ -16,7 +16,8 @@
         "4/5"
       ],
       "answer": "7/10",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q2",
@@ -30,7 +31,8 @@
         "24"
       ],
       "answer": "36",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q3",
@@ -44,7 +46,8 @@
         "14"
       ],
       "answer": "22",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q4",
@@ -58,7 +61,8 @@
         "18 cm"
       ],
       "answer": "9 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q5",
@@ -72,7 +76,8 @@
         "3.35"
       ],
       "answer": "2.85",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q6",
@@ -86,7 +91,8 @@
         "n = 43"
       ],
       "answer": "n = 43",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q7",
@@ -100,7 +106,8 @@
         "6/100"
       ],
       "answer": "3/5",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q8",
@@ -114,7 +121,8 @@
         "40 cm²"
       ],
       "answer": "48 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q9",
@@ -128,7 +136,8 @@
         "12"
       ],
       "answer": "24",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q10",
@@ -142,7 +151,8 @@
         "7.8"
       ],
       "answer": "7.8",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q11",
@@ -156,7 +166,8 @@
         "12"
       ],
       "answer": "8",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q12",
@@ -170,7 +181,8 @@
         "30"
       ],
       "answer": "25",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q13",
@@ -184,7 +196,8 @@
         "24"
       ],
       "answer": "24",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q14",
@@ -198,7 +211,8 @@
         "270°"
       ],
       "answer": "180°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q15",
@@ -212,7 +226,8 @@
         "8.4"
       ],
       "answer": "2.1",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q16",
@@ -226,7 +241,8 @@
         "y = 11"
       ],
       "answer": "y = 13",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q17",
@@ -254,7 +270,8 @@
         "125 cm³"
       ],
       "answer": "125 cm³",
-      "hint": false
+      "hint": false,
+      "area": "3d-geometry"
     },
     {
       "id": "q19",
@@ -268,7 +285,8 @@
         "20"
       ],
       "answer": "30",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q20",
@@ -282,7 +300,8 @@
         "96"
       ],
       "answer": "60",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     }
   ]
 }

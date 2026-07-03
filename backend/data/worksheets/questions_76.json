@@ -19,7 +19,8 @@
         "20"
       ],
       "answer": "18",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q2",
@@ -33,7 +34,8 @@
         "y − 3 = 10"
       ],
       "answer": "3x + 5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q3",
@@ -47,7 +49,8 @@
         "n = 11"
       ],
       "answer": "n = 13",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q4",
@@ -61,7 +64,8 @@
         "y = 24"
       ],
       "answer": "y = 21",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q5",
@@ -75,7 +79,8 @@
         "p = 6"
       ],
       "answer": "p = 9",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q6",
@@ -89,7 +94,8 @@
         "n + 30 = 12"
       ],
       "answer": "n + 12 = 30",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q7",
@@ -103,7 +109,8 @@
         "16"
       ],
       "answer": "8",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q8",
@@ -117,7 +124,8 @@
         "Divide by 5"
       ],
       "answer": "Divide by 5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q9",
@@ -131,7 +139,8 @@
         "x − 40 = 25"
       ],
       "answer": "x − 25 = 40",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q10",
@@ -145,7 +154,8 @@
         "m = 1"
       ],
       "answer": "m = 0",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q11",
@@ -159,7 +169,8 @@
         "y ÷ 5"
       ],
       "answer": "y + 5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q12",
@@ -173,7 +184,8 @@
         "x = 31"
       ],
       "answer": "x = 31",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q13",
@@ -187,7 +199,8 @@
         "10"
       ],
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q14",
@@ -201,7 +214,8 @@
         "7 − k = 2"
       ],
       "answer": "7 − k = 2",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q15",
@@ -215,7 +229,8 @@
         "n ÷ 2 = 24"
       ],
       "answer": "2n = 24",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     }
   ]
 }

@@ -14,7 +14,8 @@
       "stars": 2,
       "prompt": "What is the next number in 6, 12, 18, 24, …? Explain the rule you used.",
       "answer": "30",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q2",
@@ -22,7 +23,8 @@
       "stars": 2,
       "prompt": "What is the next number in 4, 8, 16, 32, …? Show how you figured it out.",
       "answer": "64",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q3",
@@ -30,7 +32,8 @@
       "stars": 2,
       "prompt": "What is the next number in 150, 140, 130, 120, …? Explain your pattern.",
       "answer": "110",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q4",
@@ -38,7 +41,8 @@
       "stars": 2,
       "prompt": "Find the missing number: 3, 7, 13, 21, 31, ? Explain why it fits.",
       "answer": "43",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q5",
@@ -46,7 +50,8 @@
       "stars": 2,
       "prompt": "What is 40 × 5? Show your mental math steps.",
       "answer": "200",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q6",
@@ -54,7 +59,8 @@
       "stars": 2,
       "prompt": "What is 84 ÷ 7? Show your work.",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q7",
@@ -62,7 +68,8 @@
       "stars": 2,
       "prompt": "What is the next number in 1, 8, 27, 64, …? Name the pattern.",
       "answer": "125",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q8",
@@ -70,7 +77,8 @@
       "stars": 2,
       "prompt": "What is the next number in 2, 6, 18, 54, …? Show how you figured it out.",
       "answer": "162",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q9",
@@ -78,7 +86,8 @@
       "stars": 2,
       "prompt": "A rule is “add 9 each time,” starting at 3. What is the 5th term? Show the sequence.",
       "answer": "39",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q10",
@@ -86,7 +95,8 @@
       "stars": 2,
       "prompt": "What is the next number in 5, 6, 8, 11, 15, …? Explain the pattern.",
       "answer": "20",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q11",
@@ -94,7 +104,8 @@
       "stars": 2,
       "prompt": "Which number completes 120, 110, 100, …, 80? Explain.",
       "answer": "90",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q12",
@@ -102,7 +113,8 @@
       "stars": 2,
       "prompt": "What is 750 + 250? Show how you know.",
       "answer": "1000",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     }
   ]
 }

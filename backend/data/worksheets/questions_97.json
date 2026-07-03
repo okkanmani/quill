@@ -14,7 +14,8 @@
       "stars": 2,
       "prompt": "A square has perimeter 32 cm. What is its area? Show your work.",
       "answer": "64 cm²",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q2",
@@ -22,7 +23,8 @@
       "stars": 2,
       "prompt": "A rectangle is 9 cm by 4 cm. What is its area? Show your work.",
       "answer": "36 cm²",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q3",
@@ -30,7 +32,8 @@
       "stars": 2,
       "prompt": "How many lines of symmetry does a square have? Explain or sketch.",
       "answer": "4",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q4",
@@ -38,7 +41,8 @@
       "stars": 2,
       "prompt": "A triangle has base 10 cm and height 6 cm. What is its area? Show the formula and answer.",
       "answer": "30 cm²",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q5",
@@ -46,7 +50,8 @@
       "stars": 2,
       "prompt": "How many 1 cm cubes fit in a box 3×4×2 cm? Show your work.",
       "answer": "24",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q6",
@@ -54,7 +59,8 @@
       "stars": 2,
       "prompt": "An L-shape uses two rectangles 4×2 and 2×3 (no overlap). What is the total area? Show how.",
       "answer": "14 cm²",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q7",
@@ -62,7 +68,8 @@
       "stars": 2,
       "prompt": "A circle’s diameter is 10 cm. What is its radius? Explain.",
       "answer": "5 cm",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q8",
@@ -70,7 +77,8 @@
       "stars": 2,
       "prompt": "You fold a square sheet in half twice and cut one small hole. How many holes appear when unfolded? Explain.",
       "answer": "4 holes when unfolded",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q9",
@@ -78,7 +86,8 @@
       "stars": 2,
       "prompt": "An equilateral triangle has side 7 cm. What is its perimeter? Show your work.",
       "answer": "21 cm",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q10",
@@ -86,7 +95,8 @@
       "stars": 2,
       "prompt": "A room is 5 m by 4 m. How many 1 m² tiles cover the floor? Show your work.",
       "answer": "20",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q11",
@@ -94,7 +104,8 @@
       "stars": 2,
       "prompt": "Which 3D shape has 6 faces that are all squares? Name it and explain.",
       "answer": "Cube",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q12",
@@ -102,7 +113,8 @@
       "stars": 2,
       "prompt": "Two identical squares (side 6 cm) overlap in a 2×2 square. What is the total shaded area (no double counting)? Show work.",
       "answer": "68 cm²",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     }
   ]
 }

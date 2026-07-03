@@ -9,124 +9,207 @@
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 2/3 + 1/4?",
-      "choices": ["3/7", "11/12", "3/12", "5/6"],
+      "choices": [
+        "3/7",
+        "11/12",
+        "3/12",
+        "5/6"
+      ],
       "answer": "11/12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q2",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 45% of 80?",
-      "choices": ["32", "36", "40", "45"],
+      "choices": [
+        "32",
+        "36",
+        "40",
+        "45"
+      ],
       "answer": "36",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q3",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Evaluate: 18 − 3 × 4 + 2",
-      "choices": ["8", "10", "14", "62"],
+      "choices": [
+        "8",
+        "10",
+        "14",
+        "62"
+      ],
       "answer": "8",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q4",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A rectangle is 14 cm long and 6 cm wide. What is its perimeter?",
-      "choices": ["20 cm", "40 cm", "42 cm", "84 cm"],
+      "choices": [
+        "20 cm",
+        "40 cm",
+        "42 cm",
+        "84 cm"
+      ],
       "answer": "40 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q5",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 7.25 − 3.8?",
-      "choices": ["3.35", "3.45", "3.55", "4.45"],
+      "choices": [
+        "3.35",
+        "3.45",
+        "3.55",
+        "4.45"
+      ],
       "answer": "3.45",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q6",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Solve for n: n + 17 = 42",
-      "choices": ["n = 23", "n = 25", "n = 27", "n = 59"],
+      "choices": [
+        "n = 23",
+        "n = 25",
+        "n = 27",
+        "n = 59"
+      ],
       "answer": "n = 25",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q7",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Which fraction is equivalent to 0.75?",
-      "choices": ["3/4", "7/5", "75/1000", "1/4"],
+      "choices": [
+        "3/4",
+        "7/5",
+        "75/1000",
+        "1/4"
+      ],
       "answer": "3/4",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q8",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A parallelogram has a base of 10 cm and a height of 7 cm. What is its area?",
-      "choices": ["17 cm²", "34 cm²", "70 cm²", "140 cm²"],
+      "choices": [
+        "17 cm²",
+        "34 cm²",
+        "70 cm²",
+        "140 cm²"
+      ],
       "answer": "70 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q9",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is the least common multiple (LCM) of 6 and 8?",
-      "choices": ["12", "24", "48", "14"],
+      "choices": [
+        "12",
+        "24",
+        "48",
+        "14"
+      ],
       "answer": "24",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q10",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A bag has 5 red marbles and 3 blue marbles. What fraction of the marbles are red?",
-      "choices": ["3/8", "5/8", "5/3", "8/5"],
+      "choices": [
+        "3/8",
+        "5/8",
+        "5/3",
+        "8/5"
+      ],
       "answer": "5/8",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q11",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 1 2/5 + 2 1/3?",
-      "choices": ["3 11/15", "3 3/8", "4 1/15", "3 1/2"],
+      "choices": [
+        "3 11/15",
+        "3 3/8",
+        "4 1/15",
+        "3 1/2"
+      ],
       "answer": "3 11/15",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q12",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A shirt costs $32. It is discounted by 25%. What is the sale price?",
-      "choices": ["$8.00", "$24.00", "$25.00", "$28.00"],
+      "choices": [
+        "$8.00",
+        "$24.00",
+        "$25.00",
+        "$28.00"
+      ],
       "answer": "$24.00",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q13",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Evaluate: 4² − 3 × 5",
-      "choices": ["1", "7", "11", "31"],
+      "choices": [
+        "1",
+        "7",
+        "11",
+        "31"
+      ],
       "answer": "1",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q14",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A train travels 180 km in 3 hours at a constant speed. How far will it travel in 5 hours at the same speed?",
-      "choices": ["240 km", "300 km", "360 km", "540 km"],
+      "choices": [
+        "240 km",
+        "300 km",
+        "360 km",
+        "540 km"
+      ],
       "answer": "300 km",
       "hint": false
     },
@@ -135,54 +218,90 @@
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 3.6 × 0.5?",
-      "choices": ["1.8", "18", "0.18", "3.1"],
+      "choices": [
+        "1.8",
+        "18",
+        "0.18",
+        "3.1"
+      ],
       "answer": "1.8",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q16",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Solve for y: 3y − 8 = 16",
-      "choices": ["y = 6", "y = 8", "y = 24", "y = 4"],
+      "choices": [
+        "y = 6",
+        "y = 8",
+        "y = 24",
+        "y = 4"
+      ],
       "answer": "y = 8",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q17",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 5/8 of 64?",
-      "choices": ["8", "32", "40", "48"],
+      "choices": [
+        "8",
+        "32",
+        "40",
+        "48"
+      ],
       "answer": "40",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q18",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A cube has edges of 4 cm. What is its volume?",
-      "choices": ["12 cm³", "16 cm³", "48 cm³", "64 cm³"],
+      "choices": [
+        "12 cm³",
+        "16 cm³",
+        "48 cm³",
+        "64 cm³"
+      ],
       "answer": "64 cm³",
-      "hint": false
+      "hint": false,
+      "area": "3d-geometry"
     },
     {
       "id": "q19",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "The ratio of cats to dogs at a shelter is 4 : 5. If there are 36 cats, how many dogs are there?",
-      "choices": ["40", "45", "48", "54"],
+      "choices": [
+        "40",
+        "45",
+        "48",
+        "54"
+      ],
       "answer": "45",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q20",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Round 4.863 to the nearest tenth.",
-      "choices": ["4.8", "4.86", "4.9", "5.0"],
+      "choices": [
+        "4.8",
+        "4.86",
+        "4.9",
+        "5.0"
+      ],
       "answer": "4.9",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     }
   ]
 }

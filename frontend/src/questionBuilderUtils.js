@@ -28,6 +28,7 @@ export function emptyMcqQuestion() {
     prompt: "",
     choices: ["", "", "", ""],
     correctIndex: 0,
+    area: "",
   };
 }
 
@@ -35,6 +36,7 @@ export function emptyShortAnswerQuestion() {
   return {
     prompt: "",
     answer: "",
+    area: "",
   };
 }
 
@@ -113,15 +115,17 @@ export function builderPayload({
     timed,
     time_limit_minutes: timed ? Number(timeLimitMinutes) : null,
     questions: questions.map((q) => {
+      const base = { prompt: q.prompt.trim() };
+      if (q.area?.trim()) base.area = q.area.trim().toLowerCase();
       if (format === "multiple_choice") {
         return {
-          prompt: q.prompt.trim(),
+          ...base,
           choices: q.choices.map((c) => c.trim()),
           correct_index: q.correctIndex,
         };
       }
       return {
-        prompt: q.prompt.trim(),
+        ...base,
         answer: q.answer.trim(),
       };
     }),

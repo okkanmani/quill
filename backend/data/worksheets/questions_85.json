@@ -11,7 +11,8 @@
       "stars": 3,
       "prompt": "Solve for x: 2x + 5 = 19",
       "answer": "7",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q2",
@@ -19,7 +20,8 @@
       "stars": 3,
       "prompt": "Solve for y: 3y − 7 = 14",
       "answer": "7",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q3",
@@ -27,7 +29,8 @@
       "stars": 3,
       "prompt": "If 4n − 3 = 25, what is n?",
       "answer": "7",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q4",
@@ -35,7 +38,8 @@
       "stars": 3,
       "prompt": "Solve for m: 5(m + 2) = 35",
       "answer": "5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q5",
@@ -43,7 +47,8 @@
       "stars": 3,
       "prompt": "A number is doubled and 6 is added to get 30. What is the number?",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q6",
@@ -51,7 +56,8 @@
       "stars": 3,
       "prompt": "Solve for p: p/3 + 4 = 9",
       "answer": "15",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q7",
@@ -59,7 +65,8 @@
       "stars": 3,
       "prompt": "The rule for matchsticks is 3n + 1. How many matchsticks for n = 8?",
       "answer": "25",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q8",
@@ -67,7 +74,8 @@
       "stars": 3,
       "prompt": "If 2x + 3 = x + 12, what is x?",
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q9",
@@ -75,7 +83,8 @@
       "stars": 3,
       "prompt": "Solve for k: 7 − k = 2",
       "answer": "5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q10",
@@ -83,7 +92,8 @@
       "stars": 3,
       "prompt": "A book costs ₹x. After a ₹45 discount it costs ₹155. What is x?",
       "answer": "200",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q11",
@@ -91,7 +101,8 @@
       "stars": 3,
       "prompt": "Write the solution of 4x = 2x + 10",
       "answer": "5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q12",
@@ -99,7 +110,8 @@
       "stars": 3,
       "prompt": "If 3(n − 2) = 18, what is n?",
       "answer": "8",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q13",
@@ -107,7 +119,8 @@
       "stars": 3,
       "prompt": "Sum of a number and twice the number is 27. What is the number?",
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q14",
@@ -115,7 +128,8 @@
       "stars": 3,
       "prompt": "Solve for t: 2t + 8 = 3t − 1",
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q15",
@@ -123,7 +137,8 @@
       "stars": 3,
       "prompt": "Perimeter of a square is 4s. If s = 11, what is the perimeter?",
       "answer": "44",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     }
   ]
 }

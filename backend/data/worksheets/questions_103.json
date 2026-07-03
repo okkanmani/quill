@@ -14,7 +14,8 @@
       "stars": 2,
       "prompt": "What is the next number in 11, 18, 25, 32, …? Explain the rule you used.",
       "answer": "39",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q2",
@@ -22,7 +23,8 @@
       "stars": 2,
       "prompt": "What is the next number in 6, 12, 24, 48, …? Show how you figured it out.",
       "answer": "96",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q3",
@@ -30,7 +32,8 @@
       "stars": 2,
       "prompt": "What is the next number in 200, 195, 190, 185, …? Explain your pattern.",
       "answer": "180",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q4",
@@ -38,7 +41,8 @@
       "stars": 2,
       "prompt": "Find the missing number: 5, 11, 19, 29, 41, ? Explain why it fits.",
       "answer": "55",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q5",
@@ -46,7 +50,8 @@
       "stars": 2,
       "prompt": "What is 12 × 8? Show your mental math steps.",
       "answer": "96",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q6",
@@ -54,7 +59,8 @@
       "stars": 2,
       "prompt": "What is 108 ÷ 9? Show your work.",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q7",
@@ -62,7 +68,8 @@
       "stars": 2,
       "prompt": "What is the next number in 1, 3, 5, 7, 9, …? Name the pattern.",
       "answer": "11",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q8",
@@ -70,7 +77,8 @@
       "stars": 2,
       "prompt": "What is the next number in 20, 40, 80, 160, …? Show how you figured it out.",
       "answer": "320",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q9",
@@ -78,7 +86,8 @@
       "stars": 2,
       "prompt": "A rule is “add 6 each time,” starting at 7. What is the 4th term? Show the sequence.",
       "answer": "25",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q10",
@@ -86,7 +95,8 @@
       "stars": 2,
       "prompt": "What is the next number in 4, 5, 7, 10, 14, …? Explain the pattern.",
       "answer": "19",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q11",
@@ -94,7 +104,8 @@
       "stars": 2,
       "prompt": "Which number completes 100, 90, 80, …, 60? Explain.",
       "answer": "70",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q12",
@@ -102,7 +113,8 @@
       "stars": 2,
       "prompt": "What is 888 + 12? Show how you know.",
       "answer": "900",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     }
   ]
 }

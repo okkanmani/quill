@@ -14,7 +14,8 @@
       "stars": 2,
       "prompt": "What is the next number in 4, 9, 14, 19, …? Explain the rule you used.",
       "answer": "24",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q2",
@@ -22,7 +23,8 @@
       "stars": 2,
       "prompt": "What is the next number in 3, 6, 12, 24, …? Show how you figured it out.",
       "answer": "48",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q3",
@@ -30,7 +32,8 @@
       "stars": 2,
       "prompt": "What is the next number in 100, 95, 90, 85, …? Explain your pattern.",
       "answer": "80",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q4",
@@ -38,7 +41,8 @@
       "stars": 2,
       "prompt": "Find the missing number: 2, 5, 10, 17, 26, ? Explain why it fits.",
       "answer": "37",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q5",
@@ -46,7 +50,8 @@
       "stars": 2,
       "prompt": "What is 25 × 4? Show your mental math steps.",
       "answer": "100",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q6",
@@ -54,7 +59,8 @@
       "stars": 2,
       "prompt": "What is 15 × 6? Show your work.",
       "answer": "90",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q7",
@@ -62,7 +68,8 @@
       "stars": 2,
       "prompt": "What is 144 ÷ 12? Show your work.",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q8",
@@ -70,7 +77,8 @@
       "stars": 2,
       "prompt": "What is the next number in 1, 4, 9, 16, 25, …? Name the pattern.",
       "answer": "36",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q9",
@@ -78,7 +86,8 @@
       "stars": 2,
       "prompt": "A rule is “add 7 each time,” starting at 5. What is the 4th term? Show the sequence.",
       "answer": "26",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q10",
@@ -86,7 +95,8 @@
       "stars": 2,
       "prompt": "What is the next number in 2, 3, 5, 8, 12, …? Explain the pattern.",
       "answer": "17",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q11",
@@ -94,7 +104,8 @@
       "stars": 2,
       "prompt": "Which number completes 50, 45, 40, …, 30? Explain.",
       "answer": "35",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q12",
@@ -102,7 +113,8 @@
       "stars": 2,
       "prompt": "What is 999 + 1? Show how you know.",
       "answer": "1000",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     }
   ]
 }

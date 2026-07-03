@@ -10,41 +10,71 @@
       "id": "q1",
       "type": "multiple_choice",
       "prompt": "Sam buys a pencil for $1.25 and an eraser for $0.85. How much does Sam pay in total?",
-      "choices": ["$1.85", "$2.00", "$2.10", "$2.25"],
+      "choices": [
+        "$1.85",
+        "$2.00",
+        "$2.10",
+        "$2.25"
+      ],
       "answer": "$2.10",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q2",
       "type": "multiple_choice",
       "prompt": "Maya has $20.00. She spends $13.45 at the cafeteria. How much money does she have left?",
-      "choices": ["$6.45", "$6.55", "$7.45", "$7.55"],
+      "choices": [
+        "$6.45",
+        "$6.55",
+        "$7.45",
+        "$7.55"
+      ],
       "answer": "$6.55",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q3",
       "type": "multiple_choice",
       "prompt": "Each marker costs $1.65. Priya buys 4 markers. What is the total cost?",
-      "choices": ["$5.60", "$6.00", "$6.60", "$7.20"],
+      "choices": [
+        "$5.60",
+        "$6.00",
+        "$6.60",
+        "$7.20"
+      ],
       "answer": "$6.60",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q4",
       "type": "multiple_choice",
       "prompt": "Noah picks a book for $14.99 and a notebook for $3.75. What is the combined price before tax?",
-      "choices": ["$17.74", "$18.24", "$18.74", "$19.74"],
+      "choices": [
+        "$17.74",
+        "$18.24",
+        "$18.74",
+        "$19.74"
+      ],
       "answer": "$18.74",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q5",
       "type": "multiple_choice",
       "prompt": "A class fundraiser starts with a $50.00 budget. They spend $31.20 on supplies and $12.50 on snacks. How much of the budget remains?",
-      "choices": ["$6.30", "$7.30", "$8.30", "$18.70"],
+      "choices": [
+        "$6.30",
+        "$7.30",
+        "$8.30",
+        "$18.70"
+      ],
       "answer": "$6.30",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q6",
@@ -57,39 +87,64 @@
         "Store B — two 1 L bottles for $3.80"
       ],
       "answer": "Store A — one 2 L bottle for $3.80",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q7",
       "type": "multiple_choice",
       "prompt": "Liam saves $5.00 each week for 6 weeks. He then spends $17.00 on a game. How much money does he have left?",
-      "choices": ["$8.00", "$10.00", "$13.00", "$30.00"],
+      "choices": [
+        "$8.00",
+        "$10.00",
+        "$13.00",
+        "$30.00"
+      ],
       "answer": "$13.00",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q8",
       "type": "multiple_choice",
       "prompt": "A family buys 2 adult tickets at $12.00 each and 1 child ticket at $7.00. What is the total ticket cost?",
-      "choices": ["$24.00", "$29.00", "$31.00", "$38.00"],
+      "choices": [
+        "$24.00",
+        "$29.00",
+        "$31.00",
+        "$38.00"
+      ],
       "answer": "$31.00",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q9",
       "type": "multiple_choice",
       "prompt": "Notebooks are $2.89 each. How much do 5 notebooks cost altogether?",
-      "choices": ["$14.45", "$14.95", "$15.45", "$16.45"],
+      "choices": [
+        "$14.45",
+        "$14.95",
+        "$15.45",
+        "$16.45"
+      ],
       "answer": "$14.45",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q10",
       "type": "multiple_choice",
       "prompt": "A store coupon takes $3.00 off a purchase. Before the coupon, the bill is $28.50. How much is owed after the coupon?",
-      "choices": ["$25.50", "$26.50", "$31.50", "$32.50"],
+      "choices": [
+        "$25.50",
+        "$26.50",
+        "$31.50",
+        "$32.50"
+      ],
       "answer": "$25.50",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q11",
@@ -102,39 +157,64 @@
         "Buy six singles for $4.50"
       ],
       "answer": "Buy the 6-pack for $4.50",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q12",
       "type": "multiple_choice",
       "prompt": "Ava is saving for headphones that cost $45.00. She already has $28.75. How much more does she need?",
-      "choices": ["$15.25", "$16.25", "$17.25", "$73.75"],
+      "choices": [
+        "$15.25",
+        "$16.25",
+        "$17.25",
+        "$73.75"
+      ],
       "answer": "$16.25",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q13",
       "type": "multiple_choice",
       "prompt": "Jordan earns $14.00 per hour babysitting. Last weekend Jordan worked 3.5 hours. How much did Jordan earn?",
-      "choices": ["$42.00", "$45.50", "$49.00", "$52.50"],
+      "choices": [
+        "$42.00",
+        "$45.50",
+        "$49.00",
+        "$52.50"
+      ],
       "answer": "$49.00",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q14",
       "type": "multiple_choice",
       "prompt": "At a garage sale, three items are priced at $2.50, $7.00, and $4.25. What is the total if you buy all three?",
-      "choices": ["$12.75", "$13.25", "$13.75", "$14.75"],
+      "choices": [
+        "$12.75",
+        "$13.25",
+        "$13.75",
+        "$14.75"
+      ],
       "answer": "$13.75",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     },
     {
       "id": "q15",
       "type": "multiple_choice",
       "prompt": "The bill at a café is $6.35. You pay with a $10.00 bill. How much change should you receive?",
-      "choices": ["$3.35", "$3.65", "$4.35", "$4.65"],
+      "choices": [
+        "$3.35",
+        "$3.65",
+        "$4.35",
+        "$4.65"
+      ],
       "answer": "$3.65",
-      "hint": false
+      "hint": false,
+      "area": "financial-literacy"
     }
   ]
 }

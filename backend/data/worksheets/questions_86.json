@@ -11,7 +11,8 @@
       "stars": 3,
       "prompt": "A trapezoid has parallel sides 8 cm and 12 cm, and height 5 cm. What is its area?",
       "answer": "50 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q2",
@@ -19,7 +20,8 @@
       "stars": 3,
       "prompt": "The diameter of a circle is 14 cm. What is its radius?",
       "answer": "7 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q3",
@@ -27,7 +29,8 @@
       "stars": 3,
       "prompt": "Two angles of a triangle are 47° and 68°. What is the third angle?",
       "answer": "65°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q4",
@@ -35,7 +38,8 @@
       "stars": 3,
       "prompt": "A rectangular prism is 5 cm × 4 cm × 3 cm. What is its volume?",
       "answer": "60 cm³",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q5",
@@ -43,7 +47,8 @@
       "stars": 3,
       "prompt": "How many degrees are in four right angles?",
       "answer": "360°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q6",
@@ -51,7 +56,8 @@
       "stars": 3,
       "prompt": "A parallelogram has base 13 cm and height 6 cm. What is its area?",
       "answer": "78 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q7",
@@ -59,7 +65,8 @@
       "stars": 3,
       "prompt": "An isosceles triangle has equal sides 10 cm and base 12 cm. What is its perimeter?",
       "answer": "32 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q8",
@@ -67,7 +74,8 @@
       "stars": 3,
       "prompt": "Constructing 60° often uses which special triangle?",
       "answer": "Equilateral",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q9",
@@ -75,7 +83,8 @@
       "stars": 3,
       "prompt": "A circle has radius 9 cm. What is its diameter?",
       "answer": "18 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q10",
@@ -83,7 +92,8 @@
       "stars": 3,
       "prompt": "A rhombus has side 8 cm. What is its perimeter?",
       "answer": "32 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q11",
@@ -91,7 +101,8 @@
       "stars": 3,
       "prompt": "A triangle has area 54 cm² and base 12 cm. What is its height?",
       "answer": "9 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q12",
@@ -99,7 +110,8 @@
       "stars": 3,
       "prompt": "How many edges does a cuboid have?",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q13",
@@ -107,7 +119,8 @@
       "stars": 3,
       "prompt": "Two complementary angles add to 90°. If one is 28°, what is the other?",
       "answer": "62°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q14",
@@ -115,7 +128,8 @@
       "stars": 3,
       "prompt": "A square has area 121 cm². What is the length of one side?",
       "answer": "11 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q15",
@@ -123,7 +137,8 @@
       "stars": 3,
       "prompt": "120° is made by placing two equal angles on a line. How many degrees is each?",
       "answer": "60°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     }
   ]
 }

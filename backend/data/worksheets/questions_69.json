@@ -16,7 +16,8 @@
         "2/3"
       ],
       "answer": "1/2",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q2",
@@ -30,7 +31,8 @@
         "$28"
       ],
       "answer": "$28",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q3",
@@ -44,7 +46,8 @@
         "52"
       ],
       "answer": "40",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q4",
@@ -58,7 +61,8 @@
         "110 cm²"
       ],
       "answer": "99 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q5",
@@ -72,7 +76,8 @@
         "5/8"
       ],
       "answer": "3/8",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q6",
@@ -86,7 +91,8 @@
         "x = 7"
       ],
       "answer": "x = 12",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q7",
@@ -100,7 +106,8 @@
         "12"
       ],
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q8",
@@ -128,7 +135,8 @@
         "1/3"
       ],
       "answer": "7/12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q10",
@@ -142,7 +150,8 @@
         "81"
       ],
       "answer": "81",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q11",
@@ -156,7 +165,8 @@
         "49"
       ],
       "answer": "19",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q12",
@@ -170,7 +180,8 @@
         "3.5 cm"
       ],
       "answer": "14 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q13",
@@ -198,7 +209,8 @@
         "5/6"
       ],
       "answer": "1/2",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q15",
@@ -212,7 +224,8 @@
         "n = 4"
       ],
       "answer": "n = 5",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q16",
@@ -226,7 +239,8 @@
         "1/2"
       ],
       "answer": "1/2",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q17",
@@ -240,7 +254,8 @@
         "2.25"
       ],
       "answer": "1.5625",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q18",
@@ -268,7 +283,8 @@
         "120 cm³"
       ],
       "answer": "120 cm³",
-      "hint": false
+      "hint": false,
+      "area": "3d-geometry"
     },
     {
       "id": "q20",

@@ -11,25 +11,42 @@
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "How many three-digit whole numbers are divisible by 5?",
-      "choices": ["180", "200", "900", "100"],
+      "choices": [
+        "180",
+        "200",
+        "900",
+        "100"
+      ],
       "answer": "180",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q2",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "At exactly 3:00 on a clock, what is the measure of the smaller angle between the hour and minute hands?",
-      "choices": ["90°", "60°", "30°", "120°"],
+      "choices": [
+        "90°",
+        "60°",
+        "30°",
+        "120°"
+      ],
       "answer": "90°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q3",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "If 3 cats catch 3 mice in 3 minutes, how many minutes does it take 6 cats to catch 6 mice (same rate)?",
-      "choices": ["3", "6", "1", "9"],
+      "choices": [
+        "3",
+        "6",
+        "1",
+        "9"
+      ],
       "answer": "3",
       "hint": false
     },
@@ -38,108 +55,180 @@
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "On a grid you may move only right or up. How many different paths are there from the bottom-left corner to the top-right corner of a 2 × 2 square grid (3 points by 3 points)?",
-      "choices": ["6", "4", "8", "10"],
+      "choices": [
+        "6",
+        "4",
+        "8",
+        "10"
+      ],
       "answer": "6",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q5",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "The average of five numbers is 12. The average of the first four numbers is 10. What is the fifth number?",
-      "choices": ["20", "18", "16", "22"],
+      "choices": [
+        "20",
+        "18",
+        "16",
+        "22"
+      ],
       "answer": "20",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q6",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "What is the remainder when 47 is divided by 6?",
-      "choices": ["5", "7", "1", "3"],
+      "choices": [
+        "5",
+        "7",
+        "1",
+        "3"
+      ],
       "answer": "5",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q7",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "How many positive whole-number factors does 36 have?",
-      "choices": ["9", "6", "8", "10"],
+      "choices": [
+        "9",
+        "6",
+        "8",
+        "10"
+      ],
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q8",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "A bag has 3 red marbles and 5 blue marbles. One marble is picked at random. What is the probability it is red?",
-      "choices": ["3/8", "3/5", "5/8", "1/3"],
+      "choices": [
+        "3/8",
+        "3/5",
+        "5/8",
+        "1/3"
+      ],
       "answer": "3/8",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q9",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "If x + y = 10 and x − y = 4, what is x?",
-      "choices": ["7", "6", "8", "5"],
+      "choices": [
+        "7",
+        "6",
+        "8",
+        "5"
+      ],
       "answer": "7",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q10",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "What is 2⁵ + 2⁵?",
-      "choices": ["64", "32", "128", "2¹⁰"],
+      "choices": [
+        "64",
+        "32",
+        "128",
+        "2¹⁰"
+      ],
       "answer": "64",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q11",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "A triangle has base 14 cm and height 9 cm. What is its area?",
-      "choices": ["63 cm²", "126 cm²", "23 cm²", "126 cm"],
+      "choices": [
+        "63 cm²",
+        "126 cm²",
+        "23 cm²",
+        "126 cm"
+      ],
       "answer": "63 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q12",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "What is the next term in the sequence 2, 6, 18, 54, …?",
-      "choices": ["162", "108", "81", "216"],
+      "choices": [
+        "162",
+        "108",
+        "81",
+        "216"
+      ],
       "answer": "162",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q13",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "How many two-digit positive integers have digits that add to 9?",
-      "choices": ["9", "8", "10", "7"],
+      "choices": [
+        "9",
+        "8",
+        "10",
+        "7"
+      ],
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q14",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "A square and a rectangle have the same perimeter of 24 cm. The rectangle’s length is twice its width. What is the area of the square?",
-      "choices": ["36 cm²", "24 cm²", "48 cm²", "16 cm²"],
+      "choices": [
+        "36 cm²",
+        "24 cm²",
+        "48 cm²",
+        "16 cm²"
+      ],
       "answer": "36 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q15",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Using each of the digits 1, 2, 3, and 4 exactly once, how many different four-digit numbers can be formed?",
-      "choices": ["24", "12", "16", "256"],
+      "choices": [
+        "24",
+        "12",
+        "16",
+        "256"
+      ],
       "answer": "24",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     }
   ]
 }

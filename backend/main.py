@@ -30,6 +30,7 @@ from pydantic import BaseModel
 from learn_content import get_subject, list_learn_hub, list_subjects
 from worksheets import (
     assert_worksheet_accessible,
+    attach_areas_to_answers,
     clear_worksheet_access_lock,
     create_worksheet_from_builder,
     delete_worksheet,
@@ -79,6 +80,7 @@ class WorksheetBuilderQuestionRequest(BaseModel):
     choices: list[str] | None = None
     correct_index: int | None = None
     answer: str | None = None
+    area: str | None = None
 
 
 class CreateWorksheetBuilderRequest(BaseModel):
@@ -671,6 +673,11 @@ def submit_result(req: SubmitResultRequest, authorization: str = Header(...)):
                     "given": given_by_qid.get(qid, ""),
                     "correct": None,
                     "expected": q.get("answer", ""),
+                    **(
+                        {"area": q["area"]}
+                        if isinstance(q.get("area"), str) and q.get("area").strip()
+                        else {}
+                    ),
                 }
             )
         result = {
@@ -679,11 +686,11 @@ def submit_result(req: SubmitResultRequest, authorization: str = Header(...)):
             "student": student,
             "score": None,
             "total": req.total,
-            "answers": answers_payload,
+            "answers": attach_areas_to_answers(worksheet, answers_payload),
             "status": "pending",
         }
     else:
-        answers_payload = req.answers
+        answers_payload = attach_areas_to_answers(worksheet, req.answers)
         score = req.score if req.score is not None else 0
         result = {
             "worksheet_id": req.worksheet_id,

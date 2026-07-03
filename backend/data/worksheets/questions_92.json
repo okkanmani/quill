@@ -11,106 +11,177 @@
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 48 × 25?",
-      "choices": ["1,000", "1,200", "1,100", "960"],
+      "choices": [
+        "1,000",
+        "1,200",
+        "1,100",
+        "960"
+      ],
       "answer": "1,200",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q2",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 3/5 + 1/5?",
-      "choices": ["4/10", "4/5", "2/5", "1/5"],
+      "choices": [
+        "4/10",
+        "4/5",
+        "2/5",
+        "1/5"
+      ],
       "answer": "4/5",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q3",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "What is 2/3 × 3/4?",
-      "choices": ["1/2", "5/7", "6/12", "2/3"],
+      "choices": [
+        "1/2",
+        "5/7",
+        "6/12",
+        "2/3"
+      ],
       "answer": "1/2",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q4",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A rectangle is 12 cm long and 7 cm wide. What is its area?",
-      "choices": ["84 cm²", "38 cm²", "19 cm²", "74 cm²"],
+      "choices": [
+        "84 cm²",
+        "38 cm²",
+        "19 cm²",
+        "74 cm²"
+      ],
       "answer": "84 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q5",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Evaluate: (8 + 2)² − 3 × 5",
-      "choices": ["85", "100", "75", "95"],
+      "choices": [
+        "85",
+        "100",
+        "75",
+        "95"
+      ],
       "answer": "85",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q6",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 0.75 as a fraction in simplest form?",
-      "choices": ["3/4", "75/100", "7/5", "1/4"],
+      "choices": [
+        "3/4",
+        "75/100",
+        "7/5",
+        "1/4"
+      ],
       "answer": "3/4",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q7",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Solve for x: 4x − 7 = 21",
-      "choices": ["7", "6", "8", "5"],
+      "choices": [
+        "7",
+        "6",
+        "8",
+        "5"
+      ],
       "answer": "7",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q8",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 20% of 150?",
-      "choices": ["25", "30", "35", "20"],
+      "choices": [
+        "25",
+        "30",
+        "35",
+        "20"
+      ],
       "answer": "30",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q9",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "A shirt costs $50. It is discounted by 20%. What is the sale price?",
-      "choices": ["$40", "$30", "$45", "$35"],
+      "choices": [
+        "$40",
+        "$30",
+        "$45",
+        "$35"
+      ],
       "answer": "$40",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q10",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 1,008 ÷ 12?",
-      "choices": ["84", "92", "78", "96"],
+      "choices": [
+        "84",
+        "92",
+        "78",
+        "96"
+      ],
       "answer": "84",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q11",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "What is the volume of a rectangular prism 5 cm × 4 cm × 3 cm?",
-      "choices": ["60 cm³", "12 cm³", "24 cm³", "120 cm³"],
+      "choices": [
+        "60 cm³",
+        "12 cm³",
+        "24 cm³",
+        "120 cm³"
+      ],
       "answer": "60 cm³",
-      "hint": false
+      "hint": false,
+      "area": "3d-geometry"
     },
     {
       "id": "q12",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Which is greater: 3/8 or 1/2?",
-      "choices": ["3/8", "1/2", "They are equal", "Cannot tell"],
+      "choices": [
+        "3/8",
+        "1/2",
+        "They are equal",
+        "Cannot tell"
+      ],
       "answer": "1/2",
       "hint": false
     },
@@ -119,160 +190,267 @@
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Simplify: 5a + 3a − 2",
-      "choices": ["8a − 2", "8a + 2", "15a − 2", "2a − 2"],
+      "choices": [
+        "8a − 2",
+        "8a + 2",
+        "15a − 2",
+        "2a − 2"
+      ],
       "answer": "8a − 2",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q14",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 4.6 + 2.35?",
-      "choices": ["6.85", "6.95", "7.05", "6.75"],
+      "choices": [
+        "6.85",
+        "6.95",
+        "7.05",
+        "6.75"
+      ],
       "answer": "6.95",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q15",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "A parallelogram has base 14 cm and height 8 cm. What is its area?",
-      "choices": ["112 cm²", "44 cm²", "22 cm²", "56 cm²"],
+      "choices": [
+        "112 cm²",
+        "44 cm²",
+        "22 cm²",
+        "56 cm²"
+      ],
       "answer": "112 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q16",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is the next number: 5, 11, 17, 23, …?",
-      "choices": ["28", "29", "30", "31"],
+      "choices": [
+        "28",
+        "29",
+        "30",
+        "31"
+      ],
       "answer": "29",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q17",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Evaluate 3x + 4 when x = 6.",
-      "choices": ["22", "18", "24", "21"],
+      "choices": [
+        "22",
+        "18",
+        "24",
+        "21"
+      ],
       "answer": "22",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q18",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "How many degrees are in a straight angle?",
-      "choices": ["90°", "180°", "360°", "270°"],
+      "choices": [
+        "90°",
+        "180°",
+        "360°",
+        "270°"
+      ],
       "answer": "180°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q19",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "What is 5/6 − 1/4?",
-      "choices": ["7/12", "4/10", "1/2", "4/6"],
+      "choices": [
+        "7/12",
+        "4/10",
+        "1/2",
+        "4/6"
+      ],
       "answer": "7/12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q20",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A train travels 240 km in 4 hours. What is its average speed?",
-      "choices": ["50 km/h", "60 km/h", "70 km/h", "80 km/h"],
+      "choices": [
+        "50 km/h",
+        "60 km/h",
+        "70 km/h",
+        "80 km/h"
+      ],
       "answer": "60 km/h",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q21",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Solve for n: 3(n + 2) = 24",
-      "choices": ["6", "7", "8", "5"],
+      "choices": [
+        "6",
+        "7",
+        "8",
+        "5"
+      ],
       "answer": "6",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q22",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is the perimeter of a square with side 9 cm?",
-      "choices": ["36 cm", "81 cm", "18 cm", "27 cm"],
+      "choices": [
+        "36 cm",
+        "81 cm",
+        "18 cm",
+        "27 cm"
+      ],
       "answer": "36 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q23",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "The ratio of red to blue marbles is 3 : 5. If there are 15 red marbles, how many blue?",
-      "choices": ["20", "25", "30", "9"],
+      "choices": [
+        "20",
+        "25",
+        "30",
+        "9"
+      ],
       "answer": "25",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q24",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Round 3,847 to the nearest hundred.",
-      "choices": ["3,800", "3,850", "3,900", "4,000"],
+      "choices": [
+        "3,800",
+        "3,850",
+        "3,900",
+        "4,000"
+      ],
       "answer": "3,800",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q25",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "What is (−3) + 8?",
-      "choices": ["5", "−5", "11", "−11"],
+      "choices": [
+        "5",
+        "−5",
+        "11",
+        "−11"
+      ],
       "answer": "5",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q26",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Which expression equals 35?",
-      "choices": ["5 × 6", "7 × 5", "8 × 4", "9 × 3"],
+      "choices": [
+        "5 × 6",
+        "7 × 5",
+        "8 × 4",
+        "9 × 3"
+      ],
       "answer": "7 × 5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q27",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "A circle has radius 7 cm. What is its diameter?",
-      "choices": ["14 cm", "7 cm", "3.5 cm", "21 cm"],
+      "choices": [
+        "14 cm",
+        "7 cm",
+        "3.5 cm",
+        "21 cm"
+      ],
       "answer": "14 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q28",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Convert 2 1/3 to an improper fraction.",
-      "choices": ["7/3", "5/3", "6/3", "8/3"],
+      "choices": [
+        "7/3",
+        "5/3",
+        "6/3",
+        "8/3"
+      ],
       "answer": "7/3",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q29",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Solve for x: x/6 = 5",
-      "choices": ["30", "11", "25", "36"],
+      "choices": [
+        "30",
+        "11",
+        "25",
+        "36"
+      ],
       "answer": "30",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q30",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A baker uses 3 cups of flour per batch and has 24 cups. How many full batches?",
-      "choices": ["6", "7", "8", "9"],
+      "choices": [
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
       "answer": "8",
       "hint": false
     }

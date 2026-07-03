@@ -11,7 +11,8 @@
       "stars": 2,
       "prompt": "A square has sides of 9 cm. What is its perimeter?",
       "answer": "36 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q2",
@@ -19,7 +20,8 @@
       "stars": 2,
       "prompt": "A rectangle is 8 cm long and 5 cm wide. What is its area?",
       "answer": "40 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q3",
@@ -27,7 +29,8 @@
       "stars": 2,
       "prompt": "What is the sum of the three angles in any triangle?",
       "answer": "180°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q4",
@@ -35,7 +38,8 @@
       "stars": 2,
       "prompt": "How many degrees are in a right angle?",
       "answer": "90°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q5",
@@ -43,7 +47,8 @@
       "stars": 2,
       "prompt": "A circle has radius 5 cm. What is its diameter?",
       "answer": "10 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q6",
@@ -51,7 +56,8 @@
       "stars": 2,
       "prompt": "A square has sides of 7 cm. What is its area?",
       "answer": "49 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q7",
@@ -59,7 +65,8 @@
       "stars": 2,
       "prompt": "A rectangle is 12 cm long and 4 cm wide. What is its perimeter?",
       "answer": "32 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q8",
@@ -67,7 +74,8 @@
       "stars": 2,
       "prompt": "Which tool is used to draw circles in geometry constructions?",
       "answer": "Compasses",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q9",
@@ -75,7 +83,8 @@
       "stars": 2,
       "prompt": "Two lines that meet at 90° are called —",
       "answer": "Perpendicular",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q10",
@@ -83,7 +92,8 @@
       "stars": 2,
       "prompt": "How many degrees are in a straight angle?",
       "answer": "180°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q11",
@@ -91,7 +101,8 @@
       "stars": 2,
       "prompt": "Each angle in an equilateral triangle measures how many degrees?",
       "answer": "60°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q12",
@@ -99,7 +110,8 @@
       "stars": 2,
       "prompt": "A triangle has base 10 cm and height 6 cm. What is its area?",
       "answer": "30 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q13",
@@ -107,7 +119,8 @@
       "stars": 2,
       "prompt": "How many sides does a hexagon have?",
       "answer": "6",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q14",
@@ -115,7 +128,8 @@
       "stars": 2,
       "prompt": "An equilateral triangle has sides of 5 cm. What is its perimeter?",
       "answer": "15 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q15",
@@ -123,7 +137,8 @@
       "stars": 2,
       "prompt": "Two lines in a plane that never meet are —",
       "answer": "Parallel",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q16",
@@ -131,7 +146,8 @@
       "stars": 2,
       "prompt": "How many vertices does a cube have?",
       "answer": "8",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q17",
@@ -139,7 +155,8 @@
       "stars": 2,
       "prompt": "A parallelogram has base 9 cm and height 4 cm. What is its area?",
       "answer": "36 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q18",
@@ -147,7 +164,8 @@
       "stars": 2,
       "prompt": "Half of a full turn is how many degrees?",
       "answer": "180°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q19",
@@ -155,7 +173,8 @@
       "stars": 2,
       "prompt": "A square has perimeter 28 cm. What is the length of one side?",
       "answer": "7 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q20",
@@ -163,7 +182,8 @@
       "stars": 2,
       "prompt": "A circle has diameter 12 cm. What is its radius?",
       "answer": "6 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     }
   ]
 }

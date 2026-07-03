@@ -10,121 +10,211 @@
       "id": "q1",
       "type": "multiple_choice",
       "prompt": "Solve the system: x = 2y and x + y = 24.",
-      "choices": ["x = 12, y = 6", "x = 16, y = 8", "x = 18, y = 6", "x = 20, y = 4"],
+      "choices": [
+        "x = 12, y = 6",
+        "x = 16, y = 8",
+        "x = 18, y = 6",
+        "x = 20, y = 4"
+      ],
       "answer": "x = 16, y = 8",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q2",
       "type": "multiple_choice",
       "prompt": "Solve the system: x = 3y and 4x − y = 44.",
-      "choices": ["x = 9, y = 3", "x = 12, y = 4", "x = 15, y = 5", "x = 11, y = 4"],
+      "choices": [
+        "x = 9, y = 3",
+        "x = 12, y = 4",
+        "x = 15, y = 5",
+        "x = 11, y = 4"
+      ],
       "answer": "x = 12, y = 4",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q3",
       "type": "multiple_choice",
       "prompt": "Solve the system: y = 2x and 5x + 3y = 33.",
-      "choices": ["x = 2, y = 4", "x = 3, y = 6", "x = 4, y = 8", "x = 3, y = 5"],
+      "choices": [
+        "x = 2, y = 4",
+        "x = 3, y = 6",
+        "x = 4, y = 8",
+        "x = 3, y = 5"
+      ],
       "answer": "x = 3, y = 6",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q4",
       "type": "multiple_choice",
       "prompt": "Solve the system: y = 3x and 2x + 3y = 55.",
-      "choices": ["x = 4, y = 12", "x = 5, y = 15", "x = 6, y = 18", "x = 5, y = 12"],
+      "choices": [
+        "x = 4, y = 12",
+        "x = 5, y = 15",
+        "x = 6, y = 18",
+        "x = 5, y = 12"
+      ],
       "answer": "x = 5, y = 15",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q5",
       "type": "multiple_choice",
       "prompt": "Solve the system: x = 5y and 2x + 4y = 42.",
-      "choices": ["x = 12, y = 2", "x = 15, y = 3", "x = 10, y = 2", "x = 20, y = 4"],
+      "choices": [
+        "x = 12, y = 2",
+        "x = 15, y = 3",
+        "x = 10, y = 2",
+        "x = 20, y = 4"
+      ],
       "answer": "x = 15, y = 3",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q6",
       "type": "multiple_choice",
       "prompt": "Solve the system: x - y = 6 and 3x + 2y = 38.",
-      "choices": ["x = 8, y = 2", "x = 10, y = 4", "x = 12, y = 6", "x = 9, y = 3"],
+      "choices": [
+        "x = 8, y = 2",
+        "x = 10, y = 4",
+        "x = 12, y = 6",
+        "x = 9, y = 3"
+      ],
       "answer": "x = 10, y = 4",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q7",
       "type": "multiple_choice",
       "prompt": "Solve the system: x - y = 3 and 5x + 4y = 51.",
-      "choices": ["x = 5, y = 2", "x = 7, y = 4", "x = 6, y = 3", "x = 8, y = 5"],
+      "choices": [
+        "x = 5, y = 2",
+        "x = 7, y = 4",
+        "x = 6, y = 3",
+        "x = 8, y = 5"
+      ],
       "answer": "x = 7, y = 4",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q8",
       "type": "multiple_choice",
       "prompt": "Solve the system: y = 2x + 1 and 3x + 2y = 30.",
-      "choices": ["x = 3, y = 7", "x = 4, y = 9", "x = 5, y = 11", "x = 4, y = 8"],
+      "choices": [
+        "x = 3, y = 7",
+        "x = 4, y = 9",
+        "x = 5, y = 11",
+        "x = 4, y = 8"
+      ],
       "answer": "x = 4, y = 9",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q9",
       "type": "multiple_choice",
       "prompt": "Solve the system: x + y = 14 and x − y = 4.",
-      "choices": ["x = 8, y = 6", "x = 9, y = 5", "x = 10, y = 4", "x = 7, y = 3"],
+      "choices": [
+        "x = 8, y = 6",
+        "x = 9, y = 5",
+        "x = 10, y = 4",
+        "x = 7, y = 3"
+      ],
       "answer": "x = 9, y = 5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q10",
       "type": "multiple_choice",
       "prompt": "Solve the system: 5x − 2y = 4 and 3x + 2y = 12.",
-      "choices": ["x = 2, y = 3", "x = 2, y = 4", "x = 3, y = 2", "x = 1, y = 5"],
+      "choices": [
+        "x = 2, y = 3",
+        "x = 2, y = 4",
+        "x = 3, y = 2",
+        "x = 1, y = 5"
+      ],
       "answer": "x = 2, y = 3",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q11",
       "type": "multiple_choice",
       "prompt": "Solve the system: x + y = 17 and 2x − y = 4.",
-      "choices": ["x = 6, y = 11", "x = 7, y = 10", "x = 8, y = 9", "x = 9, y = 8"],
+      "choices": [
+        "x = 6, y = 11",
+        "x = 7, y = 10",
+        "x = 8, y = 9",
+        "x = 9, y = 8"
+      ],
       "answer": "x = 7, y = 10",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q12",
       "type": "multiple_choice",
       "prompt": "Let x be the larger number and y the smaller. One number is triple the other, and their sum is 48. Find x and y.",
-      "choices": ["x = 32, y = 16", "x = 36, y = 12", "x = 30, y = 18", "x = 40, y = 8"],
+      "choices": [
+        "x = 32, y = 16",
+        "x = 36, y = 12",
+        "x = 30, y = 18",
+        "x = 40, y = 8"
+      ],
       "answer": "x = 36, y = 12",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q13",
       "type": "multiple_choice",
       "prompt": "Let x be the length (in cm) and y the width (in cm) of a rectangle. The length is 6 cm more than twice the width, and the perimeter is 72 cm. Find x and y.",
-      "choices": ["x = 22, y = 8", "x = 24, y = 9", "x = 26, y = 10", "x = 26, y = 9"],
+      "choices": [
+        "x = 22, y = 8",
+        "x = 24, y = 9",
+        "x = 26, y = 10",
+        "x = 26, y = 9"
+      ],
       "answer": "x = 26, y = 10",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q14",
       "type": "multiple_choice",
       "prompt": "Let x be the number of adult tickets and y the number of child tickets. Adult tickets cost $15, child tickets cost $8. There were 21 tickets sold in total, for $259. Find x and y.",
-      "choices": ["x = 11, y = 10", "x = 12, y = 9", "x = 13, y = 8", "x = 14, y = 7"],
+      "choices": [
+        "x = 11, y = 10",
+        "x = 12, y = 9",
+        "x = 13, y = 8",
+        "x = 14, y = 7"
+      ],
       "answer": "x = 13, y = 8",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q15",
       "type": "multiple_choice",
       "prompt": "Let x be the number of nickels and y the number of dimes. There are 16 coins in total, with a combined value of $1.25. Find x and y.",
-      "choices": ["x = 6, y = 10", "x = 7, y = 9", "x = 8, y = 8", "x = 5, y = 11"],
+      "choices": [
+        "x = 6, y = 10",
+        "x = 7, y = 9",
+        "x = 8, y = 8",
+        "x = 5, y = 11"
+      ],
       "answer": "x = 7, y = 9",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     }
   ]
 }

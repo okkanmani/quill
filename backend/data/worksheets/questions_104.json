@@ -14,7 +14,8 @@
       "stars": 2,
       "prompt": "What is the next number in 13, 21, 29, 37, …? Explain the rule you used.",
       "answer": "45",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q2",
@@ -22,7 +23,8 @@
       "stars": 2,
       "prompt": "What is the next number in 8, 16, 32, 64, …? Show how you figured it out.",
       "answer": "128",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q3",
@@ -30,7 +32,8 @@
       "stars": 2,
       "prompt": "What is the next number in 250, 240, 230, 220, …? Explain your pattern.",
       "answer": "210",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q4",
@@ -38,7 +41,8 @@
       "stars": 2,
       "prompt": "Find the missing number: 6, 12, 20, 30, 42, ? Explain why it fits.",
       "answer": "56",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q5",
@@ -46,7 +50,8 @@
       "stars": 2,
       "prompt": "What is 16 × 5? Show your mental math steps.",
       "answer": "80",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q6",
@@ -54,7 +59,8 @@
       "stars": 2,
       "prompt": "What is 121 ÷ 11? Show your work.",
       "answer": "11",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q7",
@@ -62,7 +68,8 @@
       "stars": 2,
       "prompt": "What is the next number in 1, 2, 3, 5, 8, …? Name the pattern.",
       "answer": "13",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q8",
@@ -70,7 +77,8 @@
       "stars": 2,
       "prompt": "What is the next number in 9, 18, 36, 72, …? Show how you figured it out.",
       "answer": "144",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q9",
@@ -78,7 +86,8 @@
       "stars": 2,
       "prompt": "A rule is “add 11 each time,” starting at 2. What is the 5th term? Show the sequence.",
       "answer": "46",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q10",
@@ -86,7 +95,8 @@
       "stars": 2,
       "prompt": "What is the next number in 7, 8, 10, 13, 17, …? Explain the pattern.",
       "answer": "22",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q11",
@@ -94,7 +104,8 @@
       "stars": 2,
       "prompt": "Which number completes 90, 85, 80, …, 70? Explain.",
       "answer": "75",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q12",
@@ -102,7 +113,8 @@
       "stars": 2,
       "prompt": "What is 1250 − 250? Show how you know.",
       "answer": "1000",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     }
   ]
 }

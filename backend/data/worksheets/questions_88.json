@@ -11,45 +11,75 @@
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 12 × 8?",
-      "choices": ["84", "96", "104", "88"],
+      "choices": [
+        "84",
+        "96",
+        "104",
+        "88"
+      ],
       "answer": "96",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q2",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 144 ÷ 12?",
-      "choices": ["10", "11", "12", "14"],
+      "choices": [
+        "10",
+        "11",
+        "12",
+        "14"
+      ],
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q3",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 3/4 + 1/8?",
-      "choices": ["4/12", "7/8", "5/8", "1/2"],
+      "choices": [
+        "4/12",
+        "7/8",
+        "5/8",
+        "1/2"
+      ],
       "answer": "7/8",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q4",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A square has side 9 cm. What is its area?",
-      "choices": ["36 cm²", "81 cm²", "18 cm²", "72 cm²"],
+      "choices": [
+        "36 cm²",
+        "81 cm²",
+        "18 cm²",
+        "72 cm²"
+      ],
       "answer": "81 cm²",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q5",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 25% of 80?",
-      "choices": ["15", "20", "25", "30"],
+      "choices": [
+        "15",
+        "20",
+        "25",
+        "30"
+      ],
       "answer": "20",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     }
   ]
 }

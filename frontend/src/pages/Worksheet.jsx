@@ -223,6 +223,7 @@ export default function Worksheet() {
           given: answers[q.id],
           correct: isRight,
           expected: q.answer,
+          ...(q.area ? { area: q.area } : {}),
         };
       });
 

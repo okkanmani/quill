@@ -14,7 +14,8 @@
       "stars": 2,
       "prompt": "What is 18 × 15? Show your work.",
       "answer": "270",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q2",
@@ -22,7 +23,8 @@
       "stars": 2,
       "prompt": "What is 0.6 × 0.5? Show how you know.",
       "answer": "0.3",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q3",
@@ -30,7 +32,8 @@
       "stars": 3,
       "prompt": "4 machines make 48 parts in 6 hours. How many parts do 2 machines make in 6 hours (same rate)? Explain.",
       "answer": "24",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q4",
@@ -38,7 +41,8 @@
       "stars": 2,
       "prompt": "What is the average of 8, 12, and 16? Show your work.",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q5",
@@ -46,7 +50,8 @@
       "stars": 3,
       "prompt": "How many two-digit numbers contain the digit 7 at least once? Explain your method.",
       "answer": "19",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q6",
@@ -54,7 +59,8 @@
       "stars": 2,
       "prompt": "A 120 km trip at 60 km/h takes how many hours? Show your work.",
       "answer": "2",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q7",
@@ -62,7 +68,8 @@
       "stars": 3,
       "prompt": "What is 1 + 2 + 3 + … + 10? Show a method (you may use a shortcut).",
       "answer": "55",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q8",
@@ -70,7 +77,8 @@
       "stars": 2,
       "prompt": "Which fraction equals 0.25? Explain.",
       "answer": "1/4",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q9",
@@ -78,7 +86,8 @@
       "stars": 3,
       "prompt": "A number is multiplied by 3, then 5 is subtracted. The answer is 16. Find the number. Show your steps.",
       "answer": "7",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q10",
@@ -86,7 +95,8 @@
       "stars": 2,
       "prompt": "How many edges does a cube have? Explain or describe.",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q11",
@@ -94,7 +104,8 @@
       "stars": 3,
       "prompt": "In a class of 30, 40% chose chess club. How many students? Show your work.",
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q12",
@@ -102,7 +113,8 @@
       "stars": 2,
       "prompt": "What is the next term in 1, 1, 2, 3, 5, 8, …? Name the pattern.",
       "answer": "13",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q13",
@@ -110,7 +122,8 @@
       "stars": 3,
       "prompt": "A square and rectangle share perimeter 24. The square has side 4. The rectangle has width 4. What is the rectangle’s length? Show work.",
       "answer": "8",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q14",
@@ -118,7 +131,8 @@
       "stars": 2,
       "prompt": "Solve: 1000 − 347. Show your mental math.",
       "answer": "653",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q15",
@@ -126,7 +140,8 @@
       "stars": 3,
       "prompt": "You flip a fair coin twice. What is the probability of two heads? Explain.",
       "answer": "1/4",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     }
   ]
 }

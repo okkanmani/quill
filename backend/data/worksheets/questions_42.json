@@ -8,31 +8,54 @@
       "id": "q1",
       "type": "multiple_choice",
       "prompt": "A rectangle is 12 cm long and 7 cm wide. What is its perimeter?",
-      "choices": ["19 cm", "38 cm", "84 cm", "42 cm"],
+      "choices": [
+        "19 cm",
+        "38 cm",
+        "84 cm",
+        "42 cm"
+      ],
       "answer": "38 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q2",
       "type": "multiple_choice",
       "prompt": "What is 3/4 + 2/3?",
-      "choices": ["5/7", "5/12", "17/12", "1/2"],
+      "choices": [
+        "5/7",
+        "5/12",
+        "17/12",
+        "1/2"
+      ],
       "answer": "17/12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q3",
       "type": "multiple_choice",
       "prompt": "Evaluate: 24 ÷ 3 + 4 × 2",
-      "choices": ["8", "12", "16", "20"],
+      "choices": [
+        "8",
+        "12",
+        "16",
+        "20"
+      ],
       "answer": "16",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q4",
       "type": "multiple_choice",
       "prompt": "A school orders 480 notebooks and packs them equally into boxes of 15. How many boxes are needed?",
-      "choices": ["28", "30", "32", "45"],
+      "choices": [
+        "28",
+        "30",
+        "32",
+        "45"
+      ],
       "answer": "32",
       "hint": false
     },
@@ -40,55 +63,96 @@
       "id": "q5",
       "type": "multiple_choice",
       "prompt": "A triangle has a base of 10 cm and a height of 6 cm. What is its area?",
-      "choices": ["16 cm²", "30 cm²", "60 cm²", "32 cm²"],
+      "choices": [
+        "16 cm²",
+        "30 cm²",
+        "60 cm²",
+        "32 cm²"
+      ],
       "answer": "30 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q6",
       "type": "multiple_choice",
       "prompt": "What is 2.45 + 3.78?",
-      "choices": ["5.13", "6.13", "6.23", "5.23"],
+      "choices": [
+        "5.13",
+        "6.13",
+        "6.23",
+        "5.23"
+      ],
       "answer": "6.23",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q7",
       "type": "multiple_choice",
       "prompt": "A pattern starts at 5 and adds 6 each time: 5, 11, 17, 23, … What is the 6th term?",
-      "choices": ["29", "35", "41", "47"],
+      "choices": [
+        "29",
+        "35",
+        "41",
+        "47"
+      ],
       "answer": "35",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q8",
       "type": "multiple_choice",
       "prompt": "A bag has 3 red, 5 blue, and 2 green marbles. One marble is drawn at random. What is P(red)?",
-      "choices": ["3/8", "3/10", "5/10", "2/10"],
+      "choices": [
+        "3/8",
+        "3/10",
+        "5/10",
+        "2/10"
+      ],
       "answer": "3/10",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q9",
       "type": "multiple_choice",
       "prompt": "A rectangular prism is 4 cm by 5 cm by 3 cm. What is its volume?",
-      "choices": ["12 cm³", "60 cm³", "47 cm³", "120 cm³"],
+      "choices": [
+        "12 cm³",
+        "60 cm³",
+        "47 cm³",
+        "120 cm³"
+      ],
       "answer": "60 cm³",
-      "hint": false
+      "hint": false,
+      "area": "3d-geometry"
     },
     {
       "id": "q10",
       "type": "multiple_choice",
       "prompt": "What is 5/6 − 1/4?",
-      "choices": ["4/2", "7/12", "1/2", "4/10"],
+      "choices": [
+        "4/2",
+        "7/12",
+        "1/2",
+        "4/10"
+      ],
       "answer": "7/12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q11",
       "type": "multiple_choice",
       "prompt": "A train travels 180 km in 3 hours at a constant speed. How fast is it going?",
-      "choices": ["50 km/h", "60 km/h", "54 km/h", "90 km/h"],
+      "choices": [
+        "50 km/h",
+        "60 km/h",
+        "54 km/h",
+        "90 km/h"
+      ],
       "answer": "60 km/h",
       "hint": false
     },
@@ -96,47 +160,82 @@
       "id": "q12",
       "type": "multiple_choice",
       "prompt": "Solve for x: 3(x + 4) = 27",
-      "choices": ["x = 3", "x = 5", "x = 7", "x = 9"],
+      "choices": [
+        "x = 3",
+        "x = 5",
+        "x = 7",
+        "x = 9"
+      ],
       "answer": "x = 5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q13",
       "type": "multiple_choice",
       "prompt": "Two angles of a triangle measure 45° and 65°. What is the third angle?",
-      "choices": ["60°", "70°", "80°", "110°"],
+      "choices": [
+        "60°",
+        "70°",
+        "80°",
+        "110°"
+      ],
       "answer": "70°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q14",
       "type": "multiple_choice",
       "prompt": "What is 0.6 × 1.5?",
-      "choices": ["0.09", "0.9", "9", "1.1"],
+      "choices": [
+        "0.09",
+        "0.9",
+        "9",
+        "1.1"
+      ],
       "answer": "0.9",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q15",
       "type": "multiple_choice",
       "prompt": "Find the mean of: 8, 12, 6, 14, 10",
-      "choices": ["9", "10", "11", "12"],
+      "choices": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
       "answer": "10",
-      "hint": false
+      "hint": false,
+      "area": "data"
     },
     {
       "id": "q16",
       "type": "multiple_choice",
       "prompt": "What is the least common multiple (LCM) of 4 and 6?",
-      "choices": ["2", "10", "12", "24"],
+      "choices": [
+        "2",
+        "10",
+        "12",
+        "24"
+      ],
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q17",
       "type": "multiple_choice",
       "prompt": "A recipe uses 2/3 cup of flour per batch. How much flour is needed for 4 batches?",
-      "choices": ["2/12 cup", "8/3 cups", "6/7 cup", "2 1/3 cups"],
+      "choices": [
+        "2/12 cup",
+        "8/3 cups",
+        "6/7 cup",
+        "2 1/3 cups"
+      ],
       "answer": "8/3 cups",
       "hint": false
     },
@@ -144,7 +243,12 @@
       "id": "q18",
       "type": "multiple_choice",
       "prompt": "A point starts at (2, 4) on a grid. It moves 3 units right and 2 units up. What are its new coordinates?",
-      "choices": ["(5, 6)", "(5, 2)", "(−1, 6)", "(6, 5)"],
+      "choices": [
+        "(5, 6)",
+        "(5, 2)",
+        "(−1, 6)",
+        "(6, 5)"
+      ],
       "answer": "(5, 6)",
       "hint": false
     },
@@ -152,7 +256,12 @@
       "id": "q19",
       "type": "multiple_choice",
       "prompt": "How many metres are in 1.2 km?",
-      "choices": ["12 m", "120 m", "1,200 m", "12,000 m"],
+      "choices": [
+        "12 m",
+        "120 m",
+        "1,200 m",
+        "12,000 m"
+      ],
       "answer": "1,200 m",
       "hint": false
     },
@@ -160,7 +269,12 @@
       "id": "q20",
       "type": "multiple_choice",
       "prompt": "A library has 156 books. It sells 47 on Monday and 38 on Tuesday. How many books remain?",
-      "choices": ["61", "69", "71", "79"],
+      "choices": [
+        "61",
+        "69",
+        "71",
+        "79"
+      ],
       "answer": "71",
       "hint": false
     }

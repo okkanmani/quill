@@ -11,7 +11,8 @@
       "stars": 3,
       "prompt": "Evaluate 2a − 5 when a = 8.",
       "answer": "11",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q2",
@@ -19,7 +20,8 @@
       "stars": 3,
       "prompt": "Solve for k: k − 12 = 25",
       "answer": "37",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q3",
@@ -27,7 +29,8 @@
       "stars": 3,
       "prompt": "Write an expression for “triple a number n, then decrease by 4.”",
       "answer": "3n - 4",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q4",
@@ -35,7 +38,8 @@
       "stars": 3,
       "prompt": "Solve for t: 5t = 45",
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q5",
@@ -43,7 +47,8 @@
       "stars": 3,
       "prompt": "A rule is m = 3n − 2. What is m when n = 4?",
       "answer": "10",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q6",
@@ -51,7 +56,8 @@
       "stars": 3,
       "prompt": "Simplify: 4b + 7 + 2b",
       "answer": "6b + 7",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q7",
@@ -59,7 +65,8 @@
       "stars": 3,
       "prompt": "Solve for w: w + 18 = 41",
       "answer": "23",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q8",
@@ -67,7 +74,8 @@
       "stars": 3,
       "prompt": "A taxi charges $4 plus $2 per kilometre. Write an expression for the cost of k kilometres.",
       "answer": "2k + 4",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q9",
@@ -75,7 +83,8 @@
       "stars": 3,
       "prompt": "Solve for x: 3x − 4 = 11",
       "answer": "5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q10",
@@ -83,7 +92,8 @@
       "stars": 3,
       "prompt": "Find y if 2(y + 4) = 18.",
       "answer": "5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q11",
@@ -91,7 +101,8 @@
       "stars": 3,
       "prompt": "Evaluate x² + 4 when x = 5.",
       "answer": "29",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q12",
@@ -99,7 +110,8 @@
       "stars": 3,
       "prompt": "Solve for n: n ÷ 5 = 6",
       "answer": "30",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q13",
@@ -107,7 +119,8 @@
       "stars": 3,
       "prompt": "A pattern is 2, 5, 8, 11, … What is the next term?",
       "answer": "14",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q14",
@@ -115,7 +128,8 @@
       "stars": 3,
       "prompt": "Simplify: 12m − 5m + 3",
       "answer": "7m + 3",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q15",
@@ -123,7 +137,8 @@
       "stars": 3,
       "prompt": "Solve for x: 4(x − 1) = 20",
       "answer": "6",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     }
   ]
 }

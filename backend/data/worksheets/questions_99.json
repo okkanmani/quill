@@ -14,7 +14,8 @@
       "stars": 2,
       "prompt": "What is 7 × 8? Show your work.",
       "answer": "56",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q2",
@@ -22,7 +23,8 @@
       "stars": 2,
       "prompt": "What is 3/4 of 20? Show your work.",
       "answer": "15",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q3",
@@ -30,7 +32,8 @@
       "stars": 2,
       "prompt": "A rectangle is 6 cm by 5 cm. What is its perimeter? Show your work.",
       "answer": "22 cm",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q4",
@@ -38,7 +41,8 @@
       "stars": 2,
       "prompt": "What is 25% of 80? Show how you calculated it.",
       "answer": "20",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q5",
@@ -46,7 +50,8 @@
       "stars": 2,
       "prompt": "What is the next number in 5, 10, 20, 40, …? Explain the rule.",
       "answer": "80",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q6",
@@ -54,7 +59,8 @@
       "stars": 2,
       "prompt": "If x + 9 = 17, what is x? Show your steps.",
       "answer": "8",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q7",
@@ -62,7 +68,8 @@
       "stars": 2,
       "prompt": "How many minutes are in 2 hours? Explain.",
       "answer": "120",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q8",
@@ -70,7 +77,8 @@
       "stars": 2,
       "prompt": "Which is smallest: 0.5, 0.05, or 0.55? Explain how you compared.",
       "answer": "0.05",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q9",
@@ -78,7 +86,8 @@
       "stars": 2,
       "prompt": "What is the area of a square with side 9 cm? Show your work.",
       "answer": "81 cm²",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     },
     {
       "id": "q10",
@@ -86,7 +95,8 @@
       "stars": 2,
       "prompt": "Share 45 stickers equally among 5 friends. How many each? Show your work.",
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "patterns"
     }
   ],
   "timed": true,

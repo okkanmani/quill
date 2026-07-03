@@ -19,7 +19,8 @@
         "Set-square only"
       ],
       "answer": "Compasses",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q2",
@@ -33,7 +34,8 @@
         "tangent"
       ],
       "answer": "centre",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q3",
@@ -47,7 +49,8 @@
         "Any length"
       ],
       "answer": "4 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q4",
@@ -61,7 +64,8 @@
         "180° only at endpoints"
       ],
       "answer": "90°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q5",
@@ -75,7 +79,8 @@
         "on segment AB only"
       ],
       "answer": "equidistant from A and B",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q6",
@@ -89,7 +94,8 @@
         "60°"
       ],
       "answer": "60°",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q7",
@@ -103,7 +109,8 @@
         "bisect segments without arcs"
       ],
       "answer": "measure and draw angles",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q8",
@@ -117,7 +124,8 @@
         "segment length doubled"
       ],
       "answer": "same compass opening for corresponding arcs",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q9",
@@ -131,7 +139,8 @@
         "45° angles"
       ],
       "answer": "60° angles",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q10",
@@ -145,7 +154,8 @@
         "angles without tools"
       ],
       "answer": "straight lines",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q11",
@@ -159,7 +169,8 @@
         "more than half of AB"
       ],
       "answer": "more than half of AB",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q12",
@@ -173,7 +184,8 @@
         "perpendicular or at fixed angles"
       ],
       "answer": "perpendicular or at fixed angles",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q13",
@@ -187,7 +199,8 @@
         "arc length"
       ],
       "answer": "radius",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q14",
@@ -201,7 +214,8 @@
         "without using the point"
       ],
       "answer": "on both sides of the point on the line",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q15",
@@ -215,7 +229,8 @@
         "shade regions"
       ],
       "answer": "compare lengths",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     }
   ]
 }

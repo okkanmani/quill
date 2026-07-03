@@ -19,7 +19,8 @@
         "8"
       ],
       "answer": "3",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q2",
@@ -33,7 +34,8 @@
         "13"
       ],
       "answer": "13",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q3",
@@ -47,7 +49,8 @@
         "Prime"
       ],
       "answer": "Neither prime nor composite",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q4",
@@ -61,7 +64,8 @@
         "2 × 3 × 3"
       ],
       "answer": "2 × 3 × 3",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q5",
@@ -75,7 +79,8 @@
         "351"
       ],
       "answer": "346",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q6",
@@ -89,7 +94,8 @@
         "Yes"
       ],
       "answer": "Yes",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q7",
@@ -103,7 +109,8 @@
         "2,485"
       ],
       "answer": "2,485",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q8",
@@ -117,7 +124,8 @@
         "1,230"
       ],
       "answer": "1,230",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q9",
@@ -131,7 +139,8 @@
         "3"
       ],
       "answer": "6",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q10",
@@ -145,7 +154,8 @@
         "12"
       ],
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q11",
@@ -159,7 +169,8 @@
         "7"
       ],
       "answer": "10",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q12",
@@ -173,7 +184,8 @@
         "18"
       ],
       "answer": "24",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q13",
@@ -187,7 +199,8 @@
         "Only divisible by 3"
       ],
       "answer": "Yes",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q14",
@@ -201,7 +214,8 @@
         "24"
       ],
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q15",
@@ -215,7 +229,8 @@
         "314"
       ],
       "answer": "316",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q16",
@@ -229,7 +244,8 @@
         "130"
       ],
       "answer": "132",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q17",
@@ -243,7 +259,8 @@
         "3 × 4"
       ],
       "answer": "2 × 2 × 3",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q18",
@@ -257,7 +274,8 @@
         "30"
       ],
       "answer": "15",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q19",
@@ -271,7 +289,8 @@
         "4"
       ],
       "answer": "4",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q20",
@@ -285,7 +304,8 @@
         "Yes"
       ],
       "answer": "Yes",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     }
   ]
 }

@@ -4,6 +4,7 @@ import StudentHome from "./pages/StudentHome";
 import StudentLatest from "./pages/StudentLatest";
 import StudentResults from "./pages/StudentResults";
 import AdminHome from "./pages/AdminHome";
+import AdminAnalysis from "./pages/AdminAnalysis";
 import AdminWorksheets from "./pages/AdminWorksheets";
 import AdminQuestionBuilder from "./pages/AdminQuestionBuilder";
 import AdminStudents from "./pages/AdminStudents";
@@ -78,6 +79,15 @@ export default function App() {
           element={
             <ProtectedRoute role="admin">
               <AdminHome />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/analysis"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminAnalysis />
             </ProtectedRoute>
           }
         />

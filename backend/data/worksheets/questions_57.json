@@ -9,124 +9,207 @@
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 5/6 − 1/3?",
-      "choices": ["4/3", "1/2", "1/3", "4/6"],
+      "choices": [
+        "4/3",
+        "1/2",
+        "1/3",
+        "4/6"
+      ],
       "answer": "1/2",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q2",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 30% of 150?",
-      "choices": ["35", "40", "45", "50"],
+      "choices": [
+        "35",
+        "40",
+        "45",
+        "50"
+      ],
       "answer": "45",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q3",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Evaluate: 12 + 16 ÷ 4",
-      "choices": ["7", "16", "28", "112"],
+      "choices": [
+        "7",
+        "16",
+        "28",
+        "112"
+      ],
       "answer": "16",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q4",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A triangle has a base of 12 cm and a height of 5 cm. What is its area?",
-      "choices": ["17 cm²", "30 cm²", "60 cm²", "120 cm²"],
+      "choices": [
+        "17 cm²",
+        "30 cm²",
+        "60 cm²",
+        "120 cm²"
+      ],
       "answer": "30 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q5",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 9.4 − 4.67?",
-      "choices": ["4.63", "4.73", "4.83", "5.73"],
+      "choices": [
+        "4.63",
+        "4.73",
+        "4.83",
+        "5.73"
+      ],
       "answer": "4.73",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q6",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Solve for x: 4x + 5 = 29",
-      "choices": ["x = 4", "x = 5", "x = 6", "x = 7"],
+      "choices": [
+        "x = 4",
+        "x = 5",
+        "x = 6",
+        "x = 7"
+      ],
       "answer": "x = 6",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q7",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Which fraction is equivalent to 0.6?",
-      "choices": ["3/5", "2/5", "3/10", "1/5"],
+      "choices": [
+        "3/5",
+        "2/5",
+        "3/10",
+        "1/5"
+      ],
       "answer": "3/5",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q8",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A trapezoid has parallel sides of 6 cm and 10 cm, and a height of 4 cm. What is its area?",
-      "choices": ["16 cm²", "32 cm²", "40 cm²", "64 cm²"],
+      "choices": [
+        "16 cm²",
+        "32 cm²",
+        "40 cm²",
+        "64 cm²"
+      ],
       "answer": "32 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q9",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is the greatest common factor (GCF) of 36 and 48?",
-      "choices": ["6", "12", "18", "24"],
+      "choices": [
+        "6",
+        "12",
+        "18",
+        "24"
+      ],
       "answer": "12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q10",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What fraction of 28 is 7?",
-      "choices": ["1/4", "1/3", "3/4", "4/1"],
+      "choices": [
+        "1/4",
+        "1/3",
+        "3/4",
+        "4/1"
+      ],
       "answer": "1/4",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q11",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 2 3/4 + 1 5/6?",
-      "choices": ["4 1/12", "4 7/12", "3 8/12", "4 1/2"],
+      "choices": [
+        "4 1/12",
+        "4 7/12",
+        "3 8/12",
+        "4 1/2"
+      ],
       "answer": "4 7/12",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q12",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A jacket costs $45. It is on sale for 20% off. What is the sale price?",
-      "choices": ["$9.00", "$36.00", "$37.00", "$40.00"],
+      "choices": [
+        "$9.00",
+        "$36.00",
+        "$37.00",
+        "$40.00"
+      ],
       "answer": "$36.00",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q13",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Evaluate: 6² + 2 × 3",
-      "choices": ["42", "48", "54", "72"],
+      "choices": [
+        "42",
+        "48",
+        "54",
+        "72"
+      ],
       "answer": "42",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q14",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A cyclist rides 240 km in 4 hours at a constant speed. How far will they ride in 6 hours?",
-      "choices": ["300 km", "320 km", "360 km", "400 km"],
+      "choices": [
+        "300 km",
+        "320 km",
+        "360 km",
+        "400 km"
+      ],
       "answer": "360 km",
       "hint": false
     },
@@ -135,54 +218,90 @@
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 2.5 × 1.2?",
-      "choices": ["2.7", "3.0", "3.2", "30.0"],
+      "choices": [
+        "2.7",
+        "3.0",
+        "3.2",
+        "30.0"
+      ],
       "answer": "3.0",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q16",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Solve for y: 5y + 3 = 28",
-      "choices": ["y = 4", "y = 5", "y = 6", "y = 25"],
+      "choices": [
+        "y = 4",
+        "y = 5",
+        "y = 6",
+        "y = 25"
+      ],
       "answer": "y = 5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q17",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "What is 3/5 of 75?",
-      "choices": ["30", "40", "45", "50"],
+      "choices": [
+        "30",
+        "40",
+        "45",
+        "50"
+      ],
       "answer": "45",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q18",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "A rectangular prism is 3 cm by 4 cm by 5 cm. What is its volume?",
-      "choices": ["12 cm³", "35 cm³", "60 cm³", "120 cm³"],
+      "choices": [
+        "12 cm³",
+        "35 cm³",
+        "60 cm³",
+        "120 cm³"
+      ],
       "answer": "60 cm³",
-      "hint": false
+      "hint": false,
+      "area": "3d-geometry"
     },
     {
       "id": "q19",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "The ratio of red beads to blue beads is 2 : 3. If there are 25 beads in total, how many are red?",
-      "choices": ["8", "10", "12", "15"],
+      "choices": [
+        "8",
+        "10",
+        "12",
+        "15"
+      ],
       "answer": "10",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     },
     {
       "id": "q20",
       "type": "multiple_choice",
       "stars": 2,
       "prompt": "Round 7.248 to the nearest hundredth.",
-      "choices": ["7.2", "7.24", "7.25", "7.3"],
+      "choices": [
+        "7.2",
+        "7.24",
+        "7.25",
+        "7.3"
+      ],
       "answer": "7.25",
-      "hint": false
+      "hint": false,
+      "area": "numbers"
     }
   ]
 }

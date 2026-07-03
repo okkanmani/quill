@@ -10,81 +10,141 @@
       "id": "q1",
       "type": "multiple_choice",
       "prompt": "A square has side length 7 cm. What is its perimeter?",
-      "choices": ["14 cm", "21 cm", "28 cm", "49 cm"],
+      "choices": [
+        "14 cm",
+        "21 cm",
+        "28 cm",
+        "49 cm"
+      ],
       "answer": "28 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q2",
       "type": "multiple_choice",
       "prompt": "A square has side length 6 cm. What is its area?",
-      "choices": ["12 cm²", "24 cm²", "36 cm²", "72 cm²"],
+      "choices": [
+        "12 cm²",
+        "24 cm²",
+        "36 cm²",
+        "72 cm²"
+      ],
       "answer": "36 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q3",
       "type": "multiple_choice",
       "prompt": "A rectangle is 5 m long and 11 m wide. What is its perimeter?",
-      "choices": ["16 m", "32 m", "55 m", "110 m"],
+      "choices": [
+        "16 m",
+        "32 m",
+        "55 m",
+        "110 m"
+      ],
       "answer": "32 m",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q4",
       "type": "multiple_choice",
       "prompt": "A rectangle has length 8 cm and width 3.5 cm. What is its area?",
-      "choices": ["11.5 cm²", "23 cm²", "28 cm²", "56 cm²"],
+      "choices": [
+        "11.5 cm²",
+        "23 cm²",
+        "28 cm²",
+        "56 cm²"
+      ],
       "answer": "28 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q5",
       "type": "multiple_choice",
       "prompt": "A circle has radius 15 cm. Use π ≈ 3.14. What is the circumference?",
-      "choices": ["47.1 cm", "94.2 cm", "706.5 cm", "188.4 cm"],
+      "choices": [
+        "47.1 cm",
+        "94.2 cm",
+        "706.5 cm",
+        "188.4 cm"
+      ],
       "answer": "94.2 cm",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q6",
       "type": "multiple_choice",
       "prompt": "A circle has diameter 10 cm. Use π ≈ 3.14. What is the area of the circle?",
-      "choices": ["31.4 cm²", "78.5 cm²", "157 cm²", "314 cm²"],
+      "choices": [
+        "31.4 cm²",
+        "78.5 cm²",
+        "157 cm²",
+        "314 cm²"
+      ],
       "answer": "78.5 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q7",
       "type": "multiple_choice",
       "prompt": "A triangle has base 14 cm and height 9 cm. What is its area?",
-      "choices": ["23 cm²", "46 cm²", "63 cm²", "126 cm²"],
+      "choices": [
+        "23 cm²",
+        "46 cm²",
+        "63 cm²",
+        "126 cm²"
+      ],
       "answer": "63 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q8",
       "type": "multiple_choice",
       "prompt": "A parallelogram has base 7 cm. The perpendicular height to that base is 6 cm. What is its area?",
-      "choices": ["13 cm²", "26 cm²", "42 cm²", "84 cm²"],
+      "choices": [
+        "13 cm²",
+        "26 cm²",
+        "42 cm²",
+        "84 cm²"
+      ],
       "answer": "42 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q9",
       "type": "multiple_choice",
       "prompt": "A trapezoid has parallel sides of length 4 cm and 10 cm. The perpendicular distance (height) between them is 5 cm. What is its area?",
-      "choices": ["14 cm²", "25 cm²", "35 cm²", "50 cm²"],
+      "choices": [
+        "14 cm²",
+        "25 cm²",
+        "35 cm²",
+        "50 cm²"
+      ],
       "answer": "35 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q10",
       "type": "multiple_choice",
       "prompt": "A rhombus has diagonals of length 8 cm and 6 cm. What is its area? (Use: area = ½ × d₁ × d₂)",
-      "choices": ["14 cm²", "24 cm²", "48 cm²", "96 cm²"],
+      "choices": [
+        "14 cm²",
+        "24 cm²",
+        "48 cm²",
+        "96 cm²"
+      ],
       "answer": "24 cm²",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q11",
@@ -97,7 +157,8 @@
         "Any trapezoid"
       ],
       "answer": "A square",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     },
     {
       "id": "q12",
@@ -110,7 +171,8 @@
         "Not enough information"
       ],
       "answer": "Rectangle B (35 cm²)",
-      "hint": false
+      "hint": false,
+      "area": "geometry"
     }
   ]
 }

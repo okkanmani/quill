@@ -9,135 +9,225 @@
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Evaluate 3x + 7 when x = 4.",
-      "choices": ["17", "19", "21", "15"],
+      "choices": [
+        "17",
+        "19",
+        "21",
+        "15"
+      ],
       "answer": "19",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q2",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Solve for n: n + 15 = 32",
-      "choices": ["47", "15", "17", "18"],
+      "choices": [
+        "47",
+        "15",
+        "17",
+        "18"
+      ],
       "answer": "17",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q3",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Which expression means “5 less than twice a number n”?",
-      "choices": ["2n - 5", "5 - 2n", "2(n - 5)", "5n - 2"],
+      "choices": [
+        "2n - 5",
+        "5 - 2n",
+        "2(n - 5)",
+        "5n - 2"
+      ],
       "answer": "2n - 5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q4",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Solve for m: 4m = 36",
-      "choices": ["8", "10", "9", "12"],
+      "choices": [
+        "8",
+        "10",
+        "9",
+        "12"
+      ],
       "answer": "9",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q5",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "A rule is y = 2x + 1. What is y when x = 5?",
-      "choices": ["10", "11", "12", "13"],
+      "choices": [
+        "10",
+        "11",
+        "12",
+        "13"
+      ],
       "answer": "11",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q6",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Simplify: 6a + 3a",
-      "choices": ["9a", "18a", "6a³", "3a"],
+      "choices": [
+        "9a",
+        "18a",
+        "6a³",
+        "3a"
+      ],
       "answer": "9a",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q7",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Solve for p: p − 9 = 14",
-      "choices": ["5", "23", "14", "9"],
+      "choices": [
+        "5",
+        "23",
+        "14",
+        "9"
+      ],
       "answer": "23",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q8",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "A store charges $3 to join and $2 per book. Which expression gives the total cost for b books?",
-      "choices": ["2b + 3", "3b + 2", "2(b + 3)", "5b"],
+      "choices": [
+        "2b + 3",
+        "3b + 2",
+        "2(b + 3)",
+        "5b"
+      ],
       "answer": "2b + 3",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q9",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Solve for x: 2x + 5 = 17",
-      "choices": ["11", "5", "6", "8"],
+      "choices": [
+        "11",
+        "5",
+        "6",
+        "8"
+      ],
       "answer": "6",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q10",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Which value of n makes 3(n − 2) = 12 true?",
-      "choices": ["4", "5", "6", "8"],
+      "choices": [
+        "4",
+        "5",
+        "6",
+        "8"
+      ],
       "answer": "6",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q11",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Evaluate 5² − 2x when x = 3.",
-      "choices": ["19", "16", "22", "11"],
+      "choices": [
+        "19",
+        "16",
+        "22",
+        "11"
+      ],
       "answer": "19",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q12",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Solve for x: x ÷ 4 = 7",
-      "choices": ["28", "11", "3", "32"],
+      "choices": [
+        "28",
+        "11",
+        "3",
+        "32"
+      ],
       "answer": "28",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q13",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "A pattern starts 4, 7, 10, 13, … What is the next term?",
-      "choices": ["15", "16", "17", "18"],
+      "choices": [
+        "15",
+        "16",
+        "17",
+        "18"
+      ],
       "answer": "16",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q14",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Simplify: 8y − 2y + 5",
-      "choices": ["6y + 5", "10y + 5", "6y − 5", "8y + 3"],
+      "choices": [
+        "6y + 5",
+        "10y + 5",
+        "6y − 5",
+        "8y + 3"
+      ],
       "answer": "6y + 5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     },
     {
       "id": "q15",
       "type": "multiple_choice",
       "stars": 3,
       "prompt": "Solve for x: 3(x + 2) = 21",
-      "choices": ["7", "5", "9", "6"],
+      "choices": [
+        "7",
+        "5",
+        "9",
+        "6"
+      ],
       "answer": "5",
-      "hint": false
+      "hint": false,
+      "area": "algebra"
     }
   ]
 }

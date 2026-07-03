@@ -423,6 +423,96 @@ def strip_reference_answers_for_student(worksheet: dict) -> dict:
     return out
 
 
+def _normalize_question_area(raw) -> str | None:
+    if not isinstance(raw, str):
+        return None
+    area = raw.strip().lower()
+    return area or None
+
+
+def question_area_map_for_worksheet(worksheet_id: str) -> dict[str, str]:
+    """question_id → area slug from DB payloads, then bundled JSON."""
+    out: dict[str, str] = {}
+    conn = db.connect()
+    try:
+        rows = conn.execute(
+            """
+            SELECT payload FROM worksheet_questions
+            WHERE worksheet_id = ? ORDER BY sort_order
+            """,
+            (worksheet_id,),
+        ).fetchall()
+    finally:
+        conn.close()
+    for row in rows:
+        try:
+            q = json.loads(row["payload"])
+        except json.JSONDecodeError:
+            continue
+        qid = q.get("id")
+        area = _normalize_question_area(q.get("area"))
+        if qid and area:
+            out[qid] = area
+    if out:
+        return out
+    json_path = WORKSHEETS_DIR / f"{worksheet_id}.json"
+    if json_path.is_file():
+        try:
+            with open(json_path, encoding="utf-8") as f:
+                data = json.load(f)
+            for q in data.get("questions") or []:
+                qid = q.get("id")
+                area = _normalize_question_area(q.get("area"))
+                if qid and area:
+                    out[qid] = area
+        except (OSError, json.JSONDecodeError):
+            pass
+    return out
+
+
+def attach_areas_to_answers(worksheet: dict, answers: list) -> list:
+    """Copy question.area onto each answer row when missing."""
+    area_by_qid: dict[str, str] = {}
+    for q in worksheet.get("questions") or []:
+        qid = q.get("id")
+        area = _normalize_question_area(q.get("area"))
+        if qid and area:
+            area_by_qid[qid] = area
+    if not area_by_qid:
+        wid = worksheet.get("id")
+        if wid:
+            area_by_qid = question_area_map_for_worksheet(wid)
+    enriched: list = []
+    for a in answers or []:
+        if not isinstance(a, dict):
+            enriched.append(a)
+            continue
+        row = dict(a)
+        qid = row.get("question_id")
+        if qid and not row.get("area") and qid in area_by_qid:
+            row["area"] = area_by_qid[qid]
+        enriched.append(row)
+    return enriched
+
+
+def enrich_result_answers_with_areas(worksheet_id: str, answers: list) -> list:
+    """Fill missing answer.area from worksheet question metadata."""
+    area_by_qid = question_area_map_for_worksheet(worksheet_id)
+    if not area_by_qid:
+        return answers
+    out: list = []
+    for a in answers or []:
+        if not isinstance(a, dict):
+            out.append(a)
+            continue
+        row = dict(a)
+        qid = row.get("question_id")
+        if qid and not row.get("area") and qid in area_by_qid:
+            row["area"] = area_by_qid[qid]
+        out.append(row)
+    return out
+
+
 def _content_badge_from_sheet_data(data: dict) -> str | None:
     badge = data.get("content_badge")
     if badge is not None and str(badge).strip():
@@ -1071,6 +1161,9 @@ def worksheet_data_from_builder(body: dict) -> dict:
             "prompt": prompt.strip(),
             "hint": False,
         }
+        area = _normalize_question_area(raw.get("area"))
+        if area:
+            q_obj["area"] = area
 
         if fmt == "multiple_choice":
             choices = raw.get("choices")
@@ -1225,6 +1318,14 @@ def validate_worksheet_data(data: dict) -> list[str]:
             errors.append(f"Duplicate question id: {qid}.")
         else:
             seen_qids.add(qid)
+
+        area = q.get("area")
+        if area is not None and (
+            not isinstance(area, str) or not area.strip()
+        ):
+            errors.append(
+                f"questions[{i}].area must be a non-empty string when set."
+            )
 
         qtype = q.get("type")
         if qtype not in VALID_QUESTION_TYPES:
@@ -1750,14 +1851,32 @@ def list_results(student_name: str, *, for_student_view: bool = False) -> list:
             (student_name,),
         ).fetchall()
         out = []
+        area_cache: dict[str, dict[str, str]] = {}
         for r in rows:
             item = _result_row_to_dict(r)
             ev = r["evaluation"]
             if ev and str(ev).strip().lower() == "manual":
                 item["evaluation"] = "manual"
             item.update(_resolve_difficulty_metadata(r["worksheet_id"]))
+            wid = r["worksheet_id"]
+            if wid not in area_cache:
+                area_cache[wid] = question_area_map_for_worksheet(wid)
+            answers = item.get("answers") or []
+            if area_cache[wid]:
+                enriched = []
+                for ans in answers:
+                    if not isinstance(ans, dict):
+                        enriched.append(ans)
+                        continue
+                    row = dict(ans)
+                    qid = row.get("question_id")
+                    if qid and not row.get("area") and qid in area_cache[wid]:
+                        row["area"] = area_cache[wid][qid]
+                    enriched.append(row)
+                item["answers"] = enriched
+                answers = enriched
             if for_student_view and item.get("status") == "pending":
-                for ans in item.get("answers") or []:
+                for ans in answers:
                     if isinstance(ans, dict):
                         ans.pop("expected", None)
                         ans.pop("correct", None)
