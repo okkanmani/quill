@@ -728,10 +728,12 @@ def remove_result(result_id: int, authorization: str = Header(...)):
 @app.get("/results")
 def get_results(authorization: str = Header(...)):
     payload = _payload(authorization)
-    if payload["role"] != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
-    who = _student_context_name(payload)
-    return list_results(who)
+    if payload.get("role") == "student":
+        return list_results(payload["name"], for_student_view=True)
+    if payload.get("role") == "admin":
+        who = _student_context_name(payload)
+        return list_results(who)
+    raise HTTPException(status_code=403, detail="Admin or student only")
 
 
 @app.get("/learn/subjects")

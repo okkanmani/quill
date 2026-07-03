@@ -1732,7 +1732,7 @@ def evaluate_result(result_id: int, student_name: str, marks: list[dict]) -> dic
         conn.close()
 
 
-def list_results(student_name: str) -> list:
+def list_results(student_name: str, *, for_student_view: bool = False) -> list:
     conn = db.connect()
     try:
         rows = conn.execute(
@@ -1755,6 +1755,12 @@ def list_results(student_name: str) -> list:
             ev = r["evaluation"]
             if ev and str(ev).strip().lower() == "manual":
                 item["evaluation"] = "manual"
+            item.update(_resolve_difficulty_metadata(r["worksheet_id"]))
+            if for_student_view and item.get("status") == "pending":
+                for ans in item.get("answers") or []:
+                    if isinstance(ans, dict):
+                        ans.pop("expected", None)
+                        ans.pop("correct", None)
             out.append(item)
         return out
     finally:

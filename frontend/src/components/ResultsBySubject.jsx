@@ -4,6 +4,11 @@ import RecycleBinButton from "./RecycleBinButton";
 import { formatSubjectLabel } from "../subjectUtils";
 import { normalizeSubjectKey, subjectSortKey } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
+import {
+  formatGradeSummary,
+  formatResultScoreLine,
+  weightedGradeSummary,
+} from "../gradeUtils";
 
 function sortResultsInGroup(a, b) {
   const pendingA = a.status === "pending" ? 1 : 0;
@@ -40,8 +45,8 @@ function scoreBadgeClass(r) {
 }
 
 /**
- * Admin results: accordion by subject, collapsed by default.
- * Within each subject: pending first, then newest submission.
+ * Results accordion by subject (admin or student).
+ * Shows weighted letter grade on each subject header and per-result score line.
  */
 export default function ResultsBySubject({
   results,
@@ -50,7 +55,9 @@ export default function ResultsBySubject({
   onResultEvaluated,
   onDeleteResult,
   deletingResultId,
+  variant = "admin",
 }) {
+  const isAdmin = variant === "admin";
   const groups = useMemo(() => groupResults(results), [results]);
   const [openSubjects, setOpenSubjects] = useState(() => new Set());
   const pendingCount = results.filter((r) => r.status === "pending").length;
@@ -70,12 +77,14 @@ export default function ResultsBySubject({
     <div className="flex flex-col gap-3">
       {pendingCount > 0 ? (
         <p className="text-sm font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2">
-          {pendingCount} submission{pendingCount === 1 ? "" : "s"} awaiting your
-          review
+          {isAdmin
+            ? `${pendingCount} submission${pendingCount === 1 ? "" : "s"} awaiting your review`
+            : `${pendingCount} submission${pendingCount === 1 ? "" : "s"} awaiting teacher review`}
         </p>
       ) : null}
       {groups.map(([subjectKey, items]) => {
         const isOpen = openSubjects.has(subjectKey);
+        const subjectGrade = weightedGradeSummary(items);
         return (
           <div
             key={subjectKey}
@@ -87,14 +96,21 @@ export default function ResultsBySubject({
               aria-expanded={isOpen}
               className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left bg-slate-200/90 hover:bg-slate-200 border-b border-slate-300/80 transition"
             >
-              <span className="font-bold text-slate-950 text-base">
+              <span className="min-w-0 flex-1 font-bold text-slate-950 text-base">
                 {formatSubjectLabel(subjectKey)}
                 <span className="font-semibold text-slate-800/90 text-sm ml-2">
                   ({items.length})
                 </span>
               </span>
-              <span className="text-slate-900 text-sm font-bold shrink-0 tabular-nums">
-                {isOpen ? "▼" : "▶"}
+              <span className="flex items-center gap-3 shrink-0">
+                {subjectGrade ? (
+                  <span className="font-bold text-slate-950 text-base tabular-nums">
+                    {formatGradeSummary(subjectGrade)}
+                  </span>
+                ) : null}
+                <span className="text-slate-900 text-sm font-bold tabular-nums">
+                  {isOpen ? "▼" : "▶"}
+                </span>
               </span>
             </button>
             {isOpen ? (
@@ -102,6 +118,7 @@ export default function ResultsBySubject({
                 {items.map((r) => {
                   const expanded = openIds.has(r.id);
                   const isPending = r.status === "pending";
+                  const scoreLine = formatResultScoreLine(r);
                   return (
                     <div
                       key={r.id}
@@ -118,100 +135,105 @@ export default function ResultsBySubject({
                           aria-expanded={expanded}
                           className="w-full text-left p-5 hover:bg-slate-50/60 transition flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start sm:gap-4"
                         >
-                        <div className="min-w-0 flex-1">
-                          <p className="text-slate-900 font-semibold text-lg">
-                            {r.title || r.worksheet_id}
-                          </p>
-                          {r.student ? (
-                            <p className="text-slate-600 text-sm mt-1">
-                              {r.student}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-slate-900 font-semibold text-lg">
+                              {r.title || r.worksheet_id}
                             </p>
-                          ) : null}
-                          <p className="text-slate-400 text-xs mt-2">
-                            Submitted:{" "}
-                            {new Date(r.submitted_at).toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end sm:gap-2">
-                          {r.timed && r.duration_seconds != null ? (
-                            <span className="inline-flex text-xs font-semibold px-2.5 py-1 rounded-full bg-sky-50 text-sky-900 border border-sky-200 tabular-nums">
-                              Completed in {formatDurationSeconds(r.duration_seconds)}
+                            {isAdmin && r.student ? (
+                              <p className="text-slate-600 text-sm mt-1">
+                                {r.student}
+                              </p>
+                            ) : null}
+                            <p className="text-slate-400 text-xs mt-2">
+                              Submitted:{" "}
+                              {new Date(r.submitted_at).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end sm:gap-2">
+                            {r.timed && r.duration_seconds != null ? (
+                              <span className="inline-flex text-xs font-semibold px-2.5 py-1 rounded-full bg-sky-50 text-sky-900 border border-sky-200 tabular-nums">
+                                Completed in{" "}
+                                {formatDurationSeconds(r.duration_seconds)}
+                              </span>
+                            ) : null}
+                            <span
+                              className={`inline-flex text-sm font-semibold px-3 py-1 rounded-full tabular-nums ${scoreBadgeClass(r)}`}
+                            >
+                              {isPending ? "Pending review" : scoreLine}
                             </span>
-                          ) : null}
-                          <span
-                            className={`inline-flex text-sm font-semibold px-3 py-1 rounded-full ${scoreBadgeClass(r)}`}
-                          >
-                            {isPending
-                              ? "Pending review"
-                              : `${r.score} / ${r.total}`}
-                          </span>
-                          <span className="text-slate-600 text-xs font-semibold underline underline-offset-2">
-                            {expanded
-                              ? isPending
-                                ? "Hide"
-                                : "Hide answers"
-                              : isPending
-                                ? "Mark answers"
-                                : "Show answers"}
-                          </span>
-                        </div>
-                      </button>
+                            <span className="text-slate-600 text-xs font-semibold underline underline-offset-2">
+                              {expanded
+                                ? isPending
+                                  ? "Hide"
+                                  : "Hide answers"
+                                : isPending
+                                  ? isAdmin
+                                    ? "Mark answers"
+                                    : "View answers"
+                                  : "Show answers"}
+                            </span>
+                          </div>
+                        </button>
 
-                      {expanded && isPending ? (
-                        <AdminResultGrader
-                          result={r}
-                          onEvaluated={onResultEvaluated}
-                        />
-                      ) : null}
+                        {expanded && isPending && isAdmin ? (
+                          <AdminResultGrader
+                            result={r}
+                            onEvaluated={onResultEvaluated}
+                          />
+                        ) : null}
 
-                      {expanded && !isPending ? (
-                        <div className="border-t border-slate-100 px-5 pb-5 pt-4 bg-slate-50/30">
-                          <ul className="flex flex-col gap-4">
-                            {r.answers.map((a, index) => (
-                              <li
-                                key={a.question_id}
-                                className="rounded-xl bg-white border border-slate-100 p-4 shadow-sm"
-                              >
-                                <p className="text-slate-800 text-sm font-medium leading-snug">
-                                  <span className="text-indigo-500 font-normal">
-                                    {index + 1}.{" "}
-                                  </span>
-                                  {a.prompt}
-                                </p>
-                                <div className="mt-3 flex flex-col gap-1.5 text-sm sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2">
-                                  <span className="text-slate-600 shrink-0">
-                                    Response:
-                                  </span>
-                                  <span className="text-slate-900 font-medium break-words min-w-0">
-                                    {a.given === "" || a.given == null
-                                      ? "(empty)"
-                                      : `"${a.given}"`}
-                                  </span>
-                                  <span
-                                    className={`inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
-                                      a.correct
-                                        ? "bg-green-50 text-green-800 border-green-200"
-                                        : "bg-red-50 text-red-800 border-red-200"
-                                    }`}
-                                  >
-                                    {a.correct ? "Correct" : "Incorrect"}
-                                  </span>
-                                </div>
-                                {!a.correct &&
-                                a.expected != null &&
-                                a.expected !== "" ? (
-                                  <p className="mt-2 text-sm text-slate-900">
-                                    <span className="text-red-700 font-semibold">
-                                      Expected answer:{" "}
+                        {expanded && (isAdmin ? !isPending : true) ? (
+                          <div className="border-t border-slate-100 px-5 pb-5 pt-4 bg-slate-50/30">
+                            <ul className="flex flex-col gap-4">
+                              {r.answers.map((a, index) => (
+                                <li
+                                  key={a.question_id}
+                                  className="rounded-xl bg-white border border-slate-100 p-4 shadow-sm"
+                                >
+                                  <p className="text-slate-800 text-sm font-medium leading-snug">
+                                    <span className="text-indigo-500 font-normal">
+                                      {index + 1}.{" "}
                                     </span>
-                                    {a.expected}
+                                    {a.prompt}
                                   </p>
-                                ) : null}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : null}
+                                  <div className="mt-3 flex flex-col gap-1.5 text-sm sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2">
+                                    <span className="text-slate-600 shrink-0">
+                                      Response:
+                                    </span>
+                                    <span className="text-slate-900 font-medium break-words min-w-0">
+                                      {a.given === "" || a.given == null
+                                        ? "(empty)"
+                                        : `"${a.given}"`}
+                                    </span>
+                                    {!isPending &&
+                                    typeof a.correct === "boolean" ? (
+                                      <span
+                                        className={`inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
+                                          a.correct
+                                            ? "bg-green-50 text-green-800 border-green-200"
+                                            : "bg-red-50 text-red-800 border-red-200"
+                                        }`}
+                                      >
+                                        {a.correct ? "Correct" : "Incorrect"}
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                  {isAdmin &&
+                                  !a.correct &&
+                                  a.expected != null &&
+                                  a.expected !== "" ? (
+                                    <p className="mt-2 text-sm text-slate-900">
+                                      <span className="text-red-700 font-semibold">
+                                        Expected answer:{" "}
+                                      </span>
+                                      {a.expected}
+                                    </p>
+                                  ) : null}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
                       </div>
                       {onDeleteResult ? (
                         <div className="flex shrink-0 self-center sm:self-stretch sm:items-stretch sm:w-11">

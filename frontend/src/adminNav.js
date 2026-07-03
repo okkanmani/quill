@@ -10,6 +10,7 @@ export const ADMIN_MAIN_NAV = [
 /** Student home + learn shell — same visual group as admin nav in AppHeader. */
 export const STUDENT_MAIN_NAV = [
   { to: "/student", label: "Your Worksheets", end: true },
+  { to: "/student/results", label: "Your Results", end: true },
   { to: "/student/learn", label: "Learning Resources", end: false },
 ];
 
@@ -17,6 +18,7 @@ export const STUDENT_MAIN_NAV = [
 export function buildStudentNavLinks(hasLatest) {
   return [
     { to: "/student", label: "Your Worksheets", end: true },
+    { to: "/student/results", label: "Your Results", end: true },
     {
       to: "/student/latest",
       label: "Latest",
