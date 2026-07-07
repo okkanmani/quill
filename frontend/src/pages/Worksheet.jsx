@@ -17,6 +17,10 @@ import {
   QuestionDifficultyStars,
 } from "../components/DifficultyStars";
 import WorksheetPassageContent from "../components/WorksheetPassageContent";
+import {
+  ScratchpadIcon,
+  TextAnswerIcon,
+} from "../components/ResponseModeIcons";
 import { normalizeSubjectKey } from "../subjectUtils";
 
 function scratchpadsVisibleByDefault(worksheet) {
@@ -26,6 +30,40 @@ function scratchpadsVisibleByDefault(worksheet) {
 
 function isManualEvaluation(worksheet) {
   return worksheet?.evaluation === "manual";
+}
+
+function parseStoredAnswer(raw) {
+  if (raw == null) {
+    return { given: "", mode: "text", scratchpad: "" };
+  }
+  if (typeof raw === "string") {
+    return { given: raw, mode: "text", scratchpad: "" };
+  }
+  if (typeof raw === "object") {
+    const mode = raw.mode === "scratchpad" || raw.response_mode === "scratchpad"
+      ? "scratchpad"
+      : "text";
+    return {
+      given: raw.given ?? "",
+      mode,
+      scratchpad: raw.scratchpad ?? "",
+    };
+  }
+  return { given: "", mode: "text", scratchpad: "" };
+}
+
+function buildDraftPayload(questions, answers, responseModes, scratchpadData) {
+  const out = {};
+  for (const q of questions) {
+    out[q.id] = {
+      mode: responseModes[q.id] || "text",
+      given: answers[q.id] || "",
+    };
+    if (scratchpadData[q.id]) {
+      out[q.id].scratchpad = scratchpadData[q.id];
+    }
+  }
+  return out;
 }
 
 function formatTimer(totalSeconds) {
@@ -44,6 +82,8 @@ export default function Worksheet() {
   const isAdminPreview = localStorage.getItem("role") === "admin";
   const [worksheet, setWorksheet] = useState(null);
   const [answers, setAnswers] = useState({});
+  const [responseModes, setResponseModes] = useState({});
+  const [scratchpadData, setScratchpadData] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [resultStatus, setResultStatus] = useState(null);
   const [savedAnswers, setSavedAnswers] = useState([]);
@@ -106,17 +146,21 @@ export default function Worksheet() {
         setScratchpadsVisible(scratchpadsVisibleByDefault(data));
 
         const initial = {};
+        const initialModes = {};
+        const initialScratchpads = {};
         data.questions.forEach((q) => {
           initial[q.id] = "";
+          initialModes[q.id] = "text";
+          initialScratchpads[q.id] = "";
         });
 
         if (existing) {
-          const byQid = Object.fromEntries(
-            (existing.answers || []).map((a) => [a.question_id, a.given ?? ""]),
-          );
-          data.questions.forEach((q) => {
-            initial[q.id] = byQid[q.id] ?? "";
-          });
+          for (const row of existing.answers || []) {
+            const parsed = parseStoredAnswer(row);
+            initial[row.question_id] = parsed.given;
+            initialModes[row.question_id] = parsed.mode;
+            initialScratchpads[row.question_id] = parsed.scratchpad;
+          }
           setSubmitted(true);
           setResultStatus(existing.status || "evaluated");
           setSavedAnswers(existing.answers || []);
@@ -149,9 +193,10 @@ export default function Worksheet() {
             const draft = await getWorksheetDraft(id).catch(() => null);
             if (draft?.answers) {
               data.questions.forEach((q) => {
-                if (draft.answers[q.id] != null) {
-                  initial[q.id] = String(draft.answers[q.id]);
-                }
+                const parsed = parseStoredAnswer(draft.answers[q.id]);
+                initial[q.id] = parsed.given;
+                initialModes[q.id] = parsed.mode;
+                initialScratchpads[q.id] = parsed.scratchpad;
               });
               setDraftSavedAt(draft.saved_at);
             }
@@ -159,6 +204,8 @@ export default function Worksheet() {
         }
 
         setAnswers(initial);
+        setResponseModes(initialModes);
+        setScratchpadData(initialScratchpads);
       } catch (e) {
         if (e.status === 423 && !isAdminPreview) {
           setAccessLocked(true);
@@ -186,11 +233,19 @@ export default function Worksheet() {
       const manual = isManualEvaluation(worksheet);
 
       if (manual) {
-        const answers_payload = worksheet.questions.map((q) => ({
-          question_id: q.id,
-          prompt: q.prompt,
-          given: answers[q.id],
-        }));
+        const answers_payload = worksheet.questions.map((q) => {
+          const mode = responseModes[q.id] || "text";
+          const payload = {
+            question_id: q.id,
+            prompt: q.prompt,
+            given: mode === "text" ? answers[q.id] || "" : "",
+            response_mode: mode,
+          };
+          if (mode === "scratchpad" && scratchpadData[q.id]) {
+            payload.scratchpad = scratchpadData[q.id];
+          }
+          return payload;
+        });
         try {
           await submitResult({
             worksheet_id: id,
@@ -248,7 +303,7 @@ export default function Worksheet() {
         setSubmitError(e.message || "Failed to submit.");
       }
     },
-    [answers, id, submitted, worksheet],
+    [answers, id, responseModes, scratchpadData, submitted, worksheet],
   );
 
   useEffect(() => {
@@ -292,12 +347,28 @@ export default function Worksheet() {
     setDraftMessage("");
   }
 
+  function handleResponseModeChange(questionId, mode) {
+    setResponseModes((prev) => ({ ...prev, [questionId]: mode }));
+    setDraftMessage("");
+  }
+
+  function handleScratchpadChange(questionId, dataUrl) {
+    setScratchpadData((prev) => ({ ...prev, [questionId]: dataUrl }));
+    setDraftMessage("");
+  }
+
   async function handleSaveDraft(exitAfter = false) {
     if (!worksheet || worksheet.timed || submitted || isAdminPreview) return;
     setSavingDraft(true);
     setDraftMessage("");
     try {
-      const result = await saveWorksheetDraft(id, answers);
+      const payload = buildDraftPayload(
+        worksheet.questions,
+        answers,
+        responseModes,
+        scratchpadData,
+      );
+      const result = await saveWorksheetDraft(id, payload);
       setDraftSavedAt(result.saved_at);
       setDraftMessage("Progress saved.");
       if (exitAfter) navigate(-1);
@@ -331,8 +402,45 @@ export default function Worksheet() {
     return isAutoCorrect(q) ? "border-green-300" : "border-red-300";
   }
 
+  function renderResponseModeToggle(q, locked) {
+    const mode = responseModes[q.id] || "text";
+    const baseBtn =
+      "inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 transition disabled:opacity-40 disabled:pointer-events-none";
+    const active = "bg-indigo-100 text-indigo-900 border-indigo-300";
+    const idle =
+      "bg-white text-slate-600 border-slate-200 hover:border-indigo-200 hover:text-indigo-800";
+
+    return (
+      <div className="flex flex-col gap-2 shrink-0" role="group" aria-label="Answer mode">
+        <button
+          type="button"
+          disabled={locked}
+          onClick={() => handleResponseModeChange(q.id, "text")}
+          title="Type answer"
+          aria-label="Type answer"
+          aria-pressed={mode === "text"}
+          className={`${baseBtn} ${mode === "text" ? active : idle}`}
+        >
+          <TextAnswerIcon />
+        </button>
+        <button
+          type="button"
+          disabled={locked}
+          onClick={() => handleResponseModeChange(q.id, "scratchpad")}
+          title="Use scratchpad"
+          aria-label="Use scratchpad"
+          aria-pressed={mode === "scratchpad"}
+          className={`${baseBtn} ${mode === "scratchpad" ? active : idle}`}
+        >
+          <ScratchpadIcon />
+        </button>
+      </div>
+    );
+  }
+
   function renderInput(q) {
     const locked = submitted || isAdminPreview;
+    const manual = isManualEvaluation(worksheet);
 
     if (q.type === "multiple_choice") {
       return (
@@ -365,6 +473,56 @@ export default function Worksheet() {
               </button>
             );
           })}
+        </div>
+      );
+    }
+
+    if (manual) {
+      const mode = responseModes[q.id] || "text";
+
+      let answerField;
+      if (mode === "scratchpad") {
+        if (locked) {
+          answerField =
+            scratchpadData[q.id] || savedRow(q.id)?.scratchpad ? (
+              <img
+                src={scratchpadData[q.id] || savedRow(q.id)?.scratchpad}
+                alt="Your scratchpad work"
+                className="max-w-full rounded-xl border border-slate-200 bg-black"
+              />
+            ) : (
+              <p className="text-sm text-slate-500 italic">
+                No scratchpad work saved.
+              </p>
+            );
+        } else {
+          answerField = (
+            <Drawpad
+              key={`scratch-${id}-${q.id}`}
+              value={scratchpadData[q.id] || ""}
+              onChange={(dataUrl) => handleScratchpadChange(q.id, dataUrl)}
+              showHeading={false}
+              className="mt-0"
+            />
+          );
+        }
+      } else {
+        answerField = (
+          <textarea
+            value={answers[q.id]}
+            onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+            disabled={locked}
+            placeholder="Type your answer and show your reasoning..."
+            rows={4}
+            className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y min-h-[6rem]"
+          />
+        );
+      }
+
+      return (
+        <div className="mt-3 flex items-start gap-3">
+          {!locked ? renderResponseModeToggle(q, locked) : null}
+          <div className="min-w-0 flex-1">{answerField}</div>
         </div>
       );
     }
@@ -406,9 +564,11 @@ export default function Worksheet() {
             <span className="font-medium text-slate-700">{q.answer}</span>
           </p>
         ) : null}
-        {scratchpadAllowed && scratchpadsVisible && (
+        {!isManualEvaluation(worksheet) &&
+        scratchpadAllowed &&
+        scratchpadsVisible ? (
           <Drawpad key={`scratch-${id}-${q.id}`} showHeading={false} />
-        )}
+        ) : null}
         {renderInput(q)}
         {submitted &&
           !isManualEvaluation(worksheet) &&
@@ -560,7 +720,7 @@ export default function Worksheet() {
         ) : null}
         {manual ? (
           <span className="text-amber-700 text-xs font-semibold rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5">
-            Written answers · teacher marked
+            Written answers · type or scratchpad per question
           </span>
         ) : null}
         <DifficultyStars
@@ -570,7 +730,7 @@ export default function Worksheet() {
         />
       </div>
 
-      {scratchpadAllowed && (
+      {scratchpadAllowed && !manual && (
         <div className="mb-6 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
           <div className="flex items-center justify-between gap-4">
             <div>

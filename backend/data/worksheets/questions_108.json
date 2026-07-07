@@ -1,0 +1,360 @@
+{
+  "title": "Data analysis — Charts, tables & inference (timed, ★★★ hard)",
+  "subject": "data",
+  "learn_subject": "math",
+  "learn_section": "data-graphs",
+  "timed": true,
+  "time_limit_minutes": 30,
+  "scratchpad": true,
+  "created_at": "2026-07-04T23:11:42.673054+00:00",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Club fundraising",
+      "body": "Amount raised ($) by four clubs in one month.",
+      "chart": {
+        "type": "bar",
+        "title": "Funds raised",
+        "labels": [
+          "Robotics",
+          "Drama",
+          "Eco",
+          "Chess"
+        ],
+        "values": [
+          420,
+          310,
+          385,
+          265
+        ],
+        "xLabel": "Club",
+        "yLabel": "Dollars"
+      }
+    },
+    {
+      "id": "p2",
+      "title": "Survey: commute method",
+      "body": "200 students reported how they travel to school.",
+      "chart": {
+        "type": "pie",
+        "title": "Commute methods",
+        "labels": [
+          "Walk",
+          "Bus",
+          "Car",
+          "Bike"
+        ],
+        "values": [
+          50,
+          80,
+          45,
+          25
+        ]
+      }
+    },
+    {
+      "id": "p3",
+      "title": "Plant height study",
+      "body": "Average height (cm) of bean plants measured each week for five weeks.",
+      "chart": {
+        "type": "line",
+        "title": "Mean plant height",
+        "labels": [
+          "Wk1",
+          "Wk2",
+          "Wk3",
+          "Wk4",
+          "Wk5"
+        ],
+        "values": [
+          4,
+          9,
+          14,
+          18,
+          23
+        ],
+        "xLabel": "Week",
+        "yLabel": "cm"
+      }
+    },
+    {
+      "id": "p4",
+      "title": "Test scores by class",
+      "body": "Scores out of 50 on a data quiz.",
+      "table": {
+        "headers": [
+          "Class",
+          "Students",
+          "Mean",
+          "Median",
+          "Range"
+        ],
+        "rows": [
+          [
+            "6A",
+            "24",
+            "38",
+            "39",
+            "22"
+          ],
+          [
+            "6B",
+            "26",
+            "34",
+            "35",
+            "18"
+          ],
+          [
+            "6C",
+            "25",
+            "41",
+            "42",
+            "16"
+          ]
+        ]
+      }
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which club raised the most money?",
+      "choices": [
+        "Robotics",
+        "Eco",
+        "Drama",
+        "Chess"
+      ],
+      "answer": "Robotics",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p1"
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How much more did Robotics raise than Chess?",
+      "choices": [
+        "$155",
+        "$145",
+        "$165",
+        "$125"
+      ],
+      "answer": "$155",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p1"
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is the mean amount raised by the four clubs?",
+      "choices": [
+        "$345",
+        "$350",
+        "$340",
+        "$355"
+      ],
+      "answer": "$345",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p1"
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Eco raised what percent of the total raised by all four clubs? (nearest whole percent)",
+      "choices": [
+        "27%",
+        "30%",
+        "25%",
+        "33%"
+      ],
+      "answer": "27%",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p1"
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How many students take the bus?",
+      "choices": [
+        "80",
+        "50",
+        "45",
+        "25"
+      ],
+      "answer": "80",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p2"
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What fraction of the 200 students walk to school?",
+      "choices": [
+        "1/4",
+        "1/5",
+        "2/5",
+        "3/10"
+      ],
+      "answer": "1/4",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p2"
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How many more students take the bus than bike?",
+      "choices": [
+        "55",
+        "45",
+        "60",
+        "35"
+      ],
+      "answer": "55",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p2"
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Car commuters are what percent of the survey? (nearest whole percent)",
+      "choices": [
+        "23%",
+        "20%",
+        "25%",
+        "18%"
+      ],
+      "answer": "23%",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p2"
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "From week 1 to week 5, mean height increased by how many cm?",
+      "choices": [
+        "19",
+        "18",
+        "20",
+        "23"
+      ],
+      "answer": "19",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p3"
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What was the average weekly increase in mean height from week 1 to week 5?",
+      "choices": [
+        "4.75 cm",
+        "5 cm",
+        "4.5 cm",
+        "3.8 cm"
+      ],
+      "answer": "4.75 cm",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p3"
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "During which week-to-week period did height increase the most?",
+      "choices": [
+        "Week 1 to Week 2",
+        "Week 4 to Week 5",
+        "Week 2 to Week 3",
+        "Week 3 to Week 4"
+      ],
+      "answer": "Week 1 to Week 2",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p3"
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which class has the highest median score?",
+      "choices": [
+        "6C",
+        "6A",
+        "6B",
+        "All equal"
+      ],
+      "answer": "6C",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p4"
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which class has the largest range?",
+      "choices": [
+        "6A",
+        "6C",
+        "6B",
+        "Cannot tell"
+      ],
+      "answer": "6A",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p4"
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How many students total are in the three classes?",
+      "choices": [
+        "75",
+        "74",
+        "76",
+        "70"
+      ],
+      "answer": "75",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p4"
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Class 6C's mean is how many points above class 6B's mean?",
+      "choices": [
+        "7",
+        "5",
+        "8",
+        "6"
+      ],
+      "answer": "7",
+      "hint": false,
+      "area": "data",
+      "passage_id": "p4"
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "title": "English — Critical reasoning & sentence correction (Grade 6)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-07-04T23:11:42.673054+00:00",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "Later school start times",
+      "body": "A district moved middle-school start times from 7:30 a.m. to 8:45 a.m. Tardiness dropped by thirty percent in the first semester, and nurses logged fewer morning headaches. The superintendent claimed the later bell directly improved student health.\n\nResearchers noted the same year introduced free breakfast in the cafeteria and a phone-lock policy during homeroom. They also pointed out that families with early work shifts still struggled to arrange drop-offs, so attendance gains were uneven across neighbourhoods."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The researchers' comments most directly suggest the attendance and health improvements —",
+      "choices": [
+        "might reflect several simultaneous changes, not just the later bell alone",
+        "prove teenagers need no sleep",
+        "show breakfast causes headaches",
+        "mean phone locks harm health"
+      ],
+      "answer": "might reflect several simultaneous changes, not just the later bell alone",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The superintendent treats reduced tardiness chiefly as evidence that —",
+      "choices": [
+        "later start times benefit students",
+        "nurses should start school earlier",
+        "breakfast should be removed",
+        "phones improve punctuality"
+      ],
+      "answer": "later start times benefit students",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which study design would best test whether the later bell alone caused fewer headaches?",
+      "choices": [
+        "Compare similar schools where only start times differ while holding breakfast and phone policies constant",
+        "Survey students about favourite subjects",
+        "Measure cafeteria noise levels",
+        "Ask families to wake up earlier"
+      ],
+      "answer": "Compare similar schools where only start times differ while holding breakfast and phone policies constant",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Statement: \"Only students who complete the safety quiz may use the workshop tools.\" Priya is using the drill press. What follows logically?",
+      "choices": [
+        "Priya completed the safety quiz",
+        "Priya dislikes quizzes",
+        "No one completed the quiz",
+        "Workshop tools are broken"
+      ],
+      "answer": "Priya completed the safety quiz",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Advertisement: \"Our sneakers make you faster because Olympic athletes wear them.\" The flaw is closest to —",
+      "choices": [
+        "assuming a product must be good because famous people use it",
+        "measuring speed with a stopwatch",
+        "designing shoes in multiple sizes",
+        "testing shoes on a track"
+      ],
+      "answer": "assuming a product must be good because famous people use it",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Choose the best revision of the sentence: \"Me and Amir was planning to submit the report until the wifi don't work.\"",
+      "choices": [
+        "Amir and I were planning to submit the report until the Wi‑Fi did not work",
+        "Me and Amir was planning to submit the report until the wifi doesn't work",
+        "Amir and I is planning to submit the report until the wifi don't work",
+        "Amir and me were planning to submit the report until the Wi‑Fi didn't worked"
+      ],
+      "answer": "Amir and I were planning to submit the report until the Wi‑Fi did not work",
+      "hint": false,
+      "area": "grammar"
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Choose the best revision: \"Running for the bus, the backpack strap broke and books fell.\"",
+      "choices": [
+        "As I ran for the bus, the backpack strap broke and books fell",
+        "Running for the bus, the books fell from the strap",
+        "Running for the bus, the strap was broken by books",
+        "Running for the bus, the bus broke the strap"
+      ],
+      "answer": "As I ran for the bus, the backpack strap broke and books fell",
+      "hint": false,
+      "area": "grammar"
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Choose the best revision: \"Neither the coaches nor the captain are willing to cancel the match.\"",
+      "choices": [
+        "Neither the coaches nor the captain is willing to cancel the match",
+        "Neither the coaches nor the captain are willing to cancel the match",
+        "Neither the coach nor the captains is willing to cancel the match",
+        "Neither the coaches or the captain is willing to cancel the match"
+      ],
+      "answer": "Neither the coaches nor the captain is willing to cancel the match",
+      "hint": false,
+      "area": "grammar"
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Choose the best revision: \"The data shows that students which study daily improves more steady.\"",
+      "choices": [
+        "The data show that students who study daily improve more steadily",
+        "The data shows that students which study daily improves more steady",
+        "The data show that students who study daily improves more steady",
+        "The data shows that students who study daily improve more steadily"
+      ],
+      "answer": "The data show that students who study daily improve more steadily",
+      "hint": false,
+      "area": "grammar"
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Choose the best revision: \"Because the experiment failed, therefore we repeated the trial.\"",
+      "choices": [
+        "Because the experiment failed, we repeated the trial",
+        "Because the experiment failed, therefore we repeated the trial",
+        "The experiment failed, because we repeated the trial",
+        "Because the experiment failed, so we repeated the trial"
+      ],
+      "answer": "Because the experiment failed, we repeated the trial",
+      "hint": false,
+      "area": "grammar"
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Argument: \"If a food is natural, it must be healthy; honey is natural, so any amount is healthy.\" Which question best challenges the assumption?",
+      "choices": [
+        "Can a natural food still harm health when consumed in large amounts?",
+        "What colour is honey?",
+        "Do bees live in hives?",
+        "Is honey sold in jars?"
+      ],
+      "answer": "Can a natural food still harm health when consumed in large amounts?",
+      "hint": false,
+      "area": "grammar"
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Choose the best revision: \"The committee have decided to move the debate, but no one have told the judges.\"",
+      "choices": [
+        "The committee has decided to move the debate, but no one has told the judges",
+        "The committee have decided to move the debate, but no one has told the judges",
+        "The committee has decided to move the debate, but no one have told the judges",
+        "The committee have decided to move the debate, but nobody has told the judges"
+      ],
+      "answer": "The committee has decided to move the debate, but no one has told the judges",
+      "hint": false,
+      "area": "grammar"
+    }
+  ]
+}

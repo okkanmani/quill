@@ -1,0 +1,460 @@
+{
+  "title": "Math — Grade 6 challenge mix (timed, ★★★)",
+  "subject": "math",
+  "timed": true,
+  "time_limit_minutes": 45,
+  "scratchpad": true,
+  "created_at": "2026-07-04T23:11:42.673054+00:00",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Evaluate: 18 − 3 × (4 + 2)",
+      "choices": [
+        "0",
+        "90",
+        "12",
+        "6"
+      ],
+      "answer": "0",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Solve for n: 5n − 11 = 34",
+      "choices": [
+        "9",
+        "7",
+        "8",
+        "5"
+      ],
+      "answer": "9",
+      "hint": false,
+      "area": "algebra"
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is 2/3 ÷ 5/6?",
+      "choices": [
+        "4/5",
+        "5/4",
+        "10/18",
+        "2/5"
+      ],
+      "answer": "4/5",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A triangle has base 14 cm and height 9 cm. What is its area?",
+      "choices": [
+        "63 cm²",
+        "126 cm²",
+        "23 cm²",
+        "126 cm"
+      ],
+      "answer": "63 cm²",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "After a 20% increase, a price is $96. What was the original price?",
+      "choices": [
+        "$80",
+        "$76.80",
+        "$100",
+        "$86"
+      ],
+      "answer": "$80",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is the least common multiple of 12 and 18?",
+      "choices": [
+        "36",
+        "6",
+        "72",
+        "216"
+      ],
+      "answer": "36",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is the greatest common factor of 54 and 81?",
+      "choices": [
+        "27",
+        "9",
+        "18",
+        "3"
+      ],
+      "answer": "27",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Compute: 4.25 × 3.2",
+      "choices": [
+        "13.6",
+        "12.8",
+        "14.2",
+        "13.05"
+      ],
+      "answer": "13.6",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A rectangular prism is 5 cm × 6 cm × 7 cm. What is its volume?",
+      "choices": [
+        "210 cm³",
+        "18 cm³",
+        "105 cm³",
+        "35 cm³"
+      ],
+      "answer": "210 cm³",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is the mean of 8, 11, 15, and 18?",
+      "choices": [
+        "13",
+        "12",
+        "13.5",
+        "14"
+      ],
+      "answer": "13",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Four notebooks cost $13.60. At the same rate, how much do 9 notebooks cost?",
+      "choices": [
+        "$30.60",
+        "$27.20",
+        "$34.00",
+        "$36.40"
+      ],
+      "answer": "$30.60",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A ratio of red to blue beads is 5 : 7. If there are 48 beads total, how many are red?",
+      "choices": [
+        "20",
+        "28",
+        "24",
+        "15"
+      ],
+      "answer": "20",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Two angles are supplementary. One measures 118°. What is the other?",
+      "choices": [
+        "62°",
+        "72°",
+        "58°",
+        "118°"
+      ],
+      "answer": "62°",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is 37.5% of 240?",
+      "choices": [
+        "90",
+        "80",
+        "96",
+        "108"
+      ],
+      "answer": "90",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Compute: (−6) + (−4) − (−9)",
+      "choices": [
+        "−1",
+        "−19",
+        "1",
+        "−5"
+      ],
+      "answer": "−1",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Simplify: 3(2x − 5) + 4x",
+      "choices": [
+        "10x − 15",
+        "10x − 5",
+        "6x − 15",
+        "5x − 15"
+      ],
+      "answer": "10x − 15",
+      "hint": false,
+      "area": "algebra"
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A rectangle has length 17 cm and width 11 cm. What is its perimeter?",
+      "choices": [
+        "56 cm",
+        "187 cm",
+        "34 cm",
+        "28 cm"
+      ],
+      "answer": "56 cm",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is 5/6 − 1/4?",
+      "choices": [
+        "7/12",
+        "4/10",
+        "1/2",
+        "11/12"
+      ],
+      "answer": "7/12",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A cyclist travels at 18 km/h for 2.5 hours. How far does she travel?",
+      "choices": [
+        "45 km",
+        "36 km",
+        "20.5 km",
+        "40 km"
+      ],
+      "answer": "45 km",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A circle has radius 7 cm. Using π = 22/7, what is the circumference?",
+      "choices": [
+        "44 cm",
+        "154 cm",
+        "22 cm",
+        "49 cm"
+      ],
+      "answer": "44 cm",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "q21",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is the median of 4, 9, 11, 11, 15?",
+      "choices": [
+        "11",
+        "10",
+        "9",
+        "11.5"
+      ],
+      "answer": "11",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q22",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Express 0.375 as a fraction in simplest form.",
+      "choices": [
+        "3/8",
+        "375/1000",
+        "3/5",
+        "5/8"
+      ],
+      "answer": "3/8",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q23",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A rectangle’s width is w cm. Its length is 2w + 5 cm. The perimeter is 58 cm. Find w.",
+      "choices": [
+        "8",
+        "12",
+        "6",
+        "10"
+      ],
+      "answer": "8",
+      "hint": false,
+      "area": "algebra"
+    },
+    {
+      "id": "q24",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Evaluate: 2⁴ + 3² − 5",
+      "choices": [
+        "20",
+        "18",
+        "22",
+        "14"
+      ],
+      "answer": "20",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q25",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A jacket priced at $85 is discounted by 30%. What is the sale price?",
+      "choices": [
+        "$59.50",
+        "$55.00",
+        "$25.50",
+        "$60.00"
+      ],
+      "answer": "$59.50",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q26",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "How many integers n satisfy −3 < n ≤ 4?",
+      "choices": [
+        "7",
+        "8",
+        "6",
+        "5"
+      ],
+      "answer": "7",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "q27",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A bag has 3 red, 5 blue, and 2 green marbles. What is P(not green)?",
+      "choices": [
+        "4/5",
+        "2/5",
+        "3/5",
+        "1/2"
+      ],
+      "answer": "4/5",
+      "hint": false,
+      "area": "data"
+    },
+    {
+      "id": "q28",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Solve for y: 4(y − 3) = 2y + 10",
+      "choices": [
+        "11",
+        "8",
+        "9",
+        "7"
+      ],
+      "answer": "11",
+      "hint": false,
+      "area": "algebra"
+    },
+    {
+      "id": "q29",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The angles of a triangle are x°, 2x°, and 3x°. What is x?",
+      "choices": [
+        "30",
+        "60",
+        "90",
+        "45"
+      ],
+      "answer": "30",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "q30",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A store marks up cost by 40% to set the price, then offers 25% off that price. If cost is $50, what is the final price?",
+      "choices": [
+        "$52.50",
+        "$50.00",
+        "$57.50",
+        "$45.00"
+      ],
+      "answer": "$52.50",
+      "hint": false,
+      "area": "numbers"
+    }
+  ]
+}

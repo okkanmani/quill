@@ -656,8 +656,8 @@ def submit_result(req: SubmitResultRequest, authorization: str = Header(...)):
         raise HTTPException(status_code=409, detail="You already submitted this worksheet")
 
     manual = worksheet.get("evaluation") == "manual"
-    given_by_qid = {
-        a.get("question_id"): a.get("given", "")
+    answer_by_qid = {
+        a.get("question_id"): a
         for a in req.answers
         if isinstance(a, dict) and a.get("question_id")
     }
@@ -666,20 +666,25 @@ def submit_result(req: SubmitResultRequest, authorization: str = Header(...)):
         answers_payload = []
         for q in worksheet.get("questions") or []:
             qid = q.get("id")
-            answers_payload.append(
-                {
-                    "question_id": qid,
-                    "prompt": q.get("prompt", ""),
-                    "given": given_by_qid.get(qid, ""),
-                    "correct": None,
-                    "expected": q.get("answer", ""),
-                    **(
-                        {"area": q["area"]}
-                        if isinstance(q.get("area"), str) and q.get("area").strip()
-                        else {}
-                    ),
-                }
-            )
+            entry = answer_by_qid.get(qid) or {}
+            if not isinstance(entry, dict):
+                entry = {"given": entry}
+            mode = entry.get("response_mode")
+            if mode not in ("text", "scratchpad"):
+                mode = "scratchpad" if entry.get("scratchpad") else "text"
+            row = {
+                "question_id": qid,
+                "prompt": q.get("prompt", ""),
+                "given": entry.get("given", "") if mode == "text" else "",
+                "correct": None,
+                "expected": q.get("answer", ""),
+                "response_mode": mode,
+            }
+            if mode == "scratchpad" and entry.get("scratchpad"):
+                row["scratchpad"] = entry["scratchpad"]
+            if isinstance(q.get("area"), str) and q.get("area").strip():
+                row["area"] = q["area"]
+            answers_payload.append(row)
         result = {
             "worksheet_id": req.worksheet_id,
             "title": req.title,

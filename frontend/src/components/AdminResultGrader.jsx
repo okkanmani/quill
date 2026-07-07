@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { evaluateResult } from "../api";
+import AnswerResponseView from "./AnswerResponseView";
 
 /**
  * Admin grading panel for a pending manual-evaluation submission.
@@ -67,11 +68,9 @@ export default function AdminResultGrader({ result, onEvaluated }) {
               </p>
               <div className="mt-3 flex flex-col gap-2 text-sm">
                 <p>
-                  <span className="text-slate-600">Student wrote: </span>
-                  <span className="text-slate-900 font-medium">
-                    {a.given === "" || a.given == null ? "(empty)" : `"${a.given}"`}
-                  </span>
+                  <span className="text-slate-600">Student response: </span>
                 </p>
+                <AnswerResponseView answer={a} />
                 {a.expected ? (
                   <p className="text-slate-600">
                     Reference:{" "}

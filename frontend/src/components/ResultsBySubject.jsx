@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import AnswerResponseView from "./AnswerResponseView";
 import AdminResultGrader from "./AdminResultGrader";
 import RecycleBinButton from "./RecycleBinButton";
 import { formatSubjectLabel } from "../subjectUtils";
@@ -196,15 +197,11 @@ export default function ResultsBySubject({
                                     </span>
                                     {a.prompt}
                                   </p>
-                                  <div className="mt-3 flex flex-col gap-1.5 text-sm sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2">
+                                  <div className="mt-3 flex flex-col gap-1.5 text-sm">
                                     <span className="text-slate-600 shrink-0">
                                       Response:
                                     </span>
-                                    <span className="text-slate-900 font-medium break-words min-w-0">
-                                      {a.given === "" || a.given == null
-                                        ? "(empty)"
-                                        : `"${a.given}"`}
-                                    </span>
+                                    <AnswerResponseView answer={a} />
                                     {!isPending &&
                                     typeof a.correct === "boolean" ? (
                                       <span

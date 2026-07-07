@@ -1,0 +1,250 @@
+{
+  "title": "English — Reading comprehension (Grade 6, ★★★)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-07-04T23:11:42.673054+00:00",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "The community solar garden",
+      "body": "When the old factory lot sat empty for a decade, neighbours argued about whether to sell it for apartments or turn it into something shared. Ms. Delgado, a science teacher, proposed a community solar garden: rows of panels on raised frames with walkways between them so people could still gather. Families could buy a share of the output and receive credits on their electricity bills. Skeptics said winter sun was too weak and snow would bury the panels. Delgado's students measured sunlight across seasons and built scale models showing how tilted panels shed snow faster than flat ones.\n\nThe city council approved a pilot with strict rules: at least forty percent of shares had to go to households earning below the median income, and a youth crew would maintain the beds of native plants installed between the rows. By the second summer, the garden produced enough power for twelve homes, and the student crew published a plain-language guide other towns copied. Delgado insisted the project was never only about watts; it was about who gets a voice when infrastructure is planned."
+    },
+    {
+      "id": "p2",
+      "title": "Letters from the trail",
+      "body": "In 1912, postal clerk Hiram Okonkwo hiked ridge routes too steep for wagons, carrying mail in waxed satchels. His letters home describe frost on his beard by dawn and sandstone that \"hummed\" when wind passed through slots. One entry tells of a stranded pianist who played scales until mules arrived, calming skittish horses. Okonkwo counted steps on a switchback—four hundred twelve from creek to crest—and noted how his pace slowed when he memorized new routes.\n\nHistorian Ana Reyes found the journals in a sealed trunk donated to a museum basement. She cross-checked landmarks against survey maps and confirmed three forgotten shortcuts Okonkwo marked with stacked stones. Reyes argues that official maps recorded highways for merchants, while walkers like Okonkwo preserved paths for people carrying weight on their backs. Her exhibit pairs scanned journal pages with modern photos taken from the same compass bearings."
+    },
+    {
+      "id": "p3",
+      "title": "The robotics club compromise",
+      "body": "Last spring, the robotics club had twelve members but only one competition kit. Captain Eli wanted to enter the regional tournament; treasurer Sam pointed out that registration, travel, and spare parts would consume the entire club budget. They surveyed members: eight wanted to compete, four preferred building workshop projects open to the whole school.\n\nThe compromise they drafted split the year. Fall semester focused on open workshop nights where anyone could solder sensors. Winter funds went to a scaled-down tournament robot with a modular design so parts could be reused in spring demos. Eli agreed to publish costs publicly each month; Sam agreed to train two assistant treasurers. Faculty advisor Ms. Chen noted that the plan succeeded because it treated money and inclusion as linked problems, not separate arguments."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A community solar garden differs from selling the lot for apartments because it —",
+      "choices": [
+        "creates shared energy benefits and gathering space rather than private housing only",
+        "guarantees free electricity forever",
+        "eliminates all winter snow",
+        "prevents teenagers from measuring sunlight"
+      ],
+      "answer": "creates shared energy benefits and gathering space rather than private housing only",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Skeptics worried most about —",
+      "choices": [
+        "weak winter sun and snow covering panels",
+        "too many native plants",
+        "students building scale models",
+        "council meetings lasting too long"
+      ],
+      "answer": "weak winter sun and snow covering panels",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The council required forty percent of shares for lower-income households to —",
+      "choices": [
+        "ensure broader access to the project's benefits",
+        "reduce the number of panels",
+        "ban student maintenance crews",
+        "speed up apartment construction"
+      ],
+      "answer": "ensure broader access to the project's benefits",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Delgado's comment that the project was \"never only about watts\" mainly emphasizes —",
+      "choices": [
+        "who participates in planning infrastructure",
+        "how to copy guidebooks",
+        "competition between towns",
+        "the weight of solar panels"
+      ],
+      "answer": "who participates in planning infrastructure",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Okonkwo's job involved —",
+      "choices": [
+        "carrying mail on foot along steep routes",
+        "driving wagons on highways",
+        "designing official merchant maps",
+        "tuning pianos professionally"
+      ],
+      "answer": "carrying mail on foot along steep routes",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Reyes confirmed Okonkwo's shortcuts by —",
+      "choices": [
+        "matching journal landmarks to survey maps and modern photos",
+        "guessing where stones might be",
+        "interviewing mule drivers only",
+        "ignoring compass bearings"
+      ],
+      "answer": "matching journal landmarks to survey maps and modern photos",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Reyes argues official maps often recorded —",
+      "choices": [
+        "highways for merchants rather than walkers' paths",
+        "every hiking trail equally",
+        "only piano delivery routes",
+        "postal rates instead of landforms"
+      ],
+      "answer": "highways for merchants rather than walkers' paths",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The pianist in Okonkwo's journal helped by —",
+      "choices": [
+        "playing scales until mules arrived and calming horses",
+        "carrying the mail satchel",
+        "stacking stones on shortcuts",
+        "drawing new survey maps"
+      ],
+      "answer": "playing scales until mules arrived and calming horses",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The robotics club's main resource conflict was —",
+      "choices": [
+        "one competition kit versus costs of registering and traveling",
+        "too many kits but no advisor",
+        "members refusing to solder sensors",
+        "a ban on workshop nights"
+      ],
+      "answer": "one competition kit versus costs of registering and traveling",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Eight of twelve members wanted to —",
+      "choices": [
+        "enter the regional tournament",
+        "eliminate the treasurer role",
+        "stop publishing costs",
+        "sell the kit for spare parts"
+      ],
+      "answer": "enter the regional tournament",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The compromise allocated fall semester to —",
+      "choices": [
+        "open workshop nights for the whole school",
+        "travel to regionals immediately",
+        "private meetings without advisors",
+        "buying apartment shares"
+      ],
+      "answer": "open workshop nights for the whole school",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Ms. Chen credited the plan because it —",
+      "choices": [
+        "linked financial transparency with inclusive access",
+        "avoided all competition",
+        "removed modular robot parts",
+        "ignored member surveys"
+      ],
+      "answer": "linked financial transparency with inclusive access",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which word best describes Delgado's role in passage 1?",
+      "choices": [
+        "advocate",
+        "bystander",
+        "merchant",
+        "critic"
+      ],
+      "answer": "advocate",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Across passages 1 and 3, leaders succeed partly by —",
+      "choices": [
+        "sharing information and widening who can participate",
+        "keeping plans secret",
+        "rejecting all compromises",
+        "focusing only on equipment"
+      ],
+      "answer": "sharing information and widening who can participate",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The tone of passage 2 is best described as —",
+      "choices": [
+        "respectful and investigative",
+        "mocking and casual",
+        "angry and dismissive",
+        "humorous and fictional"
+      ],
+      "answer": "respectful and investigative",
+      "hint": false,
+      "passage_id": "p2"
+    }
+  ]
+}
