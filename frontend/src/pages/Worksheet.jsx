@@ -238,10 +238,10 @@ export default function Worksheet() {
           const payload = {
             question_id: q.id,
             prompt: q.prompt,
-            given: mode === "text" ? answers[q.id] || "" : "",
+            given: answers[q.id] || "",
             response_mode: mode,
           };
-          if (mode === "scratchpad" && scratchpadData[q.id]) {
+          if (scratchpadData[q.id]) {
             payload.scratchpad = scratchpadData[q.id];
           }
           return payload;

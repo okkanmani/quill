@@ -675,12 +675,12 @@ def submit_result(req: SubmitResultRequest, authorization: str = Header(...)):
             row = {
                 "question_id": qid,
                 "prompt": q.get("prompt", ""),
-                "given": entry.get("given", "") if mode == "text" else "",
+                "given": entry.get("given", "") or "",
                 "correct": None,
                 "expected": q.get("answer", ""),
                 "response_mode": mode,
             }
-            if mode == "scratchpad" and entry.get("scratchpad"):
+            if entry.get("scratchpad"):
                 row["scratchpad"] = entry["scratchpad"]
             if isinstance(q.get("area"), str) and q.get("area").strip():
                 row["area"] = q["area"]
