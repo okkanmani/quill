@@ -28,6 +28,12 @@ from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from learn_content import get_subject, list_learn_hub, list_subjects
+from writing import (
+    delete_writing_submission,
+    grade_writing_submission,
+    list_writing_submissions,
+    save_writing_submission,
+)
 from worksheets import (
     assert_worksheet_accessible,
     attach_areas_to_answers,
@@ -67,6 +73,15 @@ class SubmitResultRequest(BaseModel):
     score: int | None = None
     total: int
     answers: list
+
+
+class SubmitWritingRequest(BaseModel):
+    title: str
+    body: str
+
+
+class GradeWritingRequest(BaseModel):
+    grade: str
 
 
 class EvaluateResultRequest(BaseModel):
@@ -787,6 +802,65 @@ def get_results(authorization: str = Header(...)):
         who = _student_context_name(payload)
         return list_results(who)
     raise HTTPException(status_code=403, detail="Admin or student only")
+
+
+@app.get("/writing/submissions")
+def get_writing_submissions(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") == "student":
+        return list_writing_submissions(payload["name"])
+    if payload.get("role") == "admin":
+        who = _student_context_name(payload)
+        return list_writing_submissions(who)
+    raise HTTPException(status_code=403, detail="Admin or student only")
+
+
+@app.post("/writing/submissions")
+def submit_writing(req: SubmitWritingRequest, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can submit writing")
+    try:
+        return save_writing_submission(
+            student=context_student_name(payload),
+            title=req.title,
+            body=req.body,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.delete("/writing/submissions/{submission_id}")
+def delete_writing_submission_route(
+    submission_id: int,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    if not delete_writing_submission(submission_id, who):
+        raise HTTPException(status_code=404, detail="Writing submission not found")
+    return {"message": "Writing submission deleted"}
+
+
+@app.post("/writing/submissions/{submission_id}/grade")
+def grade_writing_submission_route(
+    submission_id: int,
+    req: GradeWritingRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    try:
+        updated = grade_writing_submission(submission_id, who, req.grade)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if not updated:
+        raise HTTPException(status_code=404, detail="Writing submission not found")
+    return updated
 
 
 @app.get("/learn/subjects")

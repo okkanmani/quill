@@ -1,4 +1,5 @@
 import { resultPercent } from "./gradeUtils";
+import { writingGradeSortIndex } from "./writingUtils";
 
 export const SECTION_SORT_TIME = "time";
 export const SECTION_SORT_GRADE_ASC = "grade_asc";
@@ -28,6 +29,24 @@ export function sortResultItems(items, mode = SECTION_SORT_TIME) {
       const vb = pctB ?? missing;
       if (va !== vb) {
         return mode === SECTION_SORT_GRADE_ASC ? va - vb : vb - va;
+      }
+    }
+
+    return (b.submitted_at || "").localeCompare(a.submitted_at || "");
+  });
+}
+
+/** Writing submissions — pending first; grade sort when all are graded. */
+export function sortWritingItems(items, mode = SECTION_SORT_TIME) {
+  return [...(items || [])].sort((a, b) => {
+    const pendingDiff = pendingRank(a) - pendingRank(b);
+    if (pendingDiff !== 0) return pendingDiff;
+
+    if (mode === SECTION_SORT_GRADE_ASC || mode === SECTION_SORT_GRADE_DESC) {
+      const va = writingGradeSortIndex(a.grade);
+      const vb = writingGradeSortIndex(b.grade);
+      if (va !== vb) {
+        return mode === SECTION_SORT_GRADE_ASC ? vb - va : va - vb;
       }
     }
 

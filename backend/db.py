@@ -181,8 +181,30 @@ def init_schema() -> None:
                 updated_at TEXT NOT NULL,
                 PRIMARY KEY (student, week)
             );
+            CREATE TABLE IF NOT EXISTS writing_submissions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                student TEXT NOT NULL,
+                title TEXT NOT NULL,
+                body TEXT NOT NULL,
+                word_count INTEGER NOT NULL DEFAULT 0,
+                submitted_at TEXT NOT NULL,
+                grade TEXT,
+                evaluated_at TEXT
+            );
+            CREATE INDEX IF NOT EXISTS idx_writing_submissions_student
+                ON writing_submissions (student, submitted_at DESC);
             """
         )
+        writing_cols = {
+            row[1] for row in conn.execute("PRAGMA table_info(writing_submissions)")
+        }
+        if writing_cols:
+            if "grade" not in writing_cols:
+                conn.execute("ALTER TABLE writing_submissions ADD COLUMN grade TEXT")
+            if "evaluated_at" not in writing_cols:
+                conn.execute(
+                    "ALTER TABLE writing_submissions ADD COLUMN evaluated_at TEXT"
+                )
         from auth_users import migrate_legacy_from_auth_json
 
         migrate_legacy_from_auth_json(conn)

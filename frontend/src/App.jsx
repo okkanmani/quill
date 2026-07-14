@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import StudentHome from "./pages/StudentHome";
 import StudentLatest from "./pages/StudentLatest";
 import StudentResults from "./pages/StudentResults";
+import StudentWriting from "./pages/StudentWriting";
 import AdminHome from "./pages/AdminHome";
 import AdminAnalysis from "./pages/AdminAnalysis";
 import AdminWorksheets from "./pages/AdminWorksheets";
@@ -34,6 +35,15 @@ export default function App() {
           element={
             <ProtectedRoute role="student">
               <StudentLatest />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/writing"
+          element={
+            <ProtectedRoute role="student">
+              <StudentWriting />
             </ProtectedRoute>
           }
         />

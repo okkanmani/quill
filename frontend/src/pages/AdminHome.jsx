@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getResults, deleteResult, logout } from "../api";
+import {
+  deleteResult,
+  deleteWritingSubmission,
+  getResults,
+  getWritingSubmissions,
+  gradeWritingSubmission,
+  logout,
+} from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
@@ -8,26 +15,42 @@ import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import AdminStudentBanner from "../components/AdminStudentBanner";
 import QuillLoading from "../components/QuillLoading";
 import ResultsBySubject from "../components/ResultsBySubject";
+import WritingResultsSection from "../components/WritingResultsSection";
 
 export default function AdminHome() {
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
+  const [writing, setWriting] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  /** Which result cards have answers expanded (default: none). */
   const [openIds, setOpenIds] = useState(() => new Set());
+  const [openWritingIds, setOpenWritingIds] = useState(() => new Set());
   const [deletingResultId, setDeletingResultId] = useState(null);
+  const [deletingWritingId, setDeletingWritingId] = useState(null);
+  const [gradingWritingId, setGradingWritingId] = useState(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    getResults()
-      .then(setResults)
+    Promise.all([getResults(), getWritingSubmissions()])
+      .then(([resultData, writingData]) => {
+        setResults(resultData);
+        setWriting(writingData);
+      })
       .catch(() => setError("Could not load results."))
       .finally(() => setLoading(false));
   }, []);
 
   function toggleAnswers(id) {
     setOpenIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleWriting(id) {
+    setOpenWritingIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -64,6 +87,48 @@ export default function AdminHome() {
     }
   }
 
+  async function handleDeleteWriting(item) {
+    const ok = window.confirm(
+      `Delete writing “${item.title}”? This cannot be undone.`,
+    );
+    if (!ok) return;
+    setDeletingWritingId(item.id);
+    setError("");
+    try {
+      await deleteWritingSubmission(item.id);
+      setWriting((prev) => prev.filter((w) => w.id !== item.id));
+      setOpenWritingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
+      setMessage(`Deleted writing “${item.title}”.`);
+    } catch (err) {
+      setError(err.message || "Could not delete writing.");
+    } finally {
+      setDeletingWritingId(null);
+    }
+  }
+
+  async function handleGradeWriting(item, grade) {
+    if (!grade) return;
+    setGradingWritingId(item.id);
+    setError("");
+    try {
+      const updated = await gradeWritingSubmission(item.id, grade);
+      setWriting((prev) =>
+        prev.map((w) => (w.id === updated.id ? updated : w)),
+      );
+      setMessage(`Graded “${updated.title}” — ${updated.grade}.`);
+    } catch (err) {
+      setError(err.message || "Could not save grade.");
+    } finally {
+      setGradingWritingId(null);
+    }
+  }
+
+  const hasAny = results.length > 0 || writing.length > 0;
+
   return (
     <AppShell
       navLinks={ADMIN_MAIN_NAV}
@@ -81,25 +146,40 @@ export default function AdminHome() {
         {loading && <QuillLoading label="Loading results…" />}
         {error && <p className="text-red-500">{error}</p>}
 
-        {!loading && !error && results.length === 0 && (
+        {!loading && !error && !hasAny && (
           <p className="text-slate-600">No results yet.</p>
         )}
 
-        {!loading && !error && results.length > 0 && (
-          <ResultsBySubject
-            results={results}
-            openIds={openIds}
-            toggleAnswers={toggleAnswers}
-            onDeleteResult={handleDeleteResult}
-            deletingResultId={deletingResultId}
-            onResultEvaluated={(updated) =>
-              setResults((prev) =>
-                prev.map((r) => (r.id === updated.id ? updated : r)),
-              )
-            }
-            onAnalysisError={setError}
-          />
-        )}
+        {!loading && !error && hasAny ? (
+          <div className="flex flex-col gap-3">
+            {results.length > 0 ? (
+              <ResultsBySubject
+                results={results}
+                openIds={openIds}
+                toggleAnswers={toggleAnswers}
+                onDeleteResult={handleDeleteResult}
+                deletingResultId={deletingResultId}
+                onResultEvaluated={(updated) =>
+                  setResults((prev) =>
+                    prev.map((r) => (r.id === updated.id ? updated : r)),
+                  )
+                }
+                onAnalysisError={setError}
+              />
+            ) : null}
+            {writing.length > 0 ? (
+              <WritingResultsSection
+                submissions={writing}
+                openIds={openWritingIds}
+                toggleOpen={toggleWriting}
+                onDelete={handleDeleteWriting}
+                onGrade={handleGradeWriting}
+                deletingId={deletingWritingId}
+                gradingId={gradingWritingId}
+              />
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </AppShell>
   );

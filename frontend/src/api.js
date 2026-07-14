@@ -325,6 +325,58 @@ export async function getResults() {
   return res.json();
 }
 
+export async function getWritingSubmissions() {
+  const res = await fetch(`${BASE_URL}/writing/submissions`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch writing submissions");
+  return res.json();
+}
+
+export async function submitWriting({ title, body }) {
+  const res = await fetch(`${BASE_URL}/writing/submissions`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ title, body }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to submit writing";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function deleteWritingSubmission(submissionId) {
+  const res = await fetch(`${BASE_URL}/writing/submissions/${submissionId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to delete writing";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function gradeWritingSubmission(submissionId, grade) {
+  const res = await fetch(`${BASE_URL}/writing/submissions/${submissionId}/grade`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ grade }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to save grade";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function deleteResult(resultId) {
   const res = await fetch(`${BASE_URL}/results/${resultId}`, {
     method: "DELETE",

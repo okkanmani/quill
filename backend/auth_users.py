@@ -259,6 +259,7 @@ def delete_student(admin_id: int, student_id: int) -> dict | None:
         if not row:
             return None
         conn.execute("DELETE FROM results WHERE student = ?", (row["name"],))
+        conn.execute("DELETE FROM writing_submissions WHERE student = ?", (row["name"],))
         conn.execute(
             "DELETE FROM students WHERE id = ? AND admin_id = ?",
             (student_id, admin_id),
