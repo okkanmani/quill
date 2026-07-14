@@ -5,6 +5,7 @@ import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
+import FocusAreaExplainPanel from "../components/FocusAreaExplainPanel";
 import {
   focusAreasAnalysis,
   formatFocusExampleAnswer,
@@ -75,7 +76,7 @@ function FocusExampleCard({ example, index, total }) {
   );
 }
 
-function FocusAreaDetailPanel({ selection }) {
+function FocusAreaDetailPanel({ selection, selectionKey }) {
   const { subject, focus } = selection;
   const examples = focus.examples || [];
 
@@ -101,6 +102,7 @@ function FocusAreaDetailPanel({ selection }) {
           No sample wrong answers recorded for this area yet.
         </p>
       )}
+      <FocusAreaExplainPanel selectionKey={selectionKey} areaLabel={focus.area} />
     </div>
   );
 }
@@ -314,7 +316,10 @@ export default function AdminAnalysis() {
               </div>
               {selection ? (
                 <div className="lg:col-span-2 lg:sticky lg:top-28">
-                  <FocusAreaDetailPanel selection={selection} />
+                  <FocusAreaDetailPanel
+                    selection={selection}
+                    selectionKey={selectedKey}
+                  />
                 </div>
               ) : null}
             </div>
