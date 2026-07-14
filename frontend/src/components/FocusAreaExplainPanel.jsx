@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Drawpad from "./Drawpad";
+import { ScratchpadIcon, TextAnswerIcon } from "./ResponseModeIcons";
 
-const DEFAULT_NOTES = { scratchpad: "" };
+const DEFAULT_NOTES = { mode: "text", text: "", scratchpad: "" };
 
 function updateNotes(setByKey, selectionKey, patch) {
   setByKey((prev) => ({
@@ -11,6 +12,39 @@ function updateNotes(setByKey, selectionKey, patch) {
       ...patch,
     },
   }));
+}
+
+function ExplainModeToggle({ mode, onChange }) {
+  const baseBtn =
+    "inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 transition";
+  const active = "bg-indigo-100 text-indigo-900 border-indigo-300";
+  const idle =
+    "bg-white text-slate-600 border-slate-200 hover:border-indigo-200 hover:text-indigo-800";
+
+  return (
+    <div className="flex items-center gap-2" role="group" aria-label="Explanation mode">
+      <button
+        type="button"
+        onClick={() => onChange("text")}
+        title="Type explanation"
+        aria-label="Type explanation"
+        aria-pressed={mode === "text"}
+        className={`${baseBtn} ${mode === "text" ? active : idle}`}
+      >
+        <TextAnswerIcon />
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange("scratchpad")}
+        title="Use scratchpad"
+        aria-label="Use scratchpad"
+        aria-pressed={mode === "scratchpad"}
+        className={`${baseBtn} ${mode === "scratchpad" ? active : idle}`}
+      >
+        <ScratchpadIcon />
+      </button>
+    </div>
+  );
 }
 
 /** Ephemeral teacher notes for discussing a focus area with a student. */
@@ -55,17 +89,38 @@ export default function FocusAreaExplainPanel({ selectionKey, areaLabel }) {
       </div>
 
       {isOpen ? (
-        <Drawpad
-          key={`explain-scratch-${selectionKey}`}
-          value={notes.scratchpad}
-          onChange={(scratchpad) =>
-            updateNotes(setByKey, selectionKey, { scratchpad })
-          }
-          showHeading={false}
-          showTextTool
-          className="mt-4"
-          canvasHeight={1000}
-        />
+        <>
+          <div className="flex justify-end mt-3">
+            <ExplainModeToggle
+              mode={notes.mode}
+              onChange={(mode) => updateNotes(setByKey, selectionKey, { mode })}
+            />
+          </div>
+
+          {notes.mode === "scratchpad" ? (
+            <Drawpad
+              key={`explain-scratch-${selectionKey}`}
+              value={notes.scratchpad}
+              onChange={(scratchpad) =>
+                updateNotes(setByKey, selectionKey, { scratchpad })
+              }
+              showHeading={false}
+              showTextTool
+              className="mt-3"
+              canvasHeight={1000}
+            />
+          ) : (
+            <textarea
+              value={notes.text}
+              onChange={(e) =>
+                updateNotes(setByKey, selectionKey, { text: e.target.value })
+              }
+              placeholder="Type notes or talking points to walk through with the student…"
+              rows={6}
+              className="w-full mt-3 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-y min-h-[10rem]"
+            />
+          )}
+        </>
       ) : null}
     </div>
   );
