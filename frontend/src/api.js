@@ -354,6 +354,20 @@ export async function uploadFocusEvaluation(resultId, payload) {
   return res.json();
 }
 
+export async function analyzeResultForFocus(resultId) {
+  const res = await fetch(`${BASE_URL}/results/${resultId}/analyze`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to analyze result";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function listAdminStudents() {
   const res = await fetch(`${BASE_URL}/admin/students`, {
     headers: authHeaders(),

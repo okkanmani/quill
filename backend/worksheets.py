@@ -2012,6 +2012,96 @@ def _normalize_focus_area(raw) -> str | None:
     return area or None
 
 
+def _focus_answer_text(ans: dict) -> str:
+    given = ans.get("given")
+    if isinstance(given, str) and given.strip():
+        return given.strip()
+    if ans.get("response_mode") == "scratchpad" or ans.get("scratchpad"):
+        return "[scratchpad response]"
+    return given if given is not None else ""
+
+
+def build_focus_evaluation_from_result(result: dict) -> dict:
+    """Build a focus-evaluation payload from a graded result and worksheet areas."""
+    if result.get("status") == "pending":
+        raise ValueError("Grade the submission before analyzing focus areas.")
+
+    wid = result.get("worksheet_id")
+    if not wid:
+        raise ValueError("Result is missing worksheet_id.")
+
+    ws_by_qid = worksheet_question_map_for_worksheet(wid)
+    area_by_qid = question_area_map_for_worksheet(wid)
+    questions: list[dict] = []
+
+    for ans in result.get("answers") or []:
+        if not isinstance(ans, dict):
+            continue
+        qid = ans.get("question_id")
+        ws_q = ws_by_qid.get(qid) if qid else None
+        area = _normalize_focus_area(ans.get("area"))
+        if not area and qid:
+            area = area_by_qid.get(qid)
+        stars = ans.get("stars")
+        if stars is None and ws_q:
+            stars = ws_q.get("stars")
+        prompt = ans.get("prompt") or (ws_q.get("prompt") if ws_q else "") or ""
+        row = {
+            "question_id": qid,
+            "question": prompt,
+            "answer": _focus_answer_text(ans),
+            "difficulty_level": stars,
+            "area": area or "",
+        }
+        if isinstance(ans.get("correct"), bool):
+            row["correct"] = ans["correct"]
+        questions.append(row)
+
+    if not questions:
+        raise ValueError("This submission has no answers to analyze.")
+
+    if not any(_normalize_focus_area(q.get("area")) for q in questions):
+        raise ValueError(
+            "Worksheet questions have no area tags — add specific area labels to each question, then analyze again.",
+        )
+
+    return {
+        "export_version": 1,
+        "result_id": result["id"],
+        "worksheet_id": wid,
+        "title": result.get("title"),
+        "subject": result.get("subject"),
+        "questions": questions,
+    }
+
+
+def analyze_result_for_focus(result_id: int, student_name: str) -> dict | None:
+    """Auto-build focus evaluation from worksheet question areas on a graded result."""
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            """
+            SELECT r.id, r.worksheet_id, r.title, r.student, r.score, r.total,
+                   r.answers, r.submitted_at, r.status, r.evaluated_at, r.duration_seconds,
+                   r.focus_evaluation,
+                   COALESCE(NULLIF(TRIM(w.subject), ''), 'general') AS subject,
+                   COALESCE(w.is_timed, 0) AS is_timed
+            FROM results r
+            LEFT JOIN worksheets w ON w.id = r.worksheet_id
+            WHERE r.id = ? AND r.student = ?
+            """,
+            (result_id, student_name),
+        ).fetchone()
+        if not row:
+            return None
+        result = _result_row_to_dict(row)
+    finally:
+        conn.close()
+
+    payload = build_focus_evaluation_from_result(result)
+    return save_focus_evaluation(result_id, student_name, payload)
+
+
 def validate_focus_evaluation_payload(data: dict, result: dict) -> list[str]:
     errors: list[str] = []
     if not isinstance(data, dict):

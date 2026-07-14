@@ -47,6 +47,7 @@ from worksheets import (
     merge_worksheets_from_json_files,
     save_result,
     save_focus_evaluation,
+    analyze_result_for_focus,
     save_worksheet_draft,
     seed_worksheets_from_json_if_empty,
     set_worksheet_access_lock,
@@ -746,6 +747,21 @@ def upload_focus_evaluation(
     who = _student_context_name(payload)
     try:
         updated = save_focus_evaluation(result_id, who, req.model_dump())
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if not updated:
+        raise HTTPException(status_code=404, detail="Result not found")
+    return updated
+
+
+@app.post("/results/{result_id}/analyze")
+def analyze_result_focus(result_id: int, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    try:
+        updated = analyze_result_for_focus(result_id, who)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     if not updated:

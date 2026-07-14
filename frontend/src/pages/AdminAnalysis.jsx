@@ -236,12 +236,12 @@ export default function AdminAnalysis() {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
             <p className="text-slate-700 text-sm leading-relaxed">
               {studentName
-                ? `Focus areas for ${studentName} — from evaluated worksheet JSON uploads.`
-                : "Focus areas from evaluated worksheet JSON uploads."}
+                ? `Focus areas for ${studentName} — from analyzed worksheet results.`
+                : "Focus areas from analyzed worksheet results."}
               {" "}
-              Download a result on the Results page, fill in{" "}
-              <code className="text-xs bg-slate-100 px-1 rounded">area</code> on
-              each question, then upload the JSON here.
+              Use <strong className="font-semibold">Analyze</strong> on the Results page
+              for worksheets with specific question area tags. You can still upload
+              evaluation JSON here for older worksheets without areas.
             </p>
             {!loading ? (
               <>
@@ -290,9 +290,8 @@ export default function AdminAnalysis() {
 
           {!loading && !error && results.length > 0 && uploadedCount === 0 && (
             <p className="text-slate-600">
-              No evaluated JSON uploads yet — download a worksheet result, fill in{" "}
-              <code className="text-xs bg-slate-100 px-1 rounded">area</code>, and
-              upload it here.
+              No analyzed results yet — use Analyze on the Results page after a
+              worksheet is graded, or upload evaluation JSON for untagged worksheets.
             </p>
           )}
 

@@ -91,6 +91,11 @@ export function validateBuilderForm({
     } else if (!q.answer.trim()) {
       errors.push(`Question ${n}: reference answer is required.`);
     }
+    if (!q.area?.trim()) {
+      errors.push(
+        `Question ${n}: area is required — use a specific skill label (e.g. two-variable algebra).`,
+      );
+    }
   });
 
   return errors;

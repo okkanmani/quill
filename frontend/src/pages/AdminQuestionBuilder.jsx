@@ -124,8 +124,11 @@ function QuestionCard({
               value={question.area || ""}
               onChange={(e) => onChange(index, { area: e.target.value })}
               className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-              placeholder="e.g. algebra, numbers, 3d geometry"
+              placeholder="e.g. two-variable algebra, triangle area"
             />
+            <span className="mt-1 block text-xs font-normal text-slate-500 leading-relaxed">
+              Be specific — use a narrow skill label (not just “algebra” or “geometry”).
+            </span>
           </label>
           {format === "multiple_choice" ? (
             <McqChoices question={question} index={index} onChange={onChange} />

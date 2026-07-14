@@ -100,6 +100,7 @@ export default function AdminHome() {
                 prev.map((r) => (r.id === updated.id ? updated : r)),
               )
             }
+            onAnalysisError={setError}
           />
         )}
       </div>

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import AnswerResponseView from "./AnswerResponseView";
 import AdminResultGrader from "./AdminResultGrader";
 import RecycleBinButton from "./RecycleBinButton";
-import { getWorksheet } from "../api";
+import { getWorksheet, analyzeResultForFocus } from "../api";
 import { downloadResultJson } from "../resultExportUtils";
 import { formatSubjectLabel } from "../subjectUtils";
 import { normalizeSubjectKey, subjectSortKey } from "../subjectUtils";
@@ -52,6 +52,7 @@ export default function ResultsBySubject({
   toggleAnswers,
   onResultEvaluated,
   onDeleteResult,
+  onAnalysisError,
   deletingResultId,
   variant = "admin",
 }) {
@@ -60,7 +61,21 @@ export default function ResultsBySubject({
   const [openSubjects, setOpenSubjects] = useState(() => new Set());
   const [sortBySubject, setSortBySubject] = useState({});
   const [downloadingResultId, setDownloadingResultId] = useState(null);
+  const [analyzingResultId, setAnalyzingResultId] = useState(null);
   const pendingCount = results.filter((r) => r.status === "pending").length;
+
+  async function handleAnalyze(result) {
+    setAnalyzingResultId(result.id);
+    onAnalysisError?.("");
+    try {
+      const updated = await analyzeResultForFocus(result.id);
+      onResultEvaluated?.(updated);
+    } catch (err) {
+      onAnalysisError?.(err.message || "Could not analyze result.");
+    } finally {
+      setAnalyzingResultId(null);
+    }
+  }
 
   async function handleDownloadJson(result) {
     setDownloadingResultId(result.id);
@@ -182,7 +197,7 @@ export default function ResultsBySubject({
                             </p>
                             {isAdmin && r.focus_evaluation ? (
                               <p className="text-emerald-700 text-xs mt-1 font-medium">
-                                Evaluation uploaded
+                                Analyzed
                               </p>
                             ) : null}
                           </div>
@@ -270,6 +285,32 @@ export default function ResultsBySubject({
                       </div>
                       {onDeleteResult ? (
                         <div className="flex shrink-0 self-center sm:self-stretch sm:items-stretch sm:flex-col sm:justify-center gap-2 sm:w-9">
+                          {isAdmin && !isPending ? (
+                            <button
+                              type="button"
+                              onClick={() => handleAnalyze(r)}
+                              disabled={analyzingResultId === r.id}
+                              title="Analyze focus areas"
+                              aria-label={`Analyze focus areas for ${r.title || r.worksheet_id}`}
+                              className="inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 bg-slate-50 border-slate-200 text-slate-500 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 disabled:opacity-40 disabled:pointer-events-none transition"
+                            >
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.75"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="w-[17px] h-[17px]"
+                                aria-hidden="true"
+                              >
+                                <path d="M4 20V10" />
+                                <path d="M10 20V4" />
+                                <path d="M16 20v-6" />
+                                <path d="M22 20H2" />
+                              </svg>
+                            </button>
+                          ) : null}
                           {isAdmin && !isPending ? (
                             <button
                               type="button"
