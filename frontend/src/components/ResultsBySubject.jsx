@@ -12,13 +12,11 @@ import {
   formatResultScoreLine,
   weightedGradeSummary,
 } from "../gradeUtils";
-
-function sortResultsInGroup(a, b) {
-  const pendingA = a.status === "pending" ? 1 : 0;
-  const pendingB = b.status === "pending" ? 1 : 0;
-  if (pendingA !== pendingB) return pendingB - pendingA;
-  return (b.submitted_at || "").localeCompare(a.submitted_at || "");
-}
+import SectionSortSelect from "./SectionSortSelect";
+import {
+  SECTION_SORT_TIME,
+  sortResultItems,
+} from "../sectionSortUtils";
 
 function groupResults(results) {
   const m = new Map();
@@ -26,9 +24,6 @@ function groupResults(results) {
     const k = normalizeSubjectKey(r.subject);
     if (!m.has(k)) m.set(k, []);
     m.get(k).push(r);
-  }
-  for (const items of m.values()) {
-    items.sort(sortResultsInGroup);
   }
   return [...m.entries()].sort(
     (a, b) =>
@@ -63,6 +58,7 @@ export default function ResultsBySubject({
   const isAdmin = variant === "admin";
   const groups = useMemo(() => groupResults(results), [results]);
   const [openSubjects, setOpenSubjects] = useState(() => new Set());
+  const [sortBySubject, setSortBySubject] = useState({});
   const [downloadingResultId, setDownloadingResultId] = useState(null);
   const pendingCount = results.filter((r) => r.status === "pending").length;
 
@@ -100,6 +96,8 @@ export default function ResultsBySubject({
       ) : null}
       {groups.map(([subjectKey, items]) => {
         const isOpen = openSubjects.has(subjectKey);
+        const sortMode = sortBySubject[subjectKey] || SECTION_SORT_TIME;
+        const sortedItems = sortResultItems(items, sortMode);
         const subjectGrade = weightedGradeSummary(items);
         return (
           <div
@@ -131,7 +129,25 @@ export default function ResultsBySubject({
             </button>
             {isOpen ? (
               <div className="p-3 flex flex-col gap-4 bg-slate-50/40">
-                {items.map((r) => {
+                <div className="flex items-center justify-end gap-2 px-1">
+                  <label
+                    htmlFor={`results-sort-${subjectKey}`}
+                    className="text-xs font-medium text-slate-600"
+                  >
+                    Sort
+                  </label>
+                  <SectionSortSelect
+                    id={`results-sort-${subjectKey}`}
+                    value={sortMode}
+                    onChange={(value) =>
+                      setSortBySubject((prev) => ({
+                        ...prev,
+                        [subjectKey]: value,
+                      }))
+                    }
+                  />
+                </div>
+                {sortedItems.map((r) => {
                   const expanded = openIds.has(r.id);
                   const isPending = r.status === "pending";
                   const scoreLine = formatResultScoreLine(r);

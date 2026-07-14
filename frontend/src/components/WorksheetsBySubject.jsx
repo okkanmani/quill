@@ -12,6 +12,11 @@ import {
 } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
 import PadlockIcon from "./PadlockIcon";
+import SectionSortSelect from "./SectionSortSelect";
+import {
+  SECTION_SORT_TIME,
+  sortWorksheetItems,
+} from "../sectionSortUtils";
 
 function worksheetLockState(ws) {
   if (isWorksheetDone(ws)) return null;
@@ -188,6 +193,7 @@ export default function WorksheetsBySubject({
   const groups = useMemo(() => groupWorksheets(worksheets), [worksheets]);
   /** Subject keys that are expanded; default is all collapsed. */
   const [open, setOpen] = useState(() => new Set());
+  const [sortBySubject, setSortBySubject] = useState({});
 
   function toggle(subjectKey) {
     setOpen((prev) => {
@@ -220,6 +226,8 @@ export default function WorksheetsBySubject({
     <div className="flex flex-col gap-3">
       {groups.map(([subjectKey, items]) => {
         const isOpen = open.has(subjectKey);
+        const sortMode = sortBySubject[subjectKey] || SECTION_SORT_TIME;
+        const sortedItems = sortWorksheetItems(items, sortMode);
         const total = items.length;
         const done = items.filter(isWorksheetDone).length;
         const pct =
@@ -262,7 +270,25 @@ export default function WorksheetsBySubject({
             </button>
             {isOpen ? (
               <div className="p-3 flex flex-col gap-4 bg-slate-50/40">
-                {items.map((ws) => (
+                <div className="flex items-center justify-end gap-2 px-1">
+                  <label
+                    htmlFor={`worksheets-sort-${subjectKey}`}
+                    className="text-xs font-medium text-slate-600"
+                  >
+                    Sort
+                  </label>
+                  <SectionSortSelect
+                    id={`worksheets-sort-${subjectKey}`}
+                    value={sortMode}
+                    onChange={(value) =>
+                      setSortBySubject((prev) => ({
+                        ...prev,
+                        [subjectKey]: value,
+                      }))
+                    }
+                  />
+                </div>
+                {sortedItems.map((ws) => (
                   <WorksheetRow
                     key={ws.id}
                     ws={ws}
