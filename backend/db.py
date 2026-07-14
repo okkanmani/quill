@@ -194,6 +194,15 @@ def init_schema() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_writing_submissions_student
                 ON writing_submissions (student, submitted_at DESC);
+            CREATE TABLE IF NOT EXISTS focus_area_discussed (
+                student TEXT NOT NULL,
+                subject TEXT NOT NULL,
+                area TEXT NOT NULL,
+                discussed_at TEXT NOT NULL,
+                PRIMARY KEY (student, subject, area)
+            );
+            CREATE INDEX IF NOT EXISTS idx_focus_area_discussed_student
+                ON focus_area_discussed (student);
             """
         )
         writing_cols = {

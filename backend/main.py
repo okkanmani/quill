@@ -28,6 +28,7 @@ from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from learn_content import get_subject, list_learn_hub, list_subjects
+from focus_discussion import list_focus_areas_discussed, mark_focus_area_discussed
 from writing import (
     delete_writing_submission,
     grade_writing_submission,
@@ -96,6 +97,11 @@ class FocusEvaluationRequest(BaseModel):
     title: str | None = None
     subject: str | None = None
     questions: list
+
+
+class MarkFocusAreaDiscussedRequest(BaseModel):
+    subject: str
+    area: str
 
 
 class SaveDraftRequest(BaseModel):
@@ -781,6 +787,30 @@ def analyze_result_focus(result_id: int, authorization: str = Header(...)):
     if not updated:
         raise HTTPException(status_code=404, detail="Result not found")
     return updated
+
+
+@app.get("/focus-areas/discussed")
+def get_focus_areas_discussed(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    return list_focus_areas_discussed(who)
+
+
+@app.post("/focus-areas/discussed")
+def mark_focus_area_discussed_route(
+    req: MarkFocusAreaDiscussedRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    try:
+        return mark_focus_area_discussed(who, req.subject, req.area)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.delete("/results/{result_id}")

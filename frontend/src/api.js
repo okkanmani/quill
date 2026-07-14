@@ -325,6 +325,29 @@ export async function getResults() {
   return res.json();
 }
 
+export async function getFocusAreasDiscussed() {
+  const res = await fetch(`${BASE_URL}/focus-areas/discussed`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch discussed focus areas");
+  return res.json();
+}
+
+export async function markFocusAreaDiscussed({ subject, area }) {
+  const res = await fetch(`${BASE_URL}/focus-areas/discussed`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ subject, area }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to mark focus area discussed";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function getWritingSubmissions() {
   const res = await fetch(`${BASE_URL}/writing/submissions`, {
     headers: authHeaders(),

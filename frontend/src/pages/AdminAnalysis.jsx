@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getResults, logout, uploadFocusEvaluation } from "../api";
+import { getResults, getFocusAreasDiscussed, logout, markFocusAreaDiscussed, uploadFocusEvaluation } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
@@ -9,7 +9,7 @@ import AdminStudentBanner from "../components/AdminStudentBanner";
 import QuillLoading from "../components/QuillLoading";
 import FocusAreaExplainPanel from "../components/FocusAreaExplainPanel";
 import {
-  focusAreasAnalysis,
+  focusAreasAnalysisWithDiscussion,
   formatFocusExampleAnswer,
   formatFocusExampleChoices,
   isMissingFocusExampleAnswer,
@@ -38,9 +38,41 @@ function findSelectedFocus(bySubject, selectedKey) {
   if (!parsed) return null;
   const subject = bySubject.find((s) => s.subjectKey === parsed.subjectKey);
   if (!subject) return null;
-  const focus = subject.focusAreas.find((f) => f.area === parsed.area);
+  const focus =
+    subject.needsDiscussion.find((f) => f.area === parsed.area) ||
+    subject.alreadyDiscussed.find((f) => f.area === parsed.area);
   if (!focus) return null;
   return { subject, focus };
+}
+
+function FocusAreaLinks({ areas, subjectKey, selectedKey, onSelectArea, muted = false }) {
+  if (!areas.length) return null;
+  return (
+    <p className="text-sm text-slate-700 mt-1 leading-relaxed">
+      {areas.map((focus, index) => {
+        const key = focusSelectionKey(subjectKey, focus.area);
+        const isSelected = selectedKey === key;
+        return (
+          <span key={focus.area}>
+            {index > 0 ? ", " : null}
+            <button
+              type="button"
+              onClick={() => onSelectArea(key)}
+              className={`font-medium underline-offset-2 hover:underline ${
+                isSelected
+                  ? "text-indigo-800 underline"
+                  : muted
+                    ? "text-slate-600"
+                    : "text-indigo-600"
+              }`}
+            >
+              {focus.area}
+            </button>
+          </span>
+        );
+      })}
+    </p>
+  );
 }
 
 function FocusExampleCard({ example, index, total }) {
@@ -96,7 +128,12 @@ function FocusExampleCard({ example, index, total }) {
   );
 }
 
-function FocusAreaDetailPanel({ selection, selectionKey }) {
+function FocusAreaDetailPanel({
+  selection,
+  selectionKey,
+  onMarkDiscussed,
+  markingDiscussed,
+}) {
   const { subject, focus } = selection;
   const examples = focus.examples || [];
 
@@ -106,6 +143,15 @@ function FocusAreaDetailPanel({ selection, selectionKey }) {
         {subject.subjectLabel}
       </p>
       <h2 className="text-xl font-semibold text-slate-950 mt-1">{focus.area}</h2>
+      {focus.needsDiscussion === false ? (
+        <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 mt-2">
+          Discussed
+        </p>
+      ) : (
+        <p className="text-xs font-semibold uppercase tracking-wide text-amber-800 mt-2">
+          Needs discussion
+        </p>
+      )}
       {examples.length > 0 ? (
         <div className="mt-4 flex flex-col gap-3">
           {examples.map((example, index) => (
@@ -122,37 +168,50 @@ function FocusAreaDetailPanel({ selection, selectionKey }) {
           No sample wrong answers recorded for this area yet.
         </p>
       )}
-      <FocusAreaExplainPanel selectionKey={selectionKey} areaLabel={focus.area} />
+      <FocusAreaExplainPanel
+        selectionKey={selectionKey}
+        areaLabel={focus.area}
+        needsDiscussion={focus.needsDiscussion !== false}
+        onMarkDiscussed={onMarkDiscussed}
+        markingDiscussed={markingDiscussed}
+      />
     </div>
   );
 }
 
 function SubjectBlock({ subject, selectedKey, onSelectArea }) {
+  const { needsDiscussion, alreadyDiscussed } = subject;
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-4">
       <p className="text-lg font-semibold text-slate-900">{subject.subjectLabel}</p>
-      <p className="text-sm text-slate-700 mt-3 leading-relaxed">
-        {subject.focusAreas.map((focus, index) => {
-          const key = focusSelectionKey(subject.subjectKey, focus.area);
-          const isSelected = selectedKey === key;
-          return (
-            <span key={focus.area}>
-              {index > 0 ? ", " : null}
-              <button
-                type="button"
-                onClick={() => onSelectArea(key)}
-                className={`font-medium underline-offset-2 hover:underline ${
-                  isSelected
-                    ? "text-indigo-800 underline"
-                    : "text-indigo-600"
-                }`}
-              >
-                {focus.area}
-              </button>
-            </span>
-          );
-        })}
-      </p>
+      {needsDiscussion.length > 0 ? (
+        <div className="mt-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+            Needs discussion
+          </p>
+          <FocusAreaLinks
+            areas={needsDiscussion}
+            subjectKey={subject.subjectKey}
+            selectedKey={selectedKey}
+            onSelectArea={onSelectArea}
+          />
+        </div>
+      ) : null}
+      {alreadyDiscussed.length > 0 ? (
+        <div className={needsDiscussion.length > 0 ? "mt-4" : "mt-3"}>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Discussed
+          </p>
+          <FocusAreaLinks
+            areas={alreadyDiscussed}
+            subjectKey={subject.subjectKey}
+            selectedKey={selectedKey}
+            onSelectArea={onSelectArea}
+            muted
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -160,25 +219,31 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
 export default function AdminAnalysis() {
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
+  const [discussed, setDiscussed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploading, setUploading] = useState(false);
   const [selectedKey, setSelectedKey] = useState("");
+  const [markingDiscussed, setMarkingDiscussed] = useState(false);
   const uploadInputRef = useRef(null);
 
   useEffect(() => {
     setLoading(true);
-    getResults()
-      .then((data) => {
+    Promise.all([getResults(), getFocusAreasDiscussed()])
+      .then(([resultData, discussedData]) => {
         setError("");
-        setResults(data);
+        setResults(resultData);
+        setDiscussed(discussedData);
       })
       .catch(() => setError("Could not load analysis data."))
       .finally(() => setLoading(false));
   }, []);
 
-  const bySubject = useMemo(() => focusAreasAnalysis(results), [results]);
+  const bySubject = useMemo(
+    () => focusAreasAnalysisWithDiscussion(results, discussed),
+    [results, discussed],
+  );
   const uploadedCount = results.filter((r) => r.focus_evaluation).length;
   const selection = useMemo(
     () => findSelectedFocus(bySubject, selectedKey),
@@ -194,6 +259,33 @@ export default function AdminAnalysis() {
       setSelectedKey("");
     }
   }, [bySubject, selectedKey]);
+
+  async function handleMarkDiscussed() {
+    if (!selection) return;
+    setMarkingDiscussed(true);
+    setError("");
+    try {
+      const updated = await markFocusAreaDiscussed({
+        subject: selection.subject.subjectKey,
+        area: selection.focus.area,
+      });
+      setDiscussed((prev) => {
+        const next = prev.filter(
+          (row) =>
+            !(
+              row.subject === updated.subject &&
+              row.area === updated.area
+            ),
+        );
+        return [...next, updated];
+      });
+      setUploadMessage(`Marked “${selection.focus.area}” as discussed.`);
+    } catch (err) {
+      setError(err.message || "Could not save discussion status.");
+    } finally {
+      setMarkingDiscussed(false);
+    }
+  }
 
   async function handleUploadFile(event) {
     const file = event.target.files?.[0];
@@ -327,6 +419,8 @@ export default function AdminAnalysis() {
                   <FocusAreaDetailPanel
                     selection={selection}
                     selectionKey={selectedKey}
+                    onMarkDiscussed={handleMarkDiscussed}
+                    markingDiscussed={markingDiscussed}
                   />
                 </div>
               ) : null}

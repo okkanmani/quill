@@ -47,8 +47,14 @@ function ExplainModeToggle({ mode, onChange }) {
   );
 }
 
-/** Ephemeral teacher notes for discussing a focus area with a student. */
-export default function FocusAreaExplainPanel({ selectionKey, areaLabel }) {
+/** Teacher notes for discussing a focus area with a student. */
+export default function FocusAreaExplainPanel({
+  selectionKey,
+  areaLabel,
+  needsDiscussion = true,
+  onMarkDiscussed,
+  markingDiscussed = false,
+}) {
   const [byKey, setByKey] = useState({});
   const [openByKey, setOpenByKey] = useState({});
   const notes = byKey[selectionKey] || DEFAULT_NOTES;
@@ -119,6 +125,20 @@ export default function FocusAreaExplainPanel({ selectionKey, areaLabel }) {
               rows={6}
               className="w-full mt-3 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-y min-h-[10rem]"
             />
+          )}
+          {needsDiscussion ? (
+            <button
+              type="button"
+              disabled={markingDiscussed}
+              onClick={onMarkDiscussed}
+              className="mt-4 w-full rounded-xl bg-slate-800 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-900 transition disabled:opacity-50"
+            >
+              {markingDiscussed ? "Saving…" : "Mark discussion complete"}
+            </button>
+          ) : (
+            <p className="mt-4 text-sm font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+              Discussion complete — this focus area is in the discussed list.
+            </p>
           )}
         </>
       ) : null}

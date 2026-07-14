@@ -13,6 +13,55 @@ function areaKey(area) {
   return String(area || "").trim().toLowerCase();
 }
 
+export function focusDiscussionKey(subjectKey, area) {
+  return `${subjectKey}::${areaKey(area)}`;
+}
+
+function analysisTimestamp(result, evaluation) {
+  const uploaded = evaluation?.uploaded_at;
+  if (uploaded) return String(uploaded);
+  if (result?.evaluated_at) return String(result.evaluated_at);
+  if (result?.submitted_at) return String(result.submitted_at);
+  return "";
+}
+
+function needsDiscussionForArea(focusArea, subjectKey, discussedMap) {
+  const key = focusDiscussionKey(subjectKey, focusArea.area);
+  const discussedAt = discussedMap[key];
+  if (!discussedAt) return true;
+  const latestAnalysisAt = focusArea.latestAnalysisAt || "";
+  if (!latestAnalysisAt) return false;
+  return latestAnalysisAt > discussedAt;
+}
+
+/**
+ * Split focus areas into needs-discussion vs already-discussed buckets.
+ * Newer analysis after a prior discussion moves an area back to needs discussion.
+ */
+export function splitFocusAreasByDiscussion(focusAreas, subjectKey, discussedMap) {
+  const needsDiscussion = [];
+  const alreadyDiscussed = [];
+
+  for (const focus of focusAreas || []) {
+    if (needsDiscussionForArea(focus, subjectKey, discussedMap)) {
+      needsDiscussion.push({ ...focus, needsDiscussion: true });
+    } else {
+      alreadyDiscussed.push({ ...focus, needsDiscussion: false });
+    }
+  }
+
+  return { needsDiscussion, alreadyDiscussed };
+}
+
+export function buildDiscussedMap(discussedRecords) {
+  const map = {};
+  for (const row of discussedRecords || []) {
+    const subjectKey = normalizeSubjectKey(row.subject);
+    map[focusDiscussionKey(subjectKey, row.area)] = row.discussed_at;
+  }
+  return map;
+}
+
 const MAX_EXAMPLES_PER_AREA = 3;
 
 function exampleKey(example) {
@@ -92,16 +141,26 @@ export function focusAreasAnalysis(results) {
           area,
           examples: [],
           exampleKeys: new Set(),
+          latestAnalysisAt: "",
         });
       }
-      addWrongExample(areas.get(key), q, result);
+      const entry = areas.get(key);
+      const ts = analysisTimestamp(result, evaluation);
+      if (ts && ts > entry.latestAnalysisAt) {
+        entry.latestAnalysisAt = ts;
+      }
+      addWrongExample(entry, q, result);
     }
   }
 
   return [...bySubject.entries()]
     .map(([subjectKey, areaMap]) => {
       const focusAreas = [...areaMap.values()]
-        .map(({ area, examples }) => ({ area, examples }))
+        .map(({ area, examples, latestAnalysisAt }) => ({
+          area,
+          examples,
+          latestAnalysisAt,
+        }))
         .sort((a, b) => a.area.localeCompare(b.area));
       return {
         subjectKey,
@@ -116,6 +175,25 @@ export function focusAreasAnalysis(results) {
         subjectSortKey(a.subjectKey) - subjectSortKey(b.subjectKey) ||
         a.subjectLabel.localeCompare(b.subjectLabel),
     );
+}
+
+/**
+ * Aggregate focus areas and split by discussion status for the Analysis page.
+ */
+export function focusAreasAnalysisWithDiscussion(results, discussedRecords) {
+  const discussedMap = buildDiscussedMap(discussedRecords);
+  return focusAreasAnalysis(results).map((subject) => {
+    const { needsDiscussion, alreadyDiscussed } = splitFocusAreasByDiscussion(
+      subject.focusAreas,
+      subject.subjectKey,
+      discussedMap,
+    );
+    return {
+      ...subject,
+      needsDiscussion,
+      alreadyDiscussed,
+    };
+  });
 }
 
 export function formatFocusAreaList(areas) {
