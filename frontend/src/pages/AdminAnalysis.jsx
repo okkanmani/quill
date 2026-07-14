@@ -5,6 +5,8 @@ import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
+import AdminStudentBanner from "../components/AdminStudentBanner";
+import QuillLoading from "../components/QuillLoading";
 import FocusAreaExplainPanel from "../components/FocusAreaExplainPanel";
 import {
   focusAreasAnalysis,
@@ -230,6 +232,7 @@ export default function AdminAnalysis() {
 
       <div className="px-6 pb-6 pt-4">
         <div className="max-w-6xl">
+          <AdminStudentBanner />
           <AdminStudentSwitcher />
 
           <h1 className="text-2xl font-bold text-slate-950 mb-2">Analysis</h1>
@@ -279,7 +282,7 @@ export default function AdminAnalysis() {
             <p className="text-green-700 text-sm mb-4">{uploadMessage}</p>
           )}
 
-          {loading && <p className="text-slate-600">Loading…</p>}
+          {loading && <QuillLoading label="Loading analysis…" />}
           {error && <p className="text-red-600 text-sm">{error}</p>}
 
           {!loading && !error && results.length === 0 && (

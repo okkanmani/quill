@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api";
 import AppHeader from "../components/AppHeader";
+import QuillLoading from "../components/QuillLoading";
 import WorksheetsBySubject from "../components/WorksheetsBySubject";
 import { useStudentNavLinks } from "../useStudentNavLinks";
 import { LATEST_WINDOW_LABEL } from "../worksheetUtils";
@@ -40,7 +41,7 @@ export default function StudentLatest() {
           {`New worksheets from the last ${LATEST_WINDOW_LABEL} that you have not finished yet.`}
         </p>
 
-        {loading && <p className="text-slate-600">Loading...</p>}
+        {loading && <QuillLoading label="Loading latest worksheets…" />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && !error && latest.length > 0 && (

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getLearnSubjects } from "../api";
 import LearnChrome from "../components/LearnChrome";
+import QuillLoading from "../components/QuillLoading";
 
 function SubjectCard({ subject }) {
   return (
@@ -53,7 +54,7 @@ export default function LearnHub() {
           Reference pages you can read before worksheets.
         </p>
 
-        {loading && <p className="text-slate-600">Loading…</p>}
+        {loading && <QuillLoading label="Loading resources…" />}
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
         {!loading && !error && entries.length === 0 && (

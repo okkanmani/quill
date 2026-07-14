@@ -5,6 +5,8 @@ import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
+import AdminStudentBanner from "../components/AdminStudentBanner";
+import QuillLoading from "../components/QuillLoading";
 import ResultsBySubject from "../components/ResultsBySubject";
 
 export default function AdminHome() {
@@ -75,13 +77,14 @@ export default function AdminHome() {
       />
 
       <div className="max-w-3xl">
+        <AdminStudentBanner />
         <AdminStudentSwitcher />
 
         {message && (
           <p className="text-green-700 text-sm mb-4">{message}</p>
         )}
 
-        {loading && <p className="text-slate-600">Loading...</p>}
+        {loading && <QuillLoading label="Loading results…" />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && !error && results.length === 0 && (

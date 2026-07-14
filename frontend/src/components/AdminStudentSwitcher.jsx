@@ -17,21 +17,6 @@ export default function AdminStudentSwitcher() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    if (loading || students.length !== 1) return;
-    const only = students[0].name;
-    if (current) return;
-    switchAdminStudent(only)
-      .then((data) => {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("studentName", data.student_name);
-        if (data.admin_name) localStorage.setItem("adminName", data.admin_name);
-        if (data.grade != null) localStorage.setItem("studentGrade", String(data.grade));
-        window.location.reload();
-      })
-      .catch(() => setErr("Could not select your student."));
-  }, [loading, students, current]);
-
   async function onChange(name) {
     if (!name || name === current) return;
     setErr("");
@@ -48,9 +33,8 @@ export default function AdminStudentSwitcher() {
     }
   }
 
-  if (loading || students.length === 0) return null;
-  if (students.length === 1 && !current) return null;
-  if (students.length === 1 && current === students[0].name) return null;
+  if (loading || students.length === 0 || !current) return null;
+  if (students.length === 1) return null;
 
   const selectValue =
     current && students.some((s) => s.name === current) ? current : "";

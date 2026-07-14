@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api";
 import AppHeader from "../components/AppHeader";
+import QuillLoading from "../components/QuillLoading";
 import WorksheetsByMode from "../components/WorksheetsByMode";
 import { useStudentNavLinks } from "../useStudentNavLinks";
 
@@ -27,7 +28,7 @@ export default function StudentHome() {
       />
 
       <div className="max-w-3xl">
-        {loading && <p className="text-slate-600">Loading...</p>}
+        {loading && <QuillLoading label="Loading worksheets…" />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && !error && worksheets.length === 0 && (

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import SubjectBadge from "./SubjectBadge";
 import { formatSubjectLabel } from "../subjectUtils";
@@ -191,8 +191,15 @@ export default function WorksheetsBySubject({
   ungrouped = false,
 }) {
   const groups = useMemo(() => groupWorksheets(worksheets), [worksheets]);
-  /** Subject keys that are expanded; default is all collapsed. */
+  /** Subject keys that are expanded; first section opens by default. */
   const [open, setOpen] = useState(() => new Set());
+  const didInitOpen = useRef(false);
+
+  useEffect(() => {
+    if (didInitOpen.current || ungrouped || groups.length === 0) return;
+    didInitOpen.current = true;
+    setOpen(new Set([groups[0][0]]));
+  }, [groups, ungrouped]);
   const [sortBySubject, setSortBySubject] = useState({});
 
   function toggle(subjectKey) {

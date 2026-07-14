@@ -9,6 +9,7 @@ import {
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
+import QuillLoading from "../components/QuillLoading";
 
 export default function AdminSettings() {
   const navigate = useNavigate();
@@ -92,7 +93,7 @@ export default function AdminSettings() {
           key.
         </p>
 
-        {loading ? <p className="text-slate-600">Loading…</p> : null}
+        {loading ? <QuillLoading label="Loading settings…" /> : null}
         {message ? (
           <p className="text-emerald-800 text-sm mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
             {message}

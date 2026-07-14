@@ -4,6 +4,7 @@ import { createAdminStudent, deleteAdminStudent, listAdminStudents, logout, swit
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
+import QuillLoading from "../components/QuillLoading";
 import { GRADE_OPTIONS } from "../questionBuilderUtils";
 
 export default function AdminStudents() {
@@ -163,7 +164,7 @@ export default function AdminStudents() {
           </form>
         </div>
 
-        {loading && <p className="text-slate-600">Loading…</p>}
+        {loading && <QuillLoading label="Loading students…" />}
         {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
         {!loading && students.length === 0 && !error && (

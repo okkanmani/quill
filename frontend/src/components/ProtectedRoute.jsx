@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getMe } from "../api";
+import QuillLoading from "./QuillLoading";
 
 export default function ProtectedRoute({ role, children }) {
   const [status, setStatus] = useState(() => {
@@ -29,7 +30,9 @@ export default function ProtectedRoute({ role, children }) {
       });
   }, [role]);
 
-  if (status === "checking") return null;
+  if (status === "checking") {
+    return <QuillLoading fullscreen label="Loading…" />;
+  }
   if (status === "denied") return <Navigate to="/" />;
   return children;
 }

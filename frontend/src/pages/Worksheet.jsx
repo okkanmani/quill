@@ -12,6 +12,7 @@ import {
 } from "../api";
 import AppHeader from "../components/AppHeader";
 import Drawpad from "../components/Drawpad";
+import QuillLoading from "../components/QuillLoading";
 import {
   DifficultyStars,
   QuestionDifficultyStars,
@@ -600,8 +601,8 @@ export default function Worksheet() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-slate-50 p-6 text-slate-600">
-        Loading...
+      <div className="min-h-screen bg-slate-50 p-6">
+        <QuillLoading fullscreen label="Loading worksheet…" />
       </div>
     );
   if (error)

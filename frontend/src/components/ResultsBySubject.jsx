@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AnswerResponseView from "./AnswerResponseView";
 import AdminResultGrader from "./AdminResultGrader";
 import RecycleBinButton from "./RecycleBinButton";
@@ -59,6 +59,13 @@ export default function ResultsBySubject({
   const isAdmin = variant === "admin";
   const groups = useMemo(() => groupResults(results), [results]);
   const [openSubjects, setOpenSubjects] = useState(() => new Set());
+  const didInitOpen = useRef(false);
+
+  useEffect(() => {
+    if (didInitOpen.current || groups.length === 0) return;
+    didInitOpen.current = true;
+    setOpenSubjects(new Set([groups[0][0]]));
+  }, [groups]);
   const [sortBySubject, setSortBySubject] = useState({});
   const [downloadingResultId, setDownloadingResultId] = useState(null);
   const [analyzingResultId, setAnalyzingResultId] = useState(null);

@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getLearnSubject } from "../api";
 import LearnChrome from "../components/LearnChrome";
 import LearnMarkdown from "../components/LearnMarkdown";
+import QuillLoading from "../components/QuillLoading";
 
 /* Sticky TOC uses top-44 (~11rem) to sit below LearnChrome’s sticky header; bump if that bar grows. */
 
@@ -44,7 +45,7 @@ export default function LearnSubject() {
   return (
     <LearnChrome onBack={() => navigate("/student/learn")}>
       <div className="max-w-5xl">
-        {loading && <p className="text-slate-600">Loading…</p>}
+        {loading && <QuillLoading label="Loading topic…" />}
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
         {data && !loading && (

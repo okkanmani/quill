@@ -10,3 +10,19 @@
       sans-serif;
   }
 }
+
+@keyframes quill-loading {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.82;
+  }
+  50% {
+    transform: translateY(-5px) scale(1.05);
+    opacity: 1;
+  }
+}
+
+.quill-loading {
+  animation: quill-loading 1.8s ease-in-out infinite;
+}

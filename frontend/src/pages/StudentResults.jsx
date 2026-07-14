@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getResults, getWorksheets, logout } from "../api";
 import { buildStudentNavLinks } from "../adminNav";
 import AppHeader from "../components/AppHeader";
+import QuillLoading from "../components/QuillLoading";
 import ResultsBySubject from "../components/ResultsBySubject";
 import { filterLatestUndoneWorksheets } from "../worksheetUtils";
 
@@ -55,7 +56,7 @@ export default function StudentResults() {
       />
 
       <div className="max-w-3xl">
-        {loading && <p className="text-slate-600">Loading...</p>}
+        {loading && <QuillLoading label="Loading results…" />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && !error && results.length === 0 && (

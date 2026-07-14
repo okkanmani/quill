@@ -5,6 +5,8 @@ import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
+import AdminStudentBanner from "../components/AdminStudentBanner";
+import QuillLoading from "../components/QuillLoading";
 import RecycleBinButton from "../components/RecycleBinButton";
 import WorksheetLockButton from "../components/WorksheetLockButton";
 import WorksheetsByMode from "../components/WorksheetsByMode";
@@ -355,13 +357,14 @@ export default function AdminWorksheets() {
       />
 
       <div className="max-w-3xl">
+        <AdminStudentBanner />
         <AdminStudentSwitcher />
 
         {uploadMessage && (
           <p className="text-green-700 text-sm mb-4">{uploadMessage}</p>
         )}
 
-        {loading && <p className="text-slate-600">Loading...</p>}
+        {loading && <QuillLoading label="Loading worksheets…" />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && !error && worksheets.length === 0 && (
