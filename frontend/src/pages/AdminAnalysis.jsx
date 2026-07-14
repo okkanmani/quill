@@ -44,6 +44,7 @@ function findSelectedFocus(bySubject, selectedKey) {
 }
 
 function FocusExampleCard({ example, index, total }) {
+  const [revealed, setRevealed] = useState(false);
   const choices = formatFocusExampleChoices(example.choices);
   const studentAnswer = formatFocusExampleAnswer(example.answer);
   const missingAnswer = isMissingFocusExampleAnswer(example.answer);
@@ -69,10 +70,27 @@ function FocusExampleCard({ example, index, total }) {
         </span>
       </p>
       {example.expected ? (
-        <p className="text-sm text-emerald-800 mt-2">
-          <span className="font-medium">Correct answer: </span>
-          {example.expected}
-        </p>
+        <div className="text-sm text-emerald-800 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="font-medium">Correct answer:</span>
+          {revealed ? (
+            <span>{example.expected}</span>
+          ) : (
+            <span
+              className="inline-block rounded px-2 py-0.5 bg-emerald-100/80 text-emerald-900/40 select-none tracking-widest font-mono text-xs"
+              aria-hidden="true"
+            >
+              {"•".repeat(Math.min(Math.max(example.expected.length, 6), 16))}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => setRevealed((v) => !v)}
+            className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 underline underline-offset-2"
+            aria-pressed={revealed}
+          >
+            {revealed ? "Hide" : "Show"}
+          </button>
+        </div>
       ) : null}
     </div>
   );
