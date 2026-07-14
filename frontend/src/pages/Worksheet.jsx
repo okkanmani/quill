@@ -92,6 +92,7 @@ export default function Worksheet() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [scratchpadsVisible, setScratchpadsVisible] = useState(false);
   const [draftSavedAt, setDraftSavedAt] = useState(null);
   const [savingDraft, setSavingDraft] = useState(false);
@@ -135,6 +136,7 @@ export default function Worksheet() {
     setAccessLocked(false);
     setAccessLockMessage("");
     autoSubmitStarted.current = false;
+    setSubmitting(false);
 
     async function load() {
       try {
@@ -227,9 +229,11 @@ export default function Worksheet() {
 
   const handleSubmit = useCallback(
     async (autoFromTimer = false) => {
-      if (!worksheet || submitted || autoSubmitStarted.current) return;
-      if (autoFromTimer) autoSubmitStarted.current = true;
-
+      if (!worksheet || submitted || autoSubmitStarted.current || submitting) {
+        return;
+      }
+      autoSubmitStarted.current = true;
+      setSubmitting(true);
       setSubmitError("");
       const manual = isManualEvaluation(worksheet);
 
@@ -262,6 +266,7 @@ export default function Worksheet() {
           );
         } catch (e) {
           autoSubmitStarted.current = false;
+          setSubmitting(false);
           setSubmitError(e.message || "Failed to submit.");
         }
         return;
@@ -298,13 +303,14 @@ export default function Worksheet() {
         sessionStorage.removeItem(timedSessionStorageKey(id));
       } catch (e) {
         autoSubmitStarted.current = false;
+        setSubmitting(false);
         setSubmitted(false);
         setResultStatus(null);
         setScore(null);
         setSubmitError(e.message || "Failed to submit.");
       }
     },
-    [answers, id, responseModes, scratchpadData, submitted, worksheet],
+    [answers, id, responseModes, scratchpadData, submitted, submitting, worksheet],
   );
 
   useEffect(() => {
@@ -847,10 +853,12 @@ export default function Worksheet() {
 
       {!submitted && !isAdminPreview && (
         <button
+          type="button"
           onClick={() => handleSubmit(false)}
-          className="mt-4 w-full bg-indigo-500 hover:bg-slate-600 text-white font-semibold py-4 rounded-2xl shadow transition"
+          disabled={submitting}
+          className="mt-4 w-full bg-indigo-500 hover:bg-slate-600 text-white font-semibold py-4 rounded-2xl shadow transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Submit Answers
+          {submitting ? "Submitting…" : "Submit Answers"}
         </button>
       )}
 
