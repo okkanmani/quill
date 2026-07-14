@@ -17,7 +17,7 @@
       ],
       "answer": "−104",
       "hint": false,
-      "area": "numbers"
+      "area": "order of operations"
     },
     {
       "id": "q2",
@@ -32,7 +32,7 @@
       ],
       "answer": "9",
       "hint": false,
-      "area": "algebra"
+      "area": "one-step linear equations"
     },
     {
       "id": "q3",
@@ -47,7 +47,7 @@
       ],
       "answer": "15/8",
       "hint": false,
-      "area": "numbers"
+      "area": "fraction division"
     },
     {
       "id": "q4",
@@ -62,7 +62,7 @@
       ],
       "answer": "96 cm²",
       "hint": false,
-      "area": "geometry"
+      "area": "parallelogram area"
     },
     {
       "id": "q5",
@@ -77,7 +77,7 @@
       ],
       "answer": "$80",
       "hint": false,
-      "area": "numbers"
+      "area": "percent discount"
     },
     {
       "id": "q6",
@@ -92,7 +92,7 @@
       ],
       "answer": "60",
       "hint": false,
-      "area": "numbers"
+      "area": "least common multiple"
     },
     {
       "id": "q7",
@@ -107,7 +107,7 @@
       ],
       "answer": "24",
       "hint": false,
-      "area": "numbers"
+      "area": "greatest common factor"
     },
     {
       "id": "q8",
@@ -122,7 +122,7 @@
       ],
       "answer": "5.2",
       "hint": false,
-      "area": "numbers"
+      "area": "decimal multiplication"
     },
     {
       "id": "q9",
@@ -137,7 +137,7 @@
       ],
       "answer": "64 cm³",
       "hint": false,
-      "area": "geometry"
+      "area": "cube volume"
     },
     {
       "id": "q10",
@@ -152,7 +152,7 @@
       ],
       "answer": "12",
       "hint": false,
-      "area": "numbers"
+      "area": "mean average"
     },
     {
       "id": "q11",
@@ -167,7 +167,7 @@
       ],
       "answer": "$20",
       "hint": false,
-      "area": "numbers"
+      "area": "unit rate"
     },
     {
       "id": "q12",
@@ -182,7 +182,7 @@
       ],
       "answer": "140 g",
       "hint": false,
-      "area": "numbers"
+      "area": "ratio problems"
     },
     {
       "id": "q13",
@@ -197,7 +197,7 @@
       ],
       "answer": "52°",
       "hint": false,
-      "area": "geometry"
+      "area": "complementary angles"
     },
     {
       "id": "q14",
@@ -212,7 +212,7 @@
       ],
       "answer": "144",
       "hint": false,
-      "area": "numbers"
+      "area": "percent of a number"
     },
     {
       "id": "q15",
@@ -227,7 +227,7 @@
       ],
       "answer": "10",
       "hint": false,
-      "area": "numbers"
+      "area": "integer operations"
     },
     {
       "id": "q16",
@@ -242,7 +242,7 @@
       ],
       "answer": "x + 8",
       "hint": false,
-      "area": "algebra"
+      "area": "simplifying expressions"
     },
     {
       "id": "q17",
@@ -257,7 +257,7 @@
       ],
       "answer": "36 cm",
       "hint": false,
-      "area": "geometry"
+      "area": "triangle perimeter"
     },
     {
       "id": "q18",
@@ -272,7 +272,7 @@
       ],
       "answer": "13/24",
       "hint": false,
-      "area": "numbers"
+      "area": "fraction subtraction"
     },
     {
       "id": "q19",
@@ -287,7 +287,7 @@
       ],
       "answer": "80 km/h",
       "hint": false,
-      "area": "numbers"
+      "area": "average speed"
     },
     {
       "id": "q20",
@@ -302,7 +302,7 @@
       ],
       "answer": "154 cm²",
       "hint": false,
-      "area": "geometry"
+      "area": "circle area"
     }
   ],
   "timed": true,
