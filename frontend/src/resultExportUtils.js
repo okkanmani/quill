@@ -11,14 +11,12 @@ function answerText(ans) {
   return given ?? "";
 }
 
-function exportRowFromAnswer(ans, result) {
+function exportRowFromAnswer(ans, worksheetQuestion) {
   const difficulty =
     typeof ans?.stars === "number"
       ? ans.stars
-      : typeof result?.difficulty_min === "number" &&
-          typeof result?.difficulty_max === "number" &&
-          result.difficulty_min === result.difficulty_max
-        ? result.difficulty_min
+      : typeof worksheetQuestion?.stars === "number"
+        ? worksheetQuestion.stars
         : null;
 
   const row = {
@@ -30,13 +28,30 @@ function exportRowFromAnswer(ans, result) {
 
   if (ans?.question_id) row.question_id = ans.question_id;
   if (typeof ans?.correct === "boolean") row.correct = ans.correct;
+  if (ans?.expected != null && String(ans.expected).trim()) {
+    row.expected = String(ans.expected).trim();
+  } else if (worksheetQuestion?.answer != null && String(worksheetQuestion.answer).trim()) {
+    row.expected = String(worksheetQuestion.answer).trim();
+  }
+  if (Array.isArray(worksheetQuestion?.choices) && worksheetQuestion.choices.length) {
+    row.choices = worksheetQuestion.choices.map((c) => String(c));
+  }
 
   return row;
 }
 
+function worksheetQuestionMap(worksheet) {
+  const out = new Map();
+  for (const q of worksheet?.questions || []) {
+    if (q?.id) out.set(q.id, q);
+  }
+  return out;
+}
+
 /** Per-worksheet export for teacher or AI to fill in `area` on each question. */
-export function buildResultExportPayload(result) {
+export function buildResultExportPayload(result, worksheet = null) {
   const subject = normalizeSubjectKey(result?.subject);
+  const byId = worksheetQuestionMap(worksheet);
   return {
     export_version: RESULT_EXPORT_VERSION,
     result_id: result?.id ?? null,
@@ -45,7 +60,9 @@ export function buildResultExportPayload(result) {
     title: result?.title ?? null,
     subject,
     submitted_at: result?.submitted_at ?? null,
-    questions: (result?.answers || []).map((ans) => exportRowFromAnswer(ans, result)),
+    questions: (result?.answers || []).map((ans) =>
+      exportRowFromAnswer(ans, byId.get(ans?.question_id)),
+    ),
   };
 }
 
@@ -71,8 +88,8 @@ export function downloadJson(data, filename) {
   URL.revokeObjectURL(url);
 }
 
-export function downloadResultJson(result) {
-  const payload = buildResultExportPayload(result);
+export function downloadResultJson(result, worksheet = null) {
+  const payload = buildResultExportPayload(result, worksheet);
   const stamp = (result?.submitted_at || new Date().toISOString()).slice(0, 10);
   const name = safeFilenamePart(result?.student || "student");
   const ws = safeFilenamePart(result?.worksheet_id || "worksheet");

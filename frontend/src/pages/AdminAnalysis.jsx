@@ -8,11 +8,45 @@ import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import {
   focusAreasAnalysis,
   formatFocusAreaList,
+  formatFocusExampleChoices,
 } from "../analysisUtils";
 import {
   readJsonFile,
   resolveResultForEvaluationUpload,
 } from "../resultExportUtils";
+
+function FocusExampleCard({ example, index, total }) {
+  const choices = formatFocusExampleChoices(example.choices);
+
+  return (
+    <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        Example{total > 1 ? ` ${index + 1}` : ""}
+      </p>
+      <p className="text-sm text-slate-900 mt-2 leading-relaxed whitespace-pre-wrap">
+        {example.question}
+      </p>
+      {choices ? (
+        <p className="text-sm text-slate-700 mt-2 leading-relaxed">
+          <span className="font-medium text-slate-600">Options: </span>
+          {choices}
+        </p>
+      ) : null}
+      {example.answer !== "" && example.answer != null ? (
+        <p className="text-sm text-red-800 mt-2">
+          <span className="font-medium">Student answered: </span>
+          {example.answer}
+        </p>
+      ) : null}
+      {example.expected ? (
+        <p className="text-sm text-emerald-800 mt-2">
+          <span className="font-medium">Correct answer: </span>
+          {example.expected}
+        </p>
+      ) : null}
+    </div>
+  );
+}
 
 function FocusAreaRow({ focus }) {
   return (
@@ -20,23 +54,12 @@ function FocusAreaRow({ focus }) {
       <p className="text-sm font-semibold text-slate-900">{focus.area}</p>
       <div className="mt-2 flex flex-col gap-2">
         {focus.examples.map((example, index) => (
-          <div
-            key={`${focus.area}-${index}`}
-            className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
-          >
-            <p className="text-sm text-slate-800 leading-relaxed">
-              <span className="font-medium text-slate-600">
-                Example{focus.examples.length > 1 ? ` ${index + 1}` : ""} —{" "}
-              </span>
-              {example.question}
-            </p>
-            {example.answer !== "" && example.answer != null ? (
-              <p className="text-sm text-red-800 mt-2">
-                <span className="font-medium">Student answered: </span>
-                {example.answer}
-              </p>
-            ) : null}
-          </div>
+          <FocusExampleCard
+            key={`${focus.area}-${example.question_id || index}`}
+            example={example}
+            index={index}
+            total={focus.examples.length}
+          />
         ))}
       </div>
     </div>

@@ -500,6 +500,77 @@ def question_area_map_for_worksheet(worksheet_id: str) -> dict[str, str]:
     }
 
 
+def worksheet_question_map_for_worksheet(worksheet_id: str) -> dict[str, dict]:
+    """question_id → full worksheet question object."""
+    out: dict[str, dict] = {}
+    for q in _questions_from_worksheet_sources(worksheet_id):
+        qid = q.get("id")
+        if isinstance(qid, str) and qid:
+            out[qid] = q
+    return out
+
+
+def _enrich_focus_evaluation_question(
+    q: dict,
+    *,
+    ans_by_qid: dict[str, dict],
+    ws_by_qid: dict[str, dict],
+) -> dict:
+    qid = q.get("question_id")
+    ans = ans_by_qid.get(qid) if qid else None
+    ws_q = ws_by_qid.get(qid) if qid else None
+    row = {
+        "question_id": qid,
+        "question": q.get("question") or (ans.get("prompt") if ans else "") or "",
+        "answer": q.get("answer", ""),
+        "difficulty_level": q.get("difficulty_level"),
+        "area": _normalize_focus_area(q.get("area")) or "",
+    }
+    if isinstance(q.get("correct"), bool):
+        row["correct"] = q["correct"]
+    expected = q.get("expected")
+    if expected is None and ans:
+        expected = ans.get("expected")
+    if expected is None and ws_q:
+        expected = ws_q.get("answer")
+    if expected is not None and str(expected).strip():
+        row["expected"] = str(expected).strip()
+    choices = q.get("choices")
+    if not isinstance(choices, list) and ws_q:
+        choices = ws_q.get("choices")
+    if isinstance(choices, list) and choices:
+        row["choices"] = [str(c) for c in choices if c is not None]
+    return row
+
+
+def enrich_stored_focus_evaluation(
+    stored: dict, worksheet_id: str, answers: list
+) -> dict:
+    """Fill missing expected/choices on saved focus evaluations at read time."""
+    if not isinstance(stored, dict):
+        return stored
+    questions = stored.get("questions")
+    if not isinstance(questions, list):
+        return stored
+    ws_by_qid = worksheet_question_map_for_worksheet(worksheet_id)
+    ans_by_qid = {
+        a.get("question_id"): a
+        for a in answers
+        if isinstance(a, dict) and a.get("question_id")
+    }
+    out = dict(stored)
+    out["questions"] = [
+        _enrich_focus_evaluation_question(
+            q,
+            ans_by_qid=ans_by_qid,
+            ws_by_qid=ws_by_qid,
+        )
+        for q in questions
+        if isinstance(q, dict)
+    ]
+    return out
+
+
 def attach_areas_to_answers(worksheet: dict, answers: list) -> list:
     """Copy question.area onto each answer row when missing."""
     area_by_qid: dict[str, str] = {}
@@ -1922,6 +1993,12 @@ def list_results(student_name: str, *, for_student_view: bool = False) -> list:
                         ans.pop("correct", None)
             if for_student_view:
                 item.pop("focus_evaluation", None)
+            elif item.get("focus_evaluation"):
+                item["focus_evaluation"] = enrich_stored_focus_evaluation(
+                    item["focus_evaluation"],
+                    wid,
+                    answers,
+                )
             out.append(item)
         return out
     finally:
@@ -1988,6 +2065,12 @@ def save_focus_evaluation(result_id: int, student_name: str, data: dict) -> dict
         if errors:
             raise ValueError("; ".join(errors))
 
+        ws_by_qid = worksheet_question_map_for_worksheet(result["worksheet_id"])
+        ans_by_qid = {
+            a.get("question_id"): a
+            for a in (result.get("answers") or [])
+            if isinstance(a, dict) and a.get("question_id")
+        }
         stored = {
             "export_version": data.get("export_version", 1),
             "result_id": result["id"],
@@ -1997,18 +2080,11 @@ def save_focus_evaluation(result_id: int, student_name: str, data: dict) -> dict
             "student": result["student"],
             "uploaded_at": datetime.now(timezone.utc).isoformat(),
             "questions": [
-                {
-                    "question_id": q.get("question_id"),
-                    "question": q.get("question", ""),
-                    "answer": q.get("answer", ""),
-                    "difficulty_level": q.get("difficulty_level"),
-                    "area": _normalize_focus_area(q.get("area")) or "",
-                    **(
-                        {"correct": q["correct"]}
-                        if isinstance(q.get("correct"), bool)
-                        else {}
-                    ),
-                }
+                _enrich_focus_evaluation_question(
+                    q,
+                    ans_by_qid=ans_by_qid,
+                    ws_by_qid=ws_by_qid,
+                )
                 for q in data.get("questions") or []
                 if isinstance(q, dict)
             ],

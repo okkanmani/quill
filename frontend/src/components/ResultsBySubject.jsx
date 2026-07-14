@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import AnswerResponseView from "./AnswerResponseView";
 import AdminResultGrader from "./AdminResultGrader";
 import RecycleBinButton from "./RecycleBinButton";
+import { getWorksheet } from "../api";
 import { downloadResultJson } from "../resultExportUtils";
 import { formatSubjectLabel } from "../subjectUtils";
 import { normalizeSubjectKey, subjectSortKey } from "../subjectUtils";
@@ -62,7 +63,20 @@ export default function ResultsBySubject({
   const isAdmin = variant === "admin";
   const groups = useMemo(() => groupResults(results), [results]);
   const [openSubjects, setOpenSubjects] = useState(() => new Set());
+  const [downloadingResultId, setDownloadingResultId] = useState(null);
   const pendingCount = results.filter((r) => r.status === "pending").length;
+
+  async function handleDownloadJson(result) {
+    setDownloadingResultId(result.id);
+    try {
+      const worksheet = await getWorksheet(result.worksheet_id);
+      downloadResultJson(result, worksheet);
+    } catch {
+      downloadResultJson(result);
+    } finally {
+      setDownloadingResultId(null);
+    }
+  }
 
   function toggleSubject(subjectKey) {
     setOpenSubjects((prev) => {
@@ -243,10 +257,11 @@ export default function ResultsBySubject({
                           {isAdmin && !isPending ? (
                             <button
                               type="button"
-                              onClick={() => downloadResultJson(r)}
+                              onClick={() => handleDownloadJson(r)}
+                              disabled={downloadingResultId === r.id}
                               title="Download JSON for evaluation"
                               aria-label={`Download JSON for ${r.title || r.worksheet_id}`}
-                              className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition"
+                              className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition disabled:opacity-50"
                             >
                               <svg
                                 viewBox="0 0 24 24"

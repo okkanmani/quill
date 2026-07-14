@@ -15,24 +15,52 @@ function areaKey(area) {
 
 const MAX_EXAMPLES_PER_AREA = 3;
 
-function exampleKey(question) {
-  return String(question || "").trim().toLowerCase();
+function exampleKey(example) {
+  const qid = example?.question_id;
+  if (qid) return `id:${qid}`;
+  return `q:${String(example?.question || "").trim().toLowerCase()}`;
 }
 
-function addWrongExample(entry, question) {
-  if (question?.correct !== false) return;
-  const text = question.question || "";
-  if (!text.trim()) return;
+function answerRowForQuestion(result, question) {
+  const qid = question?.question_id;
+  if (qid) {
+    return (result?.answers || []).find((a) => a?.question_id === qid);
+  }
+  const prompt = String(question?.question || "").trim();
+  if (!prompt) return null;
+  return (result?.answers || []).find((a) => String(a?.prompt || "").trim() === prompt);
+}
 
-  const key = exampleKey(text);
+function enrichEvaluationQuestion(question, result) {
+  const answerRow = answerRowForQuestion(result, question);
+  const choices = Array.isArray(question?.choices)
+    ? question.choices
+    : [];
+  const expected =
+    question?.expected ??
+    answerRow?.expected ??
+    "";
+  return {
+    question_id: question?.question_id ?? answerRow?.question_id ?? null,
+    question: question?.question || answerRow?.prompt || "",
+    answer: question?.answer ?? answerRow?.given ?? "",
+    expected: expected != null ? String(expected) : "",
+    choices,
+    correct: question?.correct,
+  };
+}
+
+function addWrongExample(entry, question, result) {
+  const example = enrichEvaluationQuestion(question, result);
+  if (example.correct !== false) return;
+  if (!example.question.trim()) return;
+
+  const key = exampleKey(example);
   if (entry.exampleKeys.has(key)) return;
   if (entry.examples.length >= MAX_EXAMPLES_PER_AREA) return;
 
   entry.exampleKeys.add(key);
-  entry.examples.push({
-    question: text,
-    answer: question.answer ?? "",
-  });
+  entry.examples.push(example);
 }
 
 /**
@@ -66,7 +94,7 @@ export function focusAreasAnalysis(results) {
           exampleKeys: new Set(),
         });
       }
-      addWrongExample(areas.get(key), q);
+      addWrongExample(areas.get(key), q, result);
     }
   }
 
@@ -93,4 +121,9 @@ export function focusAreasAnalysis(results) {
 export function formatFocusAreaList(areas) {
   if (!areas?.length) return "—";
   return areas.join(", ");
+}
+
+export function formatFocusExampleChoices(choices) {
+  if (!Array.isArray(choices) || choices.length === 0) return "";
+  return choices.map((c) => String(c)).join(" · ");
 }
