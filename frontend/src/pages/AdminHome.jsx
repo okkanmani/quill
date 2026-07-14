@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getResults, deleteResult, logout } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
-import AppHeader from "../components/AppHeader";
+import AppShell from "../components/AppShell";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import AdminStudentBanner from "../components/AdminStudentBanner";
 import QuillLoading from "../components/QuillLoading";
@@ -65,17 +65,11 @@ export default function AdminHome() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <AppHeader
-        navLinks={ADMIN_MAIN_NAV}
-        trailing={
-          <span className="text-slate-800 text-sm font-medium">
-            Admin · {formatAdminHeaderTrail()}
-          </span>
-        }
-        onLogout={handleLogout}
-      />
-
+    <AppShell
+      navLinks={ADMIN_MAIN_NAV}
+      trailing={`Admin · ${formatAdminHeaderTrail()}`}
+      onLogout={handleLogout}
+    >
       <div className="max-w-3xl">
         <AdminStudentBanner />
         <AdminStudentSwitcher />
@@ -107,6 +101,6 @@ export default function AdminHome() {
           />
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createAdminStudent, deleteAdminStudent, listAdminStudents, logout, switchAdminStudent, updateAdminStudentGrade } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
-import AppHeader from "../components/AppHeader";
+import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
 import { GRADE_OPTIONS } from "../questionBuilderUtils";
 
@@ -106,17 +106,11 @@ export default function AdminStudents() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <AppHeader
-        navLinks={ADMIN_MAIN_NAV}
-        trailing={
-          <span className="text-slate-800 text-sm font-medium">
-            Admin · {formatAdminHeaderTrail()}
-          </span>
-        }
-        onLogout={handleLogout}
-      />
-
+    <AppShell
+      navLinks={ADMIN_MAIN_NAV}
+      trailing={`Admin · ${formatAdminHeaderTrail()}`}
+      onLogout={handleLogout}
+    >
       <div className="max-w-3xl">
         <p className="text-slate-700 text-sm mb-6 leading-relaxed">
           Each student belongs to your admin account. They log in with their name and
@@ -225,6 +219,6 @@ export default function AdminStudents() {
           </div>
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }

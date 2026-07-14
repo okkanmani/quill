@@ -8,7 +8,7 @@ import {
 } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
-import AppHeader from "../components/AppHeader";
+import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
 
 export default function AdminSettings() {
@@ -74,17 +74,11 @@ export default function AdminSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <AppHeader
-        navLinks={ADMIN_MAIN_NAV}
-        trailing={
-          <span className="text-slate-800 text-sm font-medium">
-            Admin · {formatAdminHeaderTrail()}
-          </span>
-        }
-        onLogout={handleLogout}
-      />
-
+    <AppShell
+      navLinks={ADMIN_MAIN_NAV}
+      trailing={`Admin · ${formatAdminHeaderTrail()}`}
+      onLogout={handleLogout}
+    >
       <div className="max-w-2xl">
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Settings</h1>
         <p className="text-slate-600 text-sm mb-6 leading-relaxed">
@@ -192,6 +186,6 @@ export default function AdminSettings() {
           </div>
         ) : null}
       </div>
-    </div>
+    </AppShell>
   );
 }

@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { deleteWorksheet, getWorksheets, logout, unlockTimedWorksheet, uploadWorksheet, unlockGiftedTrackWeek, lockGiftedTrackWeek, setWorksheetAccessLock, clearWorksheetAccessLock } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
-import AppHeader from "../components/AppHeader";
+import AppShell from "../components/AppShell";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import AdminStudentBanner from "../components/AdminStudentBanner";
 import QuillLoading from "../components/QuillLoading";
@@ -289,74 +289,68 @@ export default function AdminWorksheets() {
   const selectedCount = selectedIds.size;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <AppHeader
-        navLinks={ADMIN_MAIN_NAV}
-        trailing={
-          <>
-            <span className="text-slate-800 text-sm font-medium">
-              Admin · {formatAdminHeaderTrail()}
-            </span>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => {
-                  setUploadPanelOpen((open) => !open);
-                  if (uploadPanelOpen) setUploadMessage("");
-                }}
-                aria-expanded={uploadPanelOpen}
-                aria-controls="add-worksheet-panel"
-                className={`text-sm font-semibold px-1 py-1 ${
-                  uploadPanelOpen
-                    ? "text-indigo-900 underline"
-                    : "text-indigo-700 hover:text-indigo-900 hover:underline"
-                }`}
-              >
-                Add worksheet
-              </button>
-              {uploadPanelOpen ? (
-                <>
-                  <button
-                    type="button"
-                    className="fixed inset-0 z-40 cursor-default"
-                    aria-label="Close add worksheet menu"
-                    tabIndex={-1}
-                    onClick={() => !uploading && setUploadPanelOpen(false)}
-                  />
-                  <div
-                    id="add-worksheet-panel"
-                    className="absolute top-full right-0 z-50 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-3 shadow-lg flex flex-col gap-2"
-                  >
-                    <Link
-                      to="/admin/worksheets/builder"
-                      onClick={() => setUploadPanelOpen(false)}
-                      className="block text-center bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl px-4 py-2 transition"
-                    >
-                      Build worksheet
-                    </Link>
-                    <label className="inline-flex items-center justify-center cursor-pointer">
-                      <span className="w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-900 text-sm font-semibold rounded-xl px-4 py-2 transition whitespace-nowrap">
-                        {uploading ? "Uploading…" : "Upload worksheet"}
-                      </span>
-                      <input
-                        type="file"
-                        accept=".json,application/json"
-                        multiple
-                        className="sr-only"
-                        disabled={uploading}
-                        onChange={handleUpload}
-                      />
-                    </label>
-                  </div>
-                </>
-              ) : null}
-            </div>
-          </>
-        }
-        onLogout={handleLogout}
-      />
-
+    <AppShell
+      navLinks={ADMIN_MAIN_NAV}
+      trailing={`Admin · ${formatAdminHeaderTrail()}`}
+      onLogout={handleLogout}
+    >
       <div className="max-w-3xl">
+        <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setUploadPanelOpen((open) => !open);
+                if (uploadPanelOpen) setUploadMessage("");
+              }}
+              aria-expanded={uploadPanelOpen}
+              aria-controls="add-worksheet-panel"
+              className={`text-sm font-semibold px-3 py-2 rounded-xl border transition ${
+                uploadPanelOpen
+                  ? "bg-indigo-50 text-indigo-900 border-indigo-200"
+                  : "bg-white text-indigo-700 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50"
+              }`}
+            >
+              Add worksheet
+            </button>
+            {uploadPanelOpen ? (
+              <>
+                <button
+                  type="button"
+                  className="fixed inset-0 z-40 cursor-default"
+                  aria-label="Close add worksheet menu"
+                  tabIndex={-1}
+                  onClick={() => !uploading && setUploadPanelOpen(false)}
+                />
+                <div
+                  id="add-worksheet-panel"
+                  className="absolute top-full right-0 z-50 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-3 shadow-lg flex flex-col gap-2"
+                >
+                  <Link
+                    to="/admin/worksheets/builder"
+                    onClick={() => setUploadPanelOpen(false)}
+                    className="block text-center bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl px-4 py-2 transition"
+                  >
+                    Build worksheet
+                  </Link>
+                  <label className="inline-flex items-center justify-center cursor-pointer">
+                    <span className="w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-900 text-sm font-semibold rounded-xl px-4 py-2 transition whitespace-nowrap">
+                      {uploading ? "Uploading…" : "Upload worksheet"}
+                    </span>
+                    <input
+                      type="file"
+                      accept=".json,application/json"
+                      multiple
+                      className="sr-only"
+                      disabled={uploading}
+                      onChange={handleUpload}
+                    />
+                  </label>
+                </div>
+              </>
+            ) : null}
+          </div>
+        </div>
         <AdminStudentBanner />
         <AdminStudentSwitcher />
 
@@ -469,6 +463,6 @@ export default function AdminWorksheets() {
           </>
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }

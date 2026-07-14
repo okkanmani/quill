@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getResults, getWorksheets, logout } from "../api";
 import { buildStudentNavLinks } from "../adminNav";
-import AppHeader from "../components/AppHeader";
+import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
 import ResultsBySubject from "../components/ResultsBySubject";
 import { filterLatestUndoneWorksheets } from "../worksheetUtils";
@@ -44,17 +44,11 @@ export default function StudentResults() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <AppHeader
-        navLinks={navLinks}
-        trailing={
-          <span className="text-slate-800 text-sm font-medium">
-            Hi, {name}!
-          </span>
-        }
-        onLogout={handleLogout}
-      />
-
+    <AppShell
+      navLinks={navLinks}
+      trailing={`Hi, ${name}!`}
+      onLogout={handleLogout}
+    >
       <div className="max-w-3xl">
         {loading && <QuillLoading label="Loading results…" />}
         {error && <p className="text-red-500">{error}</p>}
@@ -72,6 +66,6 @@ export default function StudentResults() {
           />
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }

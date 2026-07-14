@@ -9,7 +9,7 @@ import {
 } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
-import AppHeader from "../components/AppHeader";
+import AppShell from "../components/AppShell";
 import {
   BUILDER_SUBJECTS,
   CHOICE_LABELS,
@@ -323,17 +323,12 @@ export default function AdminQuestionBuilder() {
       : "Publish worksheet";
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 pb-28">
-      <AppHeader
-        navLinks={ADMIN_MAIN_NAV}
-        trailing={
-          <span className="text-slate-800 text-sm font-medium">
-            Admin · {formatAdminHeaderTrail()}
-          </span>
-        }
-        onLogout={handleLogout}
-      />
-
+    <AppShell
+      navLinks={ADMIN_MAIN_NAV}
+      trailing={`Admin · ${formatAdminHeaderTrail()}`}
+      onLogout={handleLogout}
+      mainClassName="pb-28"
+    >
       <div className="max-w-3xl mx-auto">
         <div className="mb-6 flex flex-wrap items-center gap-3">
           <Link
@@ -565,7 +560,7 @@ export default function AdminQuestionBuilder() {
         )}
       </div>
 
-      <div className="fixed bottom-0 inset-x-0 border-t border-slate-200 bg-white/95 backdrop-blur px-6 py-4">
+      <div className="fixed bottom-0 inset-x-0 md:left-52 border-t border-slate-200 bg-white/95 backdrop-blur px-6 py-4">
         <div className="max-w-3xl mx-auto flex flex-wrap items-center justify-between gap-3">
           {buildUsingAi ? (
             <p className="text-sm text-slate-600">
@@ -603,6 +598,6 @@ export default function AdminQuestionBuilder() {
           </div>
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 }

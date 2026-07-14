@@ -5,7 +5,7 @@ import LearnChrome from "../components/LearnChrome";
 import LearnMarkdown from "../components/LearnMarkdown";
 import QuillLoading from "../components/QuillLoading";
 
-/* Sticky TOC uses top-44 (~11rem) to sit below LearnChrome’s sticky header; bump if that bar grows. */
+/* Sticky TOC sits below the page top padding in the sidebar layout. */
 
 export default function LearnSubject() {
   const { subjectKey } = useParams();
@@ -50,7 +50,7 @@ export default function LearnSubject() {
 
         {data && !loading && (
           <div className="lg:grid lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] lg:gap-10 items-start">
-            <aside className="hidden lg:block sticky top-44 z-30 mb-8 lg:mb-0 self-start max-h-[calc(100vh-12rem)] overflow-y-auto pr-1">
+            <aside className="hidden lg:block sticky top-6 z-30 mb-8 lg:mb-0 self-start max-h-[calc(100vh-3rem)] overflow-y-auto pr-1">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-3">
                 On this page
               </p>

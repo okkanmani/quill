@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api";
-import AppHeader from "../components/AppHeader";
+import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
 import WorksheetsBySubject from "../components/WorksheetsBySubject";
 import { useStudentNavLinks } from "../useStudentNavLinks";
@@ -24,17 +24,11 @@ export default function StudentLatest() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <AppHeader
-        navLinks={navLinks}
-        trailing={
-          <span className="text-slate-800 text-sm font-medium">
-            Hi, {name}!
-          </span>
-        }
-        onLogout={handleLogout}
-      />
-
+    <AppShell
+      navLinks={navLinks}
+      trailing={`Hi, ${name}!`}
+      onLogout={handleLogout}
+    >
       <div className="max-w-3xl">
         <h2 className="text-xl font-semibold text-slate-900 mb-1">Latest</h2>
         <p className="text-slate-600 text-sm mb-6">
@@ -51,6 +45,6 @@ export default function StudentLatest() {
           />
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }

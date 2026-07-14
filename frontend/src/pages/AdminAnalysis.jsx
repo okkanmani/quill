@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getResults, logout, uploadFocusEvaluation } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
-import AppHeader from "../components/AppHeader";
+import AppShell from "../components/AppShell";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import AdminStudentBanner from "../components/AdminStudentBanner";
 import QuillLoading from "../components/QuillLoading";
@@ -213,25 +213,13 @@ export default function AdminAnalysis() {
   const studentName = localStorage.getItem("studentName");
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="sticky top-0 z-40 border-b border-slate-200/90 bg-slate-50/95 backdrop-blur-sm shadow-sm supports-[backdrop-filter]:bg-slate-50/85">
-        <div className="px-6 pt-6 pb-4">
-          <AppHeader
-            navLinks={ADMIN_MAIN_NAV}
-            onBack={() => navigate("/admin")}
-            className="!mb-0"
-            trailing={
-              <span className="text-slate-800 text-sm font-medium">
-                Admin · {formatAdminHeaderTrail()}
-              </span>
-            }
-            onLogout={handleLogout}
-          />
-        </div>
-      </div>
-
-      <div className="px-6 pb-6 pt-4">
-        <div className="max-w-6xl">
+    <AppShell
+      navLinks={ADMIN_MAIN_NAV}
+      onBack={() => navigate("/admin")}
+      trailing={`Admin · ${formatAdminHeaderTrail()}`}
+      onLogout={handleLogout}
+    >
+      <div className="max-w-6xl">
           <AdminStudentBanner />
           <AdminStudentSwitcher />
 
@@ -317,7 +305,7 @@ export default function AdminAnalysis() {
                 </div>
               </div>
               {selection ? (
-                <div className="lg:col-span-2 lg:sticky lg:top-28">
+                <div className="lg:col-span-2 lg:sticky lg:top-6">
                   <FocusAreaDetailPanel
                     selection={selection}
                     selectionKey={selectedKey}
@@ -327,7 +315,6 @@ export default function AdminAnalysis() {
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </AppShell>
   );
 }
