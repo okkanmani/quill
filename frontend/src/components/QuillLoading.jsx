@@ -1,10 +1,10 @@
 const SIZE_CLASS = {
-  sm: "h-8 w-8",
-  md: "h-12 w-12",
-  lg: "h-16 w-16",
+  sm: "text-2xl leading-none",
+  md: "text-4xl leading-none",
+  lg: "text-6xl leading-none",
 };
 
-/** Branded loading indicator using the Quill logo. */
+/** Branded loading indicator using the Quill feather mark. */
 export default function QuillLoading({
   label = "Loading…",
   size = "md",
@@ -19,12 +19,12 @@ export default function QuillLoading({
       aria-live="polite"
       aria-busy="true"
     >
-      <img
-        src="/favicon.svg"
-        alt=""
+      <span
         aria-hidden="true"
-        className={`quill-loading ${SIZE_CLASS[size] || SIZE_CLASS.md}`}
-      />
+        className={`quill-loading select-none ${SIZE_CLASS[size] || SIZE_CLASS.md}`}
+      >
+        🪶
+      </span>
       {showLabel && label ? (
         <p className="text-slate-600 text-sm">{label}</p>
       ) : null}
