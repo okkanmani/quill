@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getResults, logout } from "../api";
+import { getResults, logout, uploadFocusEvaluation } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
@@ -9,6 +9,10 @@ import {
   focusAreasAnalysis,
   formatFocusAreaList,
 } from "../analysisUtils";
+import {
+  readJsonFile,
+  resolveResultForEvaluationUpload,
+} from "../resultExportUtils";
 
 function FocusAreaRow({ focus }) {
   return (
@@ -62,6 +66,9 @@ export default function AdminAnalysis() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const uploadInputRef = useRef(null);
 
   useEffect(() => {
     setLoading(true);
@@ -76,6 +83,34 @@ export default function AdminAnalysis() {
 
   const bySubject = useMemo(() => focusAreasAnalysis(results), [results]);
   const uploadedCount = results.filter((r) => r.focus_evaluation).length;
+
+  async function handleUploadFile(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setUploading(true);
+    setUploadMessage("");
+    setError("");
+    try {
+      const data = await readJsonFile(file);
+      const resolved = resolveResultForEvaluationUpload(data, results);
+      if (resolved.error) {
+        throw new Error(resolved.error);
+      }
+      const updated = await uploadFocusEvaluation(resolved.result.id, data);
+      setResults((prev) =>
+        prev.map((r) => (r.id === updated.id ? updated : r)),
+      );
+      setUploadMessage(
+        `Evaluation uploaded for “${updated.title || updated.worksheet_id}”.`,
+      );
+    } catch (err) {
+      setError(err.message || "Could not upload evaluation JSON.");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function handleLogout() {
     await logout();
@@ -107,15 +142,51 @@ export default function AdminAnalysis() {
           <AdminStudentSwitcher />
 
           <h1 className="text-2xl font-bold text-slate-950 mb-2">Analysis</h1>
-          <p className="text-slate-700 text-sm mb-8 leading-relaxed">
-            {studentName
-              ? `Focus areas for ${studentName} — from evaluated worksheet JSON uploads.`
-              : "Focus areas from evaluated worksheet JSON uploads."}
-            {" "}
-            Download a result on the Results page, fill in{" "}
-            <code className="text-xs bg-slate-100 px-1 rounded">area</code> on
-            each question, then upload the JSON back on that result.
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+            <p className="text-slate-700 text-sm leading-relaxed">
+              {studentName
+                ? `Focus areas for ${studentName} — from evaluated worksheet JSON uploads.`
+                : "Focus areas from evaluated worksheet JSON uploads."}
+              {" "}
+              Download a result on the Results page, fill in{" "}
+              <code className="text-xs bg-slate-100 px-1 rounded">area</code> on
+              each question, then upload the JSON here.
+            </p>
+            {!loading ? (
+              <>
+                <input
+                  ref={uploadInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden"
+                  onChange={handleUploadFile}
+                />
+                <button
+                  type="button"
+                  onClick={() => uploadInputRef.current?.click()}
+                  disabled={uploading}
+                  className="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 transition disabled:opacity-50"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 21V9m0 0l4 4m-4-4l-4-4" />
+                    <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                  </svg>
+                  {uploading ? "Uploading…" : "Upload JSON"}
+                </button>
+              </>
+            ) : null}
+          </div>
+
+          {uploadMessage && (
+            <p className="text-green-700 text-sm mb-4">{uploadMessage}</p>
+          )}
 
           {loading && <p className="text-slate-600">Loading…</p>}
           {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -130,7 +201,7 @@ export default function AdminAnalysis() {
             <p className="text-slate-600">
               No evaluated JSON uploads yet — download a worksheet result, fill in{" "}
               <code className="text-xs bg-slate-100 px-1 rounded">area</code>, and
-              upload it from the Results page.
+              upload it here.
             </p>
           )}
 

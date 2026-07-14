@@ -89,16 +89,16 @@ export function validateFocusEvaluationUpload(data, result) {
   if (!data || typeof data !== "object") {
     return ["File must contain a JSON object."];
   }
-  if (
-    data.result_id != null &&
-    Number(data.result_id) !== Number(result?.id)
-  ) {
+  if (data.result_id == null) {
+    errors.push("result_id is required.");
+  } else if (result && Number(data.result_id) !== Number(result.id)) {
     errors.push("result_id does not match this worksheet submission.");
   }
   if (
+    result &&
     typeof data.worksheet_id === "string" &&
     data.worksheet_id.trim() &&
-    data.worksheet_id !== result?.worksheet_id
+    data.worksheet_id !== result.worksheet_id
   ) {
     errors.push("worksheet_id does not match this worksheet submission.");
   }
@@ -113,4 +113,27 @@ export function validateFocusEvaluationUpload(data, result) {
     errors.push("At least one question must have a non-empty area.");
   }
   return errors;
+}
+
+export function resolveResultForEvaluationUpload(data, results) {
+  if (!data || typeof data !== "object") {
+    return { error: "File must contain a JSON object." };
+  }
+  if (data.result_id == null) {
+    return { error: "JSON must include result_id." };
+  }
+  const result = (results || []).find(
+    (r) => Number(r.id) === Number(data.result_id),
+  );
+  if (!result) {
+    return { error: "No matching submission found for the selected student." };
+  }
+  if (result.status === "pending") {
+    return { error: "That worksheet is still awaiting grading." };
+  }
+  const errors = validateFocusEvaluationUpload(data, result);
+  if (errors.length) {
+    return { error: errors.join(" ") };
+  }
+  return { result };
 }
