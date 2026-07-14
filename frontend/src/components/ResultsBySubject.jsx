@@ -269,22 +269,24 @@ export default function ResultsBySubject({
                         ) : null}
                       </div>
                       {onDeleteResult ? (
-                        <div className="flex shrink-0 self-center sm:self-stretch sm:items-stretch sm:flex-col sm:justify-center gap-2 sm:w-11">
+                        <div className="flex shrink-0 self-center sm:self-stretch sm:items-stretch sm:flex-col sm:justify-center gap-2 sm:w-9">
                           {isAdmin && !isPending ? (
                             <button
                               type="button"
                               onClick={() => handleDownloadJson(r)}
                               disabled={downloadingResultId === r.id}
-                              title="Download JSON for evaluation"
-                              aria-label={`Download JSON for ${r.title || r.worksheet_id}`}
-                              className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition disabled:opacity-50"
+                              title="Download result"
+                              aria-label={`Download result for ${r.title || r.worksheet_id}`}
+                              className="inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 hover:border-slate-300 hover:text-slate-700 disabled:opacity-40 disabled:pointer-events-none transition"
                             >
                               <svg
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
-                                strokeWidth="2"
-                                className="h-5 w-5"
+                                strokeWidth="1.75"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="w-[17px] h-[17px]"
                                 aria-hidden="true"
                               >
                                 <path d="M12 3v12m0 0l4-4m-4 4l-4-4" />

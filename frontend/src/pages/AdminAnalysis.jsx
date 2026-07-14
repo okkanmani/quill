@@ -263,7 +263,7 @@ export default function AdminAnalysis() {
                     <path d="M12 21V9m0 0l4 4m-4-4l-4-4" />
                     <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
                   </svg>
-                  {uploading ? "Uploading…" : "Upload JSON"}
+                  {uploading ? "Uploading…" : "Upload evaluation"}
                 </button>
               </>
             ) : null}
