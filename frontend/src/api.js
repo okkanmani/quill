@@ -362,11 +362,11 @@ export async function deleteWritingSubmission(submissionId) {
   return res.json();
 }
 
-export async function gradeWritingSubmission(submissionId, grade) {
+export async function gradeWritingSubmission(submissionId, { grade, feedback = "" }) {
   const res = await fetch(`${BASE_URL}/writing/submissions/${submissionId}/grade`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({ grade }),
+    body: JSON.stringify({ grade, feedback }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

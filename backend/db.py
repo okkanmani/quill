@@ -189,6 +189,7 @@ def init_schema() -> None:
                 word_count INTEGER NOT NULL DEFAULT 0,
                 submitted_at TEXT NOT NULL,
                 grade TEXT,
+                feedback TEXT,
                 evaluated_at TEXT
             );
             CREATE INDEX IF NOT EXISTS idx_writing_submissions_student
@@ -205,6 +206,8 @@ def init_schema() -> None:
                 conn.execute(
                     "ALTER TABLE writing_submissions ADD COLUMN evaluated_at TEXT"
                 )
+            if "feedback" not in writing_cols:
+                conn.execute("ALTER TABLE writing_submissions ADD COLUMN feedback TEXT")
         from auth_users import migrate_legacy_from_auth_json
 
         migrate_legacy_from_auth_json(conn)

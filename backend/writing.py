@@ -9,6 +9,7 @@ import db
 
 MAX_TITLE_LEN = 200
 MAX_BODY_LEN = 50_000
+MAX_FEEDBACK_LEN = 5_000
 
 VALID_WRITING_GRADES = (
     "A+",
@@ -34,6 +35,7 @@ def count_words(text: str) -> int:
 
 def _row_to_dict(row) -> dict:
     grade = row["grade"] if row["grade"] else None
+    feedback = row["feedback"] if row["feedback"] else None
     out = {
         "id": row["id"],
         "title": row["title"],
@@ -42,6 +44,7 @@ def _row_to_dict(row) -> dict:
         "submitted_at": row["submitted_at"],
         "student": row["student"],
         "grade": grade,
+        "feedback": feedback,
         "status": "evaluated" if grade else "pending",
     }
     if row["evaluated_at"]:
@@ -54,7 +57,7 @@ def list_writing_submissions(student_name: str) -> list[dict]:
     try:
         rows = conn.execute(
             """
-            SELECT id, student, title, body, word_count, submitted_at, grade, evaluated_at
+            SELECT id, student, title, body, word_count, submitted_at, grade, feedback, evaluated_at
             FROM writing_submissions
             WHERE student = ?
             ORDER BY submitted_at DESC
@@ -105,6 +108,7 @@ def save_writing_submission(*, student: str, title: str, body: str) -> dict:
         "word_count": word_count,
         "submitted_at": submitted_at,
         "grade": None,
+        "feedback": None,
         "status": "pending",
     }
 
@@ -113,17 +117,22 @@ def grade_writing_submission(
     submission_id: int,
     student_name: str,
     grade: str,
+    feedback: str = "",
 ) -> dict | None:
     grade = (grade or "").strip()
     if grade not in VALID_WRITING_GRADES:
         raise ValueError(f"grade must be one of: {', '.join(VALID_WRITING_GRADES)}")
+
+    feedback = (feedback or "").strip()
+    if len(feedback) > MAX_FEEDBACK_LEN:
+        raise ValueError(f"Feedback must be at most {MAX_FEEDBACK_LEN} characters.")
 
     evaluated_at = datetime.now(timezone.utc).isoformat()
     conn = db.connect()
     try:
         row = conn.execute(
             """
-            SELECT id, student, title, body, word_count, submitted_at, grade, evaluated_at
+            SELECT id, student, title, body, word_count, submitted_at, grade, feedback, evaluated_at
             FROM writing_submissions
             WHERE id = ? AND student = ?
             """,
@@ -134,15 +143,15 @@ def grade_writing_submission(
         conn.execute(
             """
             UPDATE writing_submissions
-            SET grade = ?, evaluated_at = ?
+            SET grade = ?, feedback = ?, evaluated_at = ?
             WHERE id = ? AND student = ?
             """,
-            (grade, evaluated_at, submission_id, student_name),
+            (grade, feedback or None, evaluated_at, submission_id, student_name),
         )
         conn.commit()
         updated = conn.execute(
             """
-            SELECT id, student, title, body, word_count, submitted_at, grade, evaluated_at
+            SELECT id, student, title, body, word_count, submitted_at, grade, feedback, evaluated_at
             FROM writing_submissions
             WHERE id = ?
             """,

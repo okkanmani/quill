@@ -28,12 +28,29 @@ export default function WritingResultsSection({
   onGrade,
   deletingId,
   gradingId,
+  savingFeedbackId,
   variant = "admin",
 }) {
   const isAdmin = variant === "admin";
   const [isOpen, setIsOpen] = useState(true);
   const [sortMode, setSortMode] = useState(SECTION_SORT_TIME);
+  const [feedbackDrafts, setFeedbackDrafts] = useState({});
   const didInitOpen = useRef(false);
+
+  function feedbackFor(item) {
+    if (Object.prototype.hasOwnProperty.call(feedbackDrafts, item.id)) {
+      return feedbackDrafts[item.id];
+    }
+    return item.feedback || "";
+  }
+
+  function setFeedbackFor(id, value) {
+    setFeedbackDrafts((prev) => ({ ...prev, [id]: value }));
+  }
+
+  function feedbackDirty(item) {
+    return feedbackFor(item) !== (item.feedback || "");
+  }
 
   const pendingCount = submissions.filter((s) => !s.grade).length;
 
@@ -154,23 +171,74 @@ export default function WritingResultsSection({
                       <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
                         {item.body}
                       </p>
+                      {!isAdmin && item.feedback ? (
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-900 mb-2">
+                            Teacher feedback
+                          </p>
+                          <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 px-4 py-3">
+                            <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
+                              {item.feedback}
+                            </p>
+                          </div>
+                        </div>
+                      ) : null}
                       {isAdmin && onGrade ? (
-                        <label className="block text-sm font-semibold text-slate-800 max-w-xs">
-                          Grade
-                          <select
-                            value={item.grade || ""}
-                            disabled={gradingId === item.id}
-                            onChange={(e) => onGrade(item, e.target.value)}
-                            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60"
-                          >
-                            <option value="">Select grade…</option>
-                            {WRITING_GRADE_OPTIONS.map((g) => (
-                              <option key={g} value={g}>
-                                {g}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
+                        <div className="space-y-4 max-w-xl">
+                          <label className="block text-sm font-semibold text-slate-800">
+                            Grade
+                            <select
+                              value={item.grade || ""}
+                              disabled={gradingId === item.id || savingFeedbackId === item.id}
+                              onChange={(e) =>
+                                onGrade(item, e.target.value, feedbackFor(item))
+                              }
+                              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60"
+                            >
+                              <option value="">Select grade…</option>
+                              {WRITING_GRADE_OPTIONS.map((g) => (
+                                <option key={g} value={g}>
+                                  {g}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="block text-sm font-semibold text-slate-800">
+                            Feedback
+                            <textarea
+                              value={feedbackFor(item)}
+                              disabled={gradingId === item.id || savingFeedbackId === item.id}
+                              onChange={(e) => setFeedbackFor(item.id, e.target.value)}
+                              rows={4}
+                              placeholder="Comments for the student…"
+                              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60 resize-y min-h-[6rem]"
+                            />
+                          </label>
+                          {item.grade &&
+                          (feedbackDirty(item) || savingFeedbackId === item.id) ? (
+                            <button
+                              type="button"
+                              disabled={
+                                gradingId === item.id || savingFeedbackId === item.id
+                              }
+                              onClick={() =>
+                                onGrade(item, item.grade, feedbackFor(item), {
+                                  feedbackOnly: true,
+                                })
+                              }
+                              className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {savingFeedbackId === item.id
+                                ? "Saving…"
+                                : "Save feedback"}
+                            </button>
+                          ) : item.grade ? null : (
+                            <p className="text-xs text-slate-500">
+                              Select a grade to save feedback, or pick a grade to
+                              save both together.
+                            </p>
+                          )}
+                        </div>
                       ) : null}
                     </div>
                   ) : null}

@@ -28,6 +28,7 @@ export default function AdminHome() {
   const [deletingResultId, setDeletingResultId] = useState(null);
   const [deletingWritingId, setDeletingWritingId] = useState(null);
   const [gradingWritingId, setGradingWritingId] = useState(null);
+  const [savingWritingFeedbackId, setSavingWritingFeedbackId] = useState(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -110,20 +111,37 @@ export default function AdminHome() {
     }
   }
 
-  async function handleGradeWriting(item, grade) {
+  async function handleGradeWriting(item, grade, feedback = "", options = {}) {
     if (!grade) return;
-    setGradingWritingId(item.id);
+    const { feedbackOnly = false } = options;
+    if (feedbackOnly) {
+      setSavingWritingFeedbackId(item.id);
+    } else {
+      setGradingWritingId(item.id);
+    }
     setError("");
     try {
-      const updated = await gradeWritingSubmission(item.id, grade);
+      const updated = await gradeWritingSubmission(item.id, { grade, feedback });
       setWriting((prev) =>
         prev.map((w) => (w.id === updated.id ? updated : w)),
       );
-      setMessage(`Graded “${updated.title}” — ${updated.grade}.`);
+      setMessage(
+        feedbackOnly
+          ? `Saved feedback for “${updated.title}”.`
+          : `Graded “${updated.title}” — ${updated.grade}.`,
+      );
+      if (feedbackOnly) {
+        setOpenWritingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(updated.id);
+          return next;
+        });
+      }
     } catch (err) {
-      setError(err.message || "Could not save grade.");
+      setError(err.message || "Could not save evaluation.");
     } finally {
       setGradingWritingId(null);
+      setSavingWritingFeedbackId(null);
     }
   }
 
@@ -176,6 +194,7 @@ export default function AdminHome() {
                 onGrade={handleGradeWriting}
                 deletingId={deletingWritingId}
                 gradingId={gradingWritingId}
+                savingFeedbackId={savingWritingFeedbackId}
               />
             ) : null}
           </div>

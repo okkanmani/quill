@@ -82,6 +82,7 @@ class SubmitWritingRequest(BaseModel):
 
 class GradeWritingRequest(BaseModel):
     grade: str
+    feedback: str = ""
 
 
 class EvaluateResultRequest(BaseModel):
@@ -855,7 +856,9 @@ def grade_writing_submission_route(
         raise HTTPException(status_code=403, detail="Admin only")
     who = _student_context_name(payload)
     try:
-        updated = grade_writing_submission(submission_id, who, req.grade)
+        updated = grade_writing_submission(
+            submission_id, who, req.grade, req.feedback
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     if not updated:
