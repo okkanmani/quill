@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginAdmin, loginStudent, signupAdmin } from "../api";
+import QuillLoading from "../components/QuillLoading";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,11 +16,13 @@ export default function Login() {
   const [screen, setScreen] = useState("student");
   /** When screen === "admin": sign in via student name + password, or admin name + password. */
   const [adminLoginMode, setAdminLoginMode] = useState("byStudent");
+  const [loginBusy, setLoginBusy] = useState(false);
   const [signupBusy, setSignupBusy] = useState(false);
 
   async function handleStudentLogin(e) {
     e.preventDefault();
     setError("");
+    setLoginBusy(true);
     try {
       const data = await loginStudent({
         name: studentName,
@@ -35,12 +38,15 @@ export default function Login() {
       navigate("/student");
     } catch {
       setError("Invalid name or password.");
+    } finally {
+      setLoginBusy(false);
     }
   }
 
   async function handleAdminLogin(e) {
     e.preventDefault();
     setError("");
+    setLoginBusy(true);
     try {
       const data =
         adminLoginMode === "byStudent"
@@ -71,6 +77,8 @@ export default function Login() {
           ? "Invalid student name or admin password."
           : "Invalid admin name or password.",
       );
+    } finally {
+      setLoginBusy(false);
     }
   }
 
@@ -105,7 +113,15 @@ export default function Login() {
         <p className="text-slate-600 mt-2 text-sm">Your learning companion</p>
       </div>
 
-      <div className="flex flex-col gap-6 w-full max-w-sm">
+      <div className="relative flex flex-col gap-6 w-full max-w-sm">
+        {(loginBusy || signupBusy) && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-slate-50/90 backdrop-blur-sm">
+            <QuillLoading
+              label={signupBusy ? "Creating account…" : "Logging in…"}
+            />
+          </div>
+        )}
+
         {screen === "student" && (
           <form
             onSubmit={handleStudentLogin}
@@ -132,7 +148,8 @@ export default function Login() {
             />
             <button
               type="submit"
-              className="bg-indigo-500 hover:bg-slate-600 text-white text-lg font-semibold py-4 rounded-2xl shadow transition"
+              disabled={loginBusy}
+              className="bg-indigo-500 hover:bg-slate-600 text-white text-lg font-semibold py-4 rounded-2xl shadow transition disabled:opacity-50"
             >
               Log in as student
             </button>
@@ -214,7 +231,8 @@ export default function Login() {
             />
             <button
               type="submit"
-              className="bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-xl text-sm font-semibold transition"
+              disabled={loginBusy}
+              className="bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-xl text-sm font-semibold transition disabled:opacity-50"
             >
               Log in as admin
             </button>
@@ -253,7 +271,7 @@ export default function Login() {
               disabled={signupBusy}
               className="bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-xl text-sm font-semibold transition disabled:opacity-50"
             >
-              {signupBusy ? "Creating…" : "Create admin"}
+              Create admin
             </button>
           </form>
         )}
