@@ -419,15 +419,9 @@ def admin_generate_worksheet_draft(
     req: GenerateWorksheetDraftRequest,
     authorization: str = Header(...),
 ):
-    """Parked until AI is re-enabled via QUILL_AI_ENABLED=1."""
     payload = _payload(authorization)
     if payload["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    if os.environ.get("QUILL_AI_ENABLED", "").strip().lower() not in ("1", "true", "yes"):
-        raise HTTPException(
-            status_code=503,
-            detail="AI worksheet generation is not enabled.",
-        )
     try:
         api_key = resolve_openai_api_key(payload["admin_id"])
         if not api_key:
@@ -452,10 +446,14 @@ def admin_get_settings(authorization: str = Header(...)):
     payload = _payload(authorization)
     if payload["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
+    ai_disabled = os.environ.get("QUILL_AI_ENABLED", "").strip().lower() in (
+        "0",
+        "false",
+        "no",
+    )
     return {
         "openai_key_configured": admin_openai_key_configured(payload["admin_id"]),
-        "ai_enabled": os.environ.get("QUILL_AI_ENABLED", "").strip().lower()
-        in ("1", "true", "yes"),
+        "ai_enabled": not ai_disabled,
     }
 
 

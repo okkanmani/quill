@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   createWorksheetFromBuilder,
+  generateWorksheetDraft,
+  getAdminSettings,
   listAdminStudents,
   logout,
 } from "../api";
@@ -16,8 +18,10 @@ import {
   builderPayload,
   buildQuestionList,
   defaultQuestionCount,
+  draftToBuilderQuestions,
   resizeQuestions,
   validateBuilderForm,
+  validateBuilderParamsForAi,
 } from "../questionBuilderUtils";
 
 function McqChoices({ question, index, onChange }) {
@@ -165,7 +169,11 @@ export default function AdminQuestionBuilder() {
     buildQuestionList(defaultQuestionCount(2), "multiple_choice"),
   );
   const [expanded, setExpanded] = useState(() => new Set([0]));
+  const [buildUsingAi, setBuildUsingAi] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(true);
+  const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [publishPhase, setPublishPhase] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -175,6 +183,13 @@ export default function AdminQuestionBuilder() {
         const current = localStorage.getItem("studentName");
         const match = (data.students || []).find((s) => s.name === current);
         if (match?.grade) setGrade(match.grade);
+      })
+      .catch(() => {});
+
+    getAdminSettings()
+      .then((data) => {
+        setAiEnabled(Boolean(data.ai_enabled));
+        setApiKeyConfigured(Boolean(data.openai_key_configured));
       })
       .catch(() => {});
   }, []);
@@ -225,43 +240,87 @@ export default function AdminQuestionBuilder() {
   async function handlePublish() {
     setError("");
     setSuccess("");
-    const validationErrors = validateBuilderForm({
-      title,
-      subject,
-      format,
-      timed,
-      timeLimitMinutes,
-      questions,
-    });
-    if (validationErrors.length > 0) {
-      setError(validationErrors.join(" "));
-      return;
+
+    if (buildUsingAi) {
+      const paramErrors = validateBuilderParamsForAi({
+        subject,
+        format,
+        timed,
+        timeLimitMinutes,
+        questionCount,
+        apiKeyConfigured,
+        aiEnabled,
+      });
+      if (paramErrors.length > 0) {
+        setError(paramErrors.join(" "));
+        return;
+      }
+    } else {
+      const validationErrors = validateBuilderForm({
+        title,
+        subject,
+        format,
+        timed,
+        timeLimitMinutes,
+        questions,
+      });
+      if (validationErrors.length > 0) {
+        setError(validationErrors.join(" "));
+        return;
+      }
     }
 
     setPublishing(true);
     try {
+      let publishTitle = title.trim();
+      let publishQuestions = questions;
+
+      if (buildUsingAi) {
+        setPublishPhase("Generating with AI…");
+        const draft = await generateWorksheetDraft({
+          subject,
+          grade,
+          stars,
+          format,
+          question_count: questionCount,
+        });
+        publishTitle = publishTitle || draft.title;
+        publishQuestions = draftToBuilderQuestions(draft, format);
+      }
+
+      setPublishPhase("Publishing…");
       const result = await createWorksheetFromBuilder(
         builderPayload({
-          title,
+          title: publishTitle,
           subject,
           stars,
           format,
           questionCount,
           timed,
           timeLimitMinutes,
-          questions,
+          questions: publishQuestions,
         }),
       );
       setSuccess(
-        `Published ${result.id} — “${result.title}” (${result.question_count} questions).`,
+        buildUsingAi
+          ? `AI generated and published ${result.id} — “${result.title}” (${result.question_count} questions).`
+          : `Published ${result.id} — “${result.title}” (${result.question_count} questions).`,
       );
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setError(err.message || "Could not publish worksheet.");
     } finally {
       setPublishing(false);
+      setPublishPhase("");
     }
   }
+
+  const canPublishWithAi = aiEnabled && apiKeyConfigured;
+  const publishLabel = publishing
+    ? publishPhase || "Publishing…"
+    : buildUsingAi
+      ? "Generate & publish"
+      : "Publish worksheet";
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 pb-28">
@@ -315,8 +374,17 @@ export default function AdminQuestionBuilder() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-              placeholder="e.g. Math — Fractions practice"
+              placeholder={
+                buildUsingAi
+                  ? "Optional — AI will suggest a title if blank"
+                  : "e.g. Math — Fractions practice"
+              }
             />
+            {buildUsingAi ? (
+              <span className="mt-1 block text-xs font-normal text-slate-500">
+                Leave blank to use the title from AI generation.
+              </span>
+            ) : null}
           </label>
 
           <div className="grid sm:grid-cols-2 gap-4">
@@ -453,38 +521,86 @@ export default function AdminQuestionBuilder() {
           </div>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="font-bold text-slate-900 px-1">
-            Questions ({questions.length})
-          </h2>
-          {questions.map((q, i) => (
-            <QuestionCard
-              key={i}
-              question={q}
-              index={i}
-              format={format}
-              expanded={expanded.has(i)}
-              onToggle={toggleExpanded}
-              onChange={updateQuestion}
-            />
-          ))}
-        </section>
+        {buildUsingAi ? (
+          <section className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 mb-6">
+            <h2 className="font-bold text-indigo-950 mb-2">AI generation</h2>
+            <p className="text-sm text-indigo-900 leading-relaxed">
+              Questions will be generated from the worksheet details above when you
+              press Generate &amp; publish. Each question gets a specific area tag
+              for focus analysis. Usage bills to your OpenAI account.
+            </p>
+            {!canPublishWithAi ? (
+              <p className="text-sm text-amber-900 mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
+                {!aiEnabled ? (
+                  "AI generation is disabled on this server."
+                ) : (
+                  <>
+                    Add your OpenAI API key under{" "}
+                    <Link to="/admin/settings" className="font-semibold underline">
+                      Admin → Settings
+                    </Link>{" "}
+                    before publishing.
+                  </>
+                )}
+              </p>
+            ) : null}
+          </section>
+        ) : (
+          <section className="space-y-3">
+            <h2 className="font-bold text-slate-900 px-1">
+              Questions ({questions.length})
+            </h2>
+            {questions.map((q, i) => (
+              <QuestionCard
+                key={i}
+                question={q}
+                index={i}
+                format={format}
+                expanded={expanded.has(i)}
+                onToggle={toggleExpanded}
+                onChange={updateQuestion}
+              />
+            ))}
+          </section>
+        )}
       </div>
 
       <div className="fixed bottom-0 inset-x-0 border-t border-slate-200 bg-white/95 backdrop-blur px-6 py-4">
         <div className="max-w-3xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-slate-600">
-            {questions.filter((q) => q.prompt.trim()).length}/{questions.length}{" "}
-            prompts filled
-          </p>
-          <button
-            type="button"
-            onClick={handlePublish}
-            disabled={publishing}
-            className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold px-6 py-3 transition"
-          >
-            {publishing ? "Publishing…" : "Publish worksheet"}
-          </button>
+          {buildUsingAi ? (
+            <p className="text-sm text-slate-600">
+              AI will write {questionCount} {format === "multiple_choice" ? "multiple-choice" : "short-answer"} questions
+            </p>
+          ) : (
+            <p className="text-sm text-slate-600">
+              {questions.filter((q) => q.prompt.trim()).length}/{questions.length}{" "}
+              prompts filled
+            </p>
+          )}
+          <div className="flex flex-wrap items-center gap-4">
+            <label
+              className={`flex items-center gap-2 text-sm font-semibold ${
+                aiEnabled ? "text-slate-800 cursor-pointer" : "text-slate-500"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={buildUsingAi}
+                onChange={(e) => setBuildUsingAi(e.target.checked)}
+                disabled={!aiEnabled}
+                className="rounded border-slate-300"
+              />
+              Build using AI
+            </label>
+            <button
+              type="button"
+              onClick={handlePublish}
+              disabled={publishing || (buildUsingAi && !aiEnabled)}
+              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold px-6 py-3 transition"
+            >
+              {publishLabel}
+            </button>
+          </div>
         </div>
       </div>
     </div>

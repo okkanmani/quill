@@ -101,6 +101,51 @@ export function validateBuilderForm({
   return errors;
 }
 
+export function validateBuilderParamsForAi({
+  subject,
+  format,
+  timed,
+  timeLimitMinutes,
+  questionCount,
+  apiKeyConfigured,
+  aiEnabled,
+}) {
+  const errors = [];
+  if (!aiEnabled) {
+    errors.push("AI worksheet generation is disabled on this server.");
+  }
+  if (!apiKeyConfigured) {
+    errors.push("Add your OpenAI API key under Admin → Settings.");
+  }
+  if (format === "short_answer" && subject !== "math") {
+    errors.push("Short answer worksheets must use Math subject.");
+  }
+  if (timed && (!timeLimitMinutes || Number(timeLimitMinutes) <= 0)) {
+    errors.push("Enter a positive time limit for timed worksheets.");
+  }
+  if (!questionCount || questionCount < 1 || questionCount > 50) {
+    errors.push("Question count must be between 1 and 50.");
+  }
+  return errors;
+}
+
+export function draftToBuilderQuestions(draft, format) {
+  return draft.questions.map((q) => {
+    const base = { prompt: q.prompt, area: q.area || "" };
+    if (format === "multiple_choice") {
+      return {
+        ...base,
+        choices: q.choices,
+        correctIndex: q.correct_index,
+      };
+    }
+    return {
+      ...base,
+      answer: q.answer,
+    };
+  });
+}
+
 export function builderPayload({
   title,
   subject,

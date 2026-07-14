@@ -122,11 +122,16 @@ export default function AdminSettings() {
 
             {!aiEnabled ? (
               <p className="text-sm text-slate-600 leading-relaxed">
-                AI worksheet generation is currently turned off on this server.
-                You can still save your key now so you are ready when it is
-                enabled.
+                AI worksheet generation is disabled on this server (set{" "}
+                <code className="text-xs bg-slate-100 px-1 rounded">QUILL_AI_ENABLED=0</code>{" "}
+                to turn off).
               </p>
-            ) : null}
+            ) : (
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Once saved, use Build using AI on the question builder to generate
+                worksheets from your worksheet settings.
+              </p>
+            )}
 
             <p className="text-sm text-slate-600 leading-relaxed">
               Create a key at{" "}
@@ -139,7 +144,17 @@ export default function AdminSettings() {
                 platform.openai.com
               </a>
               . Prepaid billing applies — typically a few cents per worksheet
-              draft with a small model.
+              draft with a small model. A new API key uses the same account
+              quota; add payment or credits at{" "}
+              <a
+                href="https://platform.openai.com/settings/billing"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-700 underline"
+              >
+                Billing settings
+              </a>{" "}
+              if you see quota errors.
             </p>
 
             <form onSubmit={handleSave} className="space-y-3">

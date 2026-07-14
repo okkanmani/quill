@@ -43,6 +43,7 @@ def _build_prompt(
   "questions": [
     {
       "prompt": "question text",
+      "area": "specific skill label",
       "choices": ["choice A text", "choice B text", "choice C text", "choice D text"],
       "correct_index": 0
     }
@@ -53,7 +54,9 @@ def _build_prompt(
             "Each question must have exactly 4 distinct, non-empty choices. "
             "correct_index is 0 for A, 1 for B, 2 for C, 3 for D. "
             "Distractors must be plausible but clearly wrong. "
-            "Do not prefix choices with letters."
+            "Do not prefix choices with letters. "
+            "Each question must include area: a specific, narrow skill label in lowercase "
+            "(e.g. order of operations, fraction division) — not broad labels like algebra."
         )
     else:
         schema = """
@@ -62,6 +65,7 @@ def _build_prompt(
   "questions": [
     {
       "prompt": "question text",
+      "area": "specific skill label",
       "answer": "reference answer for grading"
     }
   ]
@@ -69,7 +73,9 @@ def _build_prompt(
 """
         type_rules = (
             "Each question is a short written-answer math problem with one clear reference answer. "
-            "Answers should be concise (number, fraction, or short phrase)."
+            "Answers should be concise (number, fraction, or short phrase). "
+            "Each question must include area: a specific, narrow skill label in lowercase "
+            "(e.g. one-step linear equations, triangle area) — not broad labels like algebra."
         )
 
     return f"""Generate a worksheet as JSON only.
@@ -129,6 +135,11 @@ def _normalize_draft(data: dict, *, fmt: str, question_count: int) -> dict:
         if not isinstance(prompt, str) or not prompt.strip():
             raise ValueError(f"AI question {i + 1} is missing a prompt.")
 
+        area = raw.get("area")
+        if not isinstance(area, str) or not area.strip():
+            raise ValueError(f"AI question {i + 1} is missing a specific area label.")
+        area = area.strip().lower()
+
         if fmt == "multiple_choice":
             choices = raw.get("choices")
             correct_index = raw.get("correct_index")
@@ -144,6 +155,7 @@ def _normalize_draft(data: dict, *, fmt: str, question_count: int) -> dict:
             questions.append(
                 {
                     "prompt": prompt.strip(),
+                    "area": area,
                     "choices": trimmed,
                     "correct_index": correct_index,
                 }
@@ -152,9 +164,34 @@ def _normalize_draft(data: dict, *, fmt: str, question_count: int) -> dict:
             answer = raw.get("answer")
             if not isinstance(answer, str) or not answer.strip():
                 raise ValueError(f"AI question {i + 1} is missing an answer.")
-            questions.append({"prompt": prompt.strip(), "answer": answer.strip()})
+            questions.append(
+                {"prompt": prompt.strip(), "area": area, "answer": answer.strip()}
+            )
 
     return {"title": title.strip(), "questions": questions}
+
+
+def _openai_error_message(status_code: int, body: str) -> str:
+    """Turn OpenAI HTTP errors into short, actionable messages."""
+    try:
+        payload = json.loads(body)
+        err = payload.get("error") if isinstance(payload, dict) else None
+        if isinstance(err, dict):
+            msg = err.get("message")
+            err_type = err.get("type")
+            if err_type == "insufficient_quota" or (
+                isinstance(msg, str) and "exceeded your current quota" in msg.lower()
+            ):
+                return (
+                    "Your OpenAI account has no available quota. Creating a new API key "
+                    "does not add credits — open platform.openai.com/settings/billing, "
+                    "add a payment method or prepaid balance, then try again."
+                )
+            if isinstance(msg, str) and msg.strip():
+                return msg.strip()
+    except json.JSONDecodeError:
+        pass
+    return f"AI service error ({status_code}). Check your OpenAI account billing and try again."
 
 
 def generate_worksheet_draft(
@@ -228,8 +265,7 @@ def generate_worksheet_draft(
         raise ValueError("Could not reach the AI service.") from exc
 
     if res.status_code != 200:
-        detail = res.text[:300]
-        raise ValueError(f"AI service error ({res.status_code}): {detail}")
+        raise ValueError(_openai_error_message(res.status_code, res.text))
 
     payload = res.json()
     try:

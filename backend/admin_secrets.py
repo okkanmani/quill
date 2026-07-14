@@ -99,12 +99,20 @@ def get_admin_openai_api_key(admin_id: int) -> str | None:
         conn.close()
     if not row or not row["openai_api_key_enc"]:
         return None
-    return _decrypt(row["openai_api_key_enc"])
+    key = _decrypt(row["openai_api_key_enc"])
+    if not key:
+        raise ValueError(
+            "Could not read your saved API key. Re-save it under Admin → Settings."
+        )
+    return key
 
 
 def resolve_openai_api_key(admin_id: int) -> str | None:
-    """Per-admin key first; optional server fallback for local dev."""
-    key = get_admin_openai_api_key(admin_id)
+    """Per-admin key first; optional server fallback only when none is saved."""
+    try:
+        key = get_admin_openai_api_key(admin_id)
+    except ValueError:
+        raise
     if key:
         return key
     return os.environ.get("OPENAI_API_KEY", "").strip() or None
