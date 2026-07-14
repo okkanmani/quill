@@ -7,7 +7,9 @@ import AppHeader from "../components/AppHeader";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import {
   focusAreasAnalysis,
+  formatFocusExampleAnswer,
   formatFocusExampleChoices,
+  isMissingFocusExampleAnswer,
 } from "../analysisUtils";
 import {
   readJsonFile,
@@ -40,6 +42,8 @@ function findSelectedFocus(bySubject, selectedKey) {
 
 function FocusExampleCard({ example, index, total }) {
   const choices = formatFocusExampleChoices(example.choices);
+  const studentAnswer = formatFocusExampleAnswer(example.answer);
+  const missingAnswer = isMissingFocusExampleAnswer(example.answer);
 
   return (
     <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
@@ -55,12 +59,12 @@ function FocusExampleCard({ example, index, total }) {
           {choices}
         </p>
       ) : null}
-      {example.answer !== "" && example.answer != null ? (
-        <p className="text-sm text-red-800 mt-2">
-          <span className="font-medium">Student answered: </span>
-          {example.answer}
-        </p>
-      ) : null}
+      <p className="text-sm text-red-800 mt-2">
+        <span className="font-medium">Student answered: </span>
+        <span className={missingAnswer ? "text-slate-500 italic" : undefined}>
+          {studentAnswer}
+        </span>
+      </p>
       {example.expected ? (
         <p className="text-sm text-emerald-800 mt-2">
           <span className="font-medium">Correct answer: </span>

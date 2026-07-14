@@ -127,3 +127,14 @@ export function formatFocusExampleChoices(choices) {
   if (!Array.isArray(choices) || choices.length === 0) return "";
   return choices.map((c) => String(c)).join(" · ");
 }
+
+export function formatFocusExampleAnswer(answer) {
+  if (answer == null || String(answer).trim() === "") {
+    return "Did not answer";
+  }
+  return String(answer);
+}
+
+export function isMissingFocusExampleAnswer(answer) {
+  return answer == null || String(answer).trim() === "";
+}
