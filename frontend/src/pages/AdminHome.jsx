@@ -100,6 +100,14 @@ export default function AdminHome() {
                 prev.map((r) => (r.id === updated.id ? updated : r)),
               )
             }
+            onFocusEvaluationUploaded={(updated) => {
+              setResults((prev) =>
+                prev.map((r) => (r.id === updated.id ? updated : r)),
+              );
+              setMessage(
+                `Evaluation uploaded for “${updated.title || updated.worksheet_id}”.`,
+              );
+            }}
           />
         )}
       </div>

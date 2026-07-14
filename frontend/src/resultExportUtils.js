@@ -1,0 +1,116 @@
+import { normalizeSubjectKey } from "./subjectUtils";
+
+export const RESULT_EXPORT_VERSION = 1;
+
+function answerText(ans) {
+  const given = ans?.given;
+  if (typeof given === "string" && given.trim()) return given.trim();
+  if (ans?.response_mode === "scratchpad" || ans?.scratchpad) {
+    return "[scratchpad response]";
+  }
+  return given ?? "";
+}
+
+function exportRowFromAnswer(ans, result) {
+  const difficulty =
+    typeof ans?.stars === "number"
+      ? ans.stars
+      : typeof result?.difficulty_min === "number" &&
+          typeof result?.difficulty_max === "number" &&
+          result.difficulty_min === result.difficulty_max
+        ? result.difficulty_min
+        : null;
+
+  const row = {
+    question: ans?.prompt ?? "",
+    answer: answerText(ans),
+    difficulty_level: difficulty,
+    area: "",
+  };
+
+  if (ans?.question_id) row.question_id = ans.question_id;
+  if (typeof ans?.correct === "boolean") row.correct = ans.correct;
+
+  return row;
+}
+
+/** Per-worksheet export for teacher or AI to fill in `area` on each question. */
+export function buildResultExportPayload(result) {
+  const subject = normalizeSubjectKey(result?.subject);
+  return {
+    export_version: RESULT_EXPORT_VERSION,
+    result_id: result?.id ?? null,
+    student: result?.student ?? null,
+    worksheet_id: result?.worksheet_id ?? null,
+    title: result?.title ?? null,
+    subject,
+    submitted_at: result?.submitted_at ?? null,
+    questions: (result?.answers || []).map((ans) => exportRowFromAnswer(ans, result)),
+  };
+}
+
+function safeFilenamePart(value) {
+  return String(value || "export")
+    .trim()
+    .replace(/[^\w.-]+/g, "_")
+    .replace(/_+/g, "_")
+    .slice(0, 80);
+}
+
+export function downloadJson(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+export function downloadResultJson(result) {
+  const payload = buildResultExportPayload(result);
+  const stamp = (result?.submitted_at || new Date().toISOString()).slice(0, 10);
+  const name = safeFilenamePart(result?.student || "student");
+  const ws = safeFilenamePart(result?.worksheet_id || "worksheet");
+  downloadJson(payload, `quill-result_${name}_${ws}_${stamp}.json`);
+}
+
+export async function readJsonFile(file) {
+  const text = await file.text();
+  return JSON.parse(text);
+}
+
+export function validateFocusEvaluationUpload(data, result) {
+  const errors = [];
+  if (!data || typeof data !== "object") {
+    return ["File must contain a JSON object."];
+  }
+  if (
+    data.result_id != null &&
+    Number(data.result_id) !== Number(result?.id)
+  ) {
+    errors.push("result_id does not match this worksheet submission.");
+  }
+  if (
+    typeof data.worksheet_id === "string" &&
+    data.worksheet_id.trim() &&
+    data.worksheet_id !== result?.worksheet_id
+  ) {
+    errors.push("worksheet_id does not match this worksheet submission.");
+  }
+  if (!Array.isArray(data.questions) || data.questions.length === 0) {
+    errors.push("questions must be a non-empty array.");
+    return errors;
+  }
+  const hasArea = data.questions.some(
+    (q) => typeof q?.area === "string" && q.area.trim(),
+  );
+  if (!hasArea) {
+    errors.push("At least one question must have a non-empty area.");
+  }
+  return errors;
+}

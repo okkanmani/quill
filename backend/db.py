@@ -102,6 +102,8 @@ def init_schema() -> None:
             )
         if "evaluated_at" not in result_cols:
             conn.execute("ALTER TABLE results ADD COLUMN evaluated_at TEXT")
+        if "focus_evaluation" not in result_cols:
+            conn.execute("ALTER TABLE results ADD COLUMN focus_evaluation TEXT")
         timed_cols = {row[1] for row in conn.execute("PRAGMA table_info(timed_attempts)")}
         if timed_cols and "locked" not in timed_cols:
             conn.execute(

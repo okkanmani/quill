@@ -1,0 +1,290 @@
+{
+  "title": "Science — Grade 6 Ontario (timed, 30 min, ★★★)",
+  "subject": "science",
+  "scratchpad": false,
+  "created_at": "2026-07-13T15:22:15.320822+00:00",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "During photosynthesis, plants release which gas into the air?",
+      "choices": [
+        "Oxygen",
+        "Carbon monoxide",
+        "Nitrogen only",
+        "Helium"
+      ],
+      "answer": "Oxygen",
+      "hint": false
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "In a series circuit with one burned-out bulb, the other bulbs —",
+      "choices": [
+        "also go out because the path is broken",
+        "become brighter",
+        "stay lit if wired in parallel",
+        "produce more voltage"
+      ],
+      "answer": "also go out because the path is broken",
+      "hint": false
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Biodiversity in an ecosystem refers to —",
+      "choices": [
+        "the variety of living species and their interactions",
+        "only the number of trees",
+        "how much rain falls",
+        "the speed of wind"
+      ],
+      "answer": "the variety of living species and their interactions",
+      "hint": false
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Burning wood to ash is best classified as —",
+      "choices": [
+        "a chemical change",
+        "a physical change only",
+        "evaporation",
+        "condensation"
+      ],
+      "answer": "a chemical change",
+      "hint": false
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The small intestine’s main role in digestion is to —",
+      "choices": [
+        "absorb nutrients into the bloodstream",
+        "exchange oxygen and carbon dioxide",
+        "pump blood to the brain",
+        "filter waste into urine only"
+      ],
+      "answer": "absorb nutrients into the bloodstream",
+      "hint": false
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which instrument measures atmospheric pressure?",
+      "choices": [
+        "Barometer",
+        "Anemometer",
+        "Graduated cylinder",
+        "Meter stick"
+      ],
+      "answer": "Barometer",
+      "hint": false
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Compared with weather, climate describes —",
+      "choices": [
+        "long-term patterns over many years",
+        "today’s temperature only",
+        "a single thunderstorm",
+        "wind direction at one moment"
+      ],
+      "answer": "long-term patterns over many years",
+      "hint": false
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Removing decomposers from a forest would most likely —",
+      "choices": [
+        "slow nutrient recycling in the soil",
+        "increase oxygen in rocks",
+        "stop Earth’s rotation",
+        "create new species instantly"
+      ],
+      "answer": "slow nutrient recycling in the soil",
+      "hint": false
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A balloon sticks to a wall after rubbing because —",
+      "choices": [
+        "electrons transferred, creating opposite charges that attract",
+        "gravity disappears",
+        "air pressure becomes zero",
+        "the wall becomes magnetic forever"
+      ],
+      "answer": "electrons transferred, creating opposite charges that attract",
+      "hint": false
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Water that falls as rain or snow is called —",
+      "choices": [
+        "precipitation",
+        "evaporation",
+        "transpiration only",
+        "condensation only"
+      ],
+      "answer": "precipitation",
+      "hint": false
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which force opposes forward motion of an airplane through the air?",
+      "choices": [
+        "Drag",
+        "Lift",
+        "Weight only",
+        "Thrust only"
+      ],
+      "answer": "Drag",
+      "hint": false
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Solar panels use a — energy source.",
+      "choices": [
+        "renewable",
+        "non-renewable fossil",
+        "nuclear only",
+        "single-use chemical"
+      ],
+      "answer": "renewable",
+      "hint": false
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "We see moon phases because —",
+      "choices": [
+        "the angle between Sun, Moon, and Earth changes as the Moon orbits",
+        "the Moon produces its own sunlight",
+        "Earth’s shadow never affects the Moon",
+        "the Moon stops rotating each month"
+      ],
+      "answer": "the angle between Sun, Moon, and Earth changes as the Moon orbits",
+      "hint": false
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "An organism’s niche is best described as —",
+      "choices": [
+        "its role in the ecosystem, including food and habitat use",
+        "only the place it sleeps",
+        "the colour of its fur",
+        "how fast it runs once"
+      ],
+      "answer": "its role in the ecosystem, including food and habitat use",
+      "hint": false
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A fixed pulley mainly helps by —",
+      "choices": [
+        "changing the direction of the applied force",
+        "doubling the weight of the load",
+        "eliminating friction completely",
+        "creating energy"
+      ],
+      "answer": "changing the direction of the applied force",
+      "hint": false
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Copper wire is used in circuits because it —",
+      "choices": [
+        "conducts electricity well",
+        "blocks all electron flow",
+        "is always an insulator",
+        "melts at room temperature"
+      ],
+      "answer": "conducts electricity well",
+      "hint": false
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "In a food web, energy from the Sun is first captured by —",
+      "choices": [
+        "producers such as plants",
+        "top predators only",
+        "decomposers only",
+        "rocks and minerals"
+      ],
+      "answer": "producers such as plants",
+      "hint": false
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "A student measures daily highs for two weeks and calls it “Toronto’s climate.” The best critique is —",
+      "choices": [
+        "climate needs long-term data, not just two weeks",
+        "two weeks is always enough",
+        "temperature cannot be measured",
+        "climate means one rainy day"
+      ],
+      "answer": "climate needs long-term data, not just two weeks",
+      "hint": false
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which planet is known for its prominent ring system?",
+      "choices": [
+        "Saturn",
+        "Mercury",
+        "Venus",
+        "Mars"
+      ],
+      "answer": "Saturn",
+      "hint": false
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Building roads through a wetland most directly threatens biodiversity by —",
+      "choices": [
+        "destroying habitats and fragmenting populations",
+        "increasing photosynthesis rates only",
+        "adding oxygen to space",
+        "cooling the inner core of Earth"
+      ],
+      "answer": "destroying habitats and fragmenting populations",
+      "hint": false
+    }
+  ],
+  "timed": true,
+  "time_limit_minutes": 30
+}

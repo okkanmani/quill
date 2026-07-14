@@ -339,6 +339,21 @@ export async function deleteResult(resultId) {
   return res.json();
 }
 
+export async function uploadFocusEvaluation(resultId, payload) {
+  const res = await fetch(`${BASE_URL}/results/${resultId}/focus-evaluation`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to upload evaluation";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function listAdminStudents() {
   const res = await fetch(`${BASE_URL}/admin/students`, {
     headers: authHeaders(),

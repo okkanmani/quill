@@ -46,6 +46,7 @@ from worksheets import (
     lock_timed_worksheet,
     merge_worksheets_from_json_files,
     save_result,
+    save_focus_evaluation,
     save_worksheet_draft,
     seed_worksheets_from_json_if_empty,
     set_worksheet_access_lock,
@@ -69,6 +70,15 @@ class SubmitResultRequest(BaseModel):
 
 class EvaluateResultRequest(BaseModel):
     marks: list
+
+
+class FocusEvaluationRequest(BaseModel):
+    export_version: int | None = None
+    result_id: int | None = None
+    worksheet_id: str | None = None
+    title: str | None = None
+    subject: str | None = None
+    questions: list
 
 
 class SaveDraftRequest(BaseModel):
@@ -723,6 +733,23 @@ def evaluate_submission(
         updated = evaluate_result(result_id, who, req.marks)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+    return updated
+
+
+@app.post("/results/{result_id}/focus-evaluation")
+def upload_focus_evaluation(
+    result_id: int, req: FocusEvaluationRequest, authorization: str = Header(...)
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    try:
+        updated = save_focus_evaluation(result_id, who, req.model_dump())
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if not updated:
+        raise HTTPException(status_code=404, detail="Result not found")
     return updated
 
 

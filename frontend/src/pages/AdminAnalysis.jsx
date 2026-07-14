@@ -6,24 +6,53 @@ import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppHeader from "../components/AppHeader";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import {
-  formatSkillList,
-  subjectSkillAnalysis,
+  focusAreasAnalysis,
+  formatFocusAreaList,
 } from "../analysisUtils";
+
+function FocusAreaRow({ focus }) {
+  return (
+    <div className="mt-4 first:mt-3">
+      <p className="text-sm font-semibold text-slate-900">{focus.area}</p>
+      <div className="mt-2 flex flex-col gap-2">
+        {focus.examples.map((example, index) => (
+          <div
+            key={`${focus.area}-${index}`}
+            className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
+          >
+            <p className="text-sm text-slate-800 leading-relaxed">
+              <span className="font-medium text-slate-600">
+                Example{focus.examples.length > 1 ? ` ${index + 1}` : ""} —{" "}
+              </span>
+              {example.question}
+            </p>
+            {example.answer !== "" && example.answer != null ? (
+              <p className="text-sm text-red-800 mt-2">
+                <span className="font-medium">Student answered: </span>
+                {example.answer}
+              </p>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function SubjectBlock({ subject }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-4">
       <p className="text-lg font-semibold text-slate-900">{subject.subjectLabel}</p>
       <p className="text-sm text-slate-700 mt-3 leading-relaxed">
-        <span className="font-semibold text-slate-900">Strength</span>
+        <span className="font-semibold text-slate-900">Area to focus</span>
         {" — "}
-        {formatSkillList(subject.strengths)}
+        {formatFocusAreaList(subject.areasToFocus)}
       </p>
-      <p className="text-sm text-slate-700 mt-2 leading-relaxed">
-        <span className="font-semibold text-slate-900">Weakness</span>
-        {" — "}
-        {formatSkillList(subject.weaknesses)}
-      </p>
+      {subject.focusAreas
+        ?.filter((f) => f.examples?.length)
+        .map((focus) => (
+          <FocusAreaRow key={focus.area} focus={focus} />
+        ))}
     </div>
   );
 }
@@ -45,7 +74,8 @@ export default function AdminAnalysis() {
       .finally(() => setLoading(false));
   }, []);
 
-  const bySubject = useMemo(() => subjectSkillAnalysis(results), [results]);
+  const bySubject = useMemo(() => focusAreasAnalysis(results), [results]);
+  const uploadedCount = results.filter((r) => r.focus_evaluation).length;
 
   async function handleLogout() {
     await logout();
@@ -79,8 +109,12 @@ export default function AdminAnalysis() {
           <h1 className="text-2xl font-bold text-slate-950 mb-2">Analysis</h1>
           <p className="text-slate-700 text-sm mb-8 leading-relaxed">
             {studentName
-              ? `Skill strengths and gaps for ${studentName} — from question areas on graded work.`
-              : "Skill strengths and gaps from question areas on graded work."}
+              ? `Focus areas for ${studentName} — from evaluated worksheet JSON uploads.`
+              : "Focus areas from evaluated worksheet JSON uploads."}
+            {" "}
+            Download a result on the Results page, fill in{" "}
+            <code className="text-xs bg-slate-100 px-1 rounded">area</code> on
+            each question, then upload the JSON back on that result.
           </p>
 
           {loading && <p className="text-slate-600">Loading…</p>}
@@ -92,11 +126,11 @@ export default function AdminAnalysis() {
             </p>
           )}
 
-          {!loading && !error && results.length > 0 && bySubject.length === 0 && (
+          {!loading && !error && results.length > 0 && uploadedCount === 0 && (
             <p className="text-slate-600">
-              No area-tagged graded questions yet — tag worksheet questions with{" "}
-              <code className="text-xs bg-slate-100 px-1 rounded">area</code> and
-              re-merge worksheets.
+              No evaluated JSON uploads yet — download a worksheet result, fill in{" "}
+              <code className="text-xs bg-slate-100 px-1 rounded">area</code>, and
+              upload it from the Results page.
             </p>
           )}
 

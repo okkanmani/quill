@@ -1,0 +1,327 @@
+{
+  "title": "English — Grade 6 Ontario (timed, 30 min, ★★★)",
+  "subject": "english",
+  "scratchpad": false,
+  "created_at": "2026-07-13T15:22:15.320822+00:00",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "The seed library",
+      "body": "When the public library added a seed cabinet beside the cookbook shelves, some patrons laughed. Others signed up immediately. Cardholders could borrow heirloom tomato, bean, and sunflower packets, grow the plants, and return seeds from the healthiest crops in labelled envelopes. Librarian Mr. Okafor explained that the program preserved local varieties adapted to short summers while teaching food literacy.\n\nCritics worried borrowers would forget to return seeds or plant nothing at all. Okafor tracked data: seventy-two percent returned seeds within a year, and workshop attendance tripled. Students mapped which neighbourhoods had community garden plots and which had only pavement. The seed library, Okafor argued, was not a gimmick—it was a way to keep knowledge circulating the way stories do when people share books."
+    },
+    {
+      "id": "p2",
+      "title": "The transit survey",
+      "body": "City planners posted an online survey asking residents which bus route needed evening service. Within a week, 1,200 people responded, and Route 18 won by a wide margin. The mayor announced the result as proof that democracy works.\n\nTransportation analyst Priya Nair noted the survey reached mostly people with home internet and time to answer during the day. Night-shift hospital workers, who relied on Route 18 after midnight, were underrepresented. Nair recommended combining survey results with automatic passenger counters already installed on buses. The mayor agreed to pilot counters on Route 18 before adding trips, saying good decisions need more than loud voices—they need representative data."
+    },
+    {
+      "id": "p3",
+      "title": "The debate club rule",
+      "body": "Debate club adopted a new rule: speakers must restate an opponent’s point in their own words before offering a rebuttal. At first, meetings ran long. Then members noticed fewer shouting matches. Captain Lina said the rule slowed people down just enough to listen."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The seed library differs from traditional book lending because borrowers are expected to —",
+      "choices": [
+        "return seeds from plants they grew",
+        "keep all packets permanently",
+        "sell seeds for profit",
+        "avoid planting anything"
+      ],
+      "answer": "return seeds from plants they grew",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Mr. Okafor’s main goal includes preserving —",
+      "choices": [
+        "local plant varieties suited to short summers",
+        "only imported flowers",
+        "pavement gardens",
+        "library fines"
+      ],
+      "answer": "local plant varieties suited to short summers",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Critics initially feared borrowers would —",
+      "choices": [
+        "forget to return seeds or not plant them",
+        "read too many cookbooks",
+        "remove bus routes",
+        "stop workshops entirely"
+      ],
+      "answer": "forget to return seeds or not plant them",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The phrase “knowledge circulating” suggests seeds and stories both —",
+      "choices": [
+        "spread and remain available when shared",
+        "disappear after one use",
+        "belong only to experts",
+        "replace all public libraries"
+      ],
+      "answer": "spread and remain available when shared",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Students mapping garden plots versus pavement most directly supported —",
+      "choices": [
+        "understanding which neighbourhoods could use the program",
+        "counting library chairs",
+        "designing bus schedules",
+        "measuring tomato mass only"
+      ],
+      "answer": "understanding which neighbourhoods could use the program",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Seventy-two percent returning seeds mainly shows —",
+      "choices": [
+        "most participants followed through on the program",
+        "the program failed",
+        "workshops were cancelled",
+        "heirloom plants cannot grow"
+      ],
+      "answer": "most participants followed through on the program",
+      "hint": false,
+      "passage_id": "p1"
+    },
+    {
+      "id": "q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The mayor treated the survey as proof that —",
+      "choices": [
+        "residents’ preferences were heard through voting",
+        "internet access is unnecessary",
+        "Route 18 had no night riders",
+        "counters should be removed"
+      ],
+      "answer": "residents’ preferences were heard through voting",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Nair’s main concern about the survey was that it —",
+      "choices": [
+        "underrepresented people without daytime internet access",
+        "included too many hospital workers",
+        "lasted more than one week",
+        "counted passengers automatically"
+      ],
+      "answer": "underrepresented people without daytime internet access",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Night-shift workers were especially relevant because they —",
+      "choices": [
+        "needed Route 18 service after midnight",
+        "designed the online form",
+        "opposed all buses",
+        "worked only online"
+      ],
+      "answer": "needed Route 18 service after midnight",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Nair recommended passenger counters because they —",
+      "choices": [
+        "provide data from actual ridership, not only survey replies",
+        "replace all drivers",
+        "eliminate the need for routes",
+        "publish mayor speeches"
+      ],
+      "answer": "provide data from actual ridership, not only survey replies",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The mayor’s final decision was to —",
+      "choices": [
+        "pilot counters on Route 18 before adding evening trips",
+        "cancel Route 18 immediately",
+        "ignore Nair’s advice",
+        "survey only daytime riders again"
+      ],
+      "answer": "pilot counters on Route 18 before adding evening trips",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "The debate rule requires speakers to —",
+      "choices": [
+        "summarize an opponent’s view before rebutting",
+        "speak without listening",
+        "avoid rebuttals entirely",
+        "interrupt after five seconds"
+      ],
+      "answer": "summarize an opponent’s view before rebutting",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Lina believed the rule reduced shouting because it —",
+      "choices": [
+        "forced members to slow down and listen",
+        "banned all disagreements",
+        "shortened every meeting",
+        "removed captains from clubs"
+      ],
+      "answer": "forced members to slow down and listen",
+      "hint": false,
+      "passage_id": "p3"
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Choose the best revision: \"Me and Jada was late because the streetcar don't arrive.\"",
+      "choices": [
+        "Jada and I were late because the streetcar did not arrive",
+        "Me and Jada was late because the streetcar don't arrive",
+        "Jada and I is late because the streetcar didn't arrived",
+        "Jada and me were late because the streetcar don't arrived"
+      ],
+      "answer": "Jada and I were late because the streetcar did not arrive",
+      "hint": false,
+      "area": "grammar"
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Choose the best revision: \"Running for the train, my phone fell onto the platform.\"",
+      "choices": [
+        "As I ran for the train, my phone fell onto the platform",
+        "Running for the train, the phone fell onto the platform",
+        "Running for the train, the platform dropped my phone",
+        "Running for the train, the train fell my phone"
+      ],
+      "answer": "As I ran for the train, my phone fell onto the platform",
+      "hint": false,
+      "area": "grammar"
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Choose the best revision: \"Neither the coaches nor the goalie are ready for overtime.\"",
+      "choices": [
+        "Neither the coaches nor the goalie is ready for overtime",
+        "Neither the coaches nor the goalie are ready for overtime",
+        "Neither the coach nor the goalies is ready for overtime",
+        "Neither the coaches or the goalie is ready for overtime"
+      ],
+      "answer": "Neither the coaches nor the goalie is ready for overtime",
+      "hint": false,
+      "area": "grammar"
+    },
+    {
+      "id": "q17",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Choose the best revision: \"The team have practiced, but the schedule don't list our game.\"",
+      "choices": [
+        "The team has practiced, but the schedule does not list our game",
+        "The team have practiced, but the schedule doesn't list our game",
+        "The team has practiced, but the schedule don't list our game",
+        "The team have practiced, but the schedule doesn't lists our game"
+      ],
+      "answer": "The team has practiced, but the schedule does not list our game",
+      "hint": false,
+      "area": "grammar"
+    },
+    {
+      "id": "q18",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Argument: \"Our juice must be healthy because athletes drink it on TV.\" The flaw is —",
+      "choices": [
+        "famous users do not prove a product is healthy for everyone",
+        "television always lies",
+        "juice cannot be sold in bottles",
+        "athletes never drink water"
+      ],
+      "answer": "famous users do not prove a product is healthy for everyone",
+      "hint": false,
+      "area": "grammar"
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Which title best fits passage 2?",
+      "choices": [
+        "Listening Beyond the Loudest Survey Answers",
+        "Why Libraries Should Lend Buses",
+        "How to Forget Route Numbers",
+        "Tomatoes on City Hall Steps"
+      ],
+      "answer": "Listening Beyond the Loudest Survey Answers",
+      "hint": false,
+      "passage_id": "p2"
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Across all three passages, successful groups improve decisions by —",
+      "choices": [
+        "combining listening with evidence beyond first impressions",
+        "avoiding all rules and data",
+        "speaking loudest first",
+        "ignoring underrepresented voices"
+      ],
+      "answer": "combining listening with evidence beyond first impressions",
+      "hint": false,
+      "passage_id": "p1"
+    }
+  ],
+  "timed": true,
+  "time_limit_minutes": 30
+}

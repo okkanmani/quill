@@ -1,7 +1,13 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import AnswerResponseView from "./AnswerResponseView";
 import AdminResultGrader from "./AdminResultGrader";
 import RecycleBinButton from "./RecycleBinButton";
+import { uploadFocusEvaluation } from "../api";
+import {
+  downloadResultJson,
+  readJsonFile,
+  validateFocusEvaluationUpload,
+} from "../resultExportUtils";
 import { formatSubjectLabel } from "../subjectUtils";
 import { normalizeSubjectKey, subjectSortKey } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
@@ -54,6 +60,7 @@ export default function ResultsBySubject({
   openIds,
   toggleAnswers,
   onResultEvaluated,
+  onFocusEvaluationUploaded,
   onDeleteResult,
   deletingResultId,
   variant = "admin",
@@ -61,7 +68,41 @@ export default function ResultsBySubject({
   const isAdmin = variant === "admin";
   const groups = useMemo(() => groupResults(results), [results]);
   const [openSubjects, setOpenSubjects] = useState(() => new Set());
+  const [uploadingResultId, setUploadingResultId] = useState(null);
+  const [uploadError, setUploadError] = useState("");
+  const uploadInputRef = useRef(null);
+  const uploadTargetRef = useRef(null);
   const pendingCount = results.filter((r) => r.status === "pending").length;
+
+  function openUploadPicker(result) {
+    uploadTargetRef.current = result;
+    setUploadError("");
+    uploadInputRef.current?.click();
+  }
+
+  async function handleUploadFile(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    const result = uploadTargetRef.current;
+    uploadTargetRef.current = null;
+    if (!file || !result) return;
+
+    setUploadingResultId(result.id);
+    setUploadError("");
+    try {
+      const data = await readJsonFile(file);
+      const errors = validateFocusEvaluationUpload(data, result);
+      if (errors.length) {
+        throw new Error(errors.join(" "));
+      }
+      const updated = await uploadFocusEvaluation(result.id, data);
+      onFocusEvaluationUploaded?.(updated);
+    } catch (err) {
+      setUploadError(err.message || "Could not upload evaluation JSON.");
+    } finally {
+      setUploadingResultId(null);
+    }
+  }
 
   function toggleSubject(subjectKey) {
     setOpenSubjects((prev) => {
@@ -76,6 +117,20 @@ export default function ResultsBySubject({
 
   return (
     <div className="flex flex-col gap-3">
+      {isAdmin && uploadError ? (
+        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-2">
+          {uploadError}
+        </p>
+      ) : null}
+      {isAdmin ? (
+        <input
+          ref={uploadInputRef}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          onChange={handleUploadFile}
+        />
+      ) : null}
       {pendingCount > 0 ? (
         <p className="text-sm font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2">
           {isAdmin
@@ -149,6 +204,11 @@ export default function ResultsBySubject({
                               Submitted:{" "}
                               {new Date(r.submitted_at).toLocaleString()}
                             </p>
+                            {isAdmin && r.focus_evaluation ? (
+                              <p className="text-emerald-700 text-xs mt-1 font-medium">
+                                Evaluation uploaded
+                              </p>
+                            ) : null}
                           </div>
                           <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end sm:gap-2">
                             {r.timed && r.duration_seconds != null ? (
@@ -233,7 +293,50 @@ export default function ResultsBySubject({
                         ) : null}
                       </div>
                       {onDeleteResult ? (
-                        <div className="flex shrink-0 self-center sm:self-stretch sm:items-stretch sm:w-11">
+                        <div className="flex shrink-0 self-center sm:self-stretch sm:items-stretch sm:flex-col sm:justify-center gap-2 sm:w-11">
+                          {isAdmin && !isPending ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => downloadResultJson(r)}
+                                title="Download JSON for evaluation"
+                                aria-label={`Download JSON for ${r.title || r.worksheet_id}`}
+                                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition"
+                              >
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  className="h-5 w-5"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M12 3v12m0 0l4-4m-4 4l-4-4" />
+                                  <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                                </svg>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openUploadPicker(r)}
+                                disabled={uploadingResultId === r.id}
+                                title="Upload evaluated JSON"
+                                aria-label={`Upload evaluated JSON for ${r.title || r.worksheet_id}`}
+                                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition disabled:opacity-50"
+                              >
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  className="h-5 w-5"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M12 21V9m0 0l4 4m-4-4l-4-4" />
+                                  <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                                </svg>
+                              </button>
+                            </>
+                          ) : null}
                           <RecycleBinButton
                             onClick={() => onDeleteResult(r)}
                             label={`Delete result for ${r.title || r.worksheet_id}`}

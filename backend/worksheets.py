@@ -430,9 +430,24 @@ def _normalize_question_area(raw) -> str | None:
     return area or None
 
 
-def question_area_map_for_worksheet(worksheet_id: str) -> dict[str, str]:
-    """question_id → area slug from DB payloads, then bundled JSON."""
-    out: dict[str, str] = {}
+def _question_meta_from_payload(q: dict) -> dict:
+    """Extract per-question export metadata from a worksheet question object."""
+    meta: dict = {}
+    qid = q.get("id")
+    if not qid:
+        return meta
+    area = _normalize_question_area(q.get("area"))
+    if area:
+        meta["area"] = area
+    stars = q.get("stars")
+    if isinstance(stars, bool):
+        stars = None
+    if isinstance(stars, (int, float)) and int(stars) in (1, 2, 3):
+        meta["stars"] = int(stars)
+    return meta
+
+
+def _questions_from_worksheet_sources(worksheet_id: str) -> list[dict]:
     conn = db.connect()
     try:
         rows = conn.execute(
@@ -444,30 +459,45 @@ def question_area_map_for_worksheet(worksheet_id: str) -> dict[str, str]:
         ).fetchall()
     finally:
         conn.close()
-    for row in rows:
-        try:
-            q = json.loads(row["payload"])
-        except json.JSONDecodeError:
-            continue
-        qid = q.get("id")
-        area = _normalize_question_area(q.get("area"))
-        if qid and area:
-            out[qid] = area
-    if out:
+    if rows:
+        out: list[dict] = []
+        for row in rows:
+            try:
+                out.append(json.loads(row["payload"]))
+            except json.JSONDecodeError:
+                continue
         return out
     json_path = WORKSHEETS_DIR / f"{worksheet_id}.json"
     if json_path.is_file():
         try:
             with open(json_path, encoding="utf-8") as f:
                 data = json.load(f)
-            for q in data.get("questions") or []:
-                qid = q.get("id")
-                area = _normalize_question_area(q.get("area"))
-                if qid and area:
-                    out[qid] = area
+            return list(data.get("questions") or [])
         except (OSError, json.JSONDecodeError):
             pass
+    return []
+
+
+def question_meta_map_for_worksheet(worksheet_id: str) -> dict[str, dict]:
+    """question_id → {stars?, area?} from DB payloads, then bundled JSON."""
+    out: dict[str, dict] = {}
+    for q in _questions_from_worksheet_sources(worksheet_id):
+        qid = q.get("id")
+        if not qid:
+            continue
+        meta = _question_meta_from_payload(q)
+        if meta:
+            out[qid] = meta
     return out
+
+
+def question_area_map_for_worksheet(worksheet_id: str) -> dict[str, str]:
+    """question_id → area slug from DB payloads, then bundled JSON."""
+    return {
+        qid: meta["area"]
+        for qid, meta in question_meta_map_for_worksheet(worksheet_id).items()
+        if meta.get("area")
+    }
 
 
 def attach_areas_to_answers(worksheet: dict, answers: list) -> list:
@@ -1728,6 +1758,11 @@ def _result_row_to_dict(r) -> dict:
             pass
     if "is_timed" in r.keys() and int(r["is_timed"] or 0):
         out["timed"] = True
+    if "focus_evaluation" in r.keys() and r["focus_evaluation"]:
+        try:
+            out["focus_evaluation"] = json.loads(r["focus_evaluation"])
+        except json.JSONDecodeError:
+            pass
     return out
 
 
@@ -1840,6 +1875,7 @@ def list_results(student_name: str, *, for_student_view: bool = False) -> list:
             """
             SELECT r.id, r.worksheet_id, r.title, r.student, r.score, r.total,
                    r.answers, r.submitted_at, r.status, r.evaluated_at, r.duration_seconds,
+                   r.focus_evaluation,
                    COALESCE(NULLIF(TRIM(w.subject), ''), 'general') AS subject,
                    COALESCE(w.is_timed, 0) AS is_timed,
                    COALESCE(w.evaluation, 'auto') AS evaluation
@@ -1851,7 +1887,7 @@ def list_results(student_name: str, *, for_student_view: bool = False) -> list:
             (student_name,),
         ).fetchall()
         out = []
-        area_cache: dict[str, dict[str, str]] = {}
+        meta_cache: dict[str, dict[str, dict]] = {}
         for r in rows:
             item = _result_row_to_dict(r)
             ev = r["evaluation"]
@@ -1859,10 +1895,10 @@ def list_results(student_name: str, *, for_student_view: bool = False) -> list:
                 item["evaluation"] = "manual"
             item.update(_resolve_difficulty_metadata(r["worksheet_id"]))
             wid = r["worksheet_id"]
-            if wid not in area_cache:
-                area_cache[wid] = question_area_map_for_worksheet(wid)
+            if wid not in meta_cache:
+                meta_cache[wid] = question_meta_map_for_worksheet(wid)
             answers = item.get("answers") or []
-            if area_cache[wid]:
+            if meta_cache[wid]:
                 enriched = []
                 for ans in answers:
                     if not isinstance(ans, dict):
@@ -1870,8 +1906,12 @@ def list_results(student_name: str, *, for_student_view: bool = False) -> list:
                         continue
                     row = dict(ans)
                     qid = row.get("question_id")
-                    if qid and not row.get("area") and qid in area_cache[wid]:
-                        row["area"] = area_cache[wid][qid]
+                    qmeta = meta_cache[wid].get(qid) if qid else None
+                    if qmeta:
+                        if not row.get("area") and qmeta.get("area"):
+                            row["area"] = qmeta["area"]
+                        if not row.get("stars") and qmeta.get("stars"):
+                            row["stars"] = qmeta["stars"]
                     enriched.append(row)
                 item["answers"] = enriched
                 answers = enriched
@@ -1880,8 +1920,109 @@ def list_results(student_name: str, *, for_student_view: bool = False) -> list:
                     if isinstance(ans, dict):
                         ans.pop("expected", None)
                         ans.pop("correct", None)
+            if for_student_view:
+                item.pop("focus_evaluation", None)
             out.append(item)
         return out
+    finally:
+        conn.close()
+
+
+def _normalize_focus_area(raw) -> str | None:
+    if not isinstance(raw, str):
+        return None
+    area = raw.strip()
+    return area or None
+
+
+def validate_focus_evaluation_payload(data: dict, result: dict) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(data, dict):
+        return ["Payload must be a JSON object."]
+    rid = data.get("result_id")
+    if rid is not None and int(rid) != int(result["id"]):
+        errors.append("result_id does not match this submission.")
+    wid = data.get("worksheet_id")
+    if isinstance(wid, str) and wid.strip() and wid.strip() != result["worksheet_id"]:
+        errors.append("worksheet_id does not match this submission.")
+    questions = data.get("questions")
+    if not isinstance(questions, list) or not questions:
+        errors.append("questions must be a non-empty array.")
+        return errors
+    has_area = False
+    for i, q in enumerate(questions):
+        if not isinstance(q, dict):
+            errors.append(f"questions[{i}] must be an object.")
+            continue
+        if not isinstance(q.get("question"), str) or not q["question"].strip():
+            errors.append(f"questions[{i}].question is required.")
+        if "answer" not in q:
+            errors.append(f"questions[{i}].answer is required.")
+        if _normalize_focus_area(q.get("area")):
+            has_area = True
+    if not has_area:
+        errors.append("At least one question must have a non-empty area.")
+    return errors
+
+
+def save_focus_evaluation(result_id: int, student_name: str, data: dict) -> dict | None:
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            """
+            SELECT r.id, r.worksheet_id, r.title, r.student, r.score, r.total,
+                   r.answers, r.submitted_at, r.status, r.evaluated_at, r.duration_seconds,
+                   r.focus_evaluation,
+                   COALESCE(NULLIF(TRIM(w.subject), ''), 'general') AS subject,
+                   COALESCE(w.is_timed, 0) AS is_timed
+            FROM results r
+            LEFT JOIN worksheets w ON w.id = r.worksheet_id
+            WHERE r.id = ? AND r.student = ?
+            """,
+            (result_id, student_name),
+        ).fetchone()
+        if not row:
+            return None
+        result = _result_row_to_dict(row)
+        errors = validate_focus_evaluation_payload(data, result)
+        if errors:
+            raise ValueError("; ".join(errors))
+
+        stored = {
+            "export_version": data.get("export_version", 1),
+            "result_id": result["id"],
+            "worksheet_id": result["worksheet_id"],
+            "title": data.get("title") or result["title"],
+            "subject": data.get("subject") or result["subject"],
+            "student": result["student"],
+            "uploaded_at": datetime.now(timezone.utc).isoformat(),
+            "questions": [
+                {
+                    "question_id": q.get("question_id"),
+                    "question": q.get("question", ""),
+                    "answer": q.get("answer", ""),
+                    "difficulty_level": q.get("difficulty_level"),
+                    "area": _normalize_focus_area(q.get("area")) or "",
+                    **(
+                        {"correct": q["correct"]}
+                        if isinstance(q.get("correct"), bool)
+                        else {}
+                    ),
+                }
+                for q in data.get("questions") or []
+                if isinstance(q, dict)
+            ],
+        }
+        conn.execute(
+            "UPDATE results SET focus_evaluation = ? WHERE id = ?",
+            (json.dumps(stored, ensure_ascii=False), result_id),
+        )
+        conn.commit()
+        result["focus_evaluation"] = stored
+        return result
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
 
