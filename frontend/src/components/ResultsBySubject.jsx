@@ -285,9 +285,19 @@ export default function ResultsBySubject({
                             <button
                               type="button"
                               onClick={() => handleAnalyze(r)}
-                              disabled={analyzingResultId === r.id}
-                              title="Analyze focus areas"
-                              aria-label={`Analyze focus areas for ${r.title || r.worksheet_id}`}
+                              disabled={
+                                analyzingResultId === r.id || Boolean(r.focus_evaluation)
+                              }
+                              title={
+                                r.focus_evaluation
+                                  ? "Already analyzed"
+                                  : "Analyze focus areas"
+                              }
+                              aria-label={
+                                r.focus_evaluation
+                                  ? `Already analyzed: ${r.title || r.worksheet_id}`
+                                  : `Analyze focus areas for ${r.title || r.worksheet_id}`
+                              }
                               className="inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 bg-slate-50 border-slate-200 text-slate-500 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 disabled:opacity-40 disabled:pointer-events-none transition"
                             >
                               <svg
