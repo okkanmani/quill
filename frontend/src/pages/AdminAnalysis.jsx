@@ -7,13 +7,36 @@ import AppHeader from "../components/AppHeader";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import {
   focusAreasAnalysis,
-  formatFocusAreaList,
   formatFocusExampleChoices,
 } from "../analysisUtils";
 import {
   readJsonFile,
   resolveResultForEvaluationUpload,
 } from "../resultExportUtils";
+
+function focusSelectionKey(subjectKey, area) {
+  return `${subjectKey}::${area}`;
+}
+
+function parseFocusSelectionKey(key) {
+  if (!key) return null;
+  const splitAt = key.indexOf("::");
+  if (splitAt <= 0) return null;
+  return {
+    subjectKey: key.slice(0, splitAt),
+    area: key.slice(splitAt + 2),
+  };
+}
+
+function findSelectedFocus(bySubject, selectedKey) {
+  const parsed = parseFocusSelectionKey(selectedKey);
+  if (!parsed) return null;
+  const subject = bySubject.find((s) => s.subjectKey === parsed.subjectKey);
+  if (!subject) return null;
+  const focus = subject.focusAreas.find((f) => f.area === parsed.area);
+  if (!focus) return null;
+  return { subject, focus };
+}
 
 function FocusExampleCard({ example, index, total }) {
   const choices = formatFocusExampleChoices(example.choices);
@@ -48,38 +71,62 @@ function FocusExampleCard({ example, index, total }) {
   );
 }
 
-function FocusAreaRow({ focus }) {
+function FocusAreaDetailPanel({ selection }) {
+  const { subject, focus } = selection;
+  const examples = focus.examples || [];
+
   return (
-    <div className="mt-4 first:mt-3">
-      <p className="text-sm font-semibold text-slate-900">{focus.area}</p>
-      <div className="mt-2 flex flex-col gap-2">
-        {focus.examples.map((example, index) => (
-          <FocusExampleCard
-            key={`${focus.area}-${example.question_id || index}`}
-            example={example}
-            index={index}
-            total={focus.examples.length}
-          />
-        ))}
-      </div>
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-5">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {subject.subjectLabel}
+      </p>
+      <h2 className="text-xl font-semibold text-slate-950 mt-1">{focus.area}</h2>
+      {examples.length > 0 ? (
+        <div className="mt-4 flex flex-col gap-3">
+          {examples.map((example, index) => (
+            <FocusExampleCard
+              key={`${focus.area}-${example.question_id || index}`}
+              example={example}
+              index={index}
+              total={examples.length}
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-600 mt-4 leading-relaxed">
+          No sample wrong answers recorded for this area yet.
+        </p>
+      )}
     </div>
   );
 }
 
-function SubjectBlock({ subject }) {
+function SubjectBlock({ subject, selectedKey, onSelectArea }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-4">
       <p className="text-lg font-semibold text-slate-900">{subject.subjectLabel}</p>
       <p className="text-sm text-slate-700 mt-3 leading-relaxed">
-        <span className="font-semibold text-slate-900">Area to focus</span>
-        {" — "}
-        {formatFocusAreaList(subject.areasToFocus)}
+        {subject.focusAreas.map((focus, index) => {
+          const key = focusSelectionKey(subject.subjectKey, focus.area);
+          const isSelected = selectedKey === key;
+          return (
+            <span key={focus.area}>
+              {index > 0 ? ", " : null}
+              <button
+                type="button"
+                onClick={() => onSelectArea(key)}
+                className={`font-medium underline-offset-2 hover:underline ${
+                  isSelected
+                    ? "text-indigo-800 underline"
+                    : "text-indigo-600"
+                }`}
+              >
+                {focus.area}
+              </button>
+            </span>
+          );
+        })}
       </p>
-      {subject.focusAreas
-        ?.filter((f) => f.examples?.length)
-        .map((focus) => (
-          <FocusAreaRow key={focus.area} focus={focus} />
-        ))}
     </div>
   );
 }
@@ -91,6 +138,7 @@ export default function AdminAnalysis() {
   const [error, setError] = useState("");
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [selectedKey, setSelectedKey] = useState("");
   const uploadInputRef = useRef(null);
 
   useEffect(() => {
@@ -106,6 +154,20 @@ export default function AdminAnalysis() {
 
   const bySubject = useMemo(() => focusAreasAnalysis(results), [results]);
   const uploadedCount = results.filter((r) => r.focus_evaluation).length;
+  const selection = useMemo(
+    () => findSelectedFocus(bySubject, selectedKey),
+    [bySubject, selectedKey],
+  );
+
+  useEffect(() => {
+    if (bySubject.length === 0) {
+      setSelectedKey("");
+      return;
+    }
+    if (selectedKey && !findSelectedFocus(bySubject, selectedKey)) {
+      setSelectedKey("");
+    }
+  }, [bySubject, selectedKey]);
 
   async function handleUploadFile(event) {
     const file = event.target.files?.[0];
@@ -161,7 +223,7 @@ export default function AdminAnalysis() {
       </div>
 
       <div className="px-6 pb-6 pt-4">
-        <div className="max-w-3xl">
+        <div className="max-w-6xl">
           <AdminStudentSwitcher />
 
           <h1 className="text-2xl font-bold text-slate-950 mb-2">Analysis</h1>
@@ -229,10 +291,28 @@ export default function AdminAnalysis() {
           )}
 
           {!loading && !error && bySubject.length > 0 && (
-            <div className="flex flex-col gap-4">
-              {bySubject.map((subject) => (
-                <SubjectBlock key={subject.subjectKey} subject={subject} />
-              ))}
+            <div
+              className={`grid gap-6 items-start ${
+                selection ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1"
+              }`}
+            >
+              <div className={selection ? "lg:col-span-1" : undefined}>
+                <div className="flex flex-col gap-4">
+                  {bySubject.map((subject) => (
+                    <SubjectBlock
+                      key={subject.subjectKey}
+                      subject={subject}
+                      selectedKey={selectedKey}
+                      onSelectArea={setSelectedKey}
+                    />
+                  ))}
+                </div>
+              </div>
+              {selection ? (
+                <div className="lg:col-span-2 lg:sticky lg:top-28">
+                  <FocusAreaDetailPanel selection={selection} />
+                </div>
+              ) : null}
             </div>
           )}
         </div>
