@@ -2,10 +2,67 @@ import { useRef, useEffect, useState, useCallback } from "react";
 
 const BG = "#000000";
 const INK = "#ffffff";
+const TEXT_FONT = "24px system-ui, sans-serif";
+const TEXT_LINE_HEIGHT = 28;
 
 function paintBackground(ctx, canvas) {
   ctx.fillStyle = BG;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function TextToolIcon({ className = "h-5 w-5" }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M5 4h14v3h-5v13h-4V7H5V4z" />
+    </svg>
+  );
+}
+
+function EraserIcon({ className = "h-5 w-5" }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M16.24 3.56l4.95 4.95c.78.78.78 2.05 0 2.83L8.48 21.6a1.99 1.99 0 0 1-2.83 0L1.7 17.66c-.78-.78-.78-2.05 0-2.83L13.41 3.56a2 2 0 0 1 2.83 0zM4.22 15.22l2.56 2.56 8.49-8.49-2.56-2.56-8.49 8.49z" />
+    </svg>
+  );
+}
+
+function PenIcon({ className = "h-5 w-5" }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+function toolButtonClass(active) {
+  return `rounded-lg p-1.5 border transition disabled:opacity-50 ${
+    active
+      ? "bg-slate-200 border-indigo-400 text-slate-900"
+      : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+  }`;
 }
 
 export default function Drawpad({
@@ -13,14 +70,18 @@ export default function Drawpad({
   onChange,
   disabled = false,
   showHeading = true,
+  showTextTool = false,
   className = "mt-4",
   canvasHeight = 350,
 } = {}) {
   const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const textInputRef = useRef(null);
   const drawing = useRef(false);
   const lastPos = useRef(null);
   const loadedValue = useRef(null);
-  const [eraserMode, setEraserMode] = useState(false);
+  const [tool, setTool] = useState("pen");
+  const [textDraft, setTextDraft] = useState(null);
 
   const emitChange = useCallback(() => {
     if (!onChange || disabled) return;
@@ -40,6 +101,8 @@ export default function Drawpad({
       return;
     }
 
+    setTextDraft(null);
+
     if (!value) {
       paintBackground(ctx, canvas);
       loadedValue.current = "";
@@ -54,6 +117,12 @@ export default function Drawpad({
     };
     img.src = value;
   }, [value]);
+
+  useEffect(() => {
+    if (textDraft && textInputRef.current) {
+      textInputRef.current.focus();
+    }
+  }, [textDraft]);
 
   function getPos(e, canvas) {
     const rect = canvas.getBoundingClientRect();
@@ -72,15 +141,81 @@ export default function Drawpad({
     };
   }
 
-  function startDrawing(e) {
+  function commitTextDraft() {
+    if (!textDraft) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const valueText = textDraft.value.trim();
+    if (valueText) {
+      const ctx = canvas.getContext("2d");
+      ctx.font = TEXT_FONT;
+      ctx.fillStyle = INK;
+      ctx.textBaseline = "top";
+      valueText.split("\n").forEach((line, index) => {
+        ctx.fillText(line, textDraft.x, textDraft.y + index * TEXT_LINE_HEIGHT);
+      });
+      emitChange();
+    }
+    setTextDraft(null);
+  }
+
+  function cancelTextDraft() {
+    setTextDraft(null);
+  }
+
+  function selectTool(nextTool) {
+    if (nextTool !== "text") {
+      commitTextDraft();
+    }
+    setTool(nextTool);
+  }
+
+  function toggleEraser() {
+    commitTextDraft();
+    setTool((current) => (current === "eraser" ? "pen" : "eraser"));
+  }
+
+  function placeText(e) {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+
+    const pos = getPos(e, canvas);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const containerRect = container.getBoundingClientRect();
+
+    setTextDraft({
+      x: pos.x,
+      y: pos.y,
+      left: clientX - containerRect.left,
+      top: clientY - containerRect.top,
+      value: "",
+    });
+  }
+
+  function handleCanvasDown(e) {
     if (disabled) return;
+    if (showTextTool && tool === "text") {
+      e.preventDefault();
+      if (textDraft) {
+        commitTextDraft();
+      }
+      placeText(e);
+      return;
+    }
+    startDrawing(e);
+  }
+
+  function startDrawing(e) {
+    if (disabled || tool === "text") return;
     e.preventDefault();
     drawing.current = true;
     lastPos.current = getPos(e, canvasRef.current);
   }
 
   function draw(e) {
-    if (disabled) return;
+    if (disabled || tool === "text") return;
     e.preventDefault();
     if (!drawing.current) return;
     const canvas = canvasRef.current;
@@ -90,8 +225,8 @@ export default function Drawpad({
     ctx.beginPath();
     ctx.moveTo(lastPos.current.x, lastPos.current.y);
     ctx.lineTo(pos.x, pos.y);
-    ctx.strokeStyle = eraserMode ? BG : INK;
-    ctx.lineWidth = eraserMode ? 28 : 2.5;
+    ctx.strokeStyle = tool === "eraser" ? BG : INK;
+    ctx.lineWidth = tool === "eraser" ? 28 : 2.5;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.stroke();
@@ -100,7 +235,7 @@ export default function Drawpad({
   }
 
   function stopDrawing(e) {
-    if (disabled) return;
+    if (disabled || tool === "text") return;
     e.preventDefault();
     if (!drawing.current) return;
     drawing.current = false;
@@ -110,104 +245,144 @@ export default function Drawpad({
 
   function clearCanvas() {
     if (disabled) return;
+    cancelTextDraft();
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     paintBackground(ctx, canvas);
     emitChange();
   }
 
+  function renderToolbar(compact) {
+    return (
+      <div
+        className={
+          compact
+            ? "absolute top-2 right-2 z-10 flex items-center gap-2 rounded-lg border border-slate-200 bg-white/95 px-2 py-1 shadow-sm"
+            : "flex items-center gap-3 shrink-0"
+        }
+      >
+        {showTextTool ? (
+          <>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => selectTool("pen")}
+              className={toolButtonClass(tool === "pen")}
+              aria-pressed={tool === "pen"}
+              aria-label="Pen"
+              title="Pen"
+            >
+              <PenIcon />
+            </button>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => selectTool("eraser")}
+              className={toolButtonClass(tool === "eraser")}
+              aria-pressed={tool === "eraser"}
+              aria-label="Eraser"
+              title="Eraser"
+            >
+              <EraserIcon />
+            </button>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => selectTool("text")}
+              className={toolButtonClass(tool === "text")}
+              aria-pressed={tool === "text"}
+              aria-label="Text"
+              title="Text"
+            >
+              <TextToolIcon />
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={toggleEraser}
+            className={toolButtonClass(tool === "eraser")}
+            aria-pressed={tool === "eraser"}
+            aria-label={tool === "eraser" ? "Switch to pen" : "Eraser"}
+            title={tool === "eraser" ? "Switch to pen" : "Eraser"}
+          >
+            <EraserIcon />
+          </button>
+        )}
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={clearCanvas}
+          className="text-slate-500 text-xs underline disabled:opacity-50"
+        >
+          Clear
+        </button>
+      </div>
+    );
+  }
+
+  const canvasCursor = disabled
+    ? "default"
+    : tool === "text"
+      ? "text"
+      : tool === "eraser"
+        ? "cell"
+        : "crosshair";
+
   return (
     <div className={className}>
       {showHeading ? (
         <div className="flex items-center justify-between mb-1 gap-2">
           <span className="text-indigo-500 text-xs">Scratch pad</span>
-          <div className="flex items-center gap-3 shrink-0">
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={() => setEraserMode((v) => !v)}
-              className={`rounded-lg p-1.5 border transition disabled:opacity-50 ${
-                eraserMode
-                  ? "bg-slate-200 border-indigo-400 text-slate-900"
-                  : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-              }`}
-              aria-pressed={eraserMode}
-              aria-label={eraserMode ? "Switch to pen" : "Eraser"}
-              title={eraserMode ? "Switch to pen" : "Eraser"}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="h-5 w-5"
-                aria-hidden="true"
-              >
-                <path d="M16.24 3.56l4.95 4.95c.78.78.78 2.05 0 2.83L8.48 21.6a1.99 1.99 0 0 1-2.83 0L1.7 17.66c-.78-.78-.78-2.05 0-2.83L13.41 3.56a2 2 0 0 1 2.83 0zM4.22 15.22l2.56 2.56 8.49-8.49-2.56-2.56-8.49 8.49z" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={clearCanvas}
-              className="text-slate-500 text-xs underline disabled:opacity-50"
-            >
-              Clear
-            </button>
-          </div>
+          {renderToolbar(false)}
         </div>
       ) : null}
-      <div className="relative">
-        {!showHeading ? (
-          <div className="absolute top-2 right-2 z-10 flex items-center gap-2 rounded-lg border border-slate-200 bg-white/95 px-2 py-1 shadow-sm">
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={() => setEraserMode((v) => !v)}
-              className={`rounded-lg p-1.5 border transition disabled:opacity-50 ${
-                eraserMode
-                  ? "bg-slate-200 border-indigo-400 text-slate-900"
-                  : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-              }`}
-              aria-pressed={eraserMode}
-              aria-label={eraserMode ? "Switch to pen" : "Eraser"}
-              title={eraserMode ? "Switch to pen" : "Eraser"}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="h-5 w-5"
-                aria-hidden="true"
-              >
-                <path d="M16.24 3.56l4.95 4.95c.78.78.78 2.05 0 2.83L8.48 21.6a1.99 1.99 0 0 1-2.83 0L1.7 17.66c-.78-.78-.78-2.05 0-2.83L13.41 3.56a2 2 0 0 1 2.83 0zM4.22 15.22l2.56 2.56 8.49-8.49-2.56-2.56-8.49 8.49z" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={clearCanvas}
-              className="text-slate-500 text-xs underline disabled:opacity-50"
-            >
-              Clear
-            </button>
-          </div>
-        ) : null}
+      <div ref={containerRef} className="relative">
+        {!showHeading ? renderToolbar(true) : null}
         <canvas
           ref={canvasRef}
           width={800}
           height={canvasHeight}
-          onMouseDown={startDrawing}
+          onMouseDown={handleCanvasDown}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
           onMouseLeave={stopDrawing}
-          onTouchStart={startDrawing}
+          onTouchStart={handleCanvasDown}
           onTouchMove={draw}
           onTouchEnd={stopDrawing}
           className={`w-full rounded-xl border border-slate-200 touch-none ${
             disabled ? "opacity-80" : ""
           }`}
-          style={{ cursor: disabled ? "default" : eraserMode ? "cell" : "crosshair" }}
+          style={{ cursor: canvasCursor }}
         />
+        {textDraft ? (
+          <textarea
+            ref={textInputRef}
+            value={textDraft.value}
+            onChange={(e) =>
+              setTextDraft((draft) => ({ ...draft, value: e.target.value }))
+            }
+            onBlur={commitTextDraft}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                e.preventDefault();
+                cancelTextDraft();
+              }
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                commitTextDraft();
+              }
+            }}
+            rows={1}
+            placeholder="Type here"
+            className="absolute z-20 min-w-[8rem] max-w-[min(20rem,90%)] resize-none rounded border border-dashed border-white/80 bg-black/80 px-2 py-1 text-sm leading-relaxed text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            style={{
+              left: textDraft.left,
+              top: textDraft.top,
+            }}
+          />
+        ) : null}
       </div>
     </div>
   );
