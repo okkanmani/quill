@@ -1877,7 +1877,7 @@ def student_has_result_for_worksheet(student_name: str, worksheet_id: str) -> bo
 
 
 def evaluate_result(result_id: int, student_name: str, marks: list[dict]) -> dict:
-    """Admin marks a pending submission. marks: [{question_id, correct}, ...]."""
+    """Admin marks or updates marks on a submission. marks: [{question_id, correct}, ...]."""
     conn = db.connect()
     try:
         row = conn.execute(
@@ -1891,8 +1891,6 @@ def evaluate_result(result_id: int, student_name: str, marks: list[dict]) -> dic
             raise ValueError("Result not found.")
         if row["student"] != student_name:
             raise ValueError("Result does not belong to the selected student.")
-        if row["status"] != "pending":
-            raise ValueError("This submission has already been evaluated.")
 
         answers = json.loads(row["answers"])
         mark_by_qid = {
@@ -1914,7 +1912,8 @@ def evaluate_result(result_id: int, student_name: str, marks: list[dict]) -> dic
         conn.execute(
             """
             UPDATE results
-            SET score = ?, answers = ?, status = 'evaluated', evaluated_at = ?
+            SET score = ?, answers = ?, status = 'evaluated', evaluated_at = ?,
+                focus_evaluation = NULL
             WHERE id = ?
             """,
             (score, json.dumps(answers), evaluated_at, result_id),
@@ -1923,15 +1922,23 @@ def evaluate_result(result_id: int, student_name: str, marks: list[dict]) -> dic
         updated = conn.execute(
             """
             SELECT r.id, r.worksheet_id, r.title, r.student, r.score, r.total,
-                   r.answers, r.submitted_at, r.status, r.evaluated_at,
-                   COALESCE(NULLIF(TRIM(w.subject), ''), 'general') AS subject
+                   r.answers, r.submitted_at, r.status, r.evaluated_at, r.duration_seconds,
+                   r.focus_evaluation,
+                   COALESCE(NULLIF(TRIM(w.subject), ''), 'general') AS subject,
+                   COALESCE(w.is_timed, 0) AS is_timed,
+                   COALESCE(w.evaluation, 'auto') AS evaluation
             FROM results r
             LEFT JOIN worksheets w ON w.id = r.worksheet_id
             WHERE r.id = ?
             """,
             (result_id,),
         ).fetchone()
-        return _result_row_to_dict(updated)
+        item = _result_row_to_dict(updated)
+        ev = updated["evaluation"]
+        if ev and str(ev).strip().lower() == "manual":
+            item["evaluation"] = "manual"
+        item.update(_resolve_difficulty_metadata(updated["worksheet_id"]))
+        return item
     except Exception:
         conn.rollback()
         raise

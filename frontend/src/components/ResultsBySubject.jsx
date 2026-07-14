@@ -234,14 +234,15 @@ export default function ResultsBySubject({
                           </div>
                         </button>
 
-                        {expanded && isPending && isAdmin ? (
+                        {expanded && isAdmin ? (
                           <AdminResultGrader
                             result={r}
+                            mode={isPending ? "pending" : "override"}
                             onEvaluated={onResultEvaluated}
                           />
                         ) : null}
 
-                        {expanded && (isAdmin ? !isPending : true) ? (
+                        {expanded && !isAdmin ? (
                           <div className="border-t border-slate-100 px-5 pb-5 pt-4 bg-slate-50/30">
                             <ul className="flex flex-col gap-4">
                               {r.answers.map((a, index) => (
@@ -260,8 +261,7 @@ export default function ResultsBySubject({
                                       Response:
                                     </span>
                                     <AnswerResponseView answer={a} />
-                                    {!isPending &&
-                                    typeof a.correct === "boolean" ? (
+                                    {typeof a.correct === "boolean" ? (
                                       <span
                                         className={`inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
                                           a.correct
@@ -273,17 +273,6 @@ export default function ResultsBySubject({
                                       </span>
                                     ) : null}
                                   </div>
-                                  {isAdmin &&
-                                  !a.correct &&
-                                  a.expected != null &&
-                                  a.expected !== "" ? (
-                                    <p className="mt-2 text-sm text-slate-900">
-                                      <span className="text-red-700 font-semibold">
-                                        Expected answer:{" "}
-                                      </span>
-                                      {a.expected}
-                                    </p>
-                                  ) : null}
                                 </li>
                               ))}
                             </ul>

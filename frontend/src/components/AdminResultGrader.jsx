@@ -3,9 +3,10 @@ import { evaluateResult } from "../api";
 import AnswerResponseView from "./AnswerResponseView";
 
 /**
- * Admin grading panel for a pending manual-evaluation submission.
+ * Admin grading panel for pending or already-evaluated submissions.
  */
-export default function AdminResultGrader({ result, onEvaluated }) {
+export default function AdminResultGrader({ result, onEvaluated, mode = "pending" }) {
+  const isOverride = mode === "override";
   const [marks, setMarks] = useState({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -20,17 +21,21 @@ export default function AdminResultGrader({ result, onEvaluated }) {
     setMarks(initial);
   }, [result.id, result.answers]);
 
-  function setMark(questionId, correct) {
-    setMarks((prev) => ({ ...prev, [questionId]: correct }));
+  async function setMark(questionId, correct) {
+    const nextMarks = { ...marks, [questionId]: correct };
+    setMarks(nextMarks);
+    if (isOverride) {
+      await saveMarks(nextMarks);
+    }
   }
 
-  async function handleSave() {
+  async function saveMarks(nextMarks) {
     setSaving(true);
     setError("");
     try {
       const payload = (result.answers || []).map((a) => ({
         question_id: a.question_id,
-        correct: marks[a.question_id] === true,
+        correct: nextMarks[a.question_id] === true,
       }));
       const updated = await evaluateResult(result.id, payload);
       onEvaluated(updated);
@@ -41,6 +46,10 @@ export default function AdminResultGrader({ result, onEvaluated }) {
     }
   }
 
+  async function handleSave() {
+    await saveMarks(marks);
+  }
+
   const markedCount = Object.values(marks).filter((v) => v === true).length;
   const allMarked = (result.answers || []).every(
     (a) => marks[a.question_id] === true || marks[a.question_id] === false,
@@ -49,7 +58,9 @@ export default function AdminResultGrader({ result, onEvaluated }) {
   return (
     <div className="border-t border-slate-100 px-5 pb-5 pt-4 bg-slate-50/30">
       <p className="text-sm font-semibold text-amber-900 mb-3">
-        Mark each answer — reference answers shown for your guidance only.
+        {isOverride
+          ? "Tap Correct or Incorrect to update a mark."
+          : "Mark each answer — reference answers shown for your guidance only."}
       </p>
       <ul className="flex flex-col gap-4">
         {(result.answers || []).map((a, index) => {
@@ -81,6 +92,7 @@ export default function AdminResultGrader({ result, onEvaluated }) {
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   type="button"
+                  disabled={saving}
                   onClick={() => setMark(a.question_id, true)}
                   className={`rounded-lg px-3 py-1.5 text-xs font-semibold border transition ${
                     isCorrect
@@ -92,6 +104,7 @@ export default function AdminResultGrader({ result, onEvaluated }) {
                 </button>
                 <button
                   type="button"
+                  disabled={saving}
                   onClick={() => setMark(a.question_id, false)}
                   className={`rounded-lg px-3 py-1.5 text-xs font-semibold border transition ${
                     isWrong
@@ -107,18 +120,22 @@ export default function AdminResultGrader({ result, onEvaluated }) {
         })}
       </ul>
       {error ? <p className="text-red-600 text-sm mt-3">{error}</p> : null}
-      <button
-        type="button"
-        disabled={saving || !allMarked}
-        onClick={handleSave}
-        className="mt-4 w-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition"
-      >
-        {saving
-          ? "Saving…"
-          : allMarked
-            ? `Save marks (${markedCount}/${result.answers?.length ?? 0} correct)`
-            : "Mark every question before saving"}
-      </button>
+      {!isOverride ? (
+        <button
+          type="button"
+          disabled={saving || !allMarked}
+          onClick={handleSave}
+          className="mt-4 w-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition"
+        >
+          {saving
+            ? "Saving…"
+            : allMarked
+              ? `Save marks (${markedCount}/${result.answers?.length ?? 0} correct)`
+              : "Mark every question before saving"}
+        </button>
+      ) : saving ? (
+        <p className="text-slate-500 text-sm mt-3">Saving…</p>
+      ) : null}
     </div>
   );
 }
