@@ -33,6 +33,7 @@ def _build_prompt(
     stars: int,
     fmt: str,
     question_count: int,
+    custom_prompt: str = "",
 ) -> str:
     difficulty = _difficulty_label(stars)
     subject_text = _subject_label(subject)
@@ -78,7 +79,7 @@ def _build_prompt(
             "(e.g. one-step linear equations, triangle area) — not broad labels like algebra."
         )
 
-    return f"""Generate a worksheet as JSON only.
+    base = f"""Generate a worksheet as JSON only.
 
 Audience: grade {grade} students in Canada/US curriculum style.
 Subject: {subject_text}
@@ -96,6 +97,12 @@ Requirements:
 Return JSON matching this schema:
 {schema}
 """
+    extra = (custom_prompt or "").strip()
+    if extra:
+        if len(extra) > 2000:
+            extra = extra[:2000]
+        return base + f"\nAdditional instructions from the teacher:\n{extra}\n"
+    return base
 
 
 def _parse_ai_json(content: str) -> dict:
@@ -201,6 +208,7 @@ def generate_worksheet_draft(
     stars: int,
     fmt: str,
     question_count: int | None = None,
+    custom_prompt: str = "",
     api_key: str,
 ) -> dict:
     """Call OpenAI and return builder-ready draft {title, questions}."""
@@ -233,6 +241,7 @@ def generate_worksheet_draft(
         stars=stars,
         fmt=fmt,
         question_count=count,
+        custom_prompt=custom_prompt,
     )
 
     try:

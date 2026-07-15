@@ -170,6 +170,7 @@ export default function AdminQuestionBuilder() {
   );
   const [expanded, setExpanded] = useState(() => new Set([0]));
   const [buildUsingAi, setBuildUsingAi] = useState(false);
+  const [aiCustomPrompt, setAiCustomPrompt] = useState("");
   const [aiEnabled, setAiEnabled] = useState(true);
   const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -283,6 +284,7 @@ export default function AdminQuestionBuilder() {
           stars,
           format,
           question_count: questionCount,
+          custom_prompt: aiCustomPrompt.trim(),
         });
         publishTitle = publishTitle || draft.title;
         publishQuestions = draftToBuilderQuestions(draft, format);
@@ -523,6 +525,21 @@ export default function AdminQuestionBuilder() {
               Questions will be generated from the worksheet details above when you
               press Generate &amp; publish. Each question gets a specific area tag
               for focus analysis. Usage bills to your OpenAI account.
+            </p>
+            <label className="block mt-4 text-sm font-semibold text-indigo-950">
+              Additional instructions{" "}
+              <span className="font-normal text-indigo-800">(optional)</span>
+              <textarea
+                value={aiCustomPrompt}
+                onChange={(e) => setAiCustomPrompt(e.target.value)}
+                rows={4}
+                maxLength={2000}
+                placeholder="e.g. Focus on word problems about money, use Canadian spelling, avoid decimals…"
+                className="mt-1 w-full rounded-xl border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-y min-h-[6rem]"
+              />
+            </label>
+            <p className="text-xs text-indigo-800/80 mt-1">
+              These notes are sent to the AI along with subject, grade, and difficulty.
             </p>
             {!canPublishWithAi ? (
               <p className="text-sm text-amber-900 mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">

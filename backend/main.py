@@ -161,6 +161,7 @@ class GenerateWorksheetDraftRequest(BaseModel):
     stars: int
     format: str
     question_count: int | None = None
+    custom_prompt: str = ""
 
 
 class AdminOpenAiKeyRequest(BaseModel):
@@ -457,6 +458,7 @@ def admin_generate_worksheet_draft(
             stars=req.stars,
             fmt=req.format,
             question_count=req.question_count,
+            custom_prompt=req.custom_prompt,
             api_key=api_key,
         )
     except ValueError as exc:
