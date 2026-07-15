@@ -91,13 +91,16 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
             {collectionTitle}
           </p>
           <label className="block text-sm font-semibold text-slate-800">
-            Page title
+            Section title
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="mt-1 w-full max-w-xl rounded-xl border border-slate-300 px-3 py-2 text-lg font-bold text-slate-950 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             />
+            <span className="mt-1 block text-xs font-normal text-slate-500">
+              Shown as the heading on the learning resource page.
+            </span>
           </label>
         </div>
         <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -177,6 +180,9 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
             <div className="learn-md rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-950 mb-4 pb-2 border-b border-slate-100">
+                {title.trim() || "Section title"}
+              </h2>
               <LearnMarkdown markdown={markdown || "_Nothing to preview yet._"} />
             </div>
           </div>

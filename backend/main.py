@@ -36,6 +36,7 @@ from learn_content import (
     list_learn_hub,
     list_subjects,
     publish_learn_section,
+    reorder_learn_sections,
     update_learn_section,
 )
 from focus_discussion import list_focus_areas_discussed, mark_focus_area_discussed
@@ -189,6 +190,10 @@ class GenerateLearnResourceRequest(BaseModel):
 class UpdateLearnSectionRequest(BaseModel):
     title: str
     markdown: str
+
+
+class ReorderLearnSectionsRequest(BaseModel):
+    section_ids: list[str]
 
 
 class SwitchAdminStudentRequest(BaseModel):
@@ -524,14 +529,11 @@ def admin_generate_learn_resource(
             "general": "General",
         }
         subj_label = subject_labels.get(req.subject.strip().lower(), req.subject)
-        collection_title = (
-            f"{subj_label} — {req.curriculum.strip()} (Grade {req.grade})"
-        )
         return publish_learn_section(
             subject_key=subject_key,
             section_title=draft["section_title"],
             markdown=draft["markdown"],
-            subject_title=collection_title,
+            subject_title=subj_label,
             subject_description=f"Grade {req.grade} · {req.curriculum.strip()}",
             grade=req.grade,
             curriculum=req.curriculum,
@@ -546,6 +548,24 @@ def admin_list_learn_sections(authorization: str = Header(...)):
     if payload["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
     return {"sections": list_admin_learn_sections()}
+
+
+@app.put("/admin/learn/{subject_key}/reorder")
+def admin_reorder_learn_sections(
+    subject_key: str,
+    req: ReorderLearnSectionsRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return reorder_learn_sections(
+            subject_key=subject_key,
+            section_ids=req.section_ids,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.put("/admin/learn/{subject_key}/{section_id}")

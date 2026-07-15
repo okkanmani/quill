@@ -53,7 +53,7 @@ def _db_sections(subject_key: str) -> list[dict]:
             SELECT section_id, title, markdown, group_id, group_title
             FROM learn_sections
             WHERE subject_key = ?
-            ORDER BY id ASC
+            ORDER BY sort_order ASC, id ASC
             """,
             (subject_key,),
         ).fetchall()
@@ -78,7 +78,7 @@ def list_admin_learn_sections() -> list[dict]:
             """
             SELECT subject_key, section_id, title, subject_title, subject_description, created_at
             FROM learn_sections
-            ORDER BY subject_key ASC, id ASC
+            ORDER BY subject_key ASC, sort_order ASC, id ASC
             """
         ).fetchall()
         return [
@@ -286,13 +286,18 @@ def publish_learn_section(
             subject_description = f"Grade {grade} · {curriculum}"
 
         created_at = datetime.now(timezone.utc).isoformat()
+        sort_row = conn.execute(
+            "SELECT COALESCE(MAX(sort_order), -1) FROM learn_sections WHERE subject_key = ?",
+            (subject_key,),
+        ).fetchone()
+        sort_order = int(sort_row[0]) + 1
         conn.execute(
             """
             INSERT INTO learn_sections (
                 subject_key, section_id, title, markdown,
                 group_id, group_title, subject_title, subject_description,
-                grade, curriculum, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                grade, curriculum, created_at, sort_order
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 subject_key,
@@ -306,8 +311,18 @@ def publish_learn_section(
                 grade,
                 (curriculum or "").strip() or None,
                 created_at,
+                sort_order,
             ),
         )
+        if subject_title or subject_description:
+            conn.execute(
+                """
+                UPDATE learn_sections
+                SET subject_title = ?, subject_description = ?
+                WHERE subject_key = ?
+                """,
+                (subject_title, subject_description, subject_key),
+            )
         conn.commit()
     except Exception:
         conn.rollback()
@@ -351,15 +366,34 @@ def update_learn_section(
         if not row:
             raise ValueError("Learning resource not found or not editable.")
 
+        existing_ids = {
+            row[0]
+            for row in conn.execute(
+                "SELECT section_id FROM learn_sections WHERE subject_key = ?",
+                (subject_key,),
+            ).fetchall()
+        }
+        base_id = _slugify(title)
+        next_section_id = section_id
+        if base_id and base_id != section_id:
+            candidate = base_id
+            n = 2
+            while candidate in existing_ids and candidate != section_id:
+                candidate = f"{base_id}-{n}"
+                n += 1
+            if candidate not in existing_ids or candidate == section_id:
+                next_section_id = candidate
+
         conn.execute(
             """
             UPDATE learn_sections
-            SET title = ?, markdown = ?
+            SET section_id = ?, title = ?, markdown = ?
             WHERE subject_key = ? AND section_id = ?
             """,
-            (title, markdown, subject_key, section_id),
+            (next_section_id, title, markdown, subject_key, section_id),
         )
         conn.commit()
+        section_id = next_section_id
     except Exception:
         conn.rollback()
         raise
@@ -402,6 +436,48 @@ def delete_learn_section(*, subject_key: str, section_id: str) -> dict:
         conn.close()
 
     return {"subject_key": subject_key, "section_id": section_id}
+
+
+def reorder_learn_sections(*, subject_key: str, section_ids: list[str]) -> dict:
+    subject_key = subject_key.strip().lower()
+    ordered = [sid.strip().lower() for sid in section_ids if (sid or "").strip()]
+    if not ordered:
+        raise ValueError("Section order is required.")
+    if len(set(ordered)) != len(ordered):
+        raise ValueError("Duplicate sections in order list.")
+
+    conn = db.connect()
+    try:
+        db_ids = {
+            row[0]
+            for row in conn.execute(
+                "SELECT section_id FROM learn_sections WHERE subject_key = ?",
+                (subject_key,),
+            ).fetchall()
+        }
+        if not db_ids:
+            raise ValueError("No published sections found for this collection.")
+        if set(ordered) != db_ids:
+            raise ValueError(
+                "Section order must include every published section in this collection."
+            )
+        for index, section_id in enumerate(ordered):
+            conn.execute(
+                """
+                UPDATE learn_sections
+                SET sort_order = ?
+                WHERE subject_key = ? AND section_id = ?
+                """,
+                (index, subject_key, section_id),
+            )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    return {"subject_key": subject_key, "section_ids": ordered}
 
 
 def _load_section(subj_dir: Path, sec: dict) -> dict | None:

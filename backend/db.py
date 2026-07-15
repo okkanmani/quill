@@ -216,12 +216,21 @@ def init_schema() -> None:
                 grade INTEGER,
                 curriculum TEXT,
                 created_at TEXT NOT NULL,
+                sort_order INTEGER NOT NULL DEFAULT 0,
                 UNIQUE(subject_key, section_id)
             );
             CREATE INDEX IF NOT EXISTS idx_learn_sections_subject
                 ON learn_sections (subject_key);
             """
         )
+        learn_cols = {
+            row[1] for row in conn.execute("PRAGMA table_info(learn_sections)")
+        }
+        if learn_cols and "sort_order" not in learn_cols:
+            conn.execute(
+                "ALTER TABLE learn_sections ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0"
+            )
+            conn.execute("UPDATE learn_sections SET sort_order = id")
         writing_cols = {
             row[1] for row in conn.execute("PRAGMA table_info(writing_submissions)")
         }
