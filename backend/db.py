@@ -231,6 +231,16 @@ def init_schema() -> None:
                 "ALTER TABLE learn_sections ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0"
             )
             conn.execute("UPDATE learn_sections SET sort_order = id")
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS learn_hub_order (
+                scope TEXT NOT NULL,
+                subject_key TEXT NOT NULL,
+                sort_order INTEGER NOT NULL,
+                PRIMARY KEY (scope, subject_key)
+            );
+            """
+        )
         writing_cols = {
             row[1] for row in conn.execute("PRAGMA table_info(writing_submissions)")
         }

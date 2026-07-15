@@ -5,7 +5,7 @@ import {
   getAdminLearnSections,
   getLearnSubject,
   getLearnSubjects,
-  reorderLearnSections,
+  reorderLearnHubCollections,
   updateLearnSection,
 } from "../api";
 import EditActionButton from "../components/EditActionButton";
@@ -126,35 +126,12 @@ function PublishedResourceRow({
   onDelete,
   onRename,
   compact = false,
-  draggable = false,
-  dragHandleProps = null,
-  isDragging = false,
-  isDropTarget = false,
 }) {
   const learnUrl = `/student/learn/${encodeURIComponent(section.subject_key)}#${encodeURIComponent(section.section_id)}`;
   const editUrl = `/admin/create/learn/edit/${encodeURIComponent(section.subject_key)}/${encodeURIComponent(section.section_id)}`;
 
   return (
-    <div
-      className={`flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4 transition-opacity ${
-        isDragging ? "opacity-40" : ""
-      } ${isDropTarget ? "ring-2 ring-indigo-300 ring-offset-2 rounded-2xl" : ""}`}
-    >
-      {draggable ? (
-        <div className="flex sm:flex-col items-center justify-center shrink-0 self-center sm:self-stretch">
-          <button
-            type="button"
-            aria-label={`Drag to reorder ${section.title}`}
-            className="cursor-grab active:cursor-grabbing rounded-lg border border-slate-200 bg-white px-2 py-3 text-slate-400 hover:text-slate-600 hover:border-slate-300 transition touch-none"
-            {...dragHandleProps}
-          >
-            <span aria-hidden className="block text-base leading-none tracking-tighter">
-              ⋮⋮
-            </span>
-          </button>
-        </div>
-      ) : null}
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4 flex-1 min-w-0">
+    <div className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4">
       <div className="flex-1 min-w-0 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         <Link
           to={learnUrl}
@@ -193,43 +170,30 @@ function PublishedResourceRow({
           disabled={Boolean(deleting)}
         />
       </div>
-      </div>
     </div>
   );
 }
 
-function reorderSectionList(sections, fromIndex, toIndex) {
-  if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return sections;
-  const next = [...sections];
+function reorderList(items, fromIndex, toIndex) {
+  if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return items;
+  const next = [...items];
   const [moved] = next.splice(fromIndex, 1);
   next.splice(toIndex, 0, moved);
   return next;
 }
 
-function SortableSectionList({
-  subjectKey,
-  sections,
-  reordering,
+function SortableSubjectList({
+  scope,
+  subjects,
+  reorderingScope,
   onReorder,
-  deleting,
-  onDelete,
-  onRename,
-  compact = false,
+  renderSubject,
 }) {
   const [dragIndex, setDragIndex] = useState(null);
   const [dropIndex, setDropIndex] = useState(null);
 
-  if (sections.length < 2) {
-    return sections.map((section) => (
-      <PublishedResourceRow
-        key={`${section.subject_key}-${section.section_id}`}
-        section={section}
-        deleting={deleting}
-        onDelete={onDelete}
-        onRename={onRename}
-        compact={compact}
-      />
-    ));
+  if (subjects.length < 2) {
+    return subjects.map((subject) => renderSubject(subject));
   }
 
   async function finishDrop(targetIndex) {
@@ -238,15 +202,15 @@ function SortableSectionList({
       setDropIndex(null);
       return;
     }
-    const ordered = reorderSectionList(sections, dragIndex, targetIndex);
+    const ordered = reorderList(subjects, dragIndex, targetIndex);
     setDragIndex(null);
     setDropIndex(null);
-    await onReorder(subjectKey, ordered);
+    await onReorder(scope, ordered);
   }
 
-  return sections.map((section, index) => (
+  return subjects.map((subject, index) => (
     <div
-      key={`${section.subject_key}-${section.section_id}`}
+      key={subject.key}
       onDragOver={(event) => {
         event.preventDefault();
         if (dragIndex !== null && dragIndex !== index) setDropIndex(index);
@@ -258,29 +222,32 @@ function SortableSectionList({
         event.preventDefault();
         finishDrop(index);
       }}
+      className={`flex gap-3 transition-opacity ${
+        dragIndex === index ? "opacity-40" : ""
+      } ${dropIndex === index ? "ring-2 ring-indigo-300 ring-offset-2 rounded-2xl" : ""}`}
     >
-      <PublishedResourceRow
-        section={section}
-        deleting={deleting}
-        onDelete={onDelete}
-        onRename={onRename}
-        compact={compact}
-        draggable
-        isDragging={dragIndex === index}
-        isDropTarget={dropIndex === index}
-        dragHandleProps={{
-          draggable: reordering !== subjectKey,
-          onDragStart: (event) => {
+      <div className="flex items-start justify-center shrink-0 pt-4">
+        <button
+          type="button"
+          aria-label={`Drag to reorder ${subject.title}`}
+          draggable={reorderingScope !== scope}
+          onDragStart={(event) => {
             setDragIndex(index);
             event.dataTransfer.effectAllowed = "move";
-            event.dataTransfer.setData("text/plain", section.section_id);
-          },
-          onDragEnd: () => {
+            event.dataTransfer.setData("text/plain", subject.key);
+          }}
+          onDragEnd={() => {
             setDragIndex(null);
             setDropIndex(null);
-          },
-        }}
-      />
+          }}
+          className="cursor-grab active:cursor-grabbing rounded-lg border border-slate-200 bg-white px-2 py-3 text-slate-400 hover:text-slate-600 hover:border-slate-300 transition touch-none"
+        >
+          <span aria-hidden className="block text-base leading-none tracking-tighter">
+            ⋮⋮
+          </span>
+        </button>
+      </div>
+      <div className="flex-1 min-w-0">{renderSubject(subject)}</div>
     </div>
   ));
 }
@@ -290,10 +257,8 @@ function SubjectCard({
   publishedSections = [],
   isAdmin,
   deleting,
-  reordering,
   onDelete,
   onRename,
-  onReorder,
 }) {
   if (isAdmin && publishedSections.length > 0) {
     return (
@@ -310,16 +275,16 @@ function SubjectCard({
           ) : null}
         </Link>
         <div className="border-t border-slate-200 bg-white px-4 py-4 flex flex-col gap-3">
-          <SortableSectionList
-            subjectKey={subject.key}
-            sections={publishedSections}
-            reordering={reordering}
-            onReorder={onReorder}
-            deleting={deleting}
-            onDelete={onDelete}
-            onRename={onRename}
-            compact
-          />
+          {publishedSections.map((section) => (
+            <PublishedResourceRow
+              key={`${section.subject_key}-${section.section_id}`}
+              section={section}
+              deleting={deleting}
+              onDelete={onDelete}
+              onRename={onRename}
+              compact
+            />
+          ))}
         </div>
       </div>
     );
@@ -385,7 +350,7 @@ export default function LearnHub() {
   const [pendingDelete, setPendingDelete] = useState(null);
   const [pendingRename, setPendingRename] = useState(null);
   const [renaming, setRenaming] = useState(false);
-  const [reordering, setReordering] = useState(null);
+  const [reorderingScope, setReorderingScope] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState(() => new Set(["math"]));
   const isAdmin = localStorage.getItem("role") === "admin";
 
@@ -512,34 +477,33 @@ export default function LearnHub() {
     }
   }
 
-  async function handleReorderSections(subjectKey, orderedSections) {
-    if (orderedSections.length < 2) return;
+  async function handleReorderCollections(scope, orderedSubjects) {
+    if (orderedSubjects.length < 2) return;
 
-    setReordering(subjectKey);
+    setReorderingScope(scope);
     setError("");
     setStatusMessage("");
-    const previous = publishedSections;
-    const orderedIds = new Set(orderedSections.map((section) => section.section_id));
-    setPublishedSections((current) => {
-      const others = current.filter(
-        (section) =>
-          section.subject_key !== subjectKey ||
-          !orderedIds.has(section.section_id),
-      );
-      return [...others, ...orderedSections];
-    });
+    const previousEntries = entries;
+    setEntries((current) =>
+      current.map((entry) => {
+        if (entry.type === "group" && entry.id === scope) {
+          return { ...entry, subjects: orderedSubjects };
+        }
+        return entry;
+      }),
+    );
 
     try {
-      await reorderLearnSections(
-        subjectKey,
-        orderedSections.map((section) => section.section_id),
+      await reorderLearnHubCollections(
+        scope,
+        orderedSubjects.map((subject) => subject.key),
       );
-      setStatusMessage("Section order updated.");
+      setStatusMessage("Collection order updated.");
     } catch (err) {
-      setPublishedSections(previous);
-      setError(err.message || "Could not reorder sections.");
+      setEntries(previousEntries);
+      setError(err.message || "Could not reorder collections.");
     } finally {
-      setReordering(null);
+      setReorderingScope(null);
     }
   }
 
@@ -575,10 +539,8 @@ export default function LearnHub() {
         isAdmin={isAdmin}
         publishedSections={publishedBySubjectKey.get(subject.key) || []}
         deleting={deleting}
-        reordering={reordering}
         onDelete={requestDeleteSection}
         onRename={requestRenameSection}
-        onReorder={handleReorderSections}
       />
     );
   }
@@ -613,15 +575,15 @@ export default function LearnHub() {
                     {group.subjectTitle}
                   </p>
                   <div className="flex flex-col gap-3">
-                    <SortableSectionList
-                      subjectKey={group.subjectKey}
-                      sections={group.sections}
-                      reordering={reordering}
-                      onReorder={handleReorderSections}
-                      deleting={deleting}
-                      onDelete={requestDeleteSection}
-                      onRename={requestRenameSection}
-                    />
+                    {group.sections.map((section) => (
+                      <PublishedResourceRow
+                        key={`${section.subject_key}-${section.section_id}`}
+                        section={section}
+                        deleting={deleting}
+                        onDelete={requestDeleteSection}
+                        onRename={requestRenameSection}
+                      />
+                    ))}
                   </div>
                 </div>
               ))}
@@ -667,8 +629,18 @@ export default function LearnHub() {
                   </span>
                 </button>
                 {open ? (
-                  <div className="px-5 pb-5 pt-0 flex flex-col gap-3 border-t border-slate-100">
-                    {entry.subjects?.map((subject) => renderSubjectCard(subject))}
+                  <div className="px-5 pb-5 pt-4 flex flex-col gap-3 border-t border-slate-100">
+                    {isAdmin && (entry.subjects?.length || 0) > 1 ? (
+                      <SortableSubjectList
+                        scope={entry.id}
+                        subjects={entry.subjects}
+                        reorderingScope={reorderingScope}
+                        onReorder={handleReorderCollections}
+                        renderSubject={renderSubjectCard}
+                      />
+                    ) : (
+                      entry.subjects?.map((subject) => renderSubjectCard(subject))
+                    )}
                   </div>
                 ) : null}
               </div>

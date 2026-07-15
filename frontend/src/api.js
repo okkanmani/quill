@@ -628,6 +628,22 @@ export async function deleteLearnSection(subjectKey, sectionId) {
   return res.json();
 }
 
+export async function reorderLearnHubCollections(scope, subjectKeys) {
+  const res = await fetch(`${BASE_URL}/admin/learn/hub/reorder`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify({ scope, subject_keys: subjectKeys }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to reorder collections";
+    if (typeof d === "string") msg = d;
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function reorderLearnSections(subjectKey, sectionIds) {
   const res = await fetch(
     `${BASE_URL}/admin/learn/${encodeURIComponent(subjectKey)}/reorder`,

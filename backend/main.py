@@ -36,6 +36,7 @@ from learn_content import (
     list_learn_hub,
     list_subjects,
     publish_learn_section,
+    reorder_learn_hub_collections,
     reorder_learn_sections,
     update_learn_section,
 )
@@ -194,6 +195,11 @@ class UpdateLearnSectionRequest(BaseModel):
 
 class ReorderLearnSectionsRequest(BaseModel):
     section_ids: list[str]
+
+
+class ReorderLearnHubRequest(BaseModel):
+    scope: str
+    subject_keys: list[str]
 
 
 class SwitchAdminStudentRequest(BaseModel):
@@ -548,6 +554,23 @@ def admin_list_learn_sections(authorization: str = Header(...)):
     if payload["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
     return {"sections": list_admin_learn_sections()}
+
+
+@app.put("/admin/learn/hub/reorder")
+def admin_reorder_learn_hub(
+    req: ReorderLearnHubRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return reorder_learn_hub_collections(
+            scope=req.scope,
+            subject_keys=req.subject_keys,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.put("/admin/learn/{subject_key}/reorder")

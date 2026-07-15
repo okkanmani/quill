@@ -39,10 +39,100 @@ def _db_subject_catalog() -> dict[str, dict]:
             desc = row["subject_description"] or ""
             if row["grade"] and row["curriculum"]:
                 desc = desc or f"Grade {row['grade']} · {row['curriculum']}"
-            out[key] = {"key": key, "title": title, "description": desc}
+            out[key] = {
+                "key": key,
+                "title": title,
+                "description": desc,
+                "grade": row["grade"],
+                "created_at": row["created_at"],
+            }
         return out
     finally:
         conn.close()
+
+
+def _hub_order_map(scope: str) -> dict[str, int]:
+    conn = db.connect()
+    try:
+        rows = conn.execute(
+            """
+            SELECT subject_key, sort_order
+            FROM learn_hub_order
+            WHERE scope = ?
+            ORDER BY sort_order ASC
+            """,
+            (scope.strip(),),
+        ).fetchall()
+        return {row["subject_key"]: int(row["sort_order"]) for row in rows}
+    finally:
+        conn.close()
+
+
+def _grade_from_subject(meta: dict) -> int:
+    grade = meta.get("grade")
+    if isinstance(grade, int) and grade > 0:
+        return grade
+    for field in (meta.get("description") or "", meta.get("title") or ""):
+        match = re.search(r"Grade\s+(\d+)", field, re.IGNORECASE)
+        if match:
+            return int(match.group(1))
+    key = meta.get("key") or ""
+    match = re.search(r"-g(\d+)(?:$|-)", key)
+    if match:
+        return int(match.group(1))
+    return 0
+
+
+def _default_subject_sort_key(meta: dict) -> tuple:
+    return (-_grade_from_subject(meta), meta.get("created_at") or "", meta.get("key") or "")
+
+
+def _sort_subjects_for_scope(scope: str, subjects: list[dict]) -> list[dict]:
+    order_map = _hub_order_map(scope)
+    if order_map:
+        return sorted(
+            subjects,
+            key=lambda meta: (
+                order_map.get(meta["key"], 10_000),
+                meta.get("key") or "",
+            ),
+        )
+    return sorted(subjects, key=_default_subject_sort_key)
+
+
+def _belongs_to_learn_group(subject_key: str, group_id: str, explicit_items: list) -> bool:
+    if subject_key in explicit_items:
+        return True
+    if subject_key == group_id:
+        return True
+    prefix = f"{group_id}-"
+    return subject_key.startswith(prefix)
+
+
+def _subjects_for_group(
+    *,
+    group_id: str,
+    explicit_items: list,
+    subjects_by_key: dict[str, dict],
+    placed_keys: set[str],
+) -> list[dict]:
+    subjects: list[dict] = []
+    seen: set[str] = set()
+    for ref in explicit_items:
+        key = ref if isinstance(ref, str) else ref.get("key")
+        if not key or key in seen or key not in subjects_by_key:
+            continue
+        subjects.append(subjects_by_key[key])
+        seen.add(key)
+        placed_keys.add(key)
+    for key, meta in subjects_by_key.items():
+        if key in seen:
+            continue
+        if _belongs_to_learn_group(key, group_id, explicit_items):
+            subjects.append(meta)
+            seen.add(key)
+            placed_keys.add(key)
+    return _sort_subjects_for_scope(group_id, subjects)
 
 
 def _db_sections(subject_key: str) -> list[dict]:
@@ -146,27 +236,34 @@ def list_learn_hub() -> dict:
     subjects_by_key = {s["key"]: s for s in list_subjects()}
     hub_path = LEARN_DIR / "hub.json"
     if not hub_path.is_file():
+        subjects = _sort_subjects_for_scope(
+            "__root__", list(subjects_by_key.values())
+        )
         return {
-            "entries": [{"type": "subject", **s} for s in subjects_by_key.values()]
+            "entries": [{"type": "subject", **s} for s in subjects]
         }
 
     with open(hub_path, encoding="utf-8") as f:
         raw = json.load(f)
 
+    placed_keys: set[str] = set()
     entries: list[dict] = []
     for item in raw.get("entries", []):
         kind = item.get("type", "subject")
         if kind == "group":
-            group_subjects: list[dict] = []
-            for ref in item.get("items", []):
-                key = ref if isinstance(ref, str) else ref.get("key")
-                if key and key in subjects_by_key:
-                    group_subjects.append(subjects_by_key[key])
+            group_id = item.get("id", "")
+            explicit_items = item.get("items", [])
+            group_subjects = _subjects_for_group(
+                group_id=group_id,
+                explicit_items=explicit_items,
+                subjects_by_key=subjects_by_key,
+                placed_keys=placed_keys,
+            )
             if group_subjects:
                 entries.append(
                     {
                         "type": "group",
-                        "id": item.get("id", ""),
+                        "id": group_id,
                         "title": item.get("title", ""),
                         "description": item.get("description", ""),
                         "subjects": group_subjects,
@@ -174,25 +271,74 @@ def list_learn_hub() -> dict:
                 )
         elif kind == "subject":
             key = item.get("key")
-            if key and key in subjects_by_key:
+            if key and key in subjects_by_key and key not in placed_keys:
+                placed_keys.add(key)
                 entries.append({"type": "subject", **subjects_by_key[key]})
+
+    root_subjects = [
+        meta
+        for key, meta in subjects_by_key.items()
+        if key not in placed_keys
+    ]
+    root_subjects = _sort_subjects_for_scope("__root__", root_subjects)
+    for meta in root_subjects:
+        entries.append({"type": "subject", **meta})
+
     if not entries:
+        subjects = _sort_subjects_for_scope(
+            "__root__", list(subjects_by_key.values())
+        )
         return {
-            "entries": [{"type": "subject", **s} for s in subjects_by_key.values()]
+            "entries": [{"type": "subject", **s} for s in subjects]
         }
 
-    hub_keys: set[str] = set()
-    for entry in entries:
-        if entry.get("type") == "subject":
-            hub_keys.add(entry["key"])
-        elif entry.get("type") == "group":
-            for subj in entry.get("subjects", []):
-                hub_keys.add(subj["key"])
-    for key, meta in subjects_by_key.items():
-        if key not in hub_keys:
-            entries.append({"type": "subject", **meta})
-
     return {"entries": entries}
+
+
+def reorder_learn_hub_collections(*, scope: str, subject_keys: list[str]) -> dict:
+    scope = scope.strip()
+    if not scope:
+        raise ValueError("Hub scope is required.")
+    ordered = [key.strip().lower() for key in subject_keys if (key or "").strip()]
+    if not ordered:
+        raise ValueError("Collection order is required.")
+    if len(set(ordered)) != len(ordered):
+        raise ValueError("Duplicate collections in order list.")
+
+    hub = list_learn_hub()
+    expected = []
+    for entry in hub.get("entries", []):
+        if entry.get("type") == "group" and entry.get("id") == scope:
+            expected = [subject["key"] for subject in entry.get("subjects", [])]
+            break
+        if entry.get("type") == "subject" and scope == "__root__":
+            expected.append(entry["key"])
+    if not expected:
+        raise ValueError("No collections found for this hub section.")
+    if set(ordered) != set(expected):
+        raise ValueError(
+            "Collection order must include every item in this hub section."
+        )
+
+    conn = db.connect()
+    try:
+        conn.execute("DELETE FROM learn_hub_order WHERE scope = ?", (scope,))
+        for index, subject_key in enumerate(ordered):
+            conn.execute(
+                """
+                INSERT INTO learn_hub_order (scope, subject_key, sort_order)
+                VALUES (?, ?, ?)
+                """,
+                (scope, subject_key, index),
+            )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    return {"scope": scope, "subject_keys": ordered}
 
 
 def _is_hidden_learn_group(group_id: str, group_title: str) -> bool:
