@@ -30,8 +30,8 @@ export default function StudentLatest() {
       onLogout={handleLogout}
     >
       <div className="max-w-3xl">
-        <h2 className="text-xl font-semibold text-slate-900 mb-1">Latest</h2>
-        <p className="text-slate-600 text-sm mb-6">
+        <h1 className="text-2xl font-bold text-slate-950 mb-1">Latest</h1>
+        <p className="text-slate-600 text-sm mb-6 leading-relaxed">
           {`New worksheets from the last ${LATEST_WINDOW_LABEL} that you have not finished yet.`}
         </p>
 

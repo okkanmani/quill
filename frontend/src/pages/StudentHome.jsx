@@ -22,6 +22,11 @@ export default function StudentHome() {
       onLogout={handleLogout}
     >
       <div className="max-w-3xl">
+        <h1 className="text-2xl font-bold text-slate-950 mb-1">Your worksheets</h1>
+        <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+          Pick a worksheet to start. Finished ones move to Your Results.
+        </p>
+
         {loading && <QuillLoading label="Loading worksheets…" />}
         {error && <p className="text-red-500">{error}</p>}
 

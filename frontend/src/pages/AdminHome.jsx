@@ -157,6 +157,11 @@ export default function AdminHome() {
         <AdminStudentBanner />
         <AdminStudentSwitcher />
 
+        <h1 className="text-2xl font-bold text-slate-950 mb-1">Results</h1>
+        <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+          Graded worksheets and writing submissions for the selected student.
+        </p>
+
         {message && (
           <p className="text-green-700 text-sm mb-4">{message}</p>
         )}

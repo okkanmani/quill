@@ -122,8 +122,8 @@ export default function AdminSettings() {
               </p>
             ) : (
               <p className="text-sm text-slate-600 leading-relaxed">
-                Once saved, use Build using AI on the question builder to generate
-                worksheets from your worksheet settings.
+                Once saved, use Create → Question builder or Learning resource to
+                generate worksheets and learning content with AI.
               </p>
             )}
 

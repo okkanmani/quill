@@ -325,7 +325,6 @@ export default function AdminAnalysis() {
   return (
     <AppShell
       navLinks={ADMIN_MAIN_NAV}
-      onBack={() => navigate("/admin")}
       trailing={`Admin · ${formatAdminHeaderTrail()}`}
       onLogout={handleLogout}
     >

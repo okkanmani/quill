@@ -24,10 +24,17 @@ from admin_secrets import (
     set_admin_openai_api_key,
 )
 from ai_worksheet import generate_worksheet_draft
+from ai_learn import generate_learn_resource
 from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from learn_content import get_subject, list_learn_hub, list_subjects
+from learn_content import (
+    get_subject,
+    learn_collection_key,
+    list_learn_hub,
+    list_subjects,
+    publish_learn_section,
+)
 from focus_discussion import list_focus_areas_discussed, mark_focus_area_discussed
 from writing import (
     delete_writing_submission,
@@ -166,6 +173,14 @@ class GenerateWorksheetDraftRequest(BaseModel):
 
 class AdminOpenAiKeyRequest(BaseModel):
     api_key: str
+
+
+class GenerateLearnResourceRequest(BaseModel):
+    subject: str
+    grade: int
+    curriculum: str
+    section_title: str
+    custom_prompt: str = ""
 
 
 class SwitchAdminStudentRequest(BaseModel):
@@ -460,6 +475,60 @@ def admin_generate_worksheet_draft(
             question_count=req.question_count,
             custom_prompt=req.custom_prompt,
             api_key=api_key,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/admin/learn/generate-and-publish")
+def admin_generate_learn_resource(
+    req: GenerateLearnResourceRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        api_key = resolve_openai_api_key(payload["admin_id"])
+        if not api_key:
+            raise HTTPException(
+                status_code=400,
+                detail="Add your OpenAI API key under Admin → Settings.",
+            )
+        draft = generate_learn_resource(
+            subject=req.subject,
+            grade=req.grade,
+            curriculum=req.curriculum,
+            section_title=req.section_title,
+            custom_prompt=req.custom_prompt,
+            api_key=api_key,
+        )
+        subject_key = learn_collection_key(
+            subject=req.subject,
+            grade=req.grade,
+            curriculum=req.curriculum,
+        )
+        subject_labels = {
+            "math": "Math",
+            "english": "English",
+            "science": "Science",
+            "data": "Data analysis",
+            "general": "General",
+        }
+        subj_label = subject_labels.get(req.subject.strip().lower(), req.subject)
+        collection_title = (
+            f"{subj_label} — {req.curriculum.strip()} (Grade {req.grade})"
+        )
+        return publish_learn_section(
+            subject_key=subject_key,
+            section_title=draft["section_title"],
+            markdown=draft["markdown"],
+            subject_title=collection_title,
+            subject_description=f"Grade {req.grade} · {req.curriculum.strip()}",
+            group_id="ai-generated",
+            group_title="AI generated",
+            grade=req.grade,
+            curriculum=req.curriculum,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

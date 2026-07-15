@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { getLearnSubjects } from "../api";
 import LearnChrome from "../components/LearnChrome";
 import QuillLoading from "../components/QuillLoading";
@@ -21,12 +21,10 @@ function SubjectCard({ subject }) {
 }
 
 export default function LearnHub() {
-  const navigate = useNavigate();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [expandedGroups, setExpandedGroups] = useState(() => new Set(["math"]));
-  const isAdmin = localStorage.getItem("role") === "admin";
 
   useEffect(() => {
     getLearnSubjects()
@@ -45,9 +43,7 @@ export default function LearnHub() {
   }
 
   return (
-    <LearnChrome
-      onBack={() => navigate(isAdmin ? "/admin/worksheets" : "/student")}
-    >
+    <LearnChrome>
       <div className="max-w-3xl">
         <h1 className="text-2xl font-bold text-slate-950 mb-2">Learning resources</h1>
         <p className="text-slate-700 text-sm mb-8 leading-relaxed">

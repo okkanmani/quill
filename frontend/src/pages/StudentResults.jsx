@@ -65,6 +65,11 @@ export default function StudentResults() {
       onLogout={handleLogout}
     >
       <div className="max-w-3xl">
+        <h1 className="text-2xl font-bold text-slate-950 mb-1">Your results</h1>
+        <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+          Scores and feedback from completed worksheets and writing assignments.
+        </p>
+
         {loading && <QuillLoading label="Loading results…" />}
         {error && <p className="text-red-500">{error}</p>}
 

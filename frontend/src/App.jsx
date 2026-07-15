@@ -7,7 +7,10 @@ import StudentWriting from "./pages/StudentWriting";
 import AdminHome from "./pages/AdminHome";
 import AdminAnalysis from "./pages/AdminAnalysis";
 import AdminWorksheets from "./pages/AdminWorksheets";
-import AdminQuestionBuilder from "./pages/AdminQuestionBuilder";
+import AdminCreate from "./pages/AdminCreate";
+import AdminCreateWorksheet from "./pages/AdminCreateWorksheet";
+import AdminCreateLearn from "./pages/AdminCreateLearn";
+import AdminCreateUpload from "./pages/AdminCreateUpload";
 import AdminStudents from "./pages/AdminStudents";
 import AdminSettings from "./pages/AdminSettings";
 import Worksheet from "./pages/Worksheet";
@@ -104,12 +107,22 @@ export default function App() {
 
         <Route
           path="/admin/worksheets/builder"
+          element={<Navigate to="/admin/create/worksheet" replace />}
+        />
+
+        <Route
+          path="/admin/create"
           element={
             <ProtectedRoute role="admin">
-              <AdminQuestionBuilder />
+              <AdminCreate />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Navigate to="/admin/create/worksheet" replace />} />
+          <Route path="worksheet" element={<AdminCreateWorksheet />} />
+          <Route path="upload" element={<AdminCreateUpload />} />
+          <Route path="learn" element={<AdminCreateLearn />} />
+        </Route>
 
         <Route
           path="/admin/worksheets"

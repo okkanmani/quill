@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { deleteWorksheet, getWorksheets, logout, unlockTimedWorksheet, uploadWorksheet, unlockGiftedTrackWeek, lockGiftedTrackWeek, setWorksheetAccessLock, clearWorksheetAccessLock } from "../api";
+import { useNavigate, useLocation } from "react-router-dom";
+import { deleteWorksheet, getWorksheets, logout, unlockTimedWorksheet, unlockGiftedTrackWeek, lockGiftedTrackWeek, setWorksheetAccessLock, clearWorksheetAccessLock } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
@@ -40,9 +40,7 @@ export default function AdminWorksheets() {
   const [worksheets, setWorksheets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [uploadPanelOpen, setUploadPanelOpen] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadMessage, setUploadMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [deleting, setDeleting] = useState(false);
 
@@ -113,7 +111,7 @@ export default function AdminWorksheets() {
           for (const id of removed) next.delete(id);
           return next;
         });
-        setUploadMessage(
+        setStatusMessage(
           removed.length === 1
             ? `Deleted ${removed[0]}.`
             : `Deleted ${removed.length} worksheets.`,
@@ -148,7 +146,7 @@ export default function AdminWorksheets() {
     if (!ok) return;
     try {
       await unlockTimedWorksheet(ws.id);
-      setUploadMessage(`Unlocked ${ws.id} — “${ws.title}”.`);
+      setStatusMessage(`Unlocked ${ws.id} — “${ws.title}”.`);
       loadWorksheets();
     } catch (err) {
       setError(err.message || "Could not unlock worksheet.");
@@ -162,7 +160,7 @@ export default function AdminWorksheets() {
     if (!ok) return;
     try {
       await unlockGiftedTrackWeek(week);
-      setUploadMessage(`Unlocked Thinking Quest Week ${week}.`);
+      setStatusMessage(`Unlocked Thinking Quest Week ${week}.`);
       loadWorksheets();
     } catch (err) {
       setError(err.message || "Could not unlock week.");
@@ -176,7 +174,7 @@ export default function AdminWorksheets() {
     if (!ok) return;
     try {
       await lockGiftedTrackWeek(week);
-      setUploadMessage(`Locked Thinking Quest Week ${week}.`);
+      setStatusMessage(`Locked Thinking Quest Week ${week}.`);
       loadWorksheets();
     } catch (err) {
       setError(err.message || "Could not lock week.");
@@ -195,7 +193,7 @@ export default function AdminWorksheets() {
       } else {
         await setWorksheetAccessLock(ws.id, false);
       }
-      setUploadMessage(`Unlocked access to “${ws.title}”.`);
+      setStatusMessage(`Unlocked access to “${ws.title}”.`);
       loadWorksheets();
     } catch (err) {
       setError(err.message || "Could not unlock worksheet access.");
@@ -209,7 +207,7 @@ export default function AdminWorksheets() {
     if (!ok) return;
     try {
       await setWorksheetAccessLock(ws.id, true);
-      setUploadMessage(`Locked “${ws.title}”.`);
+      setStatusMessage(`Locked “${ws.title}”.`);
       loadWorksheets();
     } catch (err) {
       setError(err.message || "Could not lock worksheet.");
@@ -235,57 +233,6 @@ export default function AdminWorksheets() {
     return gifted?.gifted_track_unlocked_through_week ?? null;
   }, [worksheets]);
 
-  async function handleUpload(event) {
-    const files = Array.from(event.target.files || []);
-    event.target.value = "";
-    if (files.length === 0) return;
-
-    setUploading(true);
-    setUploadMessage("");
-    setError("");
-
-    const uploaded = [];
-    const failed = [];
-
-    try {
-      for (const file of files) {
-        try {
-          const result = await uploadWorksheet(file);
-          uploaded.push(result);
-        } catch (err) {
-          failed.push({
-            name: file.name,
-            message: err.message || "Upload failed",
-          });
-        }
-      }
-
-      if (uploaded.length > 0) {
-        if (uploaded.length === 1) {
-          const r = uploaded[0];
-          setUploadMessage(
-            `Uploaded ${r.id} — “${r.title}” (${r.question_count} questions).`,
-          );
-        } else {
-          setUploadMessage(
-            `Uploaded ${uploaded.length} worksheets: ${uploaded.map((r) => r.id).join(", ")}.`,
-          );
-        }
-        loadWorksheets({ preserveError: failed.length > 0 });
-      }
-
-      if (failed.length > 0) {
-        setError(
-          failed.map((f) => `${f.name}: ${f.message}`).join(" "),
-        );
-      } else {
-        setUploadPanelOpen(false);
-      }
-    } finally {
-      setUploading(false);
-    }
-  }
-
   const selectedCount = selectedIds.size;
 
   return (
@@ -295,67 +242,16 @@ export default function AdminWorksheets() {
       onLogout={handleLogout}
     >
       <div className="max-w-3xl">
-        <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => {
-                setUploadPanelOpen((open) => !open);
-                if (uploadPanelOpen) setUploadMessage("");
-              }}
-              aria-expanded={uploadPanelOpen}
-              aria-controls="add-worksheet-panel"
-              className={`text-sm font-semibold px-3 py-2 rounded-xl border transition ${
-                uploadPanelOpen
-                  ? "bg-indigo-50 text-indigo-900 border-indigo-200"
-                  : "bg-white text-indigo-700 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50"
-              }`}
-            >
-              Add worksheet
-            </button>
-            {uploadPanelOpen ? (
-              <>
-                <button
-                  type="button"
-                  className="fixed inset-0 z-40 cursor-default"
-                  aria-label="Close add worksheet menu"
-                  tabIndex={-1}
-                  onClick={() => !uploading && setUploadPanelOpen(false)}
-                />
-                <div
-                  id="add-worksheet-panel"
-                  className="absolute top-full right-0 z-50 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-3 shadow-lg flex flex-col gap-2"
-                >
-                  <Link
-                    to="/admin/worksheets/builder"
-                    onClick={() => setUploadPanelOpen(false)}
-                    className="block text-center bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl px-4 py-2 transition"
-                  >
-                    Build worksheet
-                  </Link>
-                  <label className="inline-flex items-center justify-center cursor-pointer">
-                    <span className="w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-900 text-sm font-semibold rounded-xl px-4 py-2 transition whitespace-nowrap">
-                      {uploading ? "Uploading…" : "Upload worksheet"}
-                    </span>
-                    <input
-                      type="file"
-                      accept=".json,application/json"
-                      multiple
-                      className="sr-only"
-                      disabled={uploading}
-                      onChange={handleUpload}
-                    />
-                  </label>
-                </div>
-              </>
-            ) : null}
-          </div>
-        </div>
         <AdminStudentBanner />
         <AdminStudentSwitcher />
 
-        {uploadMessage && (
-          <p className="text-green-700 text-sm mb-4">{uploadMessage}</p>
+        <h1 className="text-2xl font-bold text-slate-950 mb-1">Worksheets</h1>
+        <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+          Open, lock, or remove worksheets for the selected student.
+        </p>
+
+        {statusMessage && (
+          <p className="text-green-700 text-sm mb-4">{statusMessage}</p>
         )}
 
         {loading && <QuillLoading label="Loading worksheets…" />}

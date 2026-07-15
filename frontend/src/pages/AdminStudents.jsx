@@ -112,7 +112,8 @@ export default function AdminStudents() {
       onLogout={handleLogout}
     >
       <div className="max-w-3xl">
-        <p className="text-slate-700 text-sm mb-6 leading-relaxed">
+        <h1 className="text-2xl font-bold text-slate-950 mb-1">Students</h1>
+        <p className="text-slate-600 text-sm mb-6 leading-relaxed">
           Each student belongs to your admin account. They log in with their name and
           password on the home page. Names must be unique among your students.
         </p>

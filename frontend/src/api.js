@@ -512,6 +512,22 @@ export async function generateWorksheetDraft(payload) {
   return res.json();
 }
 
+export async function generateAndPublishLearnResource(payload) {
+  const res = await fetch(`${BASE_URL}/admin/learn/generate-and-publish`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to generate learning resource";
+    if (typeof d === "string") msg = d;
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function getAdminSettings() {
   const res = await fetch(`${BASE_URL}/admin/settings`, {
     headers: authHeaders(),
