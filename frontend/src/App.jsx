@@ -11,6 +11,7 @@ import AdminCreate from "./pages/AdminCreate";
 import AdminCreateWorksheet from "./pages/AdminCreateWorksheet";
 import AdminCreateLearn from "./pages/AdminCreateLearn";
 import AdminCreateUpload from "./pages/AdminCreateUpload";
+import AdminLearnEdit from "./pages/AdminLearnEdit";
 import AdminStudents from "./pages/AdminStudents";
 import AdminSettings from "./pages/AdminSettings";
 import Worksheet from "./pages/Worksheet";
@@ -108,6 +109,15 @@ export default function App() {
         <Route
           path="/admin/worksheets/builder"
           element={<Navigate to="/admin/create/worksheet" replace />}
+        />
+
+        <Route
+          path="/admin/create/learn/edit/:subjectKey/:sectionId"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminLearnEdit />
+            </ProtectedRoute>
+          }
         />
 
         <Route

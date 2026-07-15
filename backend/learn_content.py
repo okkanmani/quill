@@ -71,6 +71,32 @@ def _db_sections(subject_key: str) -> list[dict]:
         conn.close()
 
 
+def list_admin_learn_sections() -> list[dict]:
+    conn = db.connect()
+    try:
+        rows = conn.execute(
+            """
+            SELECT subject_key, section_id, title, subject_title, subject_description, created_at
+            FROM learn_sections
+            ORDER BY subject_key ASC, id ASC
+            """
+        ).fetchall()
+        return [
+            {
+                "subject_key": row["subject_key"],
+                "section_id": row["section_id"],
+                "title": row["title"],
+                "subject_title": row["subject_title"]
+                or row["subject_key"].replace("-", " ").title(),
+                "subject_description": row["subject_description"] or "",
+                "created_at": row["created_at"],
+            }
+            for row in rows
+        ]
+    finally:
+        conn.close()
+
+
 def list_subjects() -> list[dict]:
     out: list[dict] = []
     if LEARN_DIR.is_dir():
@@ -169,23 +195,44 @@ def list_learn_hub() -> dict:
     return {"entries": entries}
 
 
+def _is_hidden_learn_group(group_id: str, group_title: str) -> bool:
+    gid = (group_id or "").strip().lower()
+    gtitle = (group_title or "").strip()
+    if gid in ("main", "ai-generated"):
+        return True
+    if not gtitle or gtitle.lower() in ("sections", "ai generated"):
+        return True
+    return False
+
+
+def _ungrouped_bucket(groups_out: list, by_group: dict) -> dict:
+    key = ""
+    if key not in by_group:
+        bucket = {"id": "", "title": "", "sections": []}
+        groups_out.append(bucket)
+        by_group[key] = bucket
+    return by_group[key]
 def _merge_db_sections(subject_key: str, groups_out: list, flat_sections: list) -> None:
     db_secs = _db_sections(subject_key)
     if not db_secs:
         return
     by_group: dict[str, dict] = {}
     for g in groups_out:
-        gid = g.get("id") or "main"
+        gid = g.get("id") or ""
         by_group[gid] = g
     for sec in db_secs:
         gid = sec.pop("group_id", "main")
-        gtitle = sec.pop("group_title", "Sections")
-        loaded = {**sec, "group_id": gid, "group_title": gtitle}
-        if gid not in by_group:
-            bucket = {"id": gid, "title": gtitle, "sections": []}
-            groups_out.append(bucket)
-            by_group[gid] = bucket
-        by_group[gid]["sections"].append(loaded)
+        gtitle = sec.pop("group_title", "")
+        loaded = {**sec, "source": "db", "group_id": gid, "group_title": gtitle}
+        if _is_hidden_learn_group(gid, gtitle):
+            bucket = _ungrouped_bucket(groups_out, by_group)
+            bucket["sections"].append(loaded)
+        else:
+            if gid not in by_group:
+                bucket = {"id": gid, "title": gtitle, "sections": []}
+                groups_out.append(bucket)
+                by_group[gid] = bucket
+            by_group[gid]["sections"].append(loaded)
         flat_sections.append(loaded)
 
 
@@ -197,7 +244,7 @@ def publish_learn_section(
     subject_title: str | None = None,
     subject_description: str | None = None,
     group_id: str = "main",
-    group_title: str = "Sections",
+    group_title: str = "",
     grade: int | None = None,
     curriculum: str | None = None,
 ) -> dict:
@@ -253,7 +300,7 @@ def publish_learn_section(
                 section_title,
                 markdown,
                 (group_id or "main").strip() or "main",
-                (group_title or "Sections").strip() or "Sections",
+                (group_title or "").strip(),
                 subject_title,
                 subject_description,
                 grade,
@@ -276,6 +323,87 @@ def publish_learn_section(
     }
 
 
+def update_learn_section(
+    *,
+    subject_key: str,
+    section_id: str,
+    title: str,
+    markdown: str,
+) -> dict:
+    subject_key = subject_key.strip().lower()
+    section_id = section_id.strip().lower()
+    title = (title or "").strip()
+    markdown = (markdown or "").strip()
+    if not title:
+        raise ValueError("Section title is required.")
+    if not markdown:
+        raise ValueError("Markdown content is required.")
+
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            """
+            SELECT id FROM learn_sections
+            WHERE subject_key = ? AND section_id = ?
+            """,
+            (subject_key, section_id),
+        ).fetchone()
+        if not row:
+            raise ValueError("Learning resource not found or not editable.")
+
+        conn.execute(
+            """
+            UPDATE learn_sections
+            SET title = ?, markdown = ?
+            WHERE subject_key = ? AND section_id = ?
+            """,
+            (title, markdown, subject_key, section_id),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    return {
+        "subject_key": subject_key,
+        "section_id": section_id,
+        "title": title,
+        "learn_url": f"/student/learn/{subject_key}#{section_id}",
+    }
+
+
+def delete_learn_section(*, subject_key: str, section_id: str) -> dict:
+    subject_key = subject_key.strip().lower()
+    section_id = section_id.strip().lower()
+
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            """
+            SELECT id FROM learn_sections
+            WHERE subject_key = ? AND section_id = ?
+            """,
+            (subject_key, section_id),
+        ).fetchone()
+        if not row:
+            raise ValueError("Learning resource not found or not deletable.")
+
+        conn.execute(
+            "DELETE FROM learn_sections WHERE subject_key = ? AND section_id = ?",
+            (subject_key, section_id),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    return {"subject_key": subject_key, "section_id": section_id}
+
+
 def _load_section(subj_dir: Path, sec: dict) -> dict | None:
     fid = sec.get("file")
     if not fid:
@@ -289,6 +417,7 @@ def _load_section(subj_dir: Path, sec: dict) -> dict | None:
         "id": sid,
         "title": sec.get("title", sid),
         "markdown": body,
+        "source": "file",
     }
 
 
@@ -313,7 +442,7 @@ def _load_fs_subject(subject: str) -> dict | None:
                 loaded = _load_section(subj_dir, sec)
                 if not loaded:
                     continue
-                loaded = {**loaded, "group_id": gid, "group_title": gtitle}
+                loaded = {**loaded, "group_id": gid, "group_title": gtitle, "source": "file"}
                 bucket.append(loaded)
                 flat_sections.append(loaded)
             if bucket:
@@ -322,6 +451,7 @@ def _load_fs_subject(subject: str) -> dict | None:
         for sec in manifest.get("sections", []):
             loaded = _load_section(subj_dir, sec)
             if loaded:
+                loaded = {**loaded, "source": "file"}
                 flat_sections.append(loaded)
         if flat_sections:
             groups_out.append(

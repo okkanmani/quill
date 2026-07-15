@@ -590,3 +590,48 @@ export async function getLearnSubject(subjectKey) {
   if (!res.ok) throw new Error("Failed to fetch learning material");
   return res.json();
 }
+
+export async function updateLearnSection(subjectKey, sectionId, payload) {
+  const res = await fetch(
+    `${BASE_URL}/admin/learn/${encodeURIComponent(subjectKey)}/${encodeURIComponent(sectionId)}`,
+    {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to update learning resource";
+    if (typeof d === "string") msg = d;
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function deleteLearnSection(subjectKey, sectionId) {
+  const res = await fetch(
+    `${BASE_URL}/admin/learn/${encodeURIComponent(subjectKey)}/${encodeURIComponent(sectionId)}`,
+    {
+      method: "DELETE",
+      headers: authHeaders(),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to delete learning resource";
+    if (typeof d === "string") msg = d;
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function getAdminLearnSections() {
+  const res = await fetch(`${BASE_URL}/admin/learn/sections`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch published learning resources");
+  return res.json();
+}

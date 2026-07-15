@@ -29,11 +29,14 @@ from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from learn_content import (
+    delete_learn_section,
     get_subject,
     learn_collection_key,
+    list_admin_learn_sections,
     list_learn_hub,
     list_subjects,
     publish_learn_section,
+    update_learn_section,
 )
 from focus_discussion import list_focus_areas_discussed, mark_focus_area_discussed
 from writing import (
@@ -181,6 +184,11 @@ class GenerateLearnResourceRequest(BaseModel):
     curriculum: str
     section_title: str
     custom_prompt: str = ""
+
+
+class UpdateLearnSectionRequest(BaseModel):
+    title: str
+    markdown: str
 
 
 class SwitchAdminStudentRequest(BaseModel):
@@ -525,13 +533,55 @@ def admin_generate_learn_resource(
             markdown=draft["markdown"],
             subject_title=collection_title,
             subject_description=f"Grade {req.grade} · {req.curriculum.strip()}",
-            group_id="ai-generated",
-            group_title="AI generated",
             grade=req.grade,
             curriculum=req.curriculum,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/admin/learn/sections")
+def admin_list_learn_sections(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    return {"sections": list_admin_learn_sections()}
+
+
+@app.put("/admin/learn/{subject_key}/{section_id}")
+def admin_update_learn_section(
+    subject_key: str,
+    section_id: str,
+    req: UpdateLearnSectionRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return update_learn_section(
+            subject_key=subject_key,
+            section_id=section_id,
+            title=req.title,
+            markdown=req.markdown,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.delete("/admin/learn/{subject_key}/{section_id}")
+def admin_delete_learn_section(
+    subject_key: str,
+    section_id: str,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return delete_learn_section(subject_key=subject_key, section_id=section_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
 
 
 @app.get("/admin/settings")
@@ -969,8 +1019,11 @@ def grade_writing_submission_route(
 
 @app.get("/learn/subjects")
 def learn_subjects(authorization: str = Header(...)):
-    _payload(authorization)
-    return list_learn_hub()
+    payload = _payload(authorization)
+    hub = list_learn_hub()
+    if payload.get("role") == "admin":
+        hub["editable_sections"] = list_admin_learn_sections()
+    return hub
 
 
 @app.get("/learn/{subject_key}")
