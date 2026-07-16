@@ -164,3 +164,30 @@ input[type="checkbox"].text-indigo-600 { accent-color: var(--quill-accent-600); 
 .quill-loading {
   animation: quill-loading 1.8s ease-in-out infinite;
 }
+
+.learn-hl {
+  border-radius: 0.15rem;
+  padding: 0.05em 0;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.learn-hl-orange {
+  background-color: rgba(251, 191, 36, 0.55);
+}
+
+.learn-hl-green {
+  background-color: rgba(110, 231, 183, 0.55);
+}
+
+.learn-hl-blue {
+  background-color: rgba(125, 211, 252, 0.55);
+}
+
+.learn-highlight-area--interactive {
+  cursor: text;
+}
+
+.learn-highlight-area--interactive mark.learn-hl {
+  cursor: pointer;
+}

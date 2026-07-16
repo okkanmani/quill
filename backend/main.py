@@ -36,6 +36,10 @@ from learn_notes import (
     list_notes_for_subject,
     save_note,
 )
+from learn_highlights import (
+    list_highlights_for_subject,
+    save_highlights,
+)
 from learn_content import (
     delete_learn_section,
     get_subject,
@@ -226,6 +230,10 @@ class GenerateLearnNoteRequest(BaseModel):
     page_markdown: str
     section_title: str = ""
     subject_title: str = ""
+
+
+class SaveLearnHighlightsRequest(BaseModel):
+    highlights: list = []
 
 
 class SwitchAdminStudentRequest(BaseModel):
@@ -1224,6 +1232,38 @@ def generate_learn_page_note(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return note
+
+
+@app.get("/learn/{subject_key}/highlights")
+def learn_subject_highlights(subject_key: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    student = _learn_notes_student(payload)
+    highlights = list_highlights_for_subject(student, subject_key)
+    return {"highlights": highlights}
+
+
+@app.put("/learn/{subject_key}/{section_id}/highlights/{page_index}")
+def save_learn_page_highlights(
+    subject_key: str,
+    section_id: str,
+    page_index: int,
+    req: SaveLearnHighlightsRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can save highlights")
+    try:
+        saved = save_highlights(
+            payload["name"],
+            subject_key,
+            section_id,
+            page_index,
+            req.highlights,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return saved
 
 
 @app.get("/admin/students")

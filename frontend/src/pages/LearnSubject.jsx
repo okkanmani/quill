@@ -1,13 +1,26 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getLearnPageNotes, getLearnSubject } from "../api";
+import {
+  getLearnPageHighlights,
+  getLearnPageNotes,
+  getLearnSubject,
+  saveLearnPageHighlights,
+} from "../api";
 import LearnChrome from "../components/LearnChrome";
 import LearnMarkdown from "../components/LearnMarkdown";
 import LearnPageNotes from "../components/LearnPageNotes";
-import { LearnPageSheet } from "../components/LearnPageLabel";
+import LearnPageHighlighter, {
+  LearnPageHighlightMarkdown,
+  LearnPageHighlightToolbarSlot,
+} from "../components/LearnPageHighlighter";
+import { LearnPageSheet, LearnPageStickyToolbar } from "../components/LearnPageLabel";
 import { useShellLayout } from "../components/ShellLayoutContext";
 import QuillLoading from "../components/QuillLoading";
 import { buildLearnLinePages, getSectionStartPage } from "../learnPageUtils";
+import {
+  getStoredLearnHighlightColor,
+  setStoredLearnHighlightColor,
+} from "../learnHighlightUtils";
 import {
   getStoredLearnNotesCollapsed,
   setStoredLearnNotesCollapsed,
@@ -23,12 +36,22 @@ export default function LearnSubject() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notesByKey, setNotesByKey] = useState({});
+  const [highlightsByKey, setHighlightsByKey] = useState({});
+  const highlightSaveTimersRef = useRef({});
   const role = localStorage.getItem("role");
   const adminStudentName = localStorage.getItem("studentName");
   const canViewLearnNotes =
     role === "student" || (role === "admin" && Boolean(adminStudentName));
   const canEditLearnNotes = role === "student";
+  const canViewLearnHighlights = canViewLearnNotes;
+  const canEditLearnHighlights = role === "student";
   const [notesCollapsed, setNotesCollapsedState] = useState(getStoredLearnNotesCollapsed);
+  const [highlightColor, setHighlightColorState] = useState(getStoredLearnHighlightColor);
+  const [highlightEraser, setHighlightEraser] = useState(false);
+
+  function setHighlightColor(color) {
+    setHighlightColorState(setStoredLearnHighlightColor(color));
+  }
 
   function toggleNotesCollapsed() {
     setNotesCollapsedState(setStoredLearnNotesCollapsed(!notesCollapsed));
@@ -40,6 +63,48 @@ export default function LearnSubject() {
       [`${note.section_id}:${note.page_index}`]: note,
     }));
   }, []);
+
+  const handleHighlightUpdate = useCallback(
+    (sectionId, pageIndex, highlights) => {
+      const key = `${sectionId}:${pageIndex}`;
+      setHighlightsByKey((prev) => ({
+        ...prev,
+        [key]: highlights,
+      }));
+
+      if (!canEditLearnHighlights || !subjectKey) return;
+
+      if (highlightSaveTimersRef.current[key]) {
+        window.clearTimeout(highlightSaveTimersRef.current[key]);
+      }
+      highlightSaveTimersRef.current[key] = window.setTimeout(async () => {
+        try {
+          const saved = await saveLearnPageHighlights(
+            subjectKey,
+            sectionId,
+            pageIndex,
+            highlights,
+          );
+          setHighlightsByKey((prev) => ({
+            ...prev,
+            [key]: saved.highlights,
+          }));
+        } catch {
+          /* keep optimistic local highlights */
+        }
+      }, 900);
+    },
+    [canEditLearnHighlights, subjectKey],
+  );
+
+  useEffect(
+    () => () => {
+      Object.values(highlightSaveTimersRef.current).forEach((timer) => {
+        window.clearTimeout(timer);
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!subjectKey) return;
@@ -67,6 +132,24 @@ export default function LearnSubject() {
         setNotesByKey({});
       });
   }, [subjectKey, canViewLearnNotes]);
+
+  useEffect(() => {
+    if (!subjectKey || !canViewLearnHighlights) {
+      setHighlightsByKey({});
+      return;
+    }
+    getLearnPageHighlights(subjectKey)
+      .then(({ highlights }) => {
+        const map = {};
+        for (const row of highlights || []) {
+          map[`${row.section_id}:${row.page_index}`] = row.highlights || [];
+        }
+        setHighlightsByKey(map);
+      })
+      .catch(() => {
+        setHighlightsByKey({});
+      });
+  }, [subjectKey, canViewLearnHighlights]);
 
   useEffect(() => {
     if (!data?.sections?.length || loading) return;
@@ -194,6 +277,18 @@ export default function LearnSubject() {
                     page.isFirstPageOfSection &&
                     (!prev || prev.group.id !== page.group.id);
 
+                  const noteKey = `${page.section.id}:${page.pageIndexWithinSection}`;
+                  const noteRecord = notesByKey[noteKey];
+                  const pageHighlights = highlightsByKey[noteKey] || [];
+
+                  const markdownBlock = canViewLearnHighlights ? (
+                    <LearnPageHighlightMarkdown markdown={page.markdown} />
+                  ) : (
+                    <div className="learn-md">
+                      <LearnMarkdown markdown={page.markdown} />
+                    </div>
+                  );
+
                   const pageBody = (
                     <>
                       {showGroupHeader ? (
@@ -224,17 +319,19 @@ export default function LearnSubject() {
                         </p>
                       )}
 
-                      <div className="learn-md">
-                        <LearnMarkdown markdown={page.markdown} />
-                      </div>
+                      {markdownBlock}
                     </>
                   );
 
-                  const noteKey = `${page.section.id}:${page.pageIndexWithinSection}`;
-                  const noteRecord = notesByKey[noteKey];
+                  const highlightToolbar = canViewLearnHighlights ? (
+                    <LearnPageHighlightToolbarSlot />
+                  ) : null;
 
-                  const pageCard = !showPageNumbers ? (
+                  const pageCardInner = !showPageNumbers ? (
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm scroll-mt-44">
+                      {canViewLearnHighlights ? (
+                        <LearnPageStickyToolbar>{highlightToolbar}</LearnPageStickyToolbar>
+                      ) : null}
                       {pageBody}
                     </div>
                   ) : (
@@ -242,9 +339,34 @@ export default function LearnSubject() {
                       pageNumber={page.pageNumber}
                       totalPages={page.totalPages}
                       className="scroll-mt-44"
+                      headerStart={highlightToolbar}
+                      stickyHeader={canViewLearnHighlights}
                     >
                       {pageBody}
                     </LearnPageSheet>
+                  );
+
+                  const pageCard = canViewLearnHighlights ? (
+                    <LearnPageHighlighter
+                      highlights={pageHighlights}
+                      onHighlightsChange={(next) =>
+                        handleHighlightUpdate(
+                          page.section.id,
+                          page.pageIndexWithinSection,
+                          next,
+                        )
+                      }
+                      readOnly={!canEditLearnHighlights}
+                      enabled
+                      activeColor={highlightColor}
+                      onActiveColorChange={setHighlightColor}
+                      eraserActive={highlightEraser}
+                      onEraserActiveChange={setHighlightEraser}
+                    >
+                      {pageCardInner}
+                    </LearnPageHighlighter>
+                  ) : (
+                    pageCardInner
                   );
 
                   if (!canViewLearnNotes) {

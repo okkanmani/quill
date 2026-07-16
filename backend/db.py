@@ -251,6 +251,17 @@ def init_schema() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_learn_page_notes_student
                 ON learn_page_notes (student, subject_key);
+            CREATE TABLE IF NOT EXISTS learn_page_highlights (
+                student TEXT NOT NULL,
+                subject_key TEXT NOT NULL,
+                section_id TEXT NOT NULL,
+                page_index INTEGER NOT NULL DEFAULT 0,
+                highlights TEXT NOT NULL DEFAULT '[]',
+                saved_at TEXT NOT NULL,
+                PRIMARY KEY (student, subject_key, section_id, page_index)
+            );
+            CREATE INDEX IF NOT EXISTS idx_learn_page_highlights_student
+                ON learn_page_highlights (student, subject_key);
             """
         )
         writing_cols = {

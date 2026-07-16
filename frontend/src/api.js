@@ -665,6 +665,41 @@ export async function generateLearnPageNote(
   return res.json();
 }
 
+export async function getLearnPageHighlights(subjectKey) {
+  const res = await fetch(
+    `${BASE_URL}/learn/${encodeURIComponent(subjectKey)}/highlights`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to load highlights");
+  }
+  return res.json();
+}
+
+export async function saveLearnPageHighlights(
+  subjectKey,
+  sectionId,
+  pageIndex,
+  highlights,
+) {
+  const res = await fetch(
+    `${BASE_URL}/learn/${encodeURIComponent(subjectKey)}/${encodeURIComponent(sectionId)}/highlights/${pageIndex}`,
+    {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify({ highlights }),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to save highlights");
+  }
+  return res.json();
+}
+
 export async function updateLearnSection(subjectKey, sectionId, payload) {
   const res = await fetch(
     `${BASE_URL}/admin/learn/${encodeURIComponent(subjectKey)}/${encodeURIComponent(sectionId)}`,
