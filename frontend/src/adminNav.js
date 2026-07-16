@@ -15,6 +15,7 @@ export const STUDENT_MAIN_NAV = [
   { to: "/student/writing", label: "Writing", end: true },
   { to: "/student/results", label: "Your Results", end: true },
   { to: "/student/learn", label: "Learning Resources", end: false },
+  { to: "/student/settings", label: "Settings", end: true },
 ];
 
 /** Student nav with Latest tab (disabled when hasLatest is false). */
@@ -30,5 +31,6 @@ export function buildStudentNavLinks(hasLatest) {
       disabled: !hasLatest,
     },
     { to: "/student/learn", label: "Learning Resources", end: false },
+    { to: "/student/settings", label: "Settings", end: true },
   ];
 }

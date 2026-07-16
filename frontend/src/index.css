@@ -1,15 +1,152 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    color-scheme: light;
+    --quill-page: #f8fafc;
+    --quill-surface: #ffffff;
+    --quill-accent-50: #eef2ff;
+    --quill-accent-100: #e0e7ff;
+    --quill-accent-200: #c7d2fe;
+    --quill-accent-300: #a5b4fc;
+    --quill-accent-400: #818cf8;
+    --quill-accent-500: #6366f1;
+    --quill-accent-600: #4f46e5;
+    --quill-accent-700: #4338ca;
+    --quill-accent-800: #3730a3;
+    --quill-accent-900: #312e81;
+    --quill-accent-950: #1e1b4b;
+  }
+
+  html[data-theme="ocean"] {
+    --quill-page: #f0f9ff;
+    --quill-surface: #ffffff;
+    --quill-accent-50: #f0f9ff;
+    --quill-accent-100: #e0f2fe;
+    --quill-accent-200: #bae6fd;
+    --quill-accent-300: #7dd3fc;
+    --quill-accent-400: #38bdf8;
+    --quill-accent-500: #0ea5e9;
+    --quill-accent-600: #0284c7;
+    --quill-accent-700: #0369a1;
+    --quill-accent-800: #075985;
+    --quill-accent-900: #0c4a6e;
+    --quill-accent-950: #082f49;
+  }
+
+  html[data-theme="forest"] {
+    --quill-page: #f0fdf4;
+    --quill-surface: #ffffff;
+    --quill-accent-50: #ecfdf5;
+    --quill-accent-100: #d1fae5;
+    --quill-accent-200: #a7f3d0;
+    --quill-accent-300: #6ee7b7;
+    --quill-accent-400: #34d399;
+    --quill-accent-500: #10b981;
+    --quill-accent-600: #059669;
+    --quill-accent-700: #047857;
+    --quill-accent-800: #065f46;
+    --quill-accent-900: #064e3b;
+    --quill-accent-950: #022c22;
+  }
+
+  html[data-theme="sunset"] {
+    --quill-page: #fff7ed;
+    --quill-surface: #ffffff;
+    --quill-accent-50: #fff7ed;
+    --quill-accent-100: #ffedd5;
+    --quill-accent-200: #fed7aa;
+    --quill-accent-300: #fdba74;
+    --quill-accent-400: #fb923c;
+    --quill-accent-500: #f97316;
+    --quill-accent-600: #ea580c;
+    --quill-accent-700: #c2410c;
+    --quill-accent-800: #9a3412;
+    --quill-accent-900: #7c2d12;
+    --quill-accent-950: #431407;
+  }
+
+  html[data-theme="plum"] {
+    --quill-page: #faf5ff;
+    --quill-surface: #ffffff;
+    --quill-accent-50: #f5f3ff;
+    --quill-accent-100: #ede9fe;
+    --quill-accent-200: #ddd6fe;
+    --quill-accent-300: #c4b5fd;
+    --quill-accent-400: #a78bfa;
+    --quill-accent-500: #8b5cf6;
+    --quill-accent-600: #7c3aed;
+    --quill-accent-700: #6d28d9;
+    --quill-accent-800: #5b21b6;
+    --quill-accent-900: #4c1d95;
+    --quill-accent-950: #2e1065;
+  }
+
   html {
     color-scheme: light;
   }
+
   body {
-    @apply min-h-screen bg-slate-50 text-slate-900 antialiased;
+    background-color: var(--quill-page);
+    @apply text-slate-900 antialiased min-h-screen;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
       sans-serif;
   }
 }
+
+/* Remap indigo accents to the active theme palette. */
+.bg-indigo-50 { background-color: var(--quill-accent-50) !important; }
+.bg-indigo-100 { background-color: var(--quill-accent-100) !important; }
+.bg-indigo-500 { background-color: var(--quill-accent-500) !important; }
+.bg-indigo-600 { background-color: var(--quill-accent-600) !important; }
+.bg-indigo-700 { background-color: var(--quill-accent-700) !important; }
+.bg-indigo-800 { background-color: var(--quill-accent-800) !important; }
+.bg-indigo-50\/60 { background-color: color-mix(in srgb, var(--quill-accent-50) 60%, transparent) !important; }
+.bg-indigo-50\/50 { background-color: color-mix(in srgb, var(--quill-accent-50) 50%, transparent) !important; }
+.bg-indigo-100\/90 { background-color: color-mix(in srgb, var(--quill-accent-100) 90%, transparent) !important; }
+.hover\:bg-indigo-50:hover { background-color: var(--quill-accent-50) !important; }
+.hover\:bg-indigo-100:hover { background-color: var(--quill-accent-100) !important; }
+.hover\:bg-indigo-600:hover { background-color: var(--quill-accent-600) !important; }
+.hover\:bg-indigo-700:hover { background-color: var(--quill-accent-700) !important; }
+.hover\:bg-indigo-800:hover { background-color: var(--quill-accent-800) !important; }
+.text-indigo-500 { color: var(--quill-accent-500) !important; }
+.text-indigo-600 { color: var(--quill-accent-600) !important; }
+.text-indigo-700 { color: var(--quill-accent-700) !important; }
+.text-indigo-800 { color: var(--quill-accent-800) !important; }
+.text-indigo-900 { color: var(--quill-accent-900) !important; }
+.text-indigo-950 { color: var(--quill-accent-950) !important; }
+.text-indigo-800\/80 { color: color-mix(in srgb, var(--quill-accent-800) 80%, transparent) !important; }
+.hover\:text-indigo-700:hover { color: var(--quill-accent-700) !important; }
+.hover\:text-indigo-800:hover { color: var(--quill-accent-800) !important; }
+.hover\:text-indigo-900:hover { color: var(--quill-accent-900) !important; }
+.border-indigo-100 { border-color: var(--quill-accent-100) !important; }
+.border-indigo-200 { border-color: var(--quill-accent-200) !important; }
+.border-indigo-200\/80 { border-color: color-mix(in srgb, var(--quill-accent-200) 80%, transparent) !important; }
+.border-indigo-300 { border-color: var(--quill-accent-300) !important; }
+.border-indigo-400 { border-color: var(--quill-accent-400) !important; }
+.border-indigo-500 { border-color: var(--quill-accent-500) !important; }
+.border-indigo-800 { border-color: var(--quill-accent-800) !important; }
+.hover\:border-indigo-200:hover { border-color: var(--quill-accent-200) !important; }
+.hover\:border-indigo-400:hover { border-color: var(--quill-accent-400) !important; }
+.ring-indigo-200 { --tw-ring-color: var(--quill-accent-200) !important; }
+.ring-indigo-300 { --tw-ring-color: var(--quill-accent-300) !important; }
+.ring-indigo-400 { --tw-ring-color: var(--quill-accent-400) !important; }
+.focus\:border-indigo-500:focus { border-color: var(--quill-accent-500) !important; }
+.focus\:ring-indigo-200:focus { --tw-ring-color: var(--quill-accent-200) !important; }
+.focus\:ring-indigo-400:focus { --tw-ring-color: var(--quill-accent-400) !important; }
+.focus\:ring-indigo-500:focus { --tw-ring-color: var(--quill-accent-500) !important; }
+.decoration-indigo-400 { text-decoration-color: var(--quill-accent-400) !important; }
+input[type="checkbox"].text-indigo-600 { accent-color: var(--quill-accent-600); }
+.has-\[\:checked\]\:border-indigo-400:has(:checked) { border-color: var(--quill-accent-400) !important; }
+.has-\[\:checked\]\:bg-indigo-50\/50:has(:checked) {
+  background-color: color-mix(in srgb, var(--quill-accent-50) 50%, transparent) !important;
+}
+
+.bg-slate-50 { background-color: var(--quill-page) !important; }
+.bg-slate-50\/80 { background-color: color-mix(in srgb, var(--quill-page) 80%, transparent) !important; }
+.bg-slate-50\/90 { background-color: color-mix(in srgb, var(--quill-page) 90%, transparent) !important; }
+.bg-white { background-color: var(--quill-surface) !important; }
+.hover\:bg-white:hover { background-color: var(--quill-surface) !important; }
 
 @keyframes quill-loading {
   0%,

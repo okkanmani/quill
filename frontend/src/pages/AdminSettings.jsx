@@ -9,6 +9,7 @@ import {
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
+import ColorThemeSettings from "../components/ColorThemeSettings";
 import QuillLoading from "../components/QuillLoading";
 
 export default function AdminSettings() {
@@ -82,9 +83,7 @@ export default function AdminSettings() {
       <div className="max-w-2xl">
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Settings</h1>
         <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-          Each admin account uses its own OpenAI API key for worksheet AI
-          generation. Usage bills to your OpenAI account, not a shared school
-          key.
+          Personalize appearance and manage your OpenAI API key for AI generation.
         </p>
 
         {loading ? <QuillLoading label="Loading settings…" /> : null}
@@ -100,7 +99,12 @@ export default function AdminSettings() {
         ) : null}
 
         {!loading ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+          <>
+            <div className="mb-6">
+              <ColorThemeSettings />
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-lg font-semibold text-slate-950">OpenAI API key</h2>
               <span
@@ -184,6 +188,7 @@ export default function AdminSettings() {
               </div>
             </form>
           </div>
+          </>
         ) : null}
       </div>
     </AppShell>

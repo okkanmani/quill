@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import StudentHome from "./pages/StudentHome";
 import StudentLatest from "./pages/StudentLatest";
 import StudentResults from "./pages/StudentResults";
+import StudentSettings from "./pages/StudentSettings";
 import StudentWriting from "./pages/StudentWriting";
 import AdminHome from "./pages/AdminHome";
 import AdminAnalysis from "./pages/AdminAnalysis";
@@ -57,6 +58,15 @@ export default function App() {
           element={
             <ProtectedRoute role="student">
               <StudentResults />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/settings"
+          element={
+            <ProtectedRoute role="student">
+              <StudentSettings />
             </ProtectedRoute>
           }
         />

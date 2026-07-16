@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getLearnSubject } from "../api";
 import LearnChrome from "../components/LearnChrome";
 import LearnMarkdown from "../components/LearnMarkdown";
+import { LearnPageSheet } from "../components/LearnPageLabel";
 import QuillLoading from "../components/QuillLoading";
+import { buildLearnLinePages, getSectionStartPage } from "../learnPageUtils";
 
 /* Sticky TOC sits below the page top padding in the sidebar layout. */
 
@@ -35,12 +37,19 @@ export default function LearnSubject() {
     });
   }, [data, loading, location.hash]);
 
-  const groups =
-    data && data.groups?.length > 0
+  const groups = useMemo(() => {
+    if (!data) return [];
+    return data.groups?.length > 0
       ? data.groups
-      : data
-        ? [{ id: "", title: "", sections: data.sections ?? [] }]
-        : [];
+      : [{ id: "", title: "", sections: data.sections ?? [] }];
+  }, [data]);
+
+  const { pages, sectionStarts, totalPages } = useMemo(
+    () => buildLearnLinePages(groups),
+    [groups],
+  );
+
+  const showPageNumbers = totalPages > 1;
 
   return (
     <LearnChrome onBack={() => navigate("/student/learn")}>
@@ -66,15 +75,23 @@ export default function LearnSubject() {
                         {g.title}
                       </p>
                     ) : null}
-                    {g.sections.map((sec) => (
-                      <a
-                        key={sec.id}
-                        href={`#${sec.id}`}
-                        className="block text-sm text-slate-800 hover:text-slate-950 font-medium py-0.5"
-                      >
-                        {sec.title}
-                      </a>
-                    ))}
+                    {g.sections.map((sec) => {
+                      const startPage = getSectionStartPage(sectionStarts, sec.id);
+                      return (
+                        <a
+                          key={sec.id}
+                          href={`#${sec.id}`}
+                          className="flex items-baseline gap-2 text-sm text-slate-800 hover:text-slate-950 font-medium py-0.5"
+                        >
+                          {showPageNumbers && startPage ? (
+                            <span className="shrink-0 w-5 text-right text-xs font-semibold text-slate-500 tabular-nums">
+                              {startPage}
+                            </span>
+                          ) : null}
+                          <span className="min-w-0">{sec.title}</span>
+                        </a>
+                      );
+                    })}
                   </div>
                 ))}
               </nav>
@@ -90,7 +107,6 @@ export default function LearnSubject() {
                 <div className="mb-10 border-b border-slate-200 pb-8" />
               )}
 
-              {/* Mobile TOC — sticky under app header */}
               <div className="lg:hidden sticky top-44 z-30 mb-8 rounded-xl border border-slate-200 bg-slate-50/95 backdrop-blur-sm shadow-sm p-4">
                 <p className="text-xs font-semibold text-slate-600 mb-2">Sections</p>
                 <div className="flex flex-col gap-3">
@@ -102,54 +118,95 @@ export default function LearnSubject() {
                         </p>
                       ) : null}
                       <div className="flex flex-wrap gap-2">
-                        {g.sections.map((sec) => (
-                          <a
-                            key={sec.id}
-                            href={`#${sec.id}`}
-                            className="text-xs font-medium text-slate-800 bg-slate-100 px-2 py-1 rounded-lg"
-                          >
-                            {sec.title}
-                          </a>
-                        ))}
+                        {g.sections.map((sec) => {
+                          const startPage = getSectionStartPage(sectionStarts, sec.id);
+                          return (
+                            <a
+                              key={sec.id}
+                              href={`#${sec.id}`}
+                              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-800 bg-slate-100 px-2 py-1 rounded-lg"
+                            >
+                              {showPageNumbers && startPage ? (
+                                <span className="text-slate-500 tabular-nums">
+                                  {startPage}.
+                                </span>
+                              ) : null}
+                              {sec.title}
+                            </a>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-12">
-                {groups.map((g, gi) => (
-                  <div key={g.id || `body-${gi}`} className="space-y-8">
-                    {g.title ? (
-                      <h2
-                        id={g.id || undefined}
-                        className="text-xl font-bold text-slate-950 pb-2 border-b border-slate-200 scroll-mt-44"
-                      >
-                        {g.title}
-                      </h2>
-                    ) : null}
-                    {g.sections.map((sec) => (
-                      <section
-                        key={sec.id}
-                        id={sec.id}
-                        className="scroll-mt-44"
-                      >
-                        {g.title ? (
-                          <h3 className="text-lg font-bold text-slate-950 mb-4 pb-2 border-b border-slate-100">
-                            {sec.title}
+              <div className="space-y-8">
+                {pages.map((page, index) => {
+                  const prev = pages[index - 1];
+                  const showGroupHeader =
+                    page.group.title &&
+                    page.isFirstPageOfSection &&
+                    (!prev || prev.group.id !== page.group.id);
+
+                  const pageBody = (
+                    <>
+                      {showGroupHeader ? (
+                        <h2 className="text-xl font-bold text-slate-950 pb-3 mb-4 border-b border-slate-200">
+                          {page.group.title}
+                        </h2>
+                      ) : null}
+
+                      {page.isFirstPageOfSection ? (
+                        page.group.title ? (
+                          <h3
+                            id={page.section.id}
+                            className="text-lg font-bold text-slate-950 mb-4 scroll-mt-44"
+                          >
+                            {page.section.title}
                           </h3>
                         ) : (
-                          <h2 className="text-xl font-bold text-slate-950 mb-4 pb-2 border-b border-slate-100">
-                            {sec.title}
+                          <h2
+                            id={page.section.id}
+                            className="text-xl font-bold text-slate-950 mb-4 scroll-mt-44"
+                          >
+                            {page.section.title}
                           </h2>
-                        )}
-                        <div className="learn-md">
-                          <LearnMarkdown markdown={sec.markdown} />
-                        </div>
-                      </section>
-                    ))}
-                  </div>
-                ))}
+                        )
+                      ) : (
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4">
+                          {page.section.title} · continued
+                        </p>
+                      )}
+
+                      <div className="learn-md">
+                        <LearnMarkdown markdown={page.markdown} />
+                      </div>
+                    </>
+                  );
+
+                  if (!showPageNumbers) {
+                    return (
+                      <div
+                        key={`${page.section.id}-${page.pageNumber}`}
+                        className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm scroll-mt-44"
+                      >
+                        {pageBody}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <LearnPageSheet
+                      key={`${page.section.id}-${page.pageNumber}`}
+                      pageNumber={page.pageNumber}
+                      totalPages={page.totalPages}
+                      className="scroll-mt-44"
+                    >
+                      {pageBody}
+                    </LearnPageSheet>
+                  );
+                })}
               </div>
             </div>
           </div>
