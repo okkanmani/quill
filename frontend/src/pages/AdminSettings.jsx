@@ -10,6 +10,7 @@ import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import ColorThemeSettings from "../components/ColorThemeSettings";
+import FontSettings from "../components/FontSettings";
 import QuillLoading from "../components/QuillLoading";
 
 export default function AdminSettings() {
@@ -186,6 +187,7 @@ export default function AdminSettings() {
             </div>
 
             <ColorThemeSettings />
+            <FontSettings />
           </div>
         ) : null}
       </div>

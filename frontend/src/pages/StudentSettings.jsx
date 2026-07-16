@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "../api";
 import AppShell from "../components/AppShell";
 import ColorThemeSettings from "../components/ColorThemeSettings";
+import FontSettings from "../components/FontSettings";
 import { useStudentNavLinks } from "../useStudentNavLinks";
 
 export default function StudentSettings() {
@@ -22,7 +23,10 @@ export default function StudentSettings() {
           Personalize how Quill looks on this device.
         </p>
 
-        <ColorThemeSettings />
+        <div className="space-y-5">
+          <ColorThemeSettings />
+          <FontSettings />
+        </div>
       </div>
     </AppShell>
   );
