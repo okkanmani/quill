@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import RecycleBinButton from "./RecycleBinButton";
 import SectionSortSelect from "./SectionSortSelect";
 import {
@@ -32,10 +32,9 @@ export default function WritingResultsSection({
   variant = "admin",
 }) {
   const isAdmin = variant === "admin";
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [sortMode, setSortMode] = useState(SECTION_SORT_TIME);
   const [feedbackDrafts, setFeedbackDrafts] = useState({});
-  const didInitOpen = useRef(false);
 
   function feedbackFor(item) {
     if (Object.prototype.hasOwnProperty.call(feedbackDrafts, item.id)) {
@@ -67,12 +66,6 @@ export default function WritingResultsSection({
       setSortMode(SECTION_SORT_TIME);
     }
   }, [pendingCount, sortMode]);
-
-  useEffect(() => {
-    if (didInitOpen.current || submissions.length === 0) return;
-    didInitOpen.current = true;
-    setIsOpen(true);
-  }, [submissions.length]);
 
   const sortedItems = useMemo(
     () => sortWritingItems(submissions, sortMode),

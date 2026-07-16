@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import WorksheetsBySubject from "./WorksheetsBySubject";
 import ThinkingQuestByWeek from "./ThinkingQuestByWeek";
 
@@ -43,21 +43,6 @@ export default function WorksheetsByMode({
     [worksheets],
   );
   const [openModes, setOpenModes] = useState(() => new Set());
-  const didInitOpen = useRef(false);
-
-  const defaultOpenMode = useMemo(() => {
-    if (practice.length > 0) return "practice";
-    if (timed.length > 0) return "timed";
-    if (mathEnrichment.length > 0) return "enrichment";
-    if (thinkingQuest.length > 0) return "gifted";
-    return null;
-  }, [practice.length, timed.length, mathEnrichment.length, thinkingQuest.length]);
-
-  useEffect(() => {
-    if (didInitOpen.current || !defaultOpenMode) return;
-    didInitOpen.current = true;
-    setOpenModes(new Set([defaultOpenMode]));
-  }, [defaultOpenMode]);
 
   function toggleMode(key) {
     setOpenModes((prev) => {
