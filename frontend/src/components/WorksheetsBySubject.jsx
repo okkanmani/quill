@@ -14,8 +14,9 @@ import { formatDurationSeconds } from "../worksheetUtils";
 import PadlockIcon from "./PadlockIcon";
 import SectionSortSelect from "./SectionSortSelect";
 import {
-  SECTION_SORT_TIME,
+  SECTION_SORT_STATUS,
   sortWorksheetItems,
+  WORKSHEET_SORT_OPTIONS,
 } from "../sectionSortUtils";
 
 function worksheetLockState(ws) {
@@ -213,9 +214,10 @@ export default function WorksheetsBySubject({
 
   if (ungrouped) {
     if (worksheets.length === 0) return null;
+    const sortedWorksheets = sortWorksheetItems(worksheets);
     return (
       <div className="flex flex-col gap-4">
-        {worksheets.map((ws) => (
+        {sortedWorksheets.map((ws) => (
           <WorksheetRow
             key={ws.id}
             ws={ws}
@@ -233,7 +235,7 @@ export default function WorksheetsBySubject({
     <div className="flex flex-col gap-3">
       {groups.map(([subjectKey, items]) => {
         const isOpen = open.has(subjectKey);
-        const sortMode = sortBySubject[subjectKey] || SECTION_SORT_TIME;
+        const sortMode = sortBySubject[subjectKey] || SECTION_SORT_STATUS;
         const sortedItems = sortWorksheetItems(items, sortMode);
         const total = items.length;
         const done = items.filter(isWorksheetDone).length;
@@ -287,6 +289,7 @@ export default function WorksheetsBySubject({
                   <SectionSortSelect
                     id={`worksheets-sort-${subjectKey}`}
                     value={sortMode}
+                    options={WORKSHEET_SORT_OPTIONS}
                     onChange={(value) =>
                       setSortBySubject((prev) => ({
                         ...prev,
