@@ -57,6 +57,7 @@ export function buildLearnLinePages(groups, linesPerPage = LEARN_LINES_PER_PAGE)
           section,
           markdown,
           pageNumber,
+          pageIndexWithinSection: chunkIndex,
           isFirstPageOfSection: chunkIndex === 0,
           isContinuation: chunkIndex > 0,
         });

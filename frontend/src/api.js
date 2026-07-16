@@ -591,6 +591,62 @@ export async function getLearnSubject(subjectKey) {
   return res.json();
 }
 
+export async function getLearnPageNotes(subjectKey) {
+  const res = await fetch(
+    `${BASE_URL}/learn/${encodeURIComponent(subjectKey)}/notes`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to load notes");
+  }
+  return res.json();
+}
+
+export async function saveLearnPageNote(subjectKey, sectionId, pageIndex, body) {
+  const res = await fetch(
+    `${BASE_URL}/learn/${encodeURIComponent(subjectKey)}/${encodeURIComponent(sectionId)}/notes/${pageIndex}`,
+    {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify({ body }),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to save notes");
+  }
+  return res.json();
+}
+
+export async function generateLearnPageNote(
+  subjectKey,
+  sectionId,
+  pageIndex,
+  { pageMarkdown, sectionTitle, subjectTitle },
+) {
+  const res = await fetch(
+    `${BASE_URL}/learn/${encodeURIComponent(subjectKey)}/${encodeURIComponent(sectionId)}/notes/${pageIndex}/generate`,
+    {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        page_markdown: pageMarkdown,
+        section_title: sectionTitle,
+        subject_title: subjectTitle,
+      }),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to generate notes");
+  }
+  return res.json();
+}
+
 export async function updateLearnSection(subjectKey, sectionId, payload) {
   const res = await fetch(
     `${BASE_URL}/admin/learn/${encodeURIComponent(subjectKey)}/${encodeURIComponent(sectionId)}`,

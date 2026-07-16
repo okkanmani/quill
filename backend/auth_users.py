@@ -215,14 +215,24 @@ def get_student_profile(student_id: int) -> dict | None:
     conn = db.connect()
     try:
         row = conn.execute(
-            "SELECT id, name, grade FROM students WHERE id = ?",
+            "SELECT id, name, grade, admin_id FROM students WHERE id = ?",
             (student_id,),
         ).fetchone()
     finally:
         conn.close()
     if not row:
         return None
-    return _student_row_dict(row)
+    out = _student_row_dict(row)
+    if row["admin_id"] is not None:
+        out["admin_id"] = int(row["admin_id"])
+    return out
+
+
+def get_student_admin_id(student_id: int) -> int | None:
+    profile = get_student_profile(student_id)
+    if not profile:
+        return None
+    return profile.get("admin_id")
 
 
 def update_student_grade(admin_id: int, student_id: int, grade: int) -> dict | None:
@@ -261,6 +271,7 @@ def delete_student(admin_id: int, student_id: int) -> dict | None:
         conn.execute("DELETE FROM results WHERE student = ?", (row["name"],))
         conn.execute("DELETE FROM writing_submissions WHERE student = ?", (row["name"],))
         conn.execute("DELETE FROM focus_area_discussed WHERE student = ?", (row["name"],))
+        conn.execute("DELETE FROM learn_page_notes WHERE student = ?", (row["name"],))
         conn.execute(
             "DELETE FROM students WHERE id = ? AND admin_id = ?",
             (student_id, admin_id),

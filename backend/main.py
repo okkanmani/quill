@@ -13,6 +13,7 @@ from auth_users import (
     delete_student,
     get_admin_name,
     get_student_by_admin_and_name,
+    get_student_admin_id,
     get_student_profile,
     list_students_for_admin,
     update_student_grade,
@@ -28,6 +29,11 @@ from ai_learn import generate_learn_resource
 from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from learn_notes import (
+    generate_and_save_note,
+    list_notes_for_subject,
+    save_note,
+)
 from learn_content import (
     delete_learn_section,
     get_subject,
@@ -202,6 +208,16 @@ class ReorderLearnHubRequest(BaseModel):
     subject_keys: list[str]
 
 
+class SaveLearnNoteRequest(BaseModel):
+    body: str = ""
+
+
+class GenerateLearnNoteRequest(BaseModel):
+    page_markdown: str
+    section_title: str = ""
+    subject_title: str = ""
+
+
 class SwitchAdminStudentRequest(BaseModel):
     student_name: str
 
@@ -252,6 +268,26 @@ def _student_context_name(payload: dict) -> str:
             )
         return sn
     raise HTTPException(status_code=403, detail="Invalid role")
+
+
+def _learn_notes_student(payload: dict) -> str:
+    """Student whose learn notes are being viewed or edited."""
+    if payload.get("role") == "student":
+        return payload["name"]
+    if payload.get("role") == "admin" and payload.get("student_name"):
+        return payload["student_name"]
+    raise HTTPException(
+        status_code=403,
+        detail="Notes are available for students, or for admins after choosing a student.",
+    )
+
+
+def _learn_notes_admin_id(payload: dict) -> int | None:
+    if payload.get("role") == "student":
+        return get_student_admin_id(payload.get("student_id"))
+    if payload.get("role") == "admin":
+        return payload.get("admin_id")
+    return None
 
 
 def _raise_if_access_locked(exc: ValueError) -> None:
@@ -1076,6 +1112,74 @@ def learn_subject(subject_key: str, authorization: str = Header(...)):
     if not data:
         raise HTTPException(status_code=404, detail="Subject not found")
     return data
+
+
+@app.get("/learn/{subject_key}/notes")
+def learn_subject_notes(subject_key: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    student = _learn_notes_student(payload)
+    notes = list_notes_for_subject(student, subject_key)
+    return {"notes": notes}
+
+
+@app.put("/learn/{subject_key}/{section_id}/notes/{page_index}")
+def save_learn_page_note(
+    subject_key: str,
+    section_id: str,
+    page_index: int,
+    req: SaveLearnNoteRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can save notes")
+    try:
+        note = save_note(
+            payload["name"],
+            subject_key,
+            section_id,
+            page_index,
+            req.body,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return note
+
+
+@app.post("/learn/{subject_key}/{section_id}/notes/{page_index}/generate")
+def generate_learn_page_note(
+    subject_key: str,
+    section_id: str,
+    page_index: int,
+    req: GenerateLearnNoteRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can generate notes")
+    admin_id = _learn_notes_admin_id(payload)
+    if not admin_id:
+        raise HTTPException(status_code=400, detail="Student account not found.")
+    api_key = resolve_openai_api_key(admin_id)
+    if not api_key:
+        raise HTTPException(
+            status_code=400,
+            detail="Ask your teacher to add an OpenAI API key under Admin → Settings.",
+        )
+    try:
+        note = generate_and_save_note(
+            student=payload["name"],
+            subject_key=subject_key,
+            section_id=section_id,
+            page_index=page_index,
+            page_markdown=req.page_markdown,
+            section_title=req.section_title,
+            subject_title=req.subject_title,
+            api_key=api_key,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return note
 
 
 @app.get("/admin/students")

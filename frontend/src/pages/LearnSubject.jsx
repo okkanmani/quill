@@ -1,12 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getLearnSubject } from "../api";
+import { getLearnPageNotes, getLearnSubject } from "../api";
 import LearnChrome from "../components/LearnChrome";
 import LearnMarkdown from "../components/LearnMarkdown";
+import LearnPageNotes from "../components/LearnPageNotes";
 import { LearnPageSheet } from "../components/LearnPageLabel";
 import { useShellLayout } from "../components/ShellLayoutContext";
 import QuillLoading from "../components/QuillLoading";
 import { buildLearnLinePages, getSectionStartPage } from "../learnPageUtils";
+import {
+  getStoredLearnNotesCollapsed,
+  setStoredLearnNotesCollapsed,
+} from "../learnNotesUtils";
 
 /* Sticky TOC sits below the page top padding in the sidebar layout. */
 
@@ -17,6 +22,24 @@ export default function LearnSubject() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notesByKey, setNotesByKey] = useState({});
+  const role = localStorage.getItem("role");
+  const adminStudentName = localStorage.getItem("studentName");
+  const canViewLearnNotes =
+    role === "student" || (role === "admin" && Boolean(adminStudentName));
+  const canEditLearnNotes = role === "student";
+  const [notesCollapsed, setNotesCollapsedState] = useState(getStoredLearnNotesCollapsed);
+
+  function toggleNotesCollapsed() {
+    setNotesCollapsedState(setStoredLearnNotesCollapsed(!notesCollapsed));
+  }
+
+  const handleNoteUpdate = useCallback((note) => {
+    setNotesByKey((prev) => ({
+      ...prev,
+      [`${note.section_id}:${note.page_index}`]: note,
+    }));
+  }, []);
 
   useEffect(() => {
     if (!subjectKey) return;
@@ -26,6 +49,24 @@ export default function LearnSubject() {
       .catch(() => setError("Could not load this topic."))
       .finally(() => setLoading(false));
   }, [subjectKey]);
+
+  useEffect(() => {
+    if (!subjectKey || !canViewLearnNotes) {
+      setNotesByKey({});
+      return;
+    }
+    getLearnPageNotes(subjectKey)
+      .then(({ notes }) => {
+        const map = {};
+        for (const note of notes || []) {
+          map[`${note.section_id}:${note.page_index}`] = note;
+        }
+        setNotesByKey(map);
+      })
+      .catch(() => {
+        setNotesByKey({});
+      });
+  }, [subjectKey, canViewLearnNotes]);
 
   useEffect(() => {
     if (!data?.sections?.length || loading) return;
@@ -52,7 +93,8 @@ export default function LearnSubject() {
 
   const showPageNumbers = totalPages > 1;
   const { sidebarCollapsed } = useShellLayout();
-  const contentWidthClass = sidebarCollapsed ? "max-w-none" : "max-w-6xl";
+  const contentWidthClass =
+    sidebarCollapsed || canViewLearnNotes ? "max-w-none" : "max-w-6xl";
 
   return (
     <LearnChrome onBack={() => navigate("/student/learn")}>
@@ -188,26 +230,51 @@ export default function LearnSubject() {
                     </>
                   );
 
-                  if (!showPageNumbers) {
-                    return (
-                      <div
-                        key={`${page.section.id}-${page.pageNumber}`}
-                        className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm scroll-mt-44"
-                      >
-                        {pageBody}
-                      </div>
-                    );
-                  }
+                  const noteKey = `${page.section.id}:${page.pageIndexWithinSection}`;
+                  const noteRecord = notesByKey[noteKey];
 
-                  return (
+                  const pageCard = !showPageNumbers ? (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm scroll-mt-44">
+                      {pageBody}
+                    </div>
+                  ) : (
                     <LearnPageSheet
-                      key={`${page.section.id}-${page.pageNumber}`}
                       pageNumber={page.pageNumber}
                       totalPages={page.totalPages}
                       className="scroll-mt-44"
                     >
                       {pageBody}
                     </LearnPageSheet>
+                  );
+
+                  if (!canViewLearnNotes) {
+                    return (
+                      <div key={`${page.section.id}-${page.pageNumber}`}>
+                        {pageCard}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={`${page.section.id}-${page.pageNumber}`}
+                      className="flex flex-col lg:flex-row lg:items-start overflow-visible"
+                    >
+                      <div className="min-w-0 flex-1">{pageCard}</div>
+                      <LearnPageNotes
+                        subjectKey={subjectKey}
+                        sectionId={page.section.id}
+                        pageIndex={page.pageIndexWithinSection}
+                        pageMarkdown={page.markdown}
+                        sectionTitle={page.section.title}
+                        subjectTitle={data.title}
+                        note={noteRecord}
+                        onNoteUpdate={handleNoteUpdate}
+                        readOnly={!canEditLearnNotes}
+                        collapsed={notesCollapsed}
+                        onToggleCollapsed={toggleNotesCollapsed}
+                      />
+                    </div>
                   );
                 })}
               </div>

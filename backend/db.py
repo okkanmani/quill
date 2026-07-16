@@ -231,7 +231,7 @@ def init_schema() -> None:
                 "ALTER TABLE learn_sections ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0"
             )
             conn.execute("UPDATE learn_sections SET sort_order = id")
-        conn.execute(
+        conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS learn_hub_order (
                 scope TEXT NOT NULL,
@@ -239,6 +239,18 @@ def init_schema() -> None:
                 sort_order INTEGER NOT NULL,
                 PRIMARY KEY (scope, subject_key)
             );
+            CREATE TABLE IF NOT EXISTS learn_page_notes (
+                student TEXT NOT NULL,
+                subject_key TEXT NOT NULL,
+                section_id TEXT NOT NULL,
+                page_index INTEGER NOT NULL DEFAULT 0,
+                body TEXT NOT NULL DEFAULT '',
+                ai_used INTEGER NOT NULL DEFAULT 0,
+                saved_at TEXT NOT NULL,
+                PRIMARY KEY (student, subject_key, section_id, page_index)
+            );
+            CREATE INDEX IF NOT EXISTS idx_learn_page_notes_student
+                ON learn_page_notes (student, subject_key);
             """
         )
         writing_cols = {
