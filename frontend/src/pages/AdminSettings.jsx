@@ -99,96 +99,94 @@ export default function AdminSettings() {
         ) : null}
 
         {!loading ? (
-          <>
-            <div className="mb-6">
-              <ColorThemeSettings />
-            </div>
-
+          <div className="space-y-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-semibold text-slate-950">OpenAI API key</h2>
-              <span
-                className={`text-xs font-semibold rounded-full px-2.5 py-0.5 border ${
-                  configured
-                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                    : "bg-amber-50 text-amber-900 border-amber-200"
-                }`}
-              >
-                {configured ? "Configured" : "Not set"}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-lg font-semibold text-slate-950">OpenAI API key</h2>
+                <span
+                  className={`text-xs font-semibold rounded-full px-2.5 py-0.5 border ${
+                    configured
+                      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                      : "bg-amber-50 text-amber-900 border-amber-200"
+                  }`}
+                >
+                  {configured ? "Configured" : "Not set"}
+                </span>
+              </div>
+
+              {!aiEnabled ? (
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  AI worksheet generation is disabled on this server (set{" "}
+                  <code className="text-xs bg-slate-100 px-1 rounded">QUILL_AI_ENABLED=0</code>{" "}
+                  to turn off).
+                </p>
+              ) : (
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Once saved, use Create → Question builder or Learning resource to
+                  generate worksheets and learning content with AI.
+                </p>
+              )}
+
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Create a key at{" "}
+                <a
+                  href="https://platform.openai.com/api-keys"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-700 underline"
+                >
+                  platform.openai.com
+                </a>
+                . Prepaid billing applies — typically a few cents per worksheet
+                draft with a small model. A new API key uses the same account
+                quota; add payment or credits at{" "}
+                <a
+                  href="https://platform.openai.com/settings/billing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-700 underline"
+                >
+                  Billing settings
+                </a>{" "}
+                if you see quota errors.
+              </p>
+
+              <form onSubmit={handleSave} className="space-y-3">
+                <label className="block text-sm font-semibold text-slate-800">
+                  {configured ? "Replace API key" : "API key"}
+                  <input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="sk-…"
+                    autoComplete="off"
+                    required
+                    className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                  />
+                </label>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="submit"
+                    disabled={saving || !apiKey.trim()}
+                    className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl px-5 py-2.5 text-sm"
+                  >
+                    {saving ? "Saving…" : configured ? "Replace key" : "Save key"}
+                  </button>
+                  {configured ? (
+                    <button
+                      type="button"
+                      onClick={handleRemove}
+                      className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 font-semibold rounded-xl px-5 py-2.5 text-sm"
+                    >
+                      Remove key
+                    </button>
+                  ) : null}
+                </div>
+              </form>
             </div>
 
-            {!aiEnabled ? (
-              <p className="text-sm text-slate-600 leading-relaxed">
-                AI worksheet generation is disabled on this server (set{" "}
-                <code className="text-xs bg-slate-100 px-1 rounded">QUILL_AI_ENABLED=0</code>{" "}
-                to turn off).
-              </p>
-            ) : (
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Once saved, use Create → Question builder or Learning resource to
-                generate worksheets and learning content with AI.
-              </p>
-            )}
-
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Create a key at{" "}
-              <a
-                href="https://platform.openai.com/api-keys"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-indigo-700 underline"
-              >
-                platform.openai.com
-              </a>
-              . Prepaid billing applies — typically a few cents per worksheet
-              draft with a small model. A new API key uses the same account
-              quota; add payment or credits at{" "}
-              <a
-                href="https://platform.openai.com/settings/billing"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-indigo-700 underline"
-              >
-                Billing settings
-              </a>{" "}
-              if you see quota errors.
-            </p>
-
-            <form onSubmit={handleSave} className="space-y-3">
-              <label className="block text-sm font-semibold text-slate-800">
-                {configured ? "Replace API key" : "API key"}
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="sk-…"
-                  autoComplete="off"
-                  required
-                  className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                />
-              </label>
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="submit"
-                  disabled={saving || !apiKey.trim()}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl px-5 py-2.5 text-sm"
-                >
-                  {saving ? "Saving…" : configured ? "Replace key" : "Save key"}
-                </button>
-                {configured ? (
-                  <button
-                    type="button"
-                    onClick={handleRemove}
-                    className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 font-semibold rounded-xl px-5 py-2.5 text-sm"
-                  >
-                    Remove key
-                  </button>
-                ) : null}
-              </div>
-            </form>
+            <ColorThemeSettings />
           </div>
-          </>
         ) : null}
       </div>
     </AppShell>

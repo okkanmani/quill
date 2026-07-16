@@ -4,6 +4,7 @@ import { getLearnSubject } from "../api";
 import LearnChrome from "../components/LearnChrome";
 import LearnMarkdown from "../components/LearnMarkdown";
 import { LearnPageSheet } from "../components/LearnPageLabel";
+import { useShellLayout } from "../components/ShellLayoutContext";
 import QuillLoading from "../components/QuillLoading";
 import { buildLearnLinePages, getSectionStartPage } from "../learnPageUtils";
 
@@ -50,26 +51,28 @@ export default function LearnSubject() {
   );
 
   const showPageNumbers = totalPages > 1;
+  const { sidebarCollapsed } = useShellLayout();
+  const contentWidthClass = sidebarCollapsed ? "max-w-none" : "max-w-6xl";
 
   return (
     <LearnChrome onBack={() => navigate("/student/learn")}>
-      <div className="max-w-5xl">
+      <div className={contentWidthClass}>
         {loading && <QuillLoading label="Loading topic…" />}
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
         {data && !loading && (
-          <div className="lg:grid lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] lg:gap-10 items-start">
-            <aside className="hidden lg:block sticky top-6 z-30 mb-8 lg:mb-0 self-start max-h-[calc(100vh-3rem)] overflow-y-auto pr-1">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-3">
+          <div className="lg:grid lg:grid-cols-[minmax(0,9.5rem)_minmax(0,1fr)] lg:gap-6 items-start">
+            <aside className="hidden lg:block sticky top-6 z-30 mb-8 lg:mb-0 self-start max-h-[calc(100vh-3rem)] overflow-y-auto pr-0.5">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-2">
                 On this page
               </p>
-              <nav className="flex flex-col gap-1 border-l-2 border-slate-200 pl-3 pb-2">
+              <nav className="flex flex-col gap-0.5 border-l border-slate-200 pl-2 pb-2">
                 {groups.map((g, gi) => (
                   <div key={g.id || `toc-${gi}`}>
                     {g.title ? (
                       <p
-                        className={`text-[11px] font-bold uppercase tracking-wide text-indigo-500 mb-1.5 ${
-                          gi > 0 ? "mt-3" : ""
+                        className={`text-[10px] font-bold uppercase tracking-wide text-indigo-500 mb-0.5 leading-tight ${
+                          gi > 0 ? "mt-2" : ""
                         }`}
                       >
                         {g.title}
@@ -81,10 +84,10 @@ export default function LearnSubject() {
                         <a
                           key={sec.id}
                           href={`#${sec.id}`}
-                          className="flex items-baseline gap-2 text-sm text-slate-800 hover:text-slate-950 font-medium py-0.5"
+                          className="flex items-baseline gap-1.5 text-xs leading-snug text-slate-700 hover:text-slate-950 py-px"
                         >
                           {showPageNumbers && startPage ? (
-                            <span className="shrink-0 w-5 text-right text-xs font-semibold text-slate-500 tabular-nums">
+                            <span className="shrink-0 w-4 text-right text-[10px] font-semibold text-slate-400 tabular-nums">
                               {startPage}
                             </span>
                           ) : null}
@@ -152,7 +155,7 @@ export default function LearnSubject() {
                   const pageBody = (
                     <>
                       {showGroupHeader ? (
-                        <h2 className="text-xl font-bold text-slate-950 pb-3 mb-4 border-b border-slate-200">
+                        <h2 className="text-lg font-bold text-slate-950 pb-2 mb-3 border-b border-slate-200">
                           {page.group.title}
                         </h2>
                       ) : null}
@@ -161,20 +164,20 @@ export default function LearnSubject() {
                         page.group.title ? (
                           <h3
                             id={page.section.id}
-                            className="text-lg font-bold text-slate-950 mb-4 scroll-mt-44"
+                            className="text-base font-bold text-slate-950 mb-3 scroll-mt-44"
                           >
                             {page.section.title}
                           </h3>
                         ) : (
                           <h2
                             id={page.section.id}
-                            className="text-xl font-bold text-slate-950 mb-4 scroll-mt-44"
+                            className="text-lg font-bold text-slate-950 mb-3 scroll-mt-44"
                           >
                             {page.section.title}
                           </h2>
                         )
                       ) : (
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-3">
                           {page.section.title} · continued
                         </p>
                       )}
