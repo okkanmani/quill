@@ -4,6 +4,7 @@ import {
   getLearnPageHighlights,
   getLearnPageNotes,
   getLearnSubject,
+  getMe,
   saveLearnPageHighlights,
 } from "../api";
 import LearnChrome from "../components/LearnChrome";
@@ -38,13 +39,20 @@ export default function LearnSubject() {
   const [notesByKey, setNotesByKey] = useState({});
   const [highlightsByKey, setHighlightsByKey] = useState({});
   const highlightSaveTimersRef = useRef({});
-  const role = localStorage.getItem("role");
-  const adminStudentName = localStorage.getItem("studentName");
+  const [sessionRole, setSessionRole] = useState(
+    () => localStorage.getItem("role") || "",
+  );
+  const [sessionStudentName, setSessionStudentName] = useState(
+    () => localStorage.getItem("studentName") || "",
+  );
   const canViewLearnNotes =
-    role === "student" || (role === "admin" && Boolean(adminStudentName));
-  const canEditLearnNotes = role === "student";
-  const canViewLearnHighlights = canViewLearnNotes;
-  const canEditLearnHighlights = role === "student";
+    sessionRole === "student" ||
+    (sessionRole === "admin" && Boolean(sessionStudentName));
+  const canEditLearnNotes = sessionRole === "student";
+  const canViewLearnHighlights =
+    sessionRole === "student" || sessionRole === "admin";
+  const canEditLearnHighlights = sessionRole === "student";
+  const showHighlightToolbar = canViewLearnHighlights;
   const [notesCollapsed, setNotesCollapsedState] = useState(getStoredLearnNotesCollapsed);
   const [highlightColor, setHighlightColorState] = useState(getStoredLearnHighlightColor);
   const [highlightEraser, setHighlightEraser] = useState(false);
@@ -52,6 +60,26 @@ export default function LearnSubject() {
   function setHighlightColor(color) {
     setHighlightColorState(setStoredLearnHighlightColor(color));
   }
+
+  useEffect(() => {
+    getMe()
+      .then((me) => {
+        if (me?.role) {
+          setSessionRole(me.role);
+          localStorage.setItem("role", me.role);
+        }
+        if (me?.role === "admin") {
+          const studentName = me.student_name || "";
+          setSessionStudentName(studentName);
+          if (studentName) {
+            localStorage.setItem("studentName", studentName);
+          } else {
+            localStorage.removeItem("studentName");
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   function toggleNotesCollapsed() {
     setNotesCollapsedState(setStoredLearnNotesCollapsed(!notesCollapsed));
@@ -134,7 +162,7 @@ export default function LearnSubject() {
   }, [subjectKey, canViewLearnNotes]);
 
   useEffect(() => {
-    if (!subjectKey || !canViewLearnHighlights) {
+    if (!subjectKey || !canViewLearnNotes) {
       setHighlightsByKey({});
       return;
     }
@@ -149,7 +177,7 @@ export default function LearnSubject() {
       .catch(() => {
         setHighlightsByKey({});
       });
-  }, [subjectKey, canViewLearnHighlights]);
+  }, [subjectKey, canViewLearnNotes]);
 
   useEffect(() => {
     if (!data?.sections?.length || loading) return;
@@ -323,13 +351,19 @@ export default function LearnSubject() {
                     </>
                   );
 
-                  const highlightToolbar = canViewLearnHighlights ? (
-                    <LearnPageHighlightToolbarSlot />
+                  const highlightToolbar = showHighlightToolbar ? (
+                    <LearnPageHighlightToolbarSlot
+                      disabledHint={
+                        canEditLearnHighlights
+                          ? ""
+                          : "Log in as a student to highlight and save."
+                      }
+                    />
                   ) : null;
 
                   const pageCardInner = !showPageNumbers ? (
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm scroll-mt-44">
-                      {canViewLearnHighlights ? (
+                      {showHighlightToolbar && highlightToolbar ? (
                         <LearnPageStickyToolbar>{highlightToolbar}</LearnPageStickyToolbar>
                       ) : null}
                       {pageBody}
@@ -339,8 +373,8 @@ export default function LearnSubject() {
                       pageNumber={page.pageNumber}
                       totalPages={page.totalPages}
                       className="scroll-mt-44"
-                      headerStart={highlightToolbar}
-                      stickyHeader={canViewLearnHighlights}
+                      headerStart={highlightToolbar || null}
+                      stickyHeader={showHighlightToolbar && Boolean(highlightToolbar)}
                     >
                       {pageBody}
                     </LearnPageSheet>
@@ -358,6 +392,7 @@ export default function LearnSubject() {
                       }
                       readOnly={!canEditLearnHighlights}
                       enabled
+                      showToolbar={showHighlightToolbar}
                       activeColor={highlightColor}
                       onActiveColorChange={setHighlightColor}
                       eraserActive={highlightEraser}

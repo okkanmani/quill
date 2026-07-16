@@ -16,6 +16,7 @@ function LearnPageHighlighterProvider({
   onHighlightsChange,
   readOnly = false,
   enabled = true,
+  showToolbar = true,
   activeColor,
   onActiveColorChange,
   eraserActive,
@@ -31,6 +32,7 @@ function LearnPageHighlighterProvider({
   const setResolvedColor = onActiveColorChange ?? setLocalColor;
   const setResolvedEraser = onEraserActiveChange ?? setLocalEraser;
   const interactive = enabled && !readOnly;
+  const toolbarDisabled = !interactive;
 
   useLayoutEffect(() => {
     const container = contentRef.current;
@@ -92,6 +94,8 @@ function LearnPageHighlighterProvider({
   const value = {
     contentRef,
     interactive,
+    showToolbar: enabled && showToolbar,
+    toolbarDisabled,
     activeColor: resolvedColor,
     setActiveColor: setResolvedColor,
     eraserActive: resolvedEraser,
@@ -115,16 +119,17 @@ function useLearnPageHighlighter() {
   return value;
 }
 
-export function LearnPageHighlightToolbarSlot() {
+export function LearnPageHighlightToolbarSlot({ disabledHint = "" }) {
   const {
-    interactive,
+    showToolbar,
+    toolbarDisabled,
     activeColor,
     setActiveColor,
     eraserActive,
     setEraserActive,
   } = useLearnPageHighlighter();
 
-  if (!interactive) return null;
+  if (!showToolbar) return null;
 
   return (
     <LearnHighlightToolbar
@@ -132,6 +137,8 @@ export function LearnPageHighlightToolbarSlot() {
       onActiveColorChange={setActiveColor}
       eraserActive={eraserActive}
       onEraserActiveChange={setEraserActive}
+      disabled={toolbarDisabled}
+      disabledHint={disabledHint}
     />
   );
 }

@@ -279,6 +279,28 @@ def init_schema() -> None:
         from auth_users import migrate_legacy_from_auth_json
 
         migrate_legacy_from_auth_json(conn)
+        highlight_tables = {
+            row[0]
+            for row in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+        }
+        if "learn_page_highlights" not in highlight_tables:
+            conn.executescript(
+                """
+                CREATE TABLE IF NOT EXISTS learn_page_highlights (
+                    student TEXT NOT NULL,
+                    subject_key TEXT NOT NULL,
+                    section_id TEXT NOT NULL,
+                    page_index INTEGER NOT NULL DEFAULT 0,
+                    highlights TEXT NOT NULL DEFAULT '[]',
+                    saved_at TEXT NOT NULL,
+                    PRIMARY KEY (student, subject_key, section_id, page_index)
+                );
+                CREATE INDEX IF NOT EXISTS idx_learn_page_highlights_student
+                    ON learn_page_highlights (student, subject_key);
+                """
+            )
         conn.commit()
     finally:
         conn.close()
