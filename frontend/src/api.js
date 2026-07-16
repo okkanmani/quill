@@ -79,6 +79,24 @@ export async function getMe() {
   return res.json();
 }
 
+async function parseApiError(res, fallback) {
+  const err = await res.json().catch(() => ({}));
+  const d = err.detail;
+  return typeof d === "string" ? d : fallback;
+}
+
+export async function updateAdminAccount(payload) {
+  const res = await fetch(`${BASE_URL}/auth/admin/account`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Could not update account"));
+  }
+  return res.json();
+}
+
 // --- Worksheets ---
 
 export async function getWorksheets() {
@@ -481,11 +499,11 @@ export async function deleteAdminStudent(studentId) {
   return res.json();
 }
 
-export async function updateAdminStudentGrade(studentId, grade) {
+export async function updateAdminStudent(studentId, payload) {
   const res = await fetch(`${BASE_URL}/admin/students/${studentId}`, {
     method: "PATCH",
     headers: authHeaders(),
-    body: JSON.stringify({ grade }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

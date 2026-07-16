@@ -17,6 +17,8 @@ from auth_users import (
     get_student_profile,
     list_students_for_admin,
     update_student_grade,
+    update_student_by_admin,
+    update_admin_account,
 )
 from admin_secrets import (
     admin_openai_key_configured,
@@ -170,7 +172,15 @@ class CreateStudentRequest(BaseModel):
 
 
 class UpdateStudentRequest(BaseModel):
-    grade: int
+    name: str | None = None
+    grade: int | None = None
+    password: str | None = None
+
+
+class UpdateAccountRequest(BaseModel):
+    current_password: str
+    name: str | None = None
+    new_password: str | None = None
 
 
 class GenerateWorksheetDraftRequest(BaseModel):
@@ -397,6 +407,40 @@ def me(authorization: str = Header(...)):
         "student_name": payload.get("student_name"),
         "admin_name": an,
         "needs_student": not bool(payload.get("student_name")),
+    }
+
+
+@app.put("/auth/admin/account")
+def update_admin_account_route(
+    req: UpdateAccountRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        updated = update_admin_account(
+            payload["admin_id"],
+            current_password=req.current_password,
+            name=req.name,
+            new_password=req.new_password,
+        )
+    except ValueError as exc:
+        msg = str(exc)
+        status = 409 if "taken" in msg.lower() else 400
+        raise HTTPException(status_code=status, detail=msg)
+    token = create_admin_token(
+        payload["admin_id"],
+        payload.get("student_id"),
+        payload.get("student_name"),
+        admin_name=updated["name"],
+    )
+    return {
+        "token": token,
+        "role": "admin",
+        "admin_name": updated["name"],
+        "student_name": payload.get("student_name"),
+        "message": "Account updated.",
     }
 
 
@@ -1219,13 +1263,35 @@ def admin_update_student(
     payload = _payload(authorization)
     if payload["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
+    if req.name is None and req.grade is None and req.password is None:
+        raise HTTPException(status_code=400, detail="No changes to save.")
     try:
-        updated = update_student_grade(payload["admin_id"], student_id, req.grade)
+        updated = update_student_by_admin(
+            payload["admin_id"],
+            student_id,
+            name=req.name,
+            grade=req.grade,
+            password=req.password,
+        )
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        msg = str(exc)
+        status = 409 if "already exists" in msg.lower() else 400
+        raise HTTPException(status_code=status, detail=msg)
     if not updated:
         raise HTTPException(status_code=404, detail="Student not found")
-    return updated
+    out = dict(updated)
+    if payload.get("student_id") == student_id:
+        an = payload.get("admin_name") or get_admin_name(payload["admin_id"])
+        out["token"] = create_admin_token(
+            payload["admin_id"],
+            updated["id"],
+            updated["name"],
+            admin_name=an,
+        )
+        out["student_name"] = updated["name"]
+        if updated.get("grade") is not None:
+            out["grade"] = updated["grade"]
+    return out
 
 
 @app.delete("/admin/students/{student_id}")

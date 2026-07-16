@@ -9,6 +9,7 @@ import {
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
+import AccountSettings from "../components/AccountSettings";
 import ColorThemeSettings from "../components/ColorThemeSettings";
 import FontSettings from "../components/FontSettings";
 import QuillLoading from "../components/QuillLoading";
@@ -84,7 +85,7 @@ export default function AdminSettings() {
       <div className="max-w-2xl">
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Settings</h1>
         <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-          Personalize appearance and manage your OpenAI API key for AI generation.
+          Manage your account, appearance, and OpenAI API key for AI generation.
         </p>
 
         {loading ? <QuillLoading label="Loading settings…" /> : null}
@@ -101,6 +102,8 @@ export default function AdminSettings() {
 
         {!loading ? (
           <div className="space-y-6">
+            <AccountSettings />
+
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-lg font-semibold text-slate-950">OpenAI API key</h2>

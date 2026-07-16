@@ -1,11 +1,161 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createAdminStudent, deleteAdminStudent, listAdminStudents, logout, switchAdminStudent, updateAdminStudentGrade } from "../api";
+import {
+  createAdminStudent,
+  deleteAdminStudent,
+  listAdminStudents,
+  logout,
+  switchAdminStudent,
+  updateAdminStudent,
+} from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
 import { GRADE_OPTIONS } from "../questionBuilderUtils";
+
+function StudentEditForm({ student, onCancel, onSaved, onError }) {
+  const [name, setName] = useState(student.name);
+  const [grade, setGrade] = useState(student.grade ?? 5);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setName(student.name);
+    setGrade(student.grade ?? 5);
+    setPassword("");
+    setConfirmPassword("");
+  }, [student]);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    onError("");
+
+    const trimmedName = name.trim();
+    const nameChanged = trimmedName !== student.name;
+    const gradeChanged =
+      student.grade == null || Number(grade) !== Number(student.grade);
+    const passwordChanged = Boolean(password);
+
+    if (!trimmedName) {
+      onError("Student name cannot be empty.");
+      return;
+    }
+    if (!nameChanged && !gradeChanged && !passwordChanged) {
+      onError("Change the name, grade, and/or password to update.");
+      return;
+    }
+    if (passwordChanged && password.length < 4) {
+      onError("Password must be at least 4 characters.");
+      return;
+    }
+    if (passwordChanged && password !== confirmPassword) {
+      onError("Passwords do not match.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const payload = {};
+      if (nameChanged) payload.name = trimmedName;
+      if (gradeChanged) payload.grade = Number(grade);
+      if (passwordChanged) payload.password = password;
+
+      const updated = await updateAdminStudent(student.id, payload);
+      if (updated.token) {
+        localStorage.setItem("token", updated.token);
+        if (updated.student_name) {
+          localStorage.setItem("studentName", updated.student_name);
+        }
+        if (updated.grade != null) {
+          localStorage.setItem("studentGrade", String(updated.grade));
+        }
+      } else if (
+        student.name === localStorage.getItem("studentName") &&
+        updated.grade != null
+      ) {
+        localStorage.setItem("studentGrade", String(updated.grade));
+      }
+      onSaved(updated);
+    } catch (ex) {
+      onError(ex.message || "Could not update student.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+      <label className="block text-sm font-semibold text-slate-800">
+        Name
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        />
+      </label>
+
+      <label className="block text-sm font-semibold text-slate-800">
+        Grade
+        <select
+          value={grade}
+          onChange={(e) => setGrade(Number(e.target.value))}
+          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        >
+          {GRADE_OPTIONS.map((g) => (
+            <option key={g.value} value={g.value}>
+              {g.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="block text-sm font-semibold text-slate-800">
+        New password
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="new-password"
+          placeholder="Leave blank to keep current"
+          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        />
+      </label>
+
+      <label className="block text-sm font-semibold text-slate-800">
+        Confirm new password
+        <input
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          autoComplete="new-password"
+          placeholder="Leave blank to keep current"
+          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        />
+      </label>
+
+      <div className="flex flex-wrap gap-2 pt-1">
+        <button
+          type="submit"
+          disabled={saving}
+          className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl px-4 py-2 text-sm"
+        >
+          {saving ? "Updating…" : "Update"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-semibold rounded-xl px-4 py-2 text-sm"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
 
 export default function AdminStudents() {
   const navigate = useNavigate();
@@ -16,7 +166,7 @@ export default function AdminStudents() {
   const [password, setPassword] = useState("");
   const [grade, setGrade] = useState(5);
   const [creating, setCreating] = useState(false);
-  const [savingGradeId, setSavingGradeId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
   function load() {
     setLoading(true);
@@ -69,22 +219,14 @@ export default function AdminStudents() {
     }
   }
 
-  async function handleGradeChange(student, nextGrade) {
-    setSavingGradeId(student.id);
+  function handleStudentUpdated(updated) {
+    setStudents((prev) =>
+      prev.map((s) =>
+        s.id === updated.id ? { ...s, name: updated.name, grade: updated.grade } : s,
+      ),
+    );
+    setEditingId(null);
     setError("");
-    try {
-      const updated = await updateAdminStudentGrade(student.id, Number(nextGrade));
-      setStudents((prev) =>
-        prev.map((s) => (s.id === student.id ? { ...s, grade: updated.grade } : s)),
-      );
-      if (student.name === localStorage.getItem("studentName")) {
-        localStorage.setItem("studentGrade", String(updated.grade));
-      }
-    } catch (ex) {
-      setError(ex.message || "Could not update grade.");
-    } finally {
-      setSavingGradeId(null);
-    }
   }
 
   async function handleDelete(student) {
@@ -98,6 +240,9 @@ export default function AdminStudents() {
       if (result.token) {
         localStorage.setItem("token", result.token);
         localStorage.removeItem("studentName");
+      }
+      if (editingId === student.id) {
+        setEditingId(null);
       }
       await load();
     } catch (ex) {
@@ -175,45 +320,45 @@ export default function AdminStudents() {
             </div>
             <ul className="divide-y divide-slate-100">
               {students.map((s) => (
-                <li
-                  key={s.id}
-                  className="px-4 py-3 text-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                >
-                  <span className="min-w-0 truncate font-medium">{s.name}</span>
-                  <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-                    <label className="flex items-center gap-2 text-sm text-slate-700">
-                      Grade
-                      <select
-                        value={s.grade ?? ""}
-                        disabled={savingGradeId === s.id}
-                        onChange={(e) => handleGradeChange(s, e.target.value)}
-                        className="border border-slate-300 rounded-lg px-2 py-1 bg-white text-slate-950 font-medium"
+                <li key={s.id} className="px-4 py-3 text-slate-900">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{s.name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Grade {s.grade ?? "—"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                      {s.name === localStorage.getItem("studentName") ? (
+                        <span className="text-xs font-semibold text-emerald-800 bg-emerald-100 border border-emerald-200 rounded-full px-2 py-0.5">
+                          Current view
+                        </span>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => setEditingId(editingId === s.id ? null : s.id)}
+                        className="bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-xl px-3 py-1.5 transition"
                       >
-                        {!s.grade ? (
-                          <option value="" disabled>
-                            Set grade…
-                          </option>
-                        ) : null}
-                        {GRADE_OPTIONS.map((g) => (
-                          <option key={g.value} value={g.value}>
-                            {g.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    {s.name === localStorage.getItem("studentName") ? (
-                      <span className="text-xs font-semibold text-emerald-800 bg-emerald-100 border border-emerald-200 rounded-full px-2 py-0.5">
-                        Current view
-                      </span>
-                    ) : null}
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(s)}
-                      className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 text-sm font-semibold rounded-xl px-3 py-1.5 transition"
-                    >
-                      Delete
-                    </button>
+                        {editingId === s.id ? "Close" : "Edit"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(s)}
+                        className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 text-sm font-semibold rounded-xl px-3 py-1.5 transition"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
+
+                  {editingId === s.id ? (
+                    <StudentEditForm
+                      student={s}
+                      onCancel={() => setEditingId(null)}
+                      onSaved={handleStudentUpdated}
+                      onError={setError}
+                    />
+                  ) : null}
                 </li>
               ))}
             </ul>

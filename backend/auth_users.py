@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import sqlite3
 from pathlib import Path
 
 import bcrypt
@@ -235,27 +236,291 @@ def get_student_admin_id(student_id: int) -> int | None:
     return profile.get("admin_id")
 
 
-def update_student_grade(admin_id: int, student_id: int, grade: int) -> dict | None:
-    grade = validate_grade(grade)
+def get_student_auth_row(student_id: int) -> dict | None:
     conn = db.connect()
     try:
         row = conn.execute(
-            "SELECT id, name, grade FROM students WHERE id = ? AND admin_id = ?",
-            (student_id, admin_id),
+            """
+            SELECT id, admin_id, name, password_hash, grade
+            FROM students WHERE id = ?
+            """,
+            (student_id,),
         ).fetchone()
-        if not row:
-            return None
+    finally:
+        conn.close()
+    if not row:
+        return None
+    out = {
+        "id": int(row["id"]),
+        "admin_id": int(row["admin_id"]),
+        "name": row["name"],
+        "password_hash": row["password_hash"],
+    }
+    if row["grade"] is not None:
+        out["grade"] = int(row["grade"])
+    return out
+
+
+def get_admin_auth_row(admin_id: int) -> dict | None:
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT id, name, password_hash FROM admins WHERE id = ?",
+            (admin_id,),
+        ).fetchone()
+    finally:
+        conn.close()
+    if not row:
+        return None
+    return {
+        "id": int(row["id"]),
+        "name": row["name"],
+        "password_hash": row["password_hash"],
+    }
+
+
+def _rename_student_name(conn, old_name: str, new_name: str) -> None:
+    tables = (
+        "results",
+        "writing_submissions",
+        "focus_area_discussed",
+        "learn_page_notes",
+        "worksheet_drafts",
+        "timed_attempts",
+        "student_worksheet_locks",
+        "student_gifted_week_locks",
+    )
+    for table in tables:
         conn.execute(
-            "UPDATE students SET grade = ? WHERE id = ? AND admin_id = ?",
-            (grade, student_id, admin_id),
+            f"UPDATE {table} SET student = ? WHERE student = ?",
+            (new_name, old_name),
         )
+
+
+def _validate_account_fields(
+    *,
+    name: str | None,
+    new_password: str | None,
+) -> tuple[str | None, str | None]:
+    next_name = name.strip() if name is not None else None
+    if next_name is not None and not next_name:
+        raise ValueError("Username cannot be empty.")
+    next_password = new_password if new_password is not None else None
+    if next_password is not None and len(next_password) < 4:
+        raise ValueError("New password must be at least 4 characters.")
+    if next_name is None and next_password is None:
+        raise ValueError("Enter a new username and/or new password.")
+    return next_name, next_password
+
+
+def update_student_account(
+    student_id: int,
+    *,
+    current_password: str,
+    name: str | None = None,
+    new_password: str | None = None,
+) -> dict:
+    row = get_student_auth_row(student_id)
+    if not row:
+        raise ValueError("Student account not found.")
+    if not current_password:
+        raise ValueError("Current password is required.")
+    if not bcrypt.checkpw(current_password.encode(), row["password_hash"].encode()):
+        raise ValueError("Current password is incorrect.")
+
+    next_name, next_password = _validate_account_fields(
+        name=name,
+        new_password=new_password,
+    )
+    final_name = next_name if next_name is not None else row["name"]
+
+    conn = db.connect()
+    try:
+        if final_name != row["name"]:
+            taken = conn.execute(
+                """
+                SELECT id FROM students
+                WHERE admin_id = ? AND name = ? AND id != ?
+                """,
+                (row["admin_id"], final_name, student_id),
+            ).fetchone()
+            if taken:
+                raise ValueError("That username is already taken.")
+            _rename_student_name(conn, row["name"], final_name)
+            conn.execute(
+                "UPDATE students SET name = ? WHERE id = ?",
+                (final_name, student_id),
+            )
+
+        if next_password is not None:
+            password_hash = bcrypt.hashpw(
+                next_password.encode(),
+                bcrypt.gensalt(),
+            ).decode()
+            conn.execute(
+                "UPDATE students SET password_hash = ? WHERE id = ?",
+                (password_hash, student_id),
+            )
+
         conn.commit()
-        return {"id": row["id"], "name": row["name"], "grade": grade}
+    except sqlite3.IntegrityError as exc:
+        conn.rollback()
+        raise ValueError("That username is already taken.") from exc
     except Exception:
         conn.rollback()
         raise
     finally:
         conn.close()
+
+    out = {"id": student_id, "name": final_name}
+    if row.get("grade") is not None:
+        out["grade"] = row["grade"]
+    return out
+
+
+def update_admin_account(
+    admin_id: int,
+    *,
+    current_password: str,
+    name: str | None = None,
+    new_password: str | None = None,
+) -> dict:
+    row = get_admin_auth_row(admin_id)
+    if not row:
+        raise ValueError("Admin account not found.")
+    if not current_password:
+        raise ValueError("Current password is required.")
+    if not bcrypt.checkpw(current_password.encode(), row["password_hash"].encode()):
+        raise ValueError("Current password is incorrect.")
+
+    next_name, next_password = _validate_account_fields(
+        name=name,
+        new_password=new_password,
+    )
+    final_name = next_name if next_name is not None else row["name"]
+
+    conn = db.connect()
+    try:
+        if final_name != row["name"]:
+            taken = conn.execute(
+                """
+                SELECT id FROM admins
+                WHERE name = ? COLLATE NOCASE AND id != ?
+                """,
+                (final_name, admin_id),
+            ).fetchone()
+            if taken:
+                raise ValueError("That username is already taken.")
+            conn.execute(
+                "UPDATE admins SET name = ? WHERE id = ?",
+                (final_name, admin_id),
+            )
+
+        if next_password is not None:
+            password_hash = bcrypt.hashpw(
+                next_password.encode(),
+                bcrypt.gensalt(),
+            ).decode()
+            conn.execute(
+                "UPDATE admins SET password_hash = ? WHERE id = ?",
+                (password_hash, admin_id),
+            )
+
+        conn.commit()
+    except sqlite3.IntegrityError as exc:
+        conn.rollback()
+        raise ValueError("That username is already taken.") from exc
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    return {"id": admin_id, "name": final_name}
+
+
+def update_student_by_admin(
+    admin_id: int,
+    student_id: int,
+    *,
+    name: str | None = None,
+    grade: int | None = None,
+    password: str | None = None,
+) -> dict | None:
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            """
+            SELECT id, name, grade, password_hash
+            FROM students
+            WHERE id = ? AND admin_id = ?
+            """,
+            (student_id, admin_id),
+        ).fetchone()
+        if not row:
+            return None
+
+        final_name = row["name"]
+        final_grade = int(row["grade"]) if row["grade"] is not None else None
+
+        if name is not None:
+            next_name = name.strip()
+            if not next_name:
+                raise ValueError("Student name cannot be empty.")
+            if next_name != row["name"]:
+                taken = conn.execute(
+                    """
+                    SELECT id FROM students
+                    WHERE admin_id = ? AND name = ? AND id != ?
+                    """,
+                    (admin_id, next_name, student_id),
+                ).fetchone()
+                if taken:
+                    raise ValueError("A student with that name already exists.")
+                _rename_student_name(conn, row["name"], next_name)
+                conn.execute(
+                    "UPDATE students SET name = ? WHERE id = ? AND admin_id = ?",
+                    (next_name, student_id, admin_id),
+                )
+                final_name = next_name
+
+        if grade is not None:
+            final_grade = validate_grade(grade)
+            conn.execute(
+                "UPDATE students SET grade = ? WHERE id = ? AND admin_id = ?",
+                (final_grade, student_id, admin_id),
+            )
+
+        if password is not None:
+            if len(password) < 4:
+                raise ValueError("Password must be at least 4 characters.")
+            password_hash = bcrypt.hashpw(
+                password.encode(),
+                bcrypt.gensalt(),
+            ).decode()
+            conn.execute(
+                "UPDATE students SET password_hash = ? WHERE id = ? AND admin_id = ?",
+                (password_hash, student_id, admin_id),
+            )
+
+        conn.commit()
+    except sqlite3.IntegrityError as exc:
+        conn.rollback()
+        raise ValueError("A student with that name already exists.") from exc
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    if name is None and grade is None and password is None:
+        raise ValueError("No changes to save.")
+
+    return {"id": student_id, "name": final_name, "grade": final_grade}
+
+
+def update_student_grade(admin_id: int, student_id: int, grade: int) -> dict | None:
+    return update_student_by_admin(admin_id, student_id, grade=grade)
 
 
 def delete_student(admin_id: int, student_id: int) -> dict | None:
