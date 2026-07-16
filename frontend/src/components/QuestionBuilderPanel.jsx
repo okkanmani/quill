@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   createWorksheetFromBuilder,
   generateWorksheetDraft,
+  getAdminLearnLinkOptions,
   getAdminSettings,
   listAdminStudents,
 } from "../api";
@@ -160,6 +161,10 @@ export default function QuestionBuilderPanel() {
   const [questionCount, setQuestionCount] = useState(defaultQuestionCount(2));
   const [timed, setTimed] = useState(false);
   const [timeLimitMinutes, setTimeLimitMinutes] = useState(10);
+  const [learnResourceKey, setLearnResourceKey] = useState("");
+  const [learnResourceOptions, setLearnResourceOptions] = useState([]);
+  const [learnResourcesLoading, setLearnResourcesLoading] = useState(false);
+  const [lockOnCreate, setLockOnCreate] = useState(false);
   const [questions, setQuestions] = useState(() =>
     buildQuestionList(defaultQuestionCount(2), "multiple_choice"),
   );
@@ -189,6 +194,31 @@ export default function QuestionBuilderPanel() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setLearnResourceKey("");
+    setLearnResourcesLoading(true);
+    getAdminLearnLinkOptions(subject)
+      .then(({ options }) => {
+        setLearnResourceOptions(options || []);
+      })
+      .catch(() => {
+        setLearnResourceOptions([]);
+      })
+      .finally(() => {
+        setLearnResourcesLoading(false);
+      });
+  }, [subject]);
+
+  const selectedLearnResource = useMemo(() => {
+    if (!learnResourceKey) return null;
+    return (
+      learnResourceOptions.find(
+        (option) =>
+          `${option.learn_subject}:${option.learn_section}` === learnResourceKey,
+      ) || null
+    );
+  }, [learnResourceKey, learnResourceOptions]);
 
   const recommendedCount = useMemo(() => defaultQuestionCount(stars), [stars]);
   const countMismatch = questionCount !== recommendedCount;
@@ -291,12 +321,23 @@ export default function QuestionBuilderPanel() {
           timed,
           timeLimitMinutes,
           questions: publishQuestions,
+          learnSubject: selectedLearnResource?.learn_subject,
+          learnSection: selectedLearnResource?.learn_section,
+          lockOnCreate,
         }),
       );
+      const lockNote =
+        lockOnCreate && typeof result.locked_for_students === "number"
+          ? ` Locked for ${result.locked_for_students} student${
+              result.locked_for_students === 1 ? "" : "s"
+            }.`
+          : lockOnCreate
+            ? " Locked for your students."
+            : "";
       setSuccess(
         buildUsingAi
-          ? `AI generated and published ${result.id} — “${result.title}” (${result.question_count} questions).`
-          : `Published ${result.id} — “${result.title}” (${result.question_count} questions).`,
+          ? `AI generated and published ${result.id} — “${result.title}” (${result.question_count} questions).${lockNote}`
+          : `Published ${result.id} — “${result.title}” (${result.question_count} questions).${lockNote}`,
       );
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -390,6 +431,35 @@ export default function QuestionBuilderPanel() {
             </select>
           </label>
         </div>
+
+        <label className="block text-sm font-semibold text-slate-800">
+          Learning resource
+          <select
+            value={learnResourceKey}
+            onChange={(e) => setLearnResourceKey(e.target.value)}
+            disabled={learnResourcesLoading}
+            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white disabled:bg-slate-100"
+          >
+            <option value="">
+              {learnResourcesLoading
+                ? "Loading resources…"
+                : "None — no resource link"}
+            </option>
+            {learnResourceOptions.map((option) => {
+              const value = `${option.learn_subject}:${option.learn_section}`;
+              return (
+                <option key={value} value={value}>
+                  {option.label}
+                </option>
+              );
+            })}
+          </select>
+          <span className="mt-1 block text-xs font-normal text-slate-500 leading-relaxed">
+            {learnResourceOptions.length === 0 && !learnResourcesLoading
+              ? "No learning resources match this subject yet. Create one under Learning resource."
+              : "Adds a Learn badge and Open Resource link on the worksheet for students."}
+          </span>
+        </label>
 
         <label className="block text-sm font-semibold text-slate-800">
           Difficulty
@@ -488,6 +558,21 @@ export default function QuestionBuilderPanel() {
                 />
               </label>
             ) : null}
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+              <input
+                type="checkbox"
+                checked={lockOnCreate}
+                onChange={(e) => setLockOnCreate(e.target.checked)}
+              />
+              Lock worksheet on publish
+            </label>
+            <span className="mt-1 block text-xs font-normal text-slate-500 leading-relaxed">
+              Locks access for all of your students until you unlock it from
+              Worksheets.
+            </span>
           </div>
         </div>
       </section>

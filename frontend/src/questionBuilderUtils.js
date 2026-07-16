@@ -155,8 +155,11 @@ export function builderPayload({
   timed,
   timeLimitMinutes,
   questions,
+  learnSubject,
+  learnSection,
+  lockOnCreate,
 }) {
-  return {
+  const payload = {
     title: title.trim(),
     subject,
     stars,
@@ -164,6 +167,7 @@ export function builderPayload({
     question_count: questionCount,
     timed,
     time_limit_minutes: timed ? Number(timeLimitMinutes) : null,
+    lock_on_create: Boolean(lockOnCreate),
     questions: questions.map((q) => {
       const base = { prompt: q.prompt.trim() };
       if (q.area?.trim()) base.area = q.area.trim().toLowerCase();
@@ -180,4 +184,11 @@ export function builderPayload({
       };
     }),
   };
+
+  if (learnSubject) {
+    payload.learn_subject = learnSubject;
+    if (learnSection) payload.learn_section = learnSection;
+  }
+
+  return payload;
 }

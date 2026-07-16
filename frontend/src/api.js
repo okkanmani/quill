@@ -169,6 +169,22 @@ export async function createWorksheetFromBuilder(payload) {
   return res.json();
 }
 
+export async function getAdminLearnLinkOptions(worksheetSubject) {
+  const params = new URLSearchParams({
+    worksheet_subject: worksheetSubject,
+  });
+  const res = await fetch(
+    `${BASE_URL}/admin/learn/link-options?${params.toString()}`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to load learning resources");
+  }
+  return res.json();
+}
+
 export async function submitResult(result) {
   const res = await fetch(`${BASE_URL}/results`, {
     method: "POST",

@@ -46,6 +46,7 @@ from learn_content import (
     learn_collection_key,
     list_admin_learn_sections,
     list_learn_hub,
+    list_learn_link_options,
     list_subjects,
     publish_learn_section,
     reorder_learn_hub_collections,
@@ -64,6 +65,7 @@ from worksheets import (
     attach_areas_to_answers,
     clear_worksheet_access_lock,
     create_worksheet_from_builder,
+    set_worksheet_access_lock_for_admin_students,
     delete_worksheet,
     delete_result,
     evaluate_result,
@@ -148,6 +150,10 @@ class CreateWorksheetBuilderRequest(BaseModel):
     question_count: int
     timed: bool = False
     time_limit_minutes: int | None = None
+    learn_subject: str | None = None
+    learn_section: str | None = None
+    content_badge: str | None = None
+    lock_on_create: bool = False
     questions: list[WorksheetBuilderQuestionRequest]
 
 
@@ -540,6 +546,17 @@ async def admin_upload_worksheet(
     return result
 
 
+@app.get("/admin/learn/link-options")
+def admin_learn_link_options(
+    worksheet_subject: str,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    return {"options": list_learn_link_options(worksheet_subject)}
+
+
 @app.post("/admin/worksheets/create")
 def admin_create_worksheet_from_builder(
     req: CreateWorksheetBuilderRequest,
@@ -548,8 +565,10 @@ def admin_create_worksheet_from_builder(
     payload = _payload(authorization)
     if payload["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
+    body = req.model_dump()
+    lock_on_create = bool(body.pop("lock_on_create", False))
     try:
-        return create_worksheet_from_builder(req.model_dump())
+        result = create_worksheet_from_builder(body)
     except ValueError as exc:
         errors = exc.args[0] if exc.args else ["Invalid worksheet data."]
         if isinstance(errors, list):
@@ -557,6 +576,14 @@ def admin_create_worksheet_from_builder(
         else:
             detail = [str(errors)]
         raise HTTPException(status_code=400, detail=detail)
+    if lock_on_create:
+        locked_count = set_worksheet_access_lock_for_admin_students(
+            payload["admin_id"],
+            result["id"],
+            locked=True,
+        )
+        result["locked_for_students"] = locked_count
+    return result
 
 
 @app.post("/admin/worksheets/generate-draft")

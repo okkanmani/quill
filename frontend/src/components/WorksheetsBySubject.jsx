@@ -157,7 +157,9 @@ function WorksheetRow({ ws, onOpenWorksheet, renderSideAction }) {
               }`}
               className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-900 border border-slate-200 hover:bg-slate-200/80 transition"
             >
-              Open Resource
+              {ws.learn_section_title
+                ? `Open: ${ws.learn_section_title}`
+                : "Open Resource"}
             </Link>
           ) : null}
         </div>

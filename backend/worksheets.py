@@ -357,6 +357,17 @@ def set_worksheet_access_lock(
         conn.close()
 
 
+def set_worksheet_access_lock_for_admin_students(
+    admin_id: int, worksheet_id: str, *, locked: bool
+) -> int:
+    from auth_users import list_students_for_admin
+
+    students = list_students_for_admin(admin_id)
+    for row in students:
+        set_worksheet_access_lock(row["name"], worksheet_id, locked=locked)
+    return len(students)
+
+
 def clear_worksheet_access_lock(student_name: str, worksheet_id: str) -> None:
     conn = db.connect()
     try:
@@ -1309,6 +1320,27 @@ def worksheet_data_from_builder(body: dict) -> dict:
     if timed:
         data["timed"] = True
         data["time_limit_minutes"] = time_limit
+
+    learn_subject_raw = body.get("learn_subject")
+    learn_section_raw = body.get("learn_section")
+    if learn_subject_raw is not None and str(learn_subject_raw).strip():
+        learn_subject, learn_section = _learn_fields_from_sheet_data(
+            {
+                "learn_subject": learn_subject_raw,
+                "learn_section": learn_section_raw,
+            }
+        )
+        if learn_subject:
+            data["learn_subject"] = learn_subject
+        if learn_section:
+            data["learn_section"] = learn_section
+
+    badge = body.get("content_badge")
+    if isinstance(badge, str) and badge.strip():
+        data["content_badge"] = badge.strip()
+    elif data.get("learn_subject"):
+        data["content_badge"] = "Learn"
+
     return data
 
 

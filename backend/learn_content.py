@@ -689,6 +689,50 @@ def _load_fs_subject(subject: str) -> dict | None:
     }
 
 
+def _learn_subject_matches_worksheet(learn_key: str, worksheet_subject: str) -> bool:
+    worksheet_subject = (worksheet_subject or "").strip().lower()
+    learn_key = (learn_key or "").strip().lower()
+    if not worksheet_subject or not learn_key:
+        return False
+    return learn_key == worksheet_subject or learn_key.startswith(f"{worksheet_subject}-")
+
+
+def list_learn_link_options(worksheet_subject: str) -> list[dict]:
+    """Flatten learn sections for worksheets whose subject matches a collection key."""
+    worksheet_subject = (worksheet_subject or "").strip().lower()
+    if not worksheet_subject:
+        return []
+
+    options: list[dict] = []
+    seen: set[tuple[str, str]] = set()
+    for meta in list_subjects():
+        subject_key = meta["key"]
+        if not _learn_subject_matches_worksheet(subject_key, worksheet_subject):
+            continue
+        subject_data = get_subject(subject_key)
+        if not subject_data:
+            continue
+        subject_title = subject_data.get("title") or subject_key
+        for section in subject_data.get("sections") or []:
+            section_id = (section.get("id") or "").strip().lower()
+            if not section_id:
+                continue
+            pair = (subject_key, section_id)
+            if pair in seen:
+                continue
+            seen.add(pair)
+            section_title = section.get("title") or section_id
+            options.append(
+                {
+                    "learn_subject": subject_key,
+                    "learn_section": section_id,
+                    "label": f"{subject_title} › {section_title}",
+                }
+            )
+    options.sort(key=lambda item: item["label"].lower())
+    return options
+
+
 def get_subject(subject: str) -> dict | None:
     subject = subject.strip().lower()
     data = _load_fs_subject(subject)

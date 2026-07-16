@@ -2,6 +2,7 @@ const STYLES = {
   NCERT: "bg-amber-100 text-amber-950 border-amber-200",
   Contest: "bg-violet-100 text-violet-950 border-violet-200",
   Quest: "bg-fuchsia-100 text-fuchsia-950 border-fuchsia-200",
+  Learn: "bg-sky-100 text-sky-950 border-sky-200",
 };
 
 function badgeStyle(text) {

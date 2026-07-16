@@ -129,10 +129,12 @@ def _normalize_draft(data: dict, *, fmt: str, question_count: int) -> dict:
     if not isinstance(raw_questions, list) or not raw_questions:
         raise ValueError("AI draft has no questions.")
 
-    if len(raw_questions) != question_count:
+    if len(raw_questions) < question_count:
         raise ValueError(
             f"AI returned {len(raw_questions)} questions; expected {question_count}."
         )
+    if len(raw_questions) > question_count:
+        raw_questions = raw_questions[:question_count]
 
     questions: list[dict] = []
     for i, raw in enumerate(raw_questions):
