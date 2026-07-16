@@ -16,7 +16,7 @@ function NotesPanelContent({
   error,
 }) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col min-h-0 max-h-[calc(100vh-3rem)]">
       <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-white px-3 py-2.5 shrink-0">
         <p className="text-xs font-bold uppercase tracking-wide text-slate-700">
           {readOnly ? "Student notes" : "My notes"}
@@ -28,7 +28,7 @@ function NotesPanelContent({
         ) : null}
       </div>
 
-      <div className="overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2">
         {!readOnly && !aiUsed ? (
           <button
             type="button"
@@ -175,12 +175,12 @@ export default function LearnPageNotes({
 
   return (
     <>
-      {/* Desktop: sidebar-style rail outside the page card */}
-      <div className="relative hidden lg:block shrink-0 self-start">
+      {/* Desktop: sticky rail — follows the page until the next page row starts */}
+      <div className="relative hidden lg:block shrink-0 sticky top-6 self-start z-20 max-h-[calc(100vh-3rem)]">
         <div
-          className={`overflow-x-hidden border-l border-slate-200 bg-white transition-[width] duration-200 ease-out ${notesWidthClass}`}
+          className={`flex flex-col overflow-hidden border-l border-slate-200 bg-white transition-[width] duration-200 ease-out max-h-[calc(100vh-3rem)] ${notesWidthClass}`}
         >
-          <div className={`relative ${NOTES_WIDTH_CLASS}`}>
+          <div className={`relative flex flex-col min-h-0 max-h-[calc(100vh-3rem)] ${NOTES_WIDTH_CLASS}`}>
             <div
               className={
                 collapsed ? "invisible pointer-events-none select-none" : undefined
