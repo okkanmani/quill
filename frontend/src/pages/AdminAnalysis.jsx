@@ -20,6 +20,8 @@ import {
   resolveResultForEvaluationUpload,
 } from "../resultExportUtils";
 
+const NEEDS_DISCUSSION_VISIBLE_COUNT = 6;
+
 function focusSelectionKey(subjectKey, area) {
   return `${subjectKey}::${area}`;
 }
@@ -46,34 +48,77 @@ function findSelectedFocus(bySubject, selectedKey) {
   return { subject, focus };
 }
 
-function FocusAreaChips({ areas, subjectKey, selectedKey, onSelectArea, muted = false }) {
+function FocusAreaChips({
+  areas,
+  subjectKey,
+  selectedKey,
+  onSelectArea,
+  muted = false,
+  collapseAfter = null,
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  const visibleAreas = useMemo(() => {
+    if (!collapseAfter || expanded || areas.length <= collapseAfter) {
+      return areas;
+    }
+
+    const initial = areas.slice(0, collapseAfter);
+    const parsed = parseFocusSelectionKey(selectedKey);
+    if (parsed?.subjectKey !== subjectKey) {
+      return initial;
+    }
+
+    const selectedFocus = areas.find((focus) => focus.area === parsed.area);
+    if (selectedFocus && !initial.some((focus) => focus.area === selectedFocus.area)) {
+      return [...initial, selectedFocus];
+    }
+
+    return initial;
+  }, [areas, collapseAfter, expanded, selectedKey, subjectKey]);
+
+  const showToggle = Boolean(collapseAfter) && areas.length > collapseAfter;
+
   if (!areas.length) return null;
+
   return (
-    <div className="mt-2 flex flex-wrap gap-2">
-      {areas.map((focus) => {
-        const key = focusSelectionKey(subjectKey, focus.area);
-        const isSelected = selectedKey === key;
-        const label = formatAreaLabel(focus.area);
-        return (
-          <button
-            key={focus.area}
-            type="button"
-            onClick={() => onSelectArea(key)}
-            aria-pressed={isSelected}
-            className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition ${
-              isSelected
-                ? muted
-                  ? "bg-slate-700 text-white border-slate-800 shadow-sm"
-                  : "bg-indigo-700 text-white border-indigo-800 shadow-sm"
-                : muted
-                  ? "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800"
-                  : "bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100"
-            }`}
-          >
-            {label}
-          </button>
-        );
-      })}
+    <div className="mt-2">
+      <div className="flex flex-wrap gap-2">
+        {visibleAreas.map((focus) => {
+          const key = focusSelectionKey(subjectKey, focus.area);
+          const isSelected = selectedKey === key;
+          const label = formatAreaLabel(focus.area);
+          return (
+            <button
+              key={focus.area}
+              type="button"
+              onClick={() => onSelectArea(key)}
+              aria-pressed={isSelected}
+              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                isSelected
+                  ? muted
+                    ? "bg-slate-700 text-white border-slate-800 shadow-sm"
+                    : "bg-indigo-700 text-white border-indigo-800 shadow-sm"
+                  : muted
+                    ? "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800"
+                    : "bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100"
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+      {showToggle ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((value) => !value)}
+          aria-expanded={expanded}
+          className="mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:underline"
+        >
+          {expanded ? "View less" : "View more"}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -186,6 +231,17 @@ function FocusAreaDetailPanel({
 
 function SubjectBlock({ subject, selectedKey, onSelectArea }) {
   const { needsDiscussion, alreadyDiscussed } = subject;
+  const parsed = parseFocusSelectionKey(selectedKey);
+  const selectedIsDiscussed =
+    parsed?.subjectKey === subject.subjectKey &&
+    alreadyDiscussed.some((focus) => focus.area === parsed.area);
+  const [discussedExpanded, setDiscussedExpanded] = useState(false);
+
+  useEffect(() => {
+    if (selectedIsDiscussed) {
+      setDiscussedExpanded(true);
+    }
+  }, [selectedIsDiscussed]);
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-4">
@@ -200,21 +256,43 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
             subjectKey={subject.subjectKey}
             selectedKey={selectedKey}
             onSelectArea={onSelectArea}
+            collapseAfter={NEEDS_DISCUSSION_VISIBLE_COUNT}
           />
         </div>
       ) : null}
       {alreadyDiscussed.length > 0 ? (
         <div className={needsDiscussion.length > 0 ? "mt-4" : "mt-3"}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Discussed
-          </p>
-          <FocusAreaChips
-            areas={alreadyDiscussed}
-            subjectKey={subject.subjectKey}
-            selectedKey={selectedKey}
-            onSelectArea={onSelectArea}
-            muted
-          />
+          {discussedExpanded ? (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Discussed
+              </p>
+              <FocusAreaChips
+                areas={alreadyDiscussed}
+                subjectKey={subject.subjectKey}
+                selectedKey={selectedKey}
+                onSelectArea={onSelectArea}
+                muted
+              />
+              <button
+                type="button"
+                onClick={() => setDiscussedExpanded(false)}
+                aria-expanded
+                className="mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:underline"
+              >
+                Hide discussed
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setDiscussedExpanded(true)}
+              aria-expanded={false}
+              className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:underline"
+            >
+              View discussed ({alreadyDiscussed.length})
+            </button>
+          )}
         </div>
       ) : null}
     </div>
