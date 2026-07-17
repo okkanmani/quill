@@ -309,6 +309,39 @@ function FocusExampleCard({ example, index, total }) {
   );
 }
 
+function FocusAreaDetailPlaceholder() {
+  return (
+    <div className="hidden lg:flex rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 shadow-sm px-5 py-5 min-h-[22rem] flex-col">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        Discussion
+      </p>
+      <h2 className="text-xl font-semibold text-slate-400 mt-1">Select a focus area</h2>
+      <p className="text-sm text-slate-500 mt-3 leading-relaxed max-w-md">
+        Choose a chip on the left to review sample wrong answers, add notes, and mark
+        the area as discussed.
+      </p>
+      <div className="mt-6 flex flex-col gap-3 flex-1">
+        <div className="rounded-xl border border-slate-100 bg-white/70 px-4 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
+            Examples
+          </p>
+          <div className="mt-3 space-y-2">
+            <div className="h-2.5 rounded bg-slate-100 w-full" />
+            <div className="h-2.5 rounded bg-slate-100 w-[92%]" />
+            <div className="h-2.5 rounded bg-slate-100 w-[78%]" />
+          </div>
+        </div>
+        <div className="rounded-xl border border-slate-100 bg-white/70 px-4 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
+            Notes &amp; status
+          </p>
+          <div className="mt-3 h-10 rounded-lg bg-slate-100" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FocusAreaDetailPanel({
   selection,
   selectionKey,
@@ -482,6 +515,10 @@ export default function AdminAnalysis() {
     }
   }, [bySubject, selectedKey]);
 
+  function handleSelectArea(key) {
+    setSelectedKey((current) => (current === key ? "" : key));
+  }
+
   async function handleMarkDiscussed() {
     if (!selection) return;
     setMarkingDiscussed(true);
@@ -618,33 +655,31 @@ export default function AdminAnalysis() {
           )}
 
           {!loading && !error && bySubject.length > 0 && (
-            <div
-              className={`grid gap-6 items-start ${
-                selection ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1"
-              }`}
-            >
-              <div className={selection ? "lg:col-span-1" : undefined}>
+            <div className="grid gap-6 items-start grid-cols-1 lg:grid-cols-3">
+              <div className="lg:col-span-1">
                 <div className="flex flex-col gap-4">
                   {bySubject.map((subject) => (
                     <SubjectBlock
                       key={subject.subjectKey}
                       subject={subject}
                       selectedKey={selectedKey}
-                      onSelectArea={setSelectedKey}
+                      onSelectArea={handleSelectArea}
                     />
                   ))}
                 </div>
               </div>
-              {selection ? (
-                <div className="lg:col-span-2 lg:sticky lg:top-6">
+              <div className="lg:col-span-2 lg:sticky lg:top-6">
+                {selection ? (
                   <FocusAreaDetailPanel
                     selection={selection}
                     selectionKey={selectedKey}
                     onMarkDiscussed={handleMarkDiscussed}
                     markingDiscussed={markingDiscussed}
                   />
-                </div>
-              ) : null}
+                ) : (
+                  <FocusAreaDetailPlaceholder />
+                )}
+              </div>
             </div>
           )}
         </div>
