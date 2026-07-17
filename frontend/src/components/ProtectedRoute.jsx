@@ -1,22 +1,19 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getMe } from "../api";
+import { clearSession } from "../sessionAuth";
 import QuillLoading from "./QuillLoading";
 
 export default function ProtectedRoute({ role, children }) {
-  const [status, setStatus] = useState(() => {
-    // synchronous check first - no token means denied immediately
-    const token = localStorage.getItem("token");
-    const storedRole = localStorage.getItem("role");
-    if (!token || !storedRole) return "denied";
-    const allowed = Array.isArray(role)
-      ? role.includes(storedRole)
-      : storedRole === role;
-    return allowed ? "allowed" : "checking";
-  });
+  const [status, setStatus] = useState("checking");
 
   useEffect(() => {
-    if (status !== "checking") return;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setStatus("denied");
+      return;
+    }
+
     getMe()
       .then((session) => {
         const allowed = Array.isArray(role)
@@ -25,7 +22,7 @@ export default function ProtectedRoute({ role, children }) {
         setStatus(allowed ? "allowed" : "denied");
       })
       .catch(() => {
-        localStorage.clear();
+        clearSession();
         setStatus("denied");
       });
   }, [role]);

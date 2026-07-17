@@ -19,11 +19,13 @@ import Worksheet from "./pages/Worksheet";
 import LearnHub from "./pages/LearnHub";
 import LearnSubject from "./pages/LearnSubject";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AutoSignOut from "./components/AutoSignOut";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <AutoSignOut>
+        <Routes>
         <Route path="/" element={<Login />} />
 
         <Route
@@ -172,7 +174,8 @@ export default function App() {
         />
 
         <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+        </Routes>
+      </AutoSignOut>
     </BrowserRouter>
   );
 }

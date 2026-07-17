@@ -1,3 +1,10 @@
+import {
+  clearSession,
+  handleSessionExpired,
+  isAuthenticated,
+  touchActivity,
+} from "./sessionAuth";
+
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 function getToken() {
@@ -10,6 +17,30 @@ function authHeaders() {
     Authorization: `Bearer ${getToken()}`,
   };
 }
+
+async function apiFetch(url, options = {}) {
+  const urlStr = typeof url === "string" ? url : url.toString();
+  const token = getToken();
+  const headers = new Headers(options.headers || {});
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  if (
+    !headers.has("Content-Type") &&
+    options.body &&
+    !(options.body instanceof FormData)
+  ) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const res = await fetch(urlStr, { ...options, headers });
+  if (res.status === 401 && token && !urlStr.includes("/auth/login") && !urlStr.includes("/auth/signup")) {
+    await handleSessionExpired("expired");
+  }
+  return res;
+}
+
+export { touchActivity };
 
 // --- Auth ---
 
@@ -52,7 +83,7 @@ export async function loginStudent({ name, password }) {
 }
 
 export async function logout() {
-  if (BASE_URL) {
+  if (BASE_URL && isAuthenticated()) {
     try {
       await fetch(`${BASE_URL}/auth/logout`, {
         method: "POST",
@@ -62,17 +93,11 @@ export async function logout() {
       // Still clear the session — JWT is discarded client-side; backend may be down.
     }
   }
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
-  localStorage.removeItem("name");
-  localStorage.removeItem("studentName");
-  localStorage.removeItem("adminName");
-  localStorage.removeItem("grade");
-  localStorage.removeItem("studentGrade");
+  clearSession();
 }
 
 export async function getMe() {
-  const res = await fetch(`${BASE_URL}/auth/me`, {
+  const res = await apiFetch(`${BASE_URL}/auth/me`, {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Not authenticated");
@@ -86,7 +111,7 @@ async function parseApiError(res, fallback) {
 }
 
 export async function updateAdminAccount(payload) {
-  const res = await fetch(`${BASE_URL}/auth/admin/account`, {
+  const res = await apiFetch(`${BASE_URL}/auth/admin/account`, {
     method: "PUT",
     headers: authHeaders(),
     body: JSON.stringify(payload),
@@ -100,7 +125,7 @@ export async function updateAdminAccount(payload) {
 // --- Worksheets ---
 
 export async function getWorksheets() {
-  const res = await fetch(`${BASE_URL}/worksheets`, {
+  const res = await apiFetch(`${BASE_URL}/worksheets`, {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to fetch worksheets");
@@ -108,7 +133,7 @@ export async function getWorksheets() {
 }
 
 export async function getWorksheet(id) {
-  const res = await fetch(`${BASE_URL}/worksheets/${id}`, {
+  const res = await apiFetch(`${BASE_URL}/worksheets/${id}`, {
     headers: authHeaders(),
   });
   if (!res.ok) {
@@ -123,7 +148,7 @@ export async function getWorksheet(id) {
 }
 
 export async function deleteWorksheet(id) {
-  const res = await fetch(`${BASE_URL}/worksheets/${id}`, {
+  const res = await apiFetch(`${BASE_URL}/worksheets/${id}`, {
     method: "DELETE",
     headers: authHeaders(),
   });
@@ -134,7 +159,7 @@ export async function deleteWorksheet(id) {
 export async function uploadWorksheet(file) {
   const form = new FormData();
   form.append("file", file);
-  const res = await fetch(`${BASE_URL}/admin/worksheets/upload`, {
+  const res = await apiFetch(`${BASE_URL}/admin/worksheets/upload`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${getToken()}`,
@@ -153,7 +178,7 @@ export async function uploadWorksheet(file) {
 }
 
 export async function updateWorksheetFromBuilder(worksheetId, payload) {
-  const res = await fetch(`${BASE_URL}/admin/worksheets/${worksheetId}`, {
+  const res = await apiFetch(`${BASE_URL}/admin/worksheets/${worksheetId}`, {
     method: "PUT",
     headers: authHeaders(),
     body: JSON.stringify(payload),
@@ -170,7 +195,7 @@ export async function updateWorksheetFromBuilder(worksheetId, payload) {
 }
 
 export async function createWorksheetFromBuilder(payload) {
-  const res = await fetch(`${BASE_URL}/admin/worksheets/create`, {
+  const res = await apiFetch(`${BASE_URL}/admin/worksheets/create`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(payload),
@@ -190,7 +215,7 @@ export async function getAdminLearnLinkOptions(worksheetSubject) {
   const params = new URLSearchParams({
     worksheet_subject: worksheetSubject,
   });
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/admin/learn/link-options?${params.toString()}`,
     { headers: authHeaders() },
   );
@@ -203,7 +228,7 @@ export async function getAdminLearnLinkOptions(worksheetSubject) {
 }
 
 export async function submitResult(result) {
-  const res = await fetch(`${BASE_URL}/results`, {
+  const res = await apiFetch(`${BASE_URL}/results`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(result),
@@ -218,7 +243,7 @@ export async function submitResult(result) {
 }
 
 export async function getWorksheetMyResult(worksheetId) {
-  const res = await fetch(`${BASE_URL}/worksheets/${worksheetId}/my-result`, {
+  const res = await apiFetch(`${BASE_URL}/worksheets/${worksheetId}/my-result`, {
     headers: authHeaders(),
   });
   if (res.status === 404) return null;
@@ -227,7 +252,7 @@ export async function getWorksheetMyResult(worksheetId) {
 }
 
 export async function getWorksheetDraft(worksheetId) {
-  const res = await fetch(`${BASE_URL}/worksheets/${worksheetId}/draft`, {
+  const res = await apiFetch(`${BASE_URL}/worksheets/${worksheetId}/draft`, {
     headers: authHeaders(),
   });
   if (res.status === 404) return null;
@@ -236,7 +261,7 @@ export async function getWorksheetDraft(worksheetId) {
 }
 
 export async function saveWorksheetDraft(worksheetId, answers) {
-  const res = await fetch(`${BASE_URL}/worksheets/${worksheetId}/draft`, {
+  const res = await apiFetch(`${BASE_URL}/worksheets/${worksheetId}/draft`, {
     method: "PUT",
     headers: authHeaders(),
     body: JSON.stringify({ answers }),
@@ -253,7 +278,7 @@ export async function saveWorksheetDraft(worksheetId, answers) {
 export async function getTimedSession(worksheetId, resume = false) {
   const url = new URL(`${BASE_URL}/worksheets/${worksheetId}/timed-session`);
   if (resume) url.searchParams.set("resume", "1");
-  const res = await fetch(url, {
+  const res = await apiFetch(url, {
     headers: authHeaders(),
   });
   if (!res.ok) {
@@ -278,7 +303,7 @@ export function lockTimedWorksheet(worksheetId) {
 }
 
 export async function unlockTimedWorksheet(worksheetId) {
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/admin/worksheets/${worksheetId}/unlock-timed`,
     { method: "POST", headers: authHeaders() },
   );
@@ -292,7 +317,7 @@ export async function unlockTimedWorksheet(worksheetId) {
 }
 
 export async function unlockGiftedTrackWeek(week) {
-  const res = await fetch(`${BASE_URL}/admin/gifted-track/unlock-week`, {
+  const res = await apiFetch(`${BASE_URL}/admin/gifted-track/unlock-week`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ week }),
@@ -307,7 +332,7 @@ export async function unlockGiftedTrackWeek(week) {
 }
 
 export async function lockGiftedTrackWeek(week) {
-  const res = await fetch(`${BASE_URL}/admin/gifted-track/lock-week`, {
+  const res = await apiFetch(`${BASE_URL}/admin/gifted-track/lock-week`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ week }),
@@ -322,7 +347,7 @@ export async function lockGiftedTrackWeek(week) {
 }
 
 export async function setWorksheetAccessLock(worksheetId, locked) {
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/admin/worksheets/${worksheetId}/access-lock`,
     {
       method: "POST",
@@ -340,7 +365,7 @@ export async function setWorksheetAccessLock(worksheetId, locked) {
 }
 
 export async function clearWorksheetAccessLock(worksheetId) {
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/admin/worksheets/${worksheetId}/clear-access-lock`,
     { method: "POST", headers: authHeaders() },
   );
@@ -354,7 +379,7 @@ export async function clearWorksheetAccessLock(worksheetId) {
 }
 
 export async function evaluateResult(resultId, marks) {
-  const res = await fetch(`${BASE_URL}/results/${resultId}/evaluate`, {
+  const res = await apiFetch(`${BASE_URL}/results/${resultId}/evaluate`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ marks }),
@@ -369,7 +394,7 @@ export async function evaluateResult(resultId, marks) {
 }
 
 export async function getResults() {
-  const res = await fetch(`${BASE_URL}/results`, {
+  const res = await apiFetch(`${BASE_URL}/results`, {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to fetch results");
@@ -377,7 +402,7 @@ export async function getResults() {
 }
 
 export async function getFocusAreasDiscussed() {
-  const res = await fetch(`${BASE_URL}/focus-areas/discussed`, {
+  const res = await apiFetch(`${BASE_URL}/focus-areas/discussed`, {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to fetch discussed focus areas");
@@ -385,7 +410,7 @@ export async function getFocusAreasDiscussed() {
 }
 
 export async function markFocusAreaDiscussed({ subject, area }) {
-  const res = await fetch(`${BASE_URL}/focus-areas/discussed`, {
+  const res = await apiFetch(`${BASE_URL}/focus-areas/discussed`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ subject, area }),
@@ -400,7 +425,7 @@ export async function markFocusAreaDiscussed({ subject, area }) {
 }
 
 export async function getWritingSubmissions() {
-  const res = await fetch(`${BASE_URL}/writing/submissions`, {
+  const res = await apiFetch(`${BASE_URL}/writing/submissions`, {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to fetch writing submissions");
@@ -408,7 +433,7 @@ export async function getWritingSubmissions() {
 }
 
 export async function submitWriting({ title, body }) {
-  const res = await fetch(`${BASE_URL}/writing/submissions`, {
+  const res = await apiFetch(`${BASE_URL}/writing/submissions`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ title, body }),
@@ -423,7 +448,7 @@ export async function submitWriting({ title, body }) {
 }
 
 export async function deleteWritingSubmission(submissionId) {
-  const res = await fetch(`${BASE_URL}/writing/submissions/${submissionId}`, {
+  const res = await apiFetch(`${BASE_URL}/writing/submissions/${submissionId}`, {
     method: "DELETE",
     headers: authHeaders(),
   });
@@ -437,7 +462,7 @@ export async function deleteWritingSubmission(submissionId) {
 }
 
 export async function gradeWritingSubmission(submissionId, { grade, feedback = "" }) {
-  const res = await fetch(`${BASE_URL}/writing/submissions/${submissionId}/grade`, {
+  const res = await apiFetch(`${BASE_URL}/writing/submissions/${submissionId}/grade`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ grade, feedback }),
@@ -452,7 +477,7 @@ export async function gradeWritingSubmission(submissionId, { grade, feedback = "
 }
 
 export async function deleteResult(resultId) {
-  const res = await fetch(`${BASE_URL}/results/${resultId}`, {
+  const res = await apiFetch(`${BASE_URL}/results/${resultId}`, {
     method: "DELETE",
     headers: authHeaders(),
   });
@@ -466,7 +491,7 @@ export async function deleteResult(resultId) {
 }
 
 export async function uploadFocusEvaluation(resultId, payload) {
-  const res = await fetch(`${BASE_URL}/results/${resultId}/focus-evaluation`, {
+  const res = await apiFetch(`${BASE_URL}/results/${resultId}/focus-evaluation`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(payload),
@@ -481,7 +506,7 @@ export async function uploadFocusEvaluation(resultId, payload) {
 }
 
 export async function analyzeResultForFocus(resultId) {
-  const res = await fetch(`${BASE_URL}/results/${resultId}/analyze`, {
+  const res = await apiFetch(`${BASE_URL}/results/${resultId}/analyze`, {
     method: "POST",
     headers: authHeaders(),
   });
@@ -495,7 +520,7 @@ export async function analyzeResultForFocus(resultId) {
 }
 
 export async function listAdminStudents() {
-  const res = await fetch(`${BASE_URL}/admin/students`, {
+  const res = await apiFetch(`${BASE_URL}/admin/students`, {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to list students");
@@ -503,7 +528,7 @@ export async function listAdminStudents() {
 }
 
 export async function createAdminStudent({ name, password, grade }) {
-  const res = await fetch(`${BASE_URL}/admin/students`, {
+  const res = await apiFetch(`${BASE_URL}/admin/students`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ name, password, grade }),
@@ -519,7 +544,7 @@ export async function createAdminStudent({ name, password, grade }) {
 }
 
 export async function deleteAdminStudent(studentId) {
-  const res = await fetch(`${BASE_URL}/admin/students/${studentId}`, {
+  const res = await apiFetch(`${BASE_URL}/admin/students/${studentId}`, {
     method: "DELETE",
     headers: authHeaders(),
   });
@@ -533,7 +558,7 @@ export async function deleteAdminStudent(studentId) {
 }
 
 export async function updateAdminStudent(studentId, payload) {
-  const res = await fetch(`${BASE_URL}/admin/students/${studentId}`, {
+  const res = await apiFetch(`${BASE_URL}/admin/students/${studentId}`, {
     method: "PATCH",
     headers: authHeaders(),
     body: JSON.stringify(payload),
@@ -548,7 +573,7 @@ export async function updateAdminStudent(studentId, payload) {
 }
 
 export async function generateWorksheetDraft(payload) {
-  const res = await fetch(`${BASE_URL}/admin/worksheets/generate-draft`, {
+  const res = await apiFetch(`${BASE_URL}/admin/worksheets/generate-draft`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(payload),
@@ -564,7 +589,7 @@ export async function generateWorksheetDraft(payload) {
 }
 
 export async function generateAndPublishLearnResource(payload) {
-  const res = await fetch(`${BASE_URL}/admin/learn/generate-and-publish`, {
+  const res = await apiFetch(`${BASE_URL}/admin/learn/generate-and-publish`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(payload),
@@ -580,7 +605,7 @@ export async function generateAndPublishLearnResource(payload) {
 }
 
 export async function publishLearnResource(payload) {
-  const res = await fetch(`${BASE_URL}/admin/learn/publish`, {
+  const res = await apiFetch(`${BASE_URL}/admin/learn/publish`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(payload),
@@ -596,7 +621,7 @@ export async function publishLearnResource(payload) {
 }
 
 export async function getAdminSettings() {
-  const res = await fetch(`${BASE_URL}/admin/settings`, {
+  const res = await apiFetch(`${BASE_URL}/admin/settings`, {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to load settings");
@@ -604,7 +629,7 @@ export async function getAdminSettings() {
 }
 
 export async function saveAdminOpenAiKey(apiKey) {
-  const res = await fetch(`${BASE_URL}/admin/settings/openai-key`, {
+  const res = await apiFetch(`${BASE_URL}/admin/settings/openai-key`, {
     method: "PUT",
     headers: authHeaders(),
     body: JSON.stringify({ api_key: apiKey }),
@@ -619,7 +644,7 @@ export async function saveAdminOpenAiKey(apiKey) {
 }
 
 export async function clearAdminOpenAiKey() {
-  const res = await fetch(`${BASE_URL}/admin/settings/openai-key`, {
+  const res = await apiFetch(`${BASE_URL}/admin/settings/openai-key`, {
     method: "DELETE",
     headers: authHeaders(),
   });
@@ -628,7 +653,7 @@ export async function clearAdminOpenAiKey() {
 }
 
 export async function switchAdminStudent(studentName) {
-  const res = await fetch(`${BASE_URL}/admin/session/student`, {
+  const res = await apiFetch(`${BASE_URL}/admin/session/student`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ student_name: studentName }),
@@ -640,7 +665,7 @@ export async function switchAdminStudent(studentName) {
 // --- Learning material (Markdown) ---
 
 export async function getLearnSubjects() {
-  const res = await fetch(`${BASE_URL}/learn/subjects`, {
+  const res = await apiFetch(`${BASE_URL}/learn/subjects`, {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to fetch learning subjects");
@@ -648,7 +673,7 @@ export async function getLearnSubjects() {
 }
 
 export async function getLearnSubject(subjectKey) {
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/learn/${encodeURIComponent(subjectKey)}`,
     {
       headers: authHeaders(),
@@ -659,7 +684,7 @@ export async function getLearnSubject(subjectKey) {
 }
 
 export async function getLearnPageNotes(subjectKey) {
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/learn/${encodeURIComponent(subjectKey)}/notes`,
     { headers: authHeaders() },
   );
@@ -672,7 +697,7 @@ export async function getLearnPageNotes(subjectKey) {
 }
 
 export async function saveLearnPageNote(subjectKey, sectionId, pageIndex, body) {
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/learn/${encodeURIComponent(subjectKey)}/${encodeURIComponent(sectionId)}/notes/${pageIndex}`,
     {
       method: "PUT",
@@ -694,7 +719,7 @@ export async function generateLearnPageNote(
   pageIndex,
   { pageMarkdown, sectionTitle, subjectTitle },
 ) {
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/learn/${encodeURIComponent(subjectKey)}/${encodeURIComponent(sectionId)}/notes/${pageIndex}/generate`,
     {
       method: "POST",
@@ -715,7 +740,7 @@ export async function generateLearnPageNote(
 }
 
 export async function getLearnPageHighlights(subjectKey) {
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/learn/${encodeURIComponent(subjectKey)}/highlights`,
     { headers: authHeaders() },
   );
@@ -733,7 +758,7 @@ export async function saveLearnPageHighlights(
   pageIndex,
   highlights,
 ) {
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/learn/${encodeURIComponent(subjectKey)}/${encodeURIComponent(sectionId)}/highlights/${pageIndex}`,
     {
       method: "PUT",
@@ -750,7 +775,7 @@ export async function saveLearnPageHighlights(
 }
 
 export async function updateLearnSection(subjectKey, sectionId, payload) {
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/admin/learn/${encodeURIComponent(subjectKey)}/${encodeURIComponent(sectionId)}`,
     {
       method: "PUT",
@@ -769,7 +794,7 @@ export async function updateLearnSection(subjectKey, sectionId, payload) {
 }
 
 export async function deleteLearnSection(subjectKey, sectionId) {
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/admin/learn/${encodeURIComponent(subjectKey)}/${encodeURIComponent(sectionId)}`,
     {
       method: "DELETE",
@@ -787,7 +812,7 @@ export async function deleteLearnSection(subjectKey, sectionId) {
 }
 
 export async function reorderLearnHubCollections(scope, subjectKeys) {
-  const res = await fetch(`${BASE_URL}/admin/learn/hub/reorder`, {
+  const res = await apiFetch(`${BASE_URL}/admin/learn/hub/reorder`, {
     method: "PUT",
     headers: authHeaders(),
     body: JSON.stringify({ scope, subject_keys: subjectKeys }),
@@ -803,7 +828,7 @@ export async function reorderLearnHubCollections(scope, subjectKeys) {
 }
 
 export async function reorderLearnSections(subjectKey, sectionIds) {
-  const res = await fetch(
+  const res = await apiFetch(
     `${BASE_URL}/admin/learn/${encodeURIComponent(subjectKey)}/reorder`,
     {
       method: "PUT",
@@ -822,7 +847,7 @@ export async function reorderLearnSections(subjectKey, sectionIds) {
 }
 
 export async function getAdminLearnSections() {
-  const res = await fetch(`${BASE_URL}/admin/learn/sections`, {
+  const res = await apiFetch(`${BASE_URL}/admin/learn/sections`, {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to fetch published learning resources");

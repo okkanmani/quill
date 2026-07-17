@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { loginAdmin, loginStudent, signupAdmin } from "../api";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { loginAdmin, loginStudent, signupAdmin, touchActivity } from "../api";
 import QuillLoading from "../components/QuillLoading";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const signedOut = searchParams.get("signedOut");
   const [studentName, setStudentName] = useState("");
   const [studentPassword, setStudentPassword] = useState("");
   const [adminStudentName, setAdminStudentName] = useState("");
@@ -35,6 +37,7 @@ export default function Login() {
       localStorage.removeItem("adminName");
       if (data.grade != null) localStorage.setItem("grade", String(data.grade));
       else localStorage.removeItem("grade");
+      touchActivity();
       navigate("/student");
     } catch {
       setError("Invalid name or password.");
@@ -70,6 +73,7 @@ export default function Login() {
       }
       if (data.grade != null) localStorage.setItem("studentGrade", String(data.grade));
       else localStorage.removeItem("studentGrade");
+      touchActivity();
       navigate("/admin");
     } catch {
       setError(
@@ -327,6 +331,16 @@ export default function Login() {
           </button>
         )}
 
+        {signedOut === "idle" ? (
+          <p className="text-sm text-slate-700 text-center rounded-xl border border-slate-200 bg-white px-4 py-3">
+            You were signed out due to inactivity.
+          </p>
+        ) : null}
+        {signedOut === "expired" ? (
+          <p className="text-sm text-slate-700 text-center rounded-xl border border-slate-200 bg-white px-4 py-3">
+            Your session expired. Please sign in again.
+          </p>
+        ) : null}
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
       </div>
     </div>
