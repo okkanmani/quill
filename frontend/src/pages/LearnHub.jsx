@@ -13,63 +13,54 @@ import LearnChrome from "../components/LearnChrome";
 import QuillLoading from "../components/QuillLoading";
 import RecycleBinButton from "../components/RecycleBinButton";
 
-function RenameSectionDialog({ section, saving, onCancel, onSave }) {
-  const [title, setTitle] = useState(section?.title || "");
+function EditableSectionTitle({ section, learnUrl, saving, onSave }) {
+  const [value, setValue] = useState(section.title || "");
 
   useEffect(() => {
-    setTitle(section?.title || "");
-  }, [section]);
+    setValue(section.title || "");
+  }, [section.title]);
 
-  if (!section) return null;
+  async function commit() {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setValue(section.title || "");
+      return;
+    }
+    if (trimmed !== section.title) {
+      await onSave(section, trimmed);
+    }
+  }
 
   return (
-    <>
-      <button
-        type="button"
-        className="fixed inset-0 z-40 cursor-default bg-slate-900/40"
-        aria-label="Close rename dialog"
-        onClick={saving ? undefined : onCancel}
+    <div>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={() => {
+          commit();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            e.currentTarget.blur();
+          }
+          if (e.key === "Escape") {
+            setValue(section.title || "");
+            e.currentTarget.blur();
+          }
+        }}
+        disabled={saving}
+        aria-label={`Section title for ${section.title}`}
+        className="w-full rounded-lg border border-transparent bg-transparent px-0 py-0.5 text-lg font-semibold text-slate-900 hover:border-slate-200 hover:bg-white focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60 transition"
       />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="rename-learn-title"
-        className="fixed left-1/2 top-1/2 z-50 w-[min(24rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white p-5 shadow-xl"
+      <Link
+        to={learnUrl}
+        className="mt-2 inline-block text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:underline"
       >
-        <h2 id="rename-learn-title" className="text-lg font-bold text-slate-950">
-          Rename section
-        </h2>
-        <p className="text-sm text-slate-600 mt-1">{section.subject_title}</p>
-        <label className="block mt-4 text-sm font-semibold text-slate-800">
-          Section title
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            autoFocus
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-          />
-        </label>
-        <div className="mt-5 flex flex-wrap justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={saving}
-            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 disabled:opacity-60 transition"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => onSave(title.trim())}
-            disabled={saving || !title.trim()}
-            className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white px-4 py-2 text-sm font-semibold transition"
-          >
-            {saving ? "Saving…" : "Save title"}
-          </button>
-        </div>
-      </div>
-    </>
+        View resource
+      </Link>
+    </div>
   );
 }
 
@@ -124,52 +115,63 @@ function PublishedResourceRow({
   section,
   deleting,
   onDelete,
-  onRename,
+  onTitleSave,
+  titleSavingKey,
   compact = false,
 }) {
   const learnUrl = `/student/learn/${encodeURIComponent(section.subject_key)}#${encodeURIComponent(section.section_id)}`;
   const editUrl = `/admin/create/learn/edit/${encodeURIComponent(section.subject_key)}/${encodeURIComponent(section.section_id)}`;
+  const isAdmin = Boolean(onTitleSave);
+  const savingTitle =
+    titleSavingKey === `${section.subject_key}:${section.section_id}`;
 
   return (
     <div className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4">
       <div className="flex-1 min-w-0 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        <Link
-          to={learnUrl}
-          className="block p-5 hover:bg-slate-50/60 transition"
-        >
-          <p className="text-slate-900 font-semibold text-lg">{section.title}</p>
-          {!compact && section.subject_title ? (
-            <p className="text-slate-600 text-sm mt-1">{section.subject_title}</p>
-          ) : null}
-          {!compact && section.subject_description ? (
-            <p className="text-slate-500 text-xs mt-2">{section.subject_description}</p>
-          ) : null}
-        </Link>
-        {onRename ? (
-          <div className="px-5 pb-4 -mt-1 border-t border-slate-100 pt-3">
-            <button
-              type="button"
-              onClick={() => onRename(section)}
-              disabled={Boolean(deleting)}
-              className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:underline disabled:opacity-60"
-            >
-              Rename title
-            </button>
+        {isAdmin ? (
+          <div className="p-5">
+            <EditableSectionTitle
+              section={section}
+              learnUrl={learnUrl}
+              saving={savingTitle}
+              onSave={onTitleSave}
+            />
+            {!compact && section.subject_title ? (
+              <p className="text-slate-600 text-sm mt-2">{section.subject_title}</p>
+            ) : null}
+            {!compact && section.subject_description ? (
+              <p className="text-slate-500 text-xs mt-2">{section.subject_description}</p>
+            ) : null}
           </div>
-        ) : null}
+        ) : (
+          <Link
+            to={learnUrl}
+            className="block p-5 hover:bg-slate-50/60 transition"
+          >
+            <p className="text-slate-900 font-semibold text-lg">{section.title}</p>
+            {!compact && section.subject_title ? (
+              <p className="text-slate-600 text-sm mt-1">{section.subject_title}</p>
+            ) : null}
+            {!compact && section.subject_description ? (
+              <p className="text-slate-500 text-xs mt-2">{section.subject_description}</p>
+            ) : null}
+          </Link>
+        )}
       </div>
-      <div className="flex flex-row sm:flex-col shrink-0 gap-2 self-center sm:self-stretch items-center sm:items-stretch sm:w-11">
-        <EditActionButton
-          to={editUrl}
-          label={`Edit ${section.title}`}
-          disabled={Boolean(deleting)}
-        />
-        <RecycleBinButton
-          onClick={() => onDelete(section)}
-          label={`Delete ${section.title}`}
-          disabled={Boolean(deleting)}
-        />
-      </div>
+      {isAdmin ? (
+        <div className="flex flex-row sm:flex-col shrink-0 gap-2 self-center sm:self-stretch items-center sm:items-stretch sm:w-11">
+          <EditActionButton
+            to={editUrl}
+            label={`Edit ${section.title}`}
+            disabled={Boolean(deleting)}
+          />
+          <RecycleBinButton
+            onClick={() => onDelete(section)}
+            label={`Delete ${section.title}`}
+            disabled={Boolean(deleting)}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -258,9 +260,10 @@ function SubjectCard({
   isAdmin,
   deleting,
   onDelete,
-  onRename,
+  onTitleSave,
+  titleSavingKey,
 }) {
-  if (isAdmin && publishedSections.length > 0) {
+  if (publishedSections.length > 0) {
     return (
       <div className="rounded-xl border border-slate-200 bg-slate-50/80 overflow-hidden">
         <Link
@@ -280,8 +283,9 @@ function SubjectCard({
               key={`${section.subject_key}-${section.section_id}`}
               section={section}
               deleting={deleting}
-              onDelete={onDelete}
-              onRename={onRename}
+              onDelete={isAdmin ? onDelete : undefined}
+              onTitleSave={onTitleSave}
+              titleSavingKey={titleSavingKey}
               compact
             />
           ))}
@@ -314,7 +318,7 @@ function collectHubSubjectKeys(entries) {
   return Array.from(keys);
 }
 
-async function discoverEditableSections(entries) {
+async function discoverSubjectSections(entries, { dbOnly = false } = {}) {
   const keys = collectHubSubjectKeys(entries);
   const sections = [];
   await Promise.all(
@@ -322,7 +326,7 @@ async function discoverEditableSections(entries) {
       try {
         const data = await getLearnSubject(key);
         for (const sec of data.sections || []) {
-          if (sec.source !== "db") continue;
+          if (dbOnly && sec.source !== "db") continue;
           sections.push({
             subject_key: data.key,
             section_id: sec.id,
@@ -348,8 +352,7 @@ export default function LearnHub() {
   const [statusMessage, setStatusMessage] = useState("");
   const [deleting, setDeleting] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
-  const [pendingRename, setPendingRename] = useState(null);
-  const [renaming, setRenaming] = useState(false);
+  const [titleSavingKey, setTitleSavingKey] = useState(null);
   const [reorderingScope, setReorderingScope] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState(() => new Set(["math"]));
   const isAdmin = localStorage.getItem("role") === "admin";
@@ -374,11 +377,12 @@ export default function LearnHub() {
           }
         }
         if (sections.length === 0) {
-          sections = await discoverEditableSections(hubEntries);
+          sections = await discoverSubjectSections(hubEntries, { dbOnly: true });
         }
         setPublishedSections(sections);
       } else {
-        setPublishedSections([]);
+        const sections = await discoverSubjectSections(hubEntries);
+        setPublishedSections(sections);
       }
     } catch {
       setError("Could not load learning topics.");
@@ -441,39 +445,29 @@ export default function LearnHub() {
     setPendingDelete(section);
   }
 
-  function requestRenameSection(section) {
-    setPendingRename(section);
-  }
-
-  async function confirmRenameSection(nextTitle) {
-    if (!pendingRename || !nextTitle) return;
-
-    setRenaming(true);
+  async function saveSectionTitle(section, nextTitle) {
+    const key = `${section.subject_key}:${section.section_id}`;
+    setTitleSavingKey(key);
     setError("");
     setStatusMessage("");
     try {
-      const data = await getLearnSubject(pendingRename.subject_key);
+      const data = await getLearnSubject(section.subject_key);
       const sec = (data.sections || []).find(
-        (item) => item.id === pendingRename.section_id && item.source === "db",
+        (item) => item.id === section.section_id && item.source === "db",
       );
       if (!sec) {
         throw new Error("This learning resource is not editable.");
       }
-      await updateLearnSection(
-        pendingRename.subject_key,
-        pendingRename.section_id,
-        {
-          title: nextTitle,
-          markdown: sec.markdown,
-        },
-      );
-      setStatusMessage(`Renamed to “${nextTitle}”.`);
-      setPendingRename(null);
+      await updateLearnSection(section.subject_key, section.section_id, {
+        title: nextTitle,
+        markdown: sec.markdown,
+      });
+      setStatusMessage(`Saved title “${nextTitle}”.`);
       await loadHub();
     } catch (err) {
-      setError(err.message || "Could not rename this section.");
+      setError(err.message || "Could not save this title.");
     } finally {
-      setRenaming(false);
+      setTitleSavingKey(null);
     }
   }
 
@@ -539,8 +533,9 @@ export default function LearnHub() {
         isAdmin={isAdmin}
         publishedSections={publishedBySubjectKey.get(subject.key) || []}
         deleting={deleting}
-        onDelete={requestDeleteSection}
-        onRename={requestRenameSection}
+        onDelete={isAdmin ? requestDeleteSection : undefined}
+        onTitleSave={isAdmin ? saveSectionTitle : undefined}
+        titleSavingKey={titleSavingKey}
       />
     );
   }
@@ -581,7 +576,8 @@ export default function LearnHub() {
                         section={section}
                         deleting={deleting}
                         onDelete={requestDeleteSection}
-                        onRename={requestRenameSection}
+                        onTitleSave={saveSectionTitle}
+                        titleSavingKey={titleSavingKey}
                       />
                     ))}
                   </div>
@@ -649,14 +645,6 @@ export default function LearnHub() {
         </div>
       </div>
 
-      <RenameSectionDialog
-        section={pendingRename}
-        saving={renaming}
-        onCancel={() => {
-          if (!renaming) setPendingRename(null);
-        }}
-        onSave={confirmRenameSection}
-      />
       <DeleteConfirmDialog
         section={pendingDelete}
         deleting={Boolean(deleting)}

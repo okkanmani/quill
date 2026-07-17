@@ -410,6 +410,13 @@ def _evaluation_from_sheet_data(data: dict) -> str:
     return "auto"
 
 
+def _scratchpad_from_builder(body: dict, subject: str) -> bool:
+    raw = body.get("scratchpad")
+    if raw is not None:
+        return bool(raw)
+    return subject in ("math", "data")
+
+
 def _resolve_evaluation(worksheet_id: str, row_evaluation) -> str:
     data = _load_bundled_sheet_data(worksheet_id)
     if data:
@@ -1242,6 +1249,12 @@ def worksheet_data_from_builder(body: dict, *, existing: dict | None = None) -> 
     else:
         subject = subject.strip().lower()
 
+    english_type_raw = body.get("english_type")
+    if isinstance(english_type_raw, str):
+        english_type = english_type_raw.strip().lower()
+    else:
+        english_type = ""
+
     stars = body.get("stars")
     if not isinstance(stars, (int, float)) or int(stars) not in (1, 2, 3):
         errors.append("stars must be 1, 2, or 3.")
@@ -1252,8 +1265,10 @@ def worksheet_data_from_builder(body: dict, *, existing: dict | None = None) -> 
     if fmt not in ("multiple_choice", "short_answer"):
         errors.append("format must be multiple_choice or short_answer.")
 
-    if fmt == "short_answer" and subject != "math":
-        errors.append("short_answer worksheets must use subject math (manual grading).")
+    if fmt == "short_answer" and english_type == "reading_comprehension":
+        errors.append(
+            "short_answer is not supported for reading comprehension worksheets yet."
+        )
 
     timed = body.get("timed") is True
     time_limit = body.get("time_limit_minutes")
@@ -1339,7 +1354,6 @@ def worksheet_data_from_builder(body: dict, *, existing: dict | None = None) -> 
     if errors:
         raise ValueError(errors)
 
-    english_type = body.get("english_type")
     if isinstance(english_type, str):
         english_type = english_type.strip().lower()
     else:
@@ -1389,7 +1403,7 @@ def worksheet_data_from_builder(body: dict, *, existing: dict | None = None) -> 
     data: dict = {
         "title": title.strip(),
         "subject": subject,
-        "scratchpad": subject != "english",
+        "scratchpad": _scratchpad_from_builder(body, subject),
         "created_at": datetime.now(timezone.utc).isoformat(),
         "questions": built_questions,
     }
@@ -1502,14 +1516,6 @@ def validate_worksheet_data(data: dict) -> list[str]:
         errors.append("content_badge must be a non-empty string when set.")
 
     evaluation = _evaluation_from_sheet_data(data)
-    if evaluation == "manual":
-        subj = subject.strip().lower() if isinstance(subject, str) else "general"
-        gifted = data.get("gifted_track") is True
-        if subj != "math" and not (gifted and subj == "general"):
-            errors.append(
-                "evaluation manual is only allowed for math worksheets, or general "
-                "Thinking Quest (gifted_track) worksheets."
-            )
 
     is_timed, time_limit = _timed_from_sheet_data(data)
     if data.get("timed") is True and not is_timed:

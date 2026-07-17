@@ -24,10 +24,12 @@ import {
   removeRcPassageAt,
   defaultQuestionCount,
   DEFAULT_RC_MIN_WORDS,
+  defaultScratchpadForSubject,
   draftRcToBuilderState,
   draftToBuilderQuestions,
   groupQuestionsByPassage,
   isBuilderQuestionComplete,
+  aiGeneratesReferenceAnswers,
   totalRcQuestionCount,
   resizeQuestions,
   validateBuilderForm,
@@ -335,6 +337,7 @@ export default function QuestionBuilderPanel() {
   const [grade, setGrade] = useState(initialGrade);
   const [stars, setStars] = useState(2);
   const [format, setFormat] = useState("multiple_choice");
+  const [scratchpad, setScratchpad] = useState(() => defaultScratchpadForSubject("math"));
   const [questionCount, setQuestionCount] = useState(defaultQuestionCount(2));
   const [timed, setTimed] = useState(false);
   const [timeLimitMinutes, setTimeLimitMinutes] = useState(10);
@@ -368,6 +371,7 @@ export default function QuestionBuilderPanel() {
         setSubject(state.subject);
         setStars(state.stars);
         setFormat(state.format);
+        setScratchpad(state.scratchpad);
         setEnglishType(state.englishType);
         setPassages(state.passages.length ? state.passages : []);
         setTimed(state.timed);
@@ -431,6 +435,9 @@ export default function QuestionBuilderPanel() {
   const countMismatch = questionCount !== recommendedCount;
   const isReadingComprehension =
     subject === "english" && englishType === "reading_comprehension";
+  const isShortAnswer = format === "short_answer";
+  const aiDraftNeedsReferenceAnswers =
+    buildUsingAi && isShortAnswer && !aiGeneratesReferenceAnswers(subject);
   const rcQuestionTotal = useMemo(
     () => (isReadingComprehension ? totalRcQuestionCount(passages) : questionCount),
     [isReadingComprehension, passages, questionCount],
@@ -475,21 +482,28 @@ export default function QuestionBuilderPanel() {
     setSubject(nextSubject);
     setLearnResourceKey("");
     if (nextSubject === "english") {
-      setEnglishType((current) => current || "critical_reasoning");
-      setFormat("multiple_choice");
+      if (format === "short_answer") {
+        setEnglishType("critical_reasoning");
+        setPassages([]);
+      } else {
+        setEnglishType((current) => current || "critical_reasoning");
+        setFormat("multiple_choice");
+        setQuestions(buildQuestionList(questionCount, "multiple_choice"));
+      }
     } else {
       setEnglishType("");
       setPassages([]);
     }
-    if (nextSubject !== "math" && format === "short_answer") {
-      setFormat("multiple_choice");
-      setQuestions(buildQuestionList(questionCount, "multiple_choice"));
-    }
+    setScratchpad(defaultScratchpadForSubject(nextSubject));
   }
 
   function handleEnglishTypeChange(nextType) {
     setEnglishType(nextType);
     if (nextType === "reading_comprehension") {
+      if (format === "short_answer") {
+        setFormat("multiple_choice");
+        setQuestions(buildQuestionList(questionCount, "multiple_choice"));
+      }
       const nextPassages = buildDefaultRcPassages();
       setPassages(nextPassages);
       setQuestions(buildQuestionsFromPassages(nextPassages));
@@ -516,9 +530,11 @@ export default function QuestionBuilderPanel() {
   function handleFormatChange(nextFormat) {
     setFormat(nextFormat);
     if (nextFormat === "short_answer") {
-      setSubject("math");
-      setEnglishType("");
-      setPassages([]);
+      if (englishType === "reading_comprehension") {
+        setEnglishType("critical_reasoning");
+        setPassages([]);
+      }
+      setScratchpad(defaultScratchpadForSubject(subject));
     }
     setQuestions(buildQuestionList(questionCount, nextFormat));
     setExpanded(new Set([0]));
@@ -626,6 +642,18 @@ export default function QuestionBuilderPanel() {
           publishTitle = publishTitle || draft.title;
           publishQuestions = draftToBuilderQuestions(draft, format);
         }
+
+        if (aiDraftNeedsReferenceAnswers) {
+          setTitle(publishTitle);
+          setQuestions(publishQuestions);
+          setBuildUsingAi(false);
+          setExpanded(new Set([0]));
+          setSuccess(
+            `AI generated ${publishQuestions.length} questions — add reference answers below, then publish.`,
+          );
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
       }
 
       setPublishPhase(editId ? "Saving…" : "Publishing…");
@@ -639,6 +667,7 @@ export default function QuestionBuilderPanel() {
         questionCount: isReadingComprehension ? publishQuestions.length : questionCount,
         timed,
         timeLimitMinutes,
+        scratchpad,
         questions: publishQuestions,
         learnSubject: selectedLearnResource?.learn_subject,
         learnSection: selectedLearnResource?.learn_section,
@@ -677,7 +706,9 @@ export default function QuestionBuilderPanel() {
   const publishLabel = publishing
     ? publishPhase || (editId ? "Saving…" : "Publishing…")
     : buildUsingAi
-      ? "Generate & publish"
+      ? aiDraftNeedsReferenceAnswers
+        ? "Generate questions"
+        : "Generate & publish"
       : editId
         ? "Save changes"
         : "Publish worksheet";
@@ -768,8 +799,7 @@ export default function QuestionBuilderPanel() {
             <select
               value={subject}
               onChange={(e) => handleSubjectChange(e.target.value)}
-              disabled={format === "short_answer"}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white disabled:bg-slate-100"
+              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
             >
               {BUILDER_SUBJECTS.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -804,7 +834,13 @@ export default function QuestionBuilderPanel() {
               className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
             >
               {ENGLISH_TYPES.map((option) => (
-                <option key={option.value} value={option.value}>
+                <option
+                  key={option.value}
+                  value={option.value}
+                  disabled={
+                    isShortAnswer && option.value === "reading_comprehension"
+                  }
+                >
                   {option.label}
                 </option>
               ))}
@@ -885,12 +921,19 @@ export default function QuestionBuilderPanel() {
                 </span>
               </span>
             </label>
-            <label className="flex items-start gap-2 rounded-xl border border-slate-200 px-3 py-2 cursor-pointer has-[:checked]:border-indigo-400 has-[:checked]:bg-indigo-50/50">
+            <label
+              className={`flex items-start gap-2 rounded-xl border border-slate-200 px-3 py-2 ${
+                isReadingComprehension
+                  ? "opacity-50 cursor-not-allowed"
+                  : "cursor-pointer has-[:checked]:border-indigo-400 has-[:checked]:bg-indigo-50/50"
+              }`}
+            >
               <input
                 type="radio"
                 name="format"
                 checked={format === "short_answer"}
                 onChange={() => handleFormatChange("short_answer")}
+                disabled={isReadingComprehension}
                 className="mt-1"
               />
               <span>
@@ -898,7 +941,8 @@ export default function QuestionBuilderPanel() {
                   Short answer
                 </span>
                 <span className="block text-xs text-slate-600">
-                  Manual grading · math only
+                  Manual grading · you mark each response
+                  {isReadingComprehension ? " · not available for reading comprehension yet" : ""}
                 </span>
               </span>
             </label>
@@ -970,6 +1014,23 @@ export default function QuestionBuilderPanel() {
                 : "Locks access for all of your students until you unlock it from Worksheets."}
             </span>
           </div>
+
+          {isShortAnswer ? (
+            <div>
+              <label className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                <input
+                  type="checkbox"
+                  checked={scratchpad}
+                  onChange={(e) => setScratchpad(e.target.checked)}
+                />
+                Allow scratchpad
+              </label>
+              <span className="mt-1 block text-xs font-normal text-slate-500 leading-relaxed">
+                Lets students draw working per question. Default on for math and data;
+                turn on for calculation-heavy science worksheets.
+              </span>
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -1024,7 +1085,9 @@ export default function QuestionBuilderPanel() {
           <p className="text-sm text-indigo-900 leading-relaxed">
             {isReadingComprehension
               ? "Passages and questions will be generated from the specs above when you press Generate & publish. Use per-passage prompts for topic focus."
-              : "Questions will be generated from the worksheet details above when you press Generate & publish. Each question gets a specific area tag for focus analysis."}{" "}
+              : isShortAnswer && !aiGeneratesReferenceAnswers(subject)
+                ? "AI will generate question prompts only — add reference answers yourself before publishing. Each question gets a specific area tag for focus analysis."
+                : "Questions will be generated from the worksheet details above when you press Generate & publish. Each question gets a specific area tag for focus analysis."}{" "}
             Usage bills to your OpenAI account.
           </p>
           <label className="block mt-4 text-sm font-semibold text-indigo-950">
@@ -1072,11 +1135,15 @@ export default function QuestionBuilderPanel() {
         <div className="max-w-3xl mx-auto flex flex-wrap items-center justify-between gap-3">
           {buildUsingAi ? (
             <p className="text-sm text-slate-600">
-              AI will write {isReadingComprehension ? rcQuestionTotal : questionCount}{" "}
-              {format === "multiple_choice" ? "multiple-choice" : "short-answer"}{" "}
-              question
-              {(isReadingComprehension ? rcQuestionTotal : questionCount) === 1 ? "" : "s"}
-              {isReadingComprehension ? ` across ${passages.length} passages` : ""}
+              {aiDraftNeedsReferenceAnswers
+                ? `AI will draft ${isReadingComprehension ? rcQuestionTotal : questionCount} short-answer question${
+                    (isReadingComprehension ? rcQuestionTotal : questionCount) === 1 ? "" : "s"
+                  } — you add reference answers before publishing`
+                : `AI will write ${isReadingComprehension ? rcQuestionTotal : questionCount} ${
+                    format === "multiple_choice" ? "multiple-choice" : "short-answer"
+                  } question${
+                    (isReadingComprehension ? rcQuestionTotal : questionCount) === 1 ? "" : "s"
+                  }${isReadingComprehension ? ` across ${passages.length} passages` : ""}`}
             </p>
           ) : (
             <p className="text-sm text-slate-600">

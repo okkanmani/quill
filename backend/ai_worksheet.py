@@ -26,6 +26,11 @@ def _subject_label(subject: str) -> str:
     }.get(subject, subject)
 
 
+def _ai_generates_short_answer_reference(subject: str) -> bool:
+    """Math and data get objective reference answers from AI; other subjects do not."""
+    return subject in ("math", "data")
+
+
 def _build_prompt(
     *,
     subject: str,
@@ -60,7 +65,9 @@ def _build_prompt(
             "(e.g. order of operations, fraction division) — not broad labels like algebra."
         )
     else:
-        schema = """
+        include_reference = _ai_generates_short_answer_reference(subject)
+        if include_reference:
+            schema = """
 {
   "title": "short worksheet title",
   "questions": [
@@ -72,12 +79,37 @@ def _build_prompt(
   ]
 }
 """
-        type_rules = (
-            "Each question is a short written-answer math problem with one clear reference answer. "
-            "Answers should be concise (number, fraction, or short phrase). "
-            "Each question must include area: a specific, narrow skill label in lowercase "
-            "(e.g. one-step linear equations, triangle area) — not broad labels like algebra."
-        )
+            type_rules = (
+                "Each question is a short written-answer problem with one clear reference answer. "
+                "Answers should be concise (number, fraction, short phrase, or brief interpretation). "
+                "Each question must include area: a specific, narrow skill label in lowercase "
+                + (
+                    "(e.g. reading a bar chart, mean from a table) — not broad labels like data analysis."
+                    if subject == "data"
+                    else "(e.g. one-step linear equations, triangle area) — not broad labels like algebra."
+                )
+            )
+            accuracy_rule = "- Accurate reference answers — double-check math and facts.\n"
+        else:
+            schema = """
+{
+  "title": "short worksheet title",
+  "questions": [
+    {
+      "prompt": "question text",
+      "area": "specific skill label"
+    }
+  ]
+}
+"""
+            type_rules = (
+                "Each question is a short written-answer prompt for manual teacher grading. "
+                "Do NOT include reference answers, sample responses, or an answer field — "
+                "the teacher will add those later. "
+                "Each question must include area: a specific, narrow skill label in lowercase "
+                "(e.g. photosynthesis, main idea, inference) — not broad labels like science or reading."
+            )
+            accuracy_rule = ""
 
     base = f"""Generate a worksheet as JSON only.
 
@@ -91,8 +123,7 @@ Number of questions: exactly {question_count}
 Requirements:
 - Age-appropriate vocabulary and concepts for grade {grade}.
 - No duplicate or near-duplicate questions.
-- Accurate answers — double-check math and facts.
-- Title should be specific and under 80 characters.
+{accuracy_rule}- Title should be specific and under 80 characters.
 
 Return JSON matching this schema:
 {schema}
@@ -271,7 +302,13 @@ Return JSON matching this schema:
     return base
 
 
-def _normalize_draft(data: dict, *, fmt: str, question_count: int) -> dict:
+def _normalize_draft(
+    data: dict,
+    *,
+    fmt: str,
+    question_count: int,
+    require_short_answer_reference: bool = True,
+) -> dict:
     title = data.get("title")
     if not isinstance(title, str) or not title.strip():
         raise ValueError("AI draft is missing a title.")
@@ -322,11 +359,18 @@ def _normalize_draft(data: dict, *, fmt: str, question_count: int) -> dict:
             )
         else:
             answer = raw.get("answer")
-            if not isinstance(answer, str) or not answer.strip():
-                raise ValueError(f"AI question {i + 1} is missing an answer.")
-            questions.append(
-                {"prompt": prompt.strip(), "area": area, "answer": answer.strip()}
-            )
+            if require_short_answer_reference:
+                if not isinstance(answer, str) or not answer.strip():
+                    raise ValueError(f"AI question {i + 1} is missing an answer.")
+                questions.append(
+                    {"prompt": prompt.strip(), "area": area, "answer": answer.strip()}
+                )
+            else:
+                ref = answer.strip() if isinstance(answer, str) else ""
+                row = {"prompt": prompt.strip(), "area": area}
+                if ref:
+                    row["answer"] = ref
+                questions.append(row)
 
     return {"title": title.strip(), "questions": questions}
 
@@ -379,8 +423,6 @@ def generate_worksheet_draft(
         raise ValueError(f"subject must be one of: {', '.join(sorted(VALID_SUBJECTS))}.")
     if fmt not in ("multiple_choice", "short_answer"):
         raise ValueError("format must be multiple_choice or short_answer.")
-    if fmt == "short_answer" and subject != "math":
-        raise ValueError("short_answer AI generation is only supported for math.")
     if stars not in (1, 2, 3):
         raise ValueError("stars must be 1, 2, or 3.")
     if not isinstance(grade, int) or grade < 1 or grade > 12:
@@ -479,4 +521,11 @@ def generate_worksheet_draft(
         return _normalize_rc_draft(parsed, passage_specs=normalized_specs)
 
     count = question_count if question_count is not None else STARS_DEFAULT_QUESTION_COUNTS[stars]
-    return _normalize_draft(parsed, fmt=fmt, question_count=count)
+    return _normalize_draft(
+        parsed,
+        fmt=fmt,
+        question_count=count,
+        require_short_answer_reference=(
+            fmt != "short_answer" or _ai_generates_short_answer_reference(subject)
+        ),
+    )

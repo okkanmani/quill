@@ -32,6 +32,17 @@ export const DEFAULT_RC_PASSAGE_COUNT = 4;
 export const DEFAULT_RC_QUESTIONS_PER_PASSAGE = 5;
 export const DEFAULT_RC_MIN_WORDS = 200;
 
+export const AI_REFERENCE_ANSWER_SUBJECTS = new Set(["math", "data"]);
+
+export function defaultScratchpadForSubject(subject) {
+  return subject === "math" || subject === "data";
+}
+
+/** Whether AI should include reference answers when generating short-answer questions. */
+export function aiGeneratesReferenceAnswers(subject) {
+  return AI_REFERENCE_ANSWER_SUBJECTS.has(subject);
+}
+
 export function defaultPassageCount() {
   return DEFAULT_RC_PASSAGE_COUNT;
 }
@@ -271,8 +282,14 @@ export function validateBuilderForm({
 }) {
   const errors = [];
   if (!title.trim()) errors.push("Title is required.");
-  if (format === "short_answer" && subject !== "math") {
-    errors.push("Short answer worksheets must use Math subject.");
+  if (
+    format === "short_answer" &&
+    subject === "english" &&
+    englishType === "reading_comprehension"
+  ) {
+    errors.push(
+      "Short answer is not available for reading comprehension worksheets yet.",
+    );
   }
   if (timed && (!timeLimitMinutes || Number(timeLimitMinutes) <= 0)) {
     errors.push("Enter a positive time limit for timed worksheets.");
@@ -354,9 +371,6 @@ export function validateBuilderParamsForAi({
   if (!apiKeyConfigured) {
     errors.push("Add your OpenAI API key under Admin → Settings.");
   }
-  if (format === "short_answer" && subject !== "math") {
-    errors.push("Short answer worksheets must use Math subject.");
-  }
   if (timed && (!timeLimitMinutes || Number(timeLimitMinutes) <= 0)) {
     errors.push("Enter a positive time limit for timed worksheets.");
   }
@@ -396,7 +410,7 @@ export function draftToBuilderQuestions(draft, format) {
     }
     return {
       ...base,
-      answer: q.answer,
+      answer: q.answer || "",
     };
   });
 }
@@ -455,6 +469,7 @@ export function worksheetToBuilderState(worksheet) {
     passages,
     timed: Boolean(worksheet.timed),
     timeLimitMinutes: worksheet.time_limit_minutes || 10,
+    scratchpad: worksheet.scratchpad !== false,
     questionCount: questions.length,
     questions: builderQuestions,
     learnSubject: worksheet.learn_subject || "",
@@ -472,6 +487,7 @@ export function builderPayload({
   questionCount,
   timed,
   timeLimitMinutes,
+  scratchpad,
   questions,
   learnSubject,
   learnSection,
@@ -486,6 +502,7 @@ export function builderPayload({
     timed,
     time_limit_minutes: timed ? Number(timeLimitMinutes) : null,
     lock_on_create: Boolean(lockOnCreate),
+    scratchpad: Boolean(scratchpad),
     questions: questions.map((q) => {
       const base = { prompt: q.prompt.trim() };
       if (q.area?.trim()) base.area = q.area.trim().toLowerCase();

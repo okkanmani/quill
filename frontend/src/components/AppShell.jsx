@@ -150,7 +150,7 @@ export default function AppShell({
 
         <main className={`flex-1 min-w-0 p-6 ${mainClassName}`.trim()}>
           {onBack ? (
-            <div className="mb-4">
+            <div className="sticky top-4 z-40 mb-4 w-fit">
               <button type="button" onClick={onBack} className={backPillClass}>
                 ← Back
               </button>

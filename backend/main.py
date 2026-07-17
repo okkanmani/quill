@@ -164,6 +164,7 @@ class CreateWorksheetBuilderRequest(BaseModel):
     learn_section: str | None = None
     content_badge: str | None = None
     lock_on_create: bool = False
+    scratchpad: bool | None = None
     questions: list[WorksheetBuilderQuestionRequest]
 
 
