@@ -10,6 +10,7 @@ import QuillLoading from "../components/QuillLoading";
 import FocusAreaExplainPanel from "../components/FocusAreaExplainPanel";
 import {
   focusAreasAnalysisWithDiscussion,
+  formatAreaLabel,
   formatFocusExampleAnswer,
   formatFocusExampleChoices,
   isMissingFocusExampleAnswer,
@@ -45,33 +46,35 @@ function findSelectedFocus(bySubject, selectedKey) {
   return { subject, focus };
 }
 
-function FocusAreaLinks({ areas, subjectKey, selectedKey, onSelectArea, muted = false }) {
+function FocusAreaChips({ areas, subjectKey, selectedKey, onSelectArea, muted = false }) {
   if (!areas.length) return null;
   return (
-    <p className="text-sm text-slate-700 mt-1 leading-relaxed">
-      {areas.map((focus, index) => {
+    <div className="mt-2 flex flex-wrap gap-2">
+      {areas.map((focus) => {
         const key = focusSelectionKey(subjectKey, focus.area);
         const isSelected = selectedKey === key;
+        const label = formatAreaLabel(focus.area);
         return (
-          <span key={focus.area}>
-            {index > 0 ? ", " : null}
-            <button
-              type="button"
-              onClick={() => onSelectArea(key)}
-              className={`font-medium underline-offset-2 hover:underline ${
-                isSelected
-                  ? "text-indigo-800 underline"
-                  : muted
-                    ? "text-slate-600"
-                    : "text-indigo-600"
-              }`}
-            >
-              {focus.area}
-            </button>
-          </span>
+          <button
+            key={focus.area}
+            type="button"
+            onClick={() => onSelectArea(key)}
+            aria-pressed={isSelected}
+            className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition ${
+              isSelected
+                ? muted
+                  ? "bg-slate-700 text-white border-slate-800 shadow-sm"
+                  : "bg-indigo-700 text-white border-indigo-800 shadow-sm"
+                : muted
+                  ? "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800"
+                  : "bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100"
+            }`}
+          >
+            {label}
+          </button>
         );
       })}
-    </p>
+    </div>
   );
 }
 
@@ -142,7 +145,9 @@ function FocusAreaDetailPanel({
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         {subject.subjectLabel}
       </p>
-      <h2 className="text-xl font-semibold text-slate-950 mt-1">{focus.area}</h2>
+      <h2 className="text-xl font-semibold text-slate-950 mt-1">
+        {formatAreaLabel(focus.area)}
+      </h2>
       {focus.needsDiscussion === false ? (
         <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 mt-2">
           Discussed
@@ -190,7 +195,7 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
           <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
             Needs discussion
           </p>
-          <FocusAreaLinks
+          <FocusAreaChips
             areas={needsDiscussion}
             subjectKey={subject.subjectKey}
             selectedKey={selectedKey}
@@ -203,7 +208,7 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Discussed
           </p>
-          <FocusAreaLinks
+          <FocusAreaChips
             areas={alreadyDiscussed}
             subjectKey={subject.subjectKey}
             selectedKey={selectedKey}
