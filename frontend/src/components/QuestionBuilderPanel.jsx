@@ -1,24 +1,38 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   createWorksheetFromBuilder,
   generateWorksheetDraft,
   getAdminLearnLinkOptions,
   getAdminSettings,
+  getWorksheet,
   listAdminStudents,
+  updateWorksheetFromBuilder,
 } from "../api";
+import QuillLoading from "./QuillLoading";
 import {
   BUILDER_SUBJECTS,
   CHOICE_LABELS,
+  ENGLISH_TYPES,
   GRADE_OPTIONS,
   STARS_OPTIONS,
   builderPayload,
+  buildDefaultRcPassages,
   buildQuestionList,
+  buildQuestionsFromPassages,
+  addRcPassage,
+  removeRcPassageAt,
   defaultQuestionCount,
+  DEFAULT_RC_MIN_WORDS,
+  draftRcToBuilderState,
   draftToBuilderQuestions,
+  groupQuestionsByPassage,
+  isBuilderQuestionComplete,
+  totalRcQuestionCount,
   resizeQuestions,
   validateBuilderForm,
   validateBuilderParamsForAi,
+  worksheetToBuilderState,
 } from "../questionBuilderUtils";
 
 function McqChoices({ question, index, onChange }) {
@@ -63,6 +77,162 @@ function McqChoices({ question, index, onChange }) {
   );
 }
 
+function PassageCard({
+  passage,
+  index,
+  expanded,
+  onToggle,
+  onChange,
+  buildUsingAi = false,
+  format = "multiple_choice",
+  passageQuestions = [],
+  expandedQuestions,
+  onToggleQuestion,
+  onChangeQuestion,
+}) {
+  const summary = passage.title.trim() || `Passage ${index + 1}`;
+  const questionsComplete =
+    buildUsingAi ||
+    passageQuestions.every(({ question }) =>
+      isBuilderQuestionComplete(question, format),
+    );
+  const complete = buildUsingAi
+    ? Number(passage.questionCount) > 0 && Number(passage.minWords) >= 50
+    : passage.title.trim() && passage.body.trim() && questionsComplete;
+  const showQuestions = !buildUsingAi && passageQuestions.length > 0;
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+      <button
+        type="button"
+        onClick={() => onToggle(index)}
+        aria-expanded={expanded}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left bg-sky-50 hover:bg-sky-100 transition"
+      >
+        <span className="min-w-0">
+          <span className="font-semibold text-slate-900">Passage {index + 1}</span>
+          <span className="block text-sm text-slate-600 truncate mt-0.5">
+            {summary}
+            {passage.questionCount
+              ? ` · ${passage.questionCount} question${passage.questionCount === 1 ? "" : "s"}`
+              : ""}
+          </span>
+        </span>
+        <span className="shrink-0 flex items-center gap-2">
+          <span
+            className={`text-xs font-semibold rounded-full px-2 py-0.5 border ${
+              complete
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                : "bg-amber-50 text-amber-900 border-amber-200"
+            }`}
+          >
+            {complete ? "Complete" : "Incomplete"}
+          </span>
+          <span className="text-slate-700 font-bold text-sm">{expanded ? "▼" : "▶"}</span>
+        </span>
+      </button>
+      {expanded ? (
+        <div className="p-4 border-t border-slate-100 space-y-3">
+          <div
+            className={`grid gap-4 ${
+              buildUsingAi ? "sm:grid-cols-3" : "sm:grid-cols-2"
+            }`}
+          >
+            <label className="block text-sm font-semibold text-slate-800">
+              Passage title
+              <input
+                type="text"
+                value={passage.title}
+                onChange={(e) => onChange(index, { title: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                placeholder="e.g. Life in the Arctic"
+              />
+            </label>
+            <label className="block text-sm font-semibold text-slate-800">
+              Questions for this passage
+              <input
+                type="number"
+                min={1}
+                max={15}
+                value={passage.questionCount}
+                onChange={(e) =>
+                  onChange(index, {
+                    questionCount: Math.max(1, Math.min(15, Number(e.target.value) || 1)),
+                  })
+                }
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              />
+            </label>
+            {buildUsingAi ? (
+              <label className="block text-sm font-semibold text-slate-800">
+                Minimum words
+                <input
+                  type="number"
+                  min={50}
+                  max={2000}
+                  value={passage.minWords ?? DEFAULT_RC_MIN_WORDS}
+                  onChange={(e) =>
+                    onChange(index, {
+                      minWords: Math.max(
+                        50,
+                        Math.min(2000, Number(e.target.value) || DEFAULT_RC_MIN_WORDS),
+                      ),
+                    })
+                  }
+                  className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                />
+              </label>
+            ) : null}
+          </div>
+          {buildUsingAi ? (
+            <label className="block text-sm font-semibold text-slate-800">
+              Passage prompt{" "}
+              <span className="font-normal text-slate-500">(optional)</span>
+              <textarea
+                value={passage.aiPrompt || ""}
+                onChange={(e) => onChange(index, { aiPrompt: e.target.value })}
+                rows={3}
+                maxLength={1000}
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y"
+                placeholder="e.g. Focus on climate change in the Arctic, include vocabulary about ecosystems…"
+              />
+            </label>
+          ) : (
+            <label className="block text-sm font-semibold text-slate-800">
+              Passage text
+              <textarea
+                value={passage.body}
+                onChange={(e) => onChange(index, { body: e.target.value })}
+                rows={8}
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y min-h-[10rem]"
+                placeholder="Paste or type the reading passage."
+              />
+            </label>
+          )}
+          {showQuestions ? (
+            <div className="space-y-3 pt-3 border-t border-slate-100">
+              <h3 className="text-sm font-bold text-slate-800">
+                Questions ({passageQuestions.length})
+              </h3>
+              {passageQuestions.map(({ question, globalIndex, localIndex }) => (
+                <QuestionCard
+                  key={globalIndex}
+                  question={question}
+                  index={localIndex}
+                  format={format}
+                  expanded={expandedQuestions.has(globalIndex)}
+                  onToggle={() => onToggleQuestion(globalIndex)}
+                  onChange={(_, patch) => onChangeQuestion(globalIndex, patch)}
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function QuestionCard({
   question,
   index,
@@ -70,6 +240,7 @@ function QuestionCard({
   expanded,
   onToggle,
   onChange,
+  passageLabel = "",
 }) {
   const summary =
     question.prompt.trim() ||
@@ -90,7 +261,9 @@ function QuestionCard({
         className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left bg-slate-50 hover:bg-slate-100 transition"
       >
         <span className="min-w-0">
-          <span className="font-semibold text-slate-900">Question {index + 1}</span>
+          <span className="font-semibold text-slate-900">
+            {passageLabel ? `${passageLabel} · ` : ""}Question {index + 1}
+          </span>
           <span className="block text-sm text-slate-600 truncate mt-0.5">{summary}</span>
         </span>
         <span className="shrink-0 flex items-center gap-2">
@@ -125,10 +298,10 @@ function QuestionCard({
               value={question.area || ""}
               onChange={(e) => onChange(index, { area: e.target.value })}
               className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-              placeholder="e.g. two-variable algebra, triangle area"
+              placeholder="e.g. vocabulary, inference, main idea"
             />
             <span className="mt-1 block text-xs font-normal text-slate-500 leading-relaxed">
-              Be specific — use a narrow skill label (not just “algebra” or “geometry”).
+              Be specific — use a narrow skill label (not just “reading”).
             </span>
           </label>
           {format === "multiple_choice" ? (
@@ -152,9 +325,13 @@ function QuestionCard({
 }
 
 export default function QuestionBuilderPanel() {
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("edit");
   const initialGrade = Number(localStorage.getItem("studentGrade")) || 5;
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("math");
+  const [englishType, setEnglishType] = useState("");
+  const [passages, setPassages] = useState([]);
   const [grade, setGrade] = useState(initialGrade);
   const [stars, setStars] = useState(2);
   const [format, setFormat] = useState("multiple_choice");
@@ -169,6 +346,8 @@ export default function QuestionBuilderPanel() {
     buildQuestionList(defaultQuestionCount(2), "multiple_choice"),
   );
   const [expanded, setExpanded] = useState(() => new Set([0]));
+  const [expandedPassages, setExpandedPassages] = useState(() => new Set([0]));
+  const [loadingEdit, setLoadingEdit] = useState(Boolean(editId));
   const [buildUsingAi, setBuildUsingAi] = useState(false);
   const [aiCustomPrompt, setAiCustomPrompt] = useState("");
   const [aiEnabled, setAiEnabled] = useState(true);
@@ -177,6 +356,35 @@ export default function QuestionBuilderPanel() {
   const [publishPhase, setPublishPhase] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    if (!editId) return;
+    setLoadingEdit(true);
+    setError("");
+    getWorksheet(editId)
+      .then((worksheet) => {
+        const state = worksheetToBuilderState(worksheet);
+        setTitle(state.title);
+        setSubject(state.subject);
+        setStars(state.stars);
+        setFormat(state.format);
+        setEnglishType(state.englishType);
+        setPassages(state.passages.length ? state.passages : []);
+        setTimed(state.timed);
+        setTimeLimitMinutes(state.timeLimitMinutes);
+        setQuestionCount(state.questionCount);
+        setQuestions(state.questions);
+        if (state.learnSubject && state.learnSection) {
+          setLearnResourceKey(`${state.learnSubject}:${state.learnSection}`);
+        }
+        setExpanded(new Set([0]));
+        setExpandedPassages(new Set([0]));
+      })
+      .catch((err) => {
+        setError(err.message || "Could not load worksheet for editing.");
+      })
+      .finally(() => setLoadingEdit(false));
+  }, [editId]);
 
   useEffect(() => {
     listAdminStudents()
@@ -196,7 +404,6 @@ export default function QuestionBuilderPanel() {
   }, []);
 
   useEffect(() => {
-    setLearnResourceKey("");
     setLearnResourcesLoading(true);
     getAdminLearnLinkOptions(subject)
       .then(({ options }) => {
@@ -222,6 +429,33 @@ export default function QuestionBuilderPanel() {
 
   const recommendedCount = useMemo(() => defaultQuestionCount(stars), [stars]);
   const countMismatch = questionCount !== recommendedCount;
+  const isReadingComprehension =
+    subject === "english" && englishType === "reading_comprehension";
+  const rcQuestionTotal = useMemo(
+    () => (isReadingComprehension ? totalRcQuestionCount(passages) : questionCount),
+    [isReadingComprehension, passages, questionCount],
+  );
+  const rcPassageQuestionGroups = useMemo(
+    () =>
+      isReadingComprehension ? groupQuestionsByPassage(passages, questions) : [],
+    [isReadingComprehension, passages, questions],
+  );
+
+  useEffect(() => {
+    if (!isReadingComprehension) return;
+    setQuestionCount(rcQuestionTotal);
+  }, [isReadingComprehension, rcQuestionTotal]);
+
+  useEffect(() => {
+    if (!isReadingComprehension) return;
+    setQuestions((prev) => buildQuestionsFromPassages(passages, prev));
+  }, [passages, isReadingComprehension]);
+
+  function updatePassage(index, patch) {
+    setPassages((prev) =>
+      prev.map((passage, i) => (i === index ? { ...passage, ...patch } : passage)),
+    );
+  }
 
   function updateQuestion(index, patch) {
     setQuestions((prev) =>
@@ -231,22 +465,79 @@ export default function QuestionBuilderPanel() {
 
   function handleStarsChange(nextStars) {
     setStars(nextStars);
+    if (isReadingComprehension) return;
     const nextCount = defaultQuestionCount(nextStars);
     setQuestionCount(nextCount);
     setQuestions((prev) => resizeQuestions(prev, nextCount, format));
   }
 
+  function handleSubjectChange(nextSubject) {
+    setSubject(nextSubject);
+    setLearnResourceKey("");
+    if (nextSubject === "english") {
+      setEnglishType((current) => current || "critical_reasoning");
+      setFormat("multiple_choice");
+    } else {
+      setEnglishType("");
+      setPassages([]);
+    }
+    if (nextSubject !== "math" && format === "short_answer") {
+      setFormat("multiple_choice");
+      setQuestions(buildQuestionList(questionCount, "multiple_choice"));
+    }
+  }
+
+  function handleEnglishTypeChange(nextType) {
+    setEnglishType(nextType);
+    if (nextType === "reading_comprehension") {
+      const nextPassages = buildDefaultRcPassages();
+      setPassages(nextPassages);
+      setQuestions(buildQuestionsFromPassages(nextPassages));
+      setExpandedPassages(new Set([0]));
+      return;
+    }
+    setPassages([]);
+    setQuestions(buildQuestionList(questionCount, "multiple_choice"));
+  }
+
+  function handleAddPassage() {
+    const next = addRcPassage(passages, questions);
+    setPassages(next.passages);
+    setQuestions(next.questions);
+    setExpandedPassages(new Set([next.passages.length - 1]));
+  }
+
+  function handleRemovePassage(index) {
+    const next = removeRcPassageAt(passages, questions, index);
+    setPassages(next.passages);
+    setQuestions(next.questions);
+  }
+
   function handleFormatChange(nextFormat) {
     setFormat(nextFormat);
-    if (nextFormat === "short_answer") setSubject("math");
+    if (nextFormat === "short_answer") {
+      setSubject("math");
+      setEnglishType("");
+      setPassages([]);
+    }
     setQuestions(buildQuestionList(questionCount, nextFormat));
     setExpanded(new Set([0]));
   }
 
   function handleQuestionCountChange(raw) {
+    if (isReadingComprehension) return;
     const n = Math.max(1, Math.min(50, Number(raw) || 1));
     setQuestionCount(n);
     setQuestions((prev) => resizeQuestions(prev, n, format));
+  }
+
+  function togglePassageExpanded(index) {
+    setExpandedPassages((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
   }
 
   function toggleExpanded(index) {
@@ -266,9 +557,11 @@ export default function QuestionBuilderPanel() {
       const paramErrors = validateBuilderParamsForAi({
         subject,
         format,
+        englishType,
+        passages,
         timed,
         timeLimitMinutes,
-        questionCount,
+        questionCount: isReadingComprehension ? rcQuestionTotal : questionCount,
         apiKeyConfigured,
         aiEnabled,
       });
@@ -281,6 +574,8 @@ export default function QuestionBuilderPanel() {
         title,
         subject,
         format,
+        englishType,
+        passages,
         timed,
         timeLimitMinutes,
         questions,
@@ -295,49 +590,79 @@ export default function QuestionBuilderPanel() {
     try {
       let publishTitle = title.trim();
       let publishQuestions = questions;
+      let publishPassages = passages;
 
       if (buildUsingAi) {
         setPublishPhase("Generating with AI…");
-        const draft = await generateWorksheetDraft({
-          subject,
-          grade,
-          stars,
-          format,
-          question_count: questionCount,
-          custom_prompt: aiCustomPrompt.trim(),
-        });
-        publishTitle = publishTitle || draft.title;
-        publishQuestions = draftToBuilderQuestions(draft, format);
+        if (isReadingComprehension) {
+          const draft = await generateWorksheetDraft({
+            subject,
+            grade,
+            stars,
+            format,
+            english_type: "reading_comprehension",
+            passage_specs: passages.map((passage) => ({
+              id: passage.id,
+              question_count: Math.max(1, Number(passage.questionCount) || 1),
+              prompt: (passage.aiPrompt || "").trim(),
+              min_words:
+                Math.max(50, Number(passage.minWords) || DEFAULT_RC_MIN_WORDS),
+            })),
+            custom_prompt: aiCustomPrompt.trim(),
+          });
+          const rc = draftRcToBuilderState(draft);
+          publishTitle = publishTitle || rc.title;
+          publishQuestions = rc.questions;
+          publishPassages = rc.passages;
+        } else {
+          const draft = await generateWorksheetDraft({
+            subject,
+            grade,
+            stars,
+            format,
+            question_count: questionCount,
+            custom_prompt: aiCustomPrompt.trim(),
+          });
+          publishTitle = publishTitle || draft.title;
+          publishQuestions = draftToBuilderQuestions(draft, format);
+        }
       }
 
-      setPublishPhase("Publishing…");
-      const result = await createWorksheetFromBuilder(
-        builderPayload({
-          title: publishTitle,
-          subject,
-          stars,
-          format,
-          questionCount,
-          timed,
-          timeLimitMinutes,
-          questions: publishQuestions,
-          learnSubject: selectedLearnResource?.learn_subject,
-          learnSection: selectedLearnResource?.learn_section,
-          lockOnCreate,
-        }),
-      );
+      setPublishPhase(editId ? "Saving…" : "Publishing…");
+      const payload = builderPayload({
+        title: publishTitle,
+        subject,
+        stars,
+        format,
+        englishType,
+        passages: publishPassages,
+        questionCount: isReadingComprehension ? publishQuestions.length : questionCount,
+        timed,
+        timeLimitMinutes,
+        questions: publishQuestions,
+        learnSubject: selectedLearnResource?.learn_subject,
+        learnSection: selectedLearnResource?.learn_section,
+        lockOnCreate,
+      });
+      const result = editId
+        ? await updateWorksheetFromBuilder(editId, payload)
+        : await createWorksheetFromBuilder(payload);
       const lockNote =
-        lockOnCreate && typeof result.locked_for_students === "number"
+        !editId &&
+        lockOnCreate &&
+        typeof result.locked_for_students === "number"
           ? ` Locked for ${result.locked_for_students} student${
               result.locked_for_students === 1 ? "" : "s"
             }.`
-          : lockOnCreate
+          : !editId && lockOnCreate
             ? " Locked for your students."
             : "";
       setSuccess(
         buildUsingAi
           ? `AI generated and published ${result.id} — “${result.title}” (${result.question_count} questions).${lockNote}`
-          : `Published ${result.id} — “${result.title}” (${result.question_count} questions).${lockNote}`,
+          : editId
+            ? `Saved changes to ${result.id} — “${result.title}” (${result.question_count} questions).`
+            : `Published ${result.id} — “${result.title}” (${result.question_count} questions).${lockNote}`,
       );
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -348,18 +673,25 @@ export default function QuestionBuilderPanel() {
     }
   }
 
-  const canPublishWithAi = aiEnabled && apiKeyConfigured;
+  const canPublishWithAi = aiEnabled && apiKeyConfigured && !editId;
   const publishLabel = publishing
-    ? publishPhase || "Publishing…"
+    ? publishPhase || (editId ? "Saving…" : "Publishing…")
     : buildUsingAi
       ? "Generate & publish"
-      : "Publish worksheet";
+      : editId
+        ? "Save changes"
+        : "Publish worksheet";
+
+  if (loadingEdit) {
+    return <QuillLoading label="Loading worksheet…" />;
+  }
 
   return (
     <>
       <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-        Create a worksheet without JSON. Mark the correct MCQ answer with ✓ —
-        choices are shuffled on publish.
+        {editId
+          ? `Editing ${editId}. Mark the correct MCQ answer with ✓ — choices are shuffled on save.`
+          : "Create a worksheet without JSON. Mark the correct MCQ answer with ✓ — choices are shuffled on publish."}
       </p>
 
       {success ? (
@@ -377,7 +709,38 @@ export default function QuestionBuilderPanel() {
       ) : null}
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6 space-y-4">
-        <h2 className="font-bold text-slate-900">Worksheet details</h2>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h2 className="font-bold text-slate-900">Worksheet details</h2>
+          <label
+            className={`flex items-center gap-2 text-sm font-semibold ${
+              aiEnabled && !editId ? "text-slate-800 cursor-pointer" : "text-slate-500"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={buildUsingAi}
+              onChange={(e) => setBuildUsingAi(e.target.checked)}
+              disabled={!aiEnabled || Boolean(editId)}
+              className="rounded border-slate-300"
+            />
+            Build using AI
+          </label>
+        </div>
+        {buildUsingAi && !canPublishWithAi ? (
+          <p className="text-sm text-amber-900 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 -mt-1">
+            {!aiEnabled ? (
+              "AI generation is disabled on this server."
+            ) : (
+              <>
+                Add your OpenAI API key under{" "}
+                <Link to="/admin/settings" className="font-semibold underline">
+                  Admin → Settings
+                </Link>{" "}
+                before publishing.
+              </>
+            )}
+          </p>
+        ) : null}
 
         <label className="block text-sm font-semibold text-slate-800">
           Title
@@ -404,7 +767,7 @@ export default function QuestionBuilderPanel() {
             Subject
             <select
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
+              onChange={(e) => handleSubjectChange(e.target.value)}
               disabled={format === "short_answer"}
               className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white disabled:bg-slate-100"
             >
@@ -431,6 +794,30 @@ export default function QuestionBuilderPanel() {
             </select>
           </label>
         </div>
+
+        {subject === "english" ? (
+          <label className="block text-sm font-semibold text-slate-800">
+            English worksheet type
+            <select
+              value={englishType}
+              onChange={(e) => handleEnglishTypeChange(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+            >
+              {ENGLISH_TYPES.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <span className="mt-1 block text-xs font-normal text-slate-500 leading-relaxed">
+              {englishType === "reading_comprehension"
+                ? buildUsingAi
+                  ? "Configure passages below — set question counts and optional prompts per passage."
+                  : "Add passage text and questions within each passage section below."
+                : "Standard multiple-choice questions — some may stand alone without a passage."}
+            </span>
+          </label>
+        ) : null}
 
         <label className="block text-sm font-semibold text-slate-800">
           Learning resource
@@ -520,16 +907,23 @@ export default function QuestionBuilderPanel() {
 
         <div className="grid sm:grid-cols-2 gap-4 items-end">
           <label className="block text-sm font-semibold text-slate-800">
-            Number of questions
+            {isReadingComprehension ? "Total questions" : "Number of questions"}
             <input
               type="number"
               min={1}
               max={50}
-              value={questionCount}
+              value={isReadingComprehension ? rcQuestionTotal : questionCount}
               onChange={(e) => handleQuestionCountChange(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              readOnly={isReadingComprehension}
+              className={`mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm ${
+                isReadingComprehension ? "bg-slate-50 text-slate-600" : ""
+              }`}
             />
-            {countMismatch ? (
+            {isReadingComprehension ? (
+              <span className="block text-xs text-slate-500 mt-1">
+                Sum of question counts across all passages.
+              </span>
+            ) : countMismatch ? (
               <span className="block text-xs text-amber-800 mt-1">
                 Recommended for this difficulty: {recommendedCount}
               </span>
@@ -566,24 +960,72 @@ export default function QuestionBuilderPanel() {
                 type="checkbox"
                 checked={lockOnCreate}
                 onChange={(e) => setLockOnCreate(e.target.checked)}
+                disabled={Boolean(editId)}
               />
               Lock worksheet on publish
             </label>
             <span className="mt-1 block text-xs font-normal text-slate-500 leading-relaxed">
-              Locks access for all of your students until you unlock it from
-              Worksheets.
+              {editId
+                ? "Use Worksheets to lock or unlock after publishing."
+                : "Locks access for all of your students until you unlock it from Worksheets."}
             </span>
           </div>
         </div>
       </section>
 
-      {buildUsingAi ? (
+      {isReadingComprehension ? (
+        <section className={`space-y-3 ${!buildUsingAi ? "mb-24" : "mb-6"}`}>
+          <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+            <h2 className="font-bold text-slate-900">
+              Passages ({passages.length})
+            </h2>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleRemovePassage(passages.length - 1)}
+                disabled={passages.length <= 1}
+                className="w-9 h-9 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                aria-label="Remove last passage"
+              >
+                −
+              </button>
+              <button
+                type="button"
+                onClick={handleAddPassage}
+                className="w-9 h-9 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold hover:bg-slate-50"
+                aria-label="Add passage"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          {passages.map((passage, i) => (
+            <PassageCard
+              key={passage.id}
+              passage={passage}
+              index={i}
+              expanded={expandedPassages.has(i)}
+              onToggle={togglePassageExpanded}
+              onChange={updatePassage}
+              buildUsingAi={buildUsingAi}
+              format={format}
+              passageQuestions={rcPassageQuestionGroups[i] || []}
+              expandedQuestions={expanded}
+              onToggleQuestion={toggleExpanded}
+              onChangeQuestion={updateQuestion}
+            />
+          ))}
+        </section>
+      ) : null}
+
+      {buildUsingAi && !editId ? (
         <section className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 mb-6">
           <h2 className="font-bold text-indigo-950 mb-2">AI generation</h2>
           <p className="text-sm text-indigo-900 leading-relaxed">
-            Questions will be generated from the worksheet details above when you
-            press Generate &amp; publish. Each question gets a specific area tag
-            for focus analysis. Usage bills to your OpenAI account.
+            {isReadingComprehension
+              ? "Passages and questions will be generated from the specs above when you press Generate & publish. Use per-passage prompts for topic focus."
+              : "Questions will be generated from the worksheet details above when you press Generate & publish. Each question gets a specific area tag for focus analysis."}{" "}
+            Usage bills to your OpenAI account.
           </p>
           <label className="block mt-4 text-sm font-semibold text-indigo-950">
             Additional instructions{" "}
@@ -593,30 +1035,19 @@ export default function QuestionBuilderPanel() {
               onChange={(e) => setAiCustomPrompt(e.target.value)}
               rows={4}
               maxLength={2000}
-              placeholder="e.g. Focus on word problems about money, use Canadian spelling, avoid decimals…"
+              placeholder={
+                isReadingComprehension
+                  ? "e.g. Use Canadian spelling, grade-appropriate vocabulary, mix inference and vocabulary questions…"
+                  : "e.g. Focus on word problems about money, use Canadian spelling, avoid decimals…"
+              }
               className="mt-1 w-full rounded-xl border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-y min-h-[6rem]"
             />
           </label>
           <p className="text-xs text-indigo-800/80 mt-1">
             These notes are sent to the AI along with subject, grade, and difficulty.
           </p>
-          {!canPublishWithAi ? (
-            <p className="text-sm text-amber-900 mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
-              {!aiEnabled ? (
-                "AI generation is disabled on this server."
-              ) : (
-                <>
-                  Add your OpenAI API key under{" "}
-                  <Link to="/admin/settings" className="font-semibold underline">
-                    Admin → Settings
-                  </Link>{" "}
-                  before publishing.
-                </>
-              )}
-            </p>
-          ) : null}
         </section>
-      ) : (
+      ) : !buildUsingAi && !isReadingComprehension ? (
         <section className="space-y-3 mb-24">
           <h2 className="font-bold text-slate-900 px-1">
             Questions ({questions.length})
@@ -633,15 +1064,19 @@ export default function QuestionBuilderPanel() {
             />
           ))}
         </section>
+      ) : (
+        <div className="mb-24" />
       )}
 
       <div className="fixed bottom-0 inset-x-0 md:left-52 border-t border-slate-200 bg-white/95 backdrop-blur px-6 py-4 z-30">
         <div className="max-w-3xl mx-auto flex flex-wrap items-center justify-between gap-3">
           {buildUsingAi ? (
             <p className="text-sm text-slate-600">
-              AI will write {questionCount}{" "}
+              AI will write {isReadingComprehension ? rcQuestionTotal : questionCount}{" "}
               {format === "multiple_choice" ? "multiple-choice" : "short-answer"}{" "}
-              questions
+              question
+              {(isReadingComprehension ? rcQuestionTotal : questionCount) === 1 ? "" : "s"}
+              {isReadingComprehension ? ` across ${passages.length} passages` : ""}
             </p>
           ) : (
             <p className="text-sm text-slate-600">
@@ -649,30 +1084,17 @@ export default function QuestionBuilderPanel() {
               prompts filled
             </p>
           )}
-          <div className="flex flex-wrap items-center gap-4">
-            <label
-              className={`flex items-center gap-2 text-sm font-semibold ${
-                aiEnabled ? "text-slate-800 cursor-pointer" : "text-slate-500"
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={buildUsingAi}
-                onChange={(e) => setBuildUsingAi(e.target.checked)}
-                disabled={!aiEnabled}
-                className="rounded border-slate-300"
-              />
-              Build using AI
-            </label>
-            <button
-              type="button"
-              onClick={handlePublish}
-              disabled={publishing || (buildUsingAi && !aiEnabled)}
-              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold px-6 py-3 transition"
-            >
-              {publishLabel}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handlePublish}
+            disabled={
+              publishing ||
+              (buildUsingAi && (!aiEnabled || !canPublishWithAi))
+            }
+            className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold px-6 py-3 transition"
+          >
+            {publishLabel}
+          </button>
         </div>
       </div>
     </>

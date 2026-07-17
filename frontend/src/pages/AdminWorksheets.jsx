@@ -7,6 +7,7 @@ import AppShell from "../components/AppShell";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import AdminStudentBanner from "../components/AdminStudentBanner";
 import QuillLoading from "../components/QuillLoading";
+import EditActionButton from "../components/EditActionButton";
 import RecycleBinButton from "../components/RecycleBinButton";
 import WorksheetLockButton from "../components/WorksheetLockButton";
 import WorksheetsByMode from "../components/WorksheetsByMode";
@@ -348,6 +349,11 @@ export default function AdminWorksheets() {
                       />
                     );
                   })()}
+                  <EditActionButton
+                    to={`/admin/create/worksheet?edit=${encodeURIComponent(ws.id)}`}
+                    label={`Edit ${ws.title}`}
+                    disabled={deleting}
+                  />
                   <RecycleBinButton
                     onClick={() => handleDelete(ws)}
                     label={`Delete ${ws.title}`}

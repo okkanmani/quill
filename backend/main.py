@@ -66,6 +66,7 @@ from worksheets import (
     clear_worksheet_access_lock,
     create_worksheet_from_builder,
     set_worksheet_access_lock_for_admin_students,
+    update_worksheet_from_builder,
     delete_worksheet,
     delete_result,
     evaluate_result,
@@ -134,12 +135,19 @@ class SaveDraftRequest(BaseModel):
     answers: dict
 
 
+class WorksheetBuilderPassageRequest(BaseModel):
+    id: str | None = None
+    title: str
+    body: str
+
+
 class WorksheetBuilderQuestionRequest(BaseModel):
     prompt: str
     choices: list[str] | None = None
     correct_index: int | None = None
     answer: str | None = None
     area: str | None = None
+    passage_id: str | None = None
 
 
 class CreateWorksheetBuilderRequest(BaseModel):
@@ -150,6 +158,8 @@ class CreateWorksheetBuilderRequest(BaseModel):
     question_count: int
     timed: bool = False
     time_limit_minutes: int | None = None
+    english_type: str | None = None
+    passages: list[WorksheetBuilderPassageRequest] | None = None
     learn_subject: str | None = None
     learn_section: str | None = None
     content_badge: str | None = None
@@ -193,6 +203,13 @@ class UpdateAccountRequest(BaseModel):
     new_password: str | None = None
 
 
+class GenerateWorksheetDraftPassageSpec(BaseModel):
+    id: str | None = None
+    question_count: int
+    prompt: str = ""
+    min_words: int | None = None
+
+
 class GenerateWorksheetDraftRequest(BaseModel):
     subject: str
     grade: int
@@ -200,6 +217,9 @@ class GenerateWorksheetDraftRequest(BaseModel):
     format: str
     question_count: int | None = None
     custom_prompt: str = ""
+    english_type: str | None = None
+    min_words: int | None = None
+    passage_specs: list[GenerateWorksheetDraftPassageSpec] | None = None
 
 
 class AdminOpenAiKeyRequest(BaseModel):
@@ -212,6 +232,14 @@ class GenerateLearnResourceRequest(BaseModel):
     curriculum: str
     section_title: str
     custom_prompt: str = ""
+
+
+class PublishLearnResourceRequest(BaseModel):
+    subject: str
+    grade: int
+    curriculum: str
+    section_title: str
+    markdown: str
 
 
 class UpdateLearnSectionRequest(BaseModel):
@@ -586,6 +614,28 @@ def admin_create_worksheet_from_builder(
     return result
 
 
+@app.put("/admin/worksheets/{worksheet_id}")
+def admin_update_worksheet_from_builder(
+    worksheet_id: str,
+    req: CreateWorksheetBuilderRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    body = req.model_dump()
+    body.pop("lock_on_create", None)
+    try:
+        return update_worksheet_from_builder(worksheet_id, body)
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid worksheet data."]
+        if isinstance(errors, list):
+            detail = errors
+        else:
+            detail = [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
+
+
 @app.post("/admin/worksheets/generate-draft")
 def admin_generate_worksheet_draft(
     req: GenerateWorksheetDraftRequest,
@@ -601,6 +651,7 @@ def admin_generate_worksheet_draft(
                 status_code=400,
                 detail="Add your OpenAI API key under Admin → Settings.",
             )
+        body = req.model_dump()
         return generate_worksheet_draft(
             subject=req.subject,
             grade=req.grade,
@@ -608,6 +659,13 @@ def admin_generate_worksheet_draft(
             fmt=req.format,
             question_count=req.question_count,
             custom_prompt=req.custom_prompt,
+            english_type=body.get("english_type") or "",
+            min_words=req.min_words,
+            passage_specs=(
+                [spec.model_dump() for spec in req.passage_specs]
+                if req.passage_specs
+                else None
+            ),
             api_key=api_key,
         )
     except ValueError as exc:
@@ -654,6 +712,41 @@ def admin_generate_learn_resource(
             subject_key=subject_key,
             section_title=draft["section_title"],
             markdown=draft["markdown"],
+            subject_title=subj_label,
+            subject_description=f"Grade {req.grade} · {req.curriculum.strip()}",
+            grade=req.grade,
+            curriculum=req.curriculum,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/admin/learn/publish")
+def admin_publish_learn_resource(
+    req: PublishLearnResourceRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        subject_key = learn_collection_key(
+            subject=req.subject,
+            grade=req.grade,
+            curriculum=req.curriculum,
+        )
+        subject_labels = {
+            "math": "Math",
+            "english": "English",
+            "science": "Science",
+            "data": "Data analysis",
+            "general": "General",
+        }
+        subj_label = subject_labels.get(req.subject.strip().lower(), req.subject)
+        return publish_learn_section(
+            subject_key=subject_key,
+            section_title=req.section_title,
+            markdown=req.markdown,
             subject_title=subj_label,
             subject_description=f"Grade {req.grade} · {req.curriculum.strip()}",
             grade=req.grade,

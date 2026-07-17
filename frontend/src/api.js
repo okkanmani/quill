@@ -152,6 +152,23 @@ export async function uploadWorksheet(file) {
   return res.json();
 }
 
+export async function updateWorksheetFromBuilder(worksheetId, payload) {
+  const res = await fetch(`${BASE_URL}/admin/worksheets/${worksheetId}`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to update worksheet";
+    if (typeof d === "string") msg = d;
+    else if (Array.isArray(d)) msg = d.join(" ");
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function createWorksheetFromBuilder(payload) {
   const res = await fetch(`${BASE_URL}/admin/worksheets/create`, {
     method: "POST",
@@ -556,6 +573,22 @@ export async function generateAndPublishLearnResource(payload) {
     const err = await res.json().catch(() => ({}));
     const d = err.detail;
     let msg = "Failed to generate learning resource";
+    if (typeof d === "string") msg = d;
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function publishLearnResource(payload) {
+  const res = await fetch(`${BASE_URL}/admin/learn/publish`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to publish learning resource";
     if (typeof d === "string") msg = d;
     throw new Error(msg);
   }

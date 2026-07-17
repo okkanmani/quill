@@ -1199,7 +1199,34 @@ def _shuffle_mcq_choices(choices: list[str], answer: str) -> list[str]:
     return shuffled
 
 
-def worksheet_data_from_builder(body: dict) -> dict:
+def _load_worksheet_publish_metadata(ws_id: str) -> dict:
+    """Return created_at / sort_ts to preserve when editing an existing worksheet."""
+    meta: dict = {}
+    path = WORKSHEETS_DIR / f"{ws_id}.json"
+    if path.exists():
+        try:
+            with open(path, encoding="utf-8") as f:
+                file_data = json.load(f)
+            if isinstance(file_data.get("created_at"), str):
+                meta["created_at"] = file_data["created_at"]
+            if isinstance(file_data.get("sort_ts"), (int, float)):
+                meta["sort_ts"] = int(file_data["sort_ts"])
+        except (OSError, json.JSONDecodeError):
+            pass
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT sort_ts FROM worksheets WHERE id = ?",
+            (ws_id,),
+        ).fetchone()
+        if row and row["sort_ts"]:
+            meta["sort_ts"] = int(row["sort_ts"])
+    finally:
+        conn.close()
+    return meta
+
+
+def worksheet_data_from_builder(body: dict, *, existing: dict | None = None) -> dict:
     """Turn admin builder payload into worksheet JSON (before upsert validation)."""
     errors: list[str] = []
 
@@ -1277,6 +1304,10 @@ def worksheet_data_from_builder(body: dict) -> dict:
         if area:
             q_obj["area"] = area
 
+        passage_id = raw.get("passage_id")
+        if passage_id is not None and str(passage_id).strip():
+            q_obj["passage_id"] = str(passage_id).strip()
+
         if fmt == "multiple_choice":
             choices = raw.get("choices")
             correct_index = raw.get("correct_index")
@@ -1308,6 +1339,53 @@ def worksheet_data_from_builder(body: dict) -> dict:
     if errors:
         raise ValueError(errors)
 
+    english_type = body.get("english_type")
+    if isinstance(english_type, str):
+        english_type = english_type.strip().lower()
+    else:
+        english_type = ""
+
+    raw_passages = body.get("passages")
+    built_passages: list[dict] = []
+    if isinstance(raw_passages, list) and raw_passages:
+        for i, raw in enumerate(raw_passages):
+            prefix = f"passages[{i}]"
+            if not isinstance(raw, dict):
+                errors.append(f"{prefix} must be an object.")
+                continue
+            pid = raw.get("id")
+            if isinstance(pid, str) and pid.strip():
+                passage_id = pid.strip()
+            else:
+                passage_id = f"p{i + 1}"
+            ptitle = raw.get("title")
+            pbody = raw.get("body") or raw.get("text")
+            if not isinstance(ptitle, str) or not ptitle.strip():
+                errors.append(f"{prefix}.title is required.")
+                continue
+            if not isinstance(pbody, str) or not pbody.strip():
+                errors.append(f"{prefix}.body is required.")
+                continue
+            built_passages.append(
+                {
+                    "id": passage_id,
+                    "title": ptitle.strip(),
+                    "body": pbody.strip(),
+                }
+            )
+        if errors:
+            raise ValueError(errors)
+        passage_ids = {p["id"] for p in built_passages}
+        if english_type == "reading_comprehension":
+            for i, q_obj in enumerate(built_questions):
+                pid = q_obj.get("passage_id")
+                if not pid or pid not in passage_ids:
+                    errors.append(
+                        f"questions[{i}] must reference a passage for reading comprehension."
+                    )
+        if errors:
+            raise ValueError(errors)
+
     data: dict = {
         "title": title.strip(),
         "subject": subject,
@@ -1315,11 +1393,18 @@ def worksheet_data_from_builder(body: dict) -> dict:
         "created_at": datetime.now(timezone.utc).isoformat(),
         "questions": built_questions,
     }
+    if existing:
+        if existing.get("created_at"):
+            data["created_at"] = existing["created_at"]
+        if existing.get("sort_ts") is not None:
+            data["sort_ts"] = existing["sort_ts"]
     if evaluation == "manual":
         data["evaluation"] = "manual"
     if timed:
         data["timed"] = True
         data["time_limit_minutes"] = time_limit
+    if built_passages:
+        data["passages"] = built_passages
 
     learn_subject_raw = body.get("learn_subject")
     learn_section_raw = body.get("learn_section")
@@ -1349,6 +1434,18 @@ def create_worksheet_from_builder(body: dict) -> dict:
     data = worksheet_data_from_builder(body)
     ws_id = next_worksheet_id()
     return upsert_worksheet_from_data(ws_id, data)
+
+
+def update_worksheet_from_builder(ws_id: str, body: dict) -> dict:
+    """Validate builder input and replace an existing worksheet in place."""
+    ws_id = (ws_id or "").strip()
+    if not ws_id:
+        raise ValueError(["Worksheet id is required."])
+    if get_worksheet(ws_id) is None:
+        raise ValueError([f"Worksheet {ws_id} not found."])
+    existing = _load_worksheet_publish_metadata(ws_id)
+    data = worksheet_data_from_builder(body, existing=existing)
+    return upsert_worksheet_from_data(ws_id, data, refresh_sort_ts=False)
 
 def validate_worksheet_data(data: dict) -> list[str]:
     """Return human-readable validation errors; empty list means valid."""
@@ -1511,15 +1608,22 @@ def validate_worksheet_data(data: dict) -> list[str]:
     return errors
 
 
-def upsert_worksheet_from_data(ws_id: str, data: dict) -> dict:
+def upsert_worksheet_from_data(
+    ws_id: str, data: dict, *, refresh_sort_ts: bool = True
+) -> dict:
     """Validate and upsert one worksheet into SQLite."""
     errors = validate_worksheet_data(data)
     if errors:
         raise ValueError(errors)
 
-    # Portal upload = newly published; use now so Latest tab picks it up.
     payload = dict(data)
-    payload["sort_ts"] = int(datetime.now(timezone.utc).timestamp() * 1000)
+    if refresh_sort_ts:
+        payload["sort_ts"] = int(datetime.now(timezone.utc).timestamp() * 1000)
+    elif "sort_ts" not in payload:
+        payload["sort_ts"] = _load_worksheet_publish_metadata(ws_id).get(
+            "sort_ts",
+            int(datetime.now(timezone.utc).timestamp() * 1000),
+        )
 
     conn = db.connect()
     try:

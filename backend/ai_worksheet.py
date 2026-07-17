@@ -120,6 +120,157 @@ def _parse_ai_json(content: str) -> dict:
     return data
 
 
+def _normalize_rc_draft(data: dict, *, passage_specs: list[dict]) -> dict:
+    title = data.get("title")
+    if not isinstance(title, str) or not title.strip():
+        raise ValueError("AI draft is missing a title.")
+
+    raw_passages = data.get("passages")
+    if not isinstance(raw_passages, list) or not raw_passages:
+        raise ValueError("AI draft has no passages.")
+
+    if len(raw_passages) < len(passage_specs):
+        raise ValueError(
+            f"AI returned {len(raw_passages)} passages; expected {len(passage_specs)}."
+        )
+    if len(raw_passages) > len(passage_specs):
+        raw_passages = raw_passages[: len(passage_specs)]
+
+    passages: list[dict] = []
+    for i, (raw, spec) in enumerate(zip(raw_passages, passage_specs)):
+        prefix = f"passages[{i}]"
+        if not isinstance(raw, dict):
+            raise ValueError(f"{prefix} is invalid.")
+        pid = spec.get("id") or f"p{i + 1}"
+        ptitle = raw.get("title")
+        body = raw.get("body") or raw.get("text")
+        if not isinstance(ptitle, str) or not ptitle.strip():
+            raise ValueError(f"{prefix}.title is required.")
+        if not isinstance(body, str) or not body.strip():
+            raise ValueError(f"{prefix}.body is required.")
+
+        expected_q = int(spec.get("question_count") or 0)
+        raw_questions = raw.get("questions")
+        if not isinstance(raw_questions, list) or not raw_questions:
+            raise ValueError(f"{prefix} has no questions.")
+        if len(raw_questions) < expected_q:
+            raise ValueError(
+                f"{prefix} returned {len(raw_questions)} questions; expected {expected_q}."
+            )
+        if len(raw_questions) > expected_q:
+            raw_questions = raw_questions[:expected_q]
+
+        questions: list[dict] = []
+        for j, rq in enumerate(raw_questions):
+            qprefix = f"{prefix}.questions[{j}]"
+            if not isinstance(rq, dict):
+                raise ValueError(f"{qprefix} is invalid.")
+            prompt = rq.get("prompt")
+            if not isinstance(prompt, str) or not prompt.strip():
+                raise ValueError(f"{qprefix}.prompt is required.")
+            area = rq.get("area")
+            if not isinstance(area, str) or not area.strip():
+                raise ValueError(f"{qprefix}.area is required.")
+            choices = rq.get("choices")
+            correct_index = rq.get("correct_index")
+            if not isinstance(choices, list) or len(choices) != 4:
+                raise ValueError(f"{qprefix} must have 4 choices.")
+            trimmed = [str(c).strip() for c in choices]
+            if any(not c for c in trimmed):
+                raise ValueError(f"{qprefix} has empty choices.")
+            if len(set(trimmed)) < 4:
+                raise ValueError(f"{qprefix} has duplicate choices.")
+            if not isinstance(correct_index, int) or correct_index not in (0, 1, 2, 3):
+                raise ValueError(f"{qprefix} has invalid correct_index.")
+            questions.append(
+                {
+                    "prompt": prompt.strip(),
+                    "area": area.strip().lower(),
+                    "choices": trimmed,
+                    "correct_index": correct_index,
+                }
+            )
+
+        passages.append(
+            {
+                "id": pid,
+                "title": ptitle.strip(),
+                "body": body.strip(),
+                "questions": questions,
+            }
+        )
+
+    return {"title": title.strip(), "passages": passages}
+
+
+def _build_rc_prompt(
+    *,
+    grade: int,
+    stars: int,
+    passage_specs: list[dict],
+    custom_prompt: str = "",
+) -> str:
+    difficulty = _difficulty_label(stars)
+    specs_text = "\n".join(
+        f"- Passage {i + 1} (id {spec.get('id', f'p{i + 1}')}): "
+        f"exactly {spec.get('question_count')} multiple-choice questions; "
+        f"minimum {spec.get('min_words', 200)} words in the passage body"
+        + (
+            f"; topic/focus: {spec.get('prompt', '').strip()}"
+            if spec.get("prompt", "").strip()
+            else ""
+        )
+        for i, spec in enumerate(passage_specs)
+    )
+    schema = """
+{
+  "title": "short worksheet title",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "passage title",
+      "body": "full passage prose",
+      "questions": [
+        {
+          "prompt": "question text",
+          "area": "specific skill label",
+          "choices": ["choice A text", "choice B text", "choice C text", "choice D text"],
+          "correct_index": 0
+        }
+      ]
+    }
+  ]
+}
+"""
+    base = f"""Generate a reading-comprehension worksheet as JSON only.
+
+Audience: grade {grade} students in Canada/US curriculum style.
+Subject: English reading comprehension
+Difficulty: {difficulty} (stars {stars} of 3)
+
+Passage requirements:
+{specs_text}
+
+Rules:
+- Each passage body must meet its stated minimum word count.
+- Include at least 2 vocabulary-focused questions per passage when possible.
+- Each question must have exactly 4 distinct choices and a correct_index (0-3).
+- Each question must include a specific lowercase area label (e.g. vocabulary, inference, main idea).
+- Questions must be answerable from their passage only.
+- Do not prefix choices with letters.
+- Title under 80 characters.
+
+Return JSON matching this schema:
+{schema}
+"""
+    extra = (custom_prompt or "").strip()
+    if extra:
+        if len(extra) > 2000:
+            extra = extra[:2000]
+        return base + f"\nAdditional instructions from the teacher:\n{extra}\n"
+    return base
+
+
 def _normalize_draft(data: dict, *, fmt: str, question_count: int) -> dict:
     title = data.get("title")
     if not isinstance(title, str) or not title.strip():
@@ -211,9 +362,12 @@ def generate_worksheet_draft(
     fmt: str,
     question_count: int | None = None,
     custom_prompt: str = "",
+    english_type: str = "",
+    min_words: int | None = None,
+    passage_specs: list[dict] | None = None,
     api_key: str,
 ) -> dict:
-    """Call OpenAI and return builder-ready draft {title, questions}."""
+    """Call OpenAI and return builder-ready draft."""
     api_key = (api_key or "").strip()
     if not api_key:
         raise ValueError(
@@ -232,22 +386,58 @@ def generate_worksheet_draft(
     if not isinstance(grade, int) or grade < 1 or grade > 12:
         raise ValueError("grade must be an integer from 1 to 12.")
 
-    count = question_count if question_count is not None else STARS_DEFAULT_QUESTION_COUNTS[stars]
-    if not isinstance(count, int) or count < 1 or count > 50:
-        raise ValueError("question_count must be between 1 and 50.")
+    english_type = (english_type or "").strip().lower()
+    specs = passage_specs or []
+    is_rc = subject == "english" and english_type == "reading_comprehension" and specs
+
+    if is_rc:
+        normalized_specs = []
+        for i, spec in enumerate(specs):
+            if not isinstance(spec, dict):
+                raise ValueError(f"passage_specs[{i}] must be an object.")
+            qcount = spec.get("question_count")
+            if not isinstance(qcount, int) or qcount < 1 or qcount > 15:
+                raise ValueError(
+                    f"passage_specs[{i}].question_count must be between 1 and 15."
+                )
+            min_w = spec.get("min_words")
+            if not isinstance(min_w, int):
+                min_w = min_words if isinstance(min_words, int) else 200
+            if min_w < 50 or min_w > 2000:
+                raise ValueError(
+                    f"passage_specs[{i}].min_words must be between 50 and 2000."
+                )
+            normalized_specs.append(
+                {
+                    "id": (spec.get("id") or f"p{i + 1}").strip(),
+                    "question_count": qcount,
+                    "prompt": (spec.get("prompt") or "").strip(),
+                    "min_words": min_w,
+                }
+            )
+        user_prompt = _build_rc_prompt(
+            grade=grade,
+            stars=stars,
+            passage_specs=normalized_specs,
+            custom_prompt=custom_prompt,
+        )
+    else:
+        count = question_count if question_count is not None else STARS_DEFAULT_QUESTION_COUNTS[stars]
+        if not isinstance(count, int) or count < 1 or count > 50:
+            raise ValueError("question_count must be between 1 and 50.")
+        user_prompt = _build_prompt(
+            subject=subject,
+            grade=grade,
+            stars=stars,
+            fmt=fmt,
+            question_count=count,
+            custom_prompt=custom_prompt,
+        )
 
     model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
-    user_prompt = _build_prompt(
-        subject=subject,
-        grade=grade,
-        stars=stars,
-        fmt=fmt,
-        question_count=count,
-        custom_prompt=custom_prompt,
-    )
 
     try:
-        with httpx.Client(timeout=120.0) as client:
+        with httpx.Client(timeout=180.0) as client:
             res = client.post(
                 OPENAI_CHAT_URL,
                 headers={
@@ -285,4 +475,8 @@ def generate_worksheet_draft(
         raise ValueError("Unexpected AI response format.") from exc
 
     parsed = _parse_ai_json(content)
+    if is_rc:
+        return _normalize_rc_draft(parsed, passage_specs=normalized_specs)
+
+    count = question_count if question_count is not None else STARS_DEFAULT_QUESTION_COUNTS[stars]
     return _normalize_draft(parsed, fmt=fmt, question_count=count)
