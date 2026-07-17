@@ -9,12 +9,19 @@ import AdminStudentBanner from "../components/AdminStudentBanner";
 import QuillLoading from "../components/QuillLoading";
 import FocusAreaExplainPanel from "../components/FocusAreaExplainPanel";
 import {
+  buildFocusAreaUrgencyMap,
   focusAreasAnalysisWithDiscussion,
+  focusAreaUrgencyChipClass,
   formatAreaLabel,
   formatFocusExampleAnswer,
   formatFocusExampleChoices,
   isMissingFocusExampleAnswer,
 } from "../analysisUtils";
+import {
+  flattenGroupedFocusAreas,
+  groupFocusAreas,
+  rebuildGroupedFocusAreas,
+} from "../areaGroupMap";
 import {
   readJsonFile,
   resolveResultForEvaluationUpload,
@@ -48,6 +55,148 @@ function findSelectedFocus(bySubject, selectedKey) {
   return { subject, focus };
 }
 
+function FocusAreaChipButton({
+  focus,
+  subjectKey,
+  selectedKey,
+  onSelectArea,
+  urgencyTier = "low",
+  muted = false,
+}) {
+  const key = focusSelectionKey(subjectKey, focus.area);
+  const isSelected = selectedKey === key;
+  const label = formatAreaLabel(focus.area);
+  const wrongCount = focus.wrongCount || 0;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSelectArea(key)}
+      aria-pressed={isSelected}
+      className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition ${focusAreaUrgencyChipClass(
+        urgencyTier,
+        { selected: isSelected, muted },
+      )}`}
+    >
+      <span>{label}</span>
+      {!muted && wrongCount > 0 ? (
+        <>
+          <span className="mx-1.5 opacity-70" aria-hidden="true">
+            ·
+          </span>
+          <span className="tabular-nums">{wrongCount}</span>
+        </>
+      ) : null}
+    </button>
+  );
+}
+
+function FocusAreaChipRow({
+  areas,
+  subjectKey,
+  selectedKey,
+  onSelectArea,
+  urgencyMap = {},
+  muted = false,
+}) {
+  if (!areas.length) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {areas.map((focus) => (
+        <FocusAreaChipButton
+          key={focus.area}
+          focus={focus}
+          subjectKey={subjectKey}
+          selectedKey={selectedKey}
+          onSelectArea={onSelectArea}
+          urgencyTier={urgencyMap[focus.area] || "low"}
+          muted={muted}
+        />
+      ))}
+    </div>
+  );
+}
+
+function GroupedNeedsDiscussionChips({
+  areas,
+  subjectKey,
+  selectedKey,
+  onSelectArea,
+  collapseAfter = null,
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const urgencyMap = useMemo(() => buildFocusAreaUrgencyMap(areas), [areas]);
+  const groupedAreas = useMemo(
+    () => groupFocusAreas(areas, subjectKey),
+    [areas, subjectKey],
+  );
+  const flatAreas = useMemo(
+    () => flattenGroupedFocusAreas(groupedAreas),
+    [groupedAreas],
+  );
+
+  const visibleFlatAreas = useMemo(() => {
+    if (!collapseAfter || expanded || flatAreas.length <= collapseAfter) {
+      return flatAreas;
+    }
+
+    const initial = flatAreas.slice(0, collapseAfter);
+    const parsed = parseFocusSelectionKey(selectedKey);
+    if (parsed?.subjectKey !== subjectKey) {
+      return initial;
+    }
+
+    const selectedItem = flatAreas.find((item) => item.focus.area === parsed.area);
+    if (selectedItem && !initial.some((item) => item.focus.area === selectedItem.focus.area)) {
+      return [...initial, selectedItem];
+    }
+
+    return initial;
+  }, [flatAreas, collapseAfter, expanded, selectedKey, subjectKey]);
+
+  const visibleGroupedAreas = useMemo(
+    () => rebuildGroupedFocusAreas(visibleFlatAreas),
+    [visibleFlatAreas],
+  );
+
+  const hiddenCount = expanded ? 0 : flatAreas.length - visibleFlatAreas.length;
+  const showToggle = Boolean(collapseAfter) && flatAreas.length > collapseAfter;
+
+  if (!areas.length) return null;
+
+  return (
+    <div className="mt-2">
+      <div className="flex flex-col gap-4">
+        {visibleGroupedAreas.map(([groupLabel, groupAreas]) => (
+          <div key={groupLabel}>
+            <p className="text-xs font-semibold text-slate-600 mb-2">{groupLabel}</p>
+            <FocusAreaChipRow
+              areas={groupAreas}
+              subjectKey={subjectKey}
+              selectedKey={selectedKey}
+              onSelectArea={onSelectArea}
+              urgencyMap={urgencyMap}
+            />
+          </div>
+        ))}
+      </div>
+      {showToggle ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((value) => !value)}
+          aria-expanded={expanded}
+          className="mt-4 w-full rounded-xl bg-slate-100 hover:bg-slate-200 text-sm font-semibold text-slate-800 py-2.5 transition"
+        >
+          {expanded
+            ? "Show less"
+            : `Show ${Math.max(hiddenCount, 0)} more topic${hiddenCount === 1 ? "" : "s"}`}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 function FocusAreaChips({
   areas,
   subjectKey,
@@ -77,46 +226,30 @@ function FocusAreaChips({
     return initial;
   }, [areas, collapseAfter, expanded, selectedKey, subjectKey]);
 
+  const hiddenCount = expanded ? 0 : areas.length - visibleAreas.length;
   const showToggle = Boolean(collapseAfter) && areas.length > collapseAfter;
 
   if (!areas.length) return null;
 
   return (
     <div className="mt-2">
-      <div className="flex flex-wrap gap-2">
-        {visibleAreas.map((focus) => {
-          const key = focusSelectionKey(subjectKey, focus.area);
-          const isSelected = selectedKey === key;
-          const label = formatAreaLabel(focus.area);
-          return (
-            <button
-              key={focus.area}
-              type="button"
-              onClick={() => onSelectArea(key)}
-              aria-pressed={isSelected}
-              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                isSelected
-                  ? muted
-                    ? "bg-slate-700 text-white border-slate-800 shadow-sm"
-                    : "bg-indigo-700 text-white border-indigo-800 shadow-sm"
-                  : muted
-                    ? "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800"
-                    : "bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100"
-              }`}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
+      <FocusAreaChipRow
+        areas={visibleAreas}
+        subjectKey={subjectKey}
+        selectedKey={selectedKey}
+        onSelectArea={onSelectArea}
+        muted={muted}
+      />
       {showToggle ? (
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
           aria-expanded={expanded}
-          className="mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:underline"
+          className="mt-3 w-full rounded-xl bg-slate-100 hover:bg-slate-200 text-sm font-semibold text-slate-800 py-2.5 transition"
         >
-          {expanded ? "View less" : "View more"}
+          {expanded
+            ? "Show less"
+            : `Show ${Math.max(hiddenCount, 0)} more topic${hiddenCount === 1 ? "" : "s"}`}
         </button>
       ) : null}
     </div>
@@ -200,6 +333,12 @@ function FocusAreaDetailPanel({
       ) : (
         <p className="text-xs font-semibold uppercase tracking-wide text-amber-800 mt-2">
           Needs discussion
+          {(focus.wrongCount || 0) > 0 ? (
+            <span className="normal-case font-medium text-slate-600">
+              {" "}
+              · {focus.wrongCount} wrong answer{focus.wrongCount === 1 ? "" : "s"}
+            </span>
+          ) : null}
         </p>
       )}
       {examples.length > 0 ? (
@@ -251,7 +390,7 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
           <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
             Needs discussion
           </p>
-          <FocusAreaChips
+          <GroupedNeedsDiscussionChips
             areas={needsDiscussion}
             subjectKey={subject.subjectKey}
             selectedKey={selectedKey}

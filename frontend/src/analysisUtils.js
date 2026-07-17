@@ -53,6 +53,13 @@ export function splitFocusAreasByDiscussion(focusAreas, subjectKey, discussedMap
   return { needsDiscussion, alreadyDiscussed };
 }
 
+function sortDiscussionBuckets({ needsDiscussion, alreadyDiscussed }) {
+  return {
+    needsDiscussion: sortFocusAreasByUrgency(needsDiscussion),
+    alreadyDiscussed: sortFocusAreasByUrgency(alreadyDiscussed),
+  };
+}
+
 export function buildDiscussedMap(discussedRecords) {
   const map = {};
   for (const row of discussedRecords || []) {
@@ -104,12 +111,106 @@ function addWrongExample(entry, question, result) {
   if (example.correct !== false) return;
   if (!example.question.trim()) return;
 
+  const countKey = wrongCountKey(result, question, example);
+  if (!entry.wrongCountKeys.has(countKey)) {
+    entry.wrongCountKeys.add(countKey);
+    entry.wrongCount += 1;
+  }
+
   const key = exampleKey(example);
   if (entry.exampleKeys.has(key)) return;
   if (entry.examples.length >= MAX_EXAMPLES_PER_AREA) return;
 
   entry.exampleKeys.add(key);
   entry.examples.push(example);
+}
+
+function wrongCountKey(result, question, example) {
+  const resultId = result?.id ?? result?.focus_evaluation?.result_id ?? "unknown";
+  if (question?.question_id) {
+    return `${resultId}:${question.question_id}`;
+  }
+  return `${resultId}:${exampleKey(example)}`;
+}
+
+/** Use share-of-total when a subject has at least this many wrong answers overall. */
+const MIN_TOTAL_FOR_RELATIVE_URGENCY = 3;
+/** Absolute fallback tiers when relative scoring is not meaningful. */
+const ABSOLUTE_URGENCY_HIGH = 5;
+const ABSOLUTE_URGENCY_MEDIUM = 3;
+
+export function getFocusAreaUrgencyTierForArea(
+  wrongCount,
+  { totalWrong = 0, maxWrong = 0 } = {},
+) {
+  const count = Number(wrongCount) || 0;
+  if (count <= 0) return "low";
+
+  const total = Number(totalWrong) || 0;
+  if (total < MIN_TOTAL_FOR_RELATIVE_URGENCY) {
+    if (count >= ABSOLUTE_URGENCY_HIGH) return "high";
+    if (count >= ABSOLUTE_URGENCY_MEDIUM) return "medium";
+    return "low";
+  }
+
+  const share = count / total;
+  const isClearLeader = count === maxWrong && count >= 2 && share >= 0.4;
+
+  if (share >= 0.5 || isClearLeader) return "high";
+  if (share >= 0.25 || count >= ABSOLUTE_URGENCY_MEDIUM) return "medium";
+  return "low";
+}
+
+/**
+ * Relative urgency within one subject's focus-area list.
+ * Example: 4 algebra + 1 geometry → algebra high, geometry low.
+ */
+export function buildFocusAreaUrgencyMap(areas) {
+  const list = areas || [];
+  const totalWrong = list.reduce((sum, area) => sum + (area.wrongCount || 0), 0);
+  const maxWrong = Math.max(0, ...list.map((area) => area.wrongCount || 0));
+  const context = { totalWrong, maxWrong };
+
+  const map = {};
+  for (const focus of list) {
+    map[focus.area] = getFocusAreaUrgencyTierForArea(focus.wrongCount, context);
+  }
+  return map;
+}
+
+export function getFocusAreaUrgencyTier(wrongCount) {
+  return getFocusAreaUrgencyTierForArea(wrongCount);
+}
+
+export function focusAreaUrgencyChipClass(
+  tier,
+  { selected = false, muted = false } = {},
+) {
+  if (selected) {
+    return muted
+      ? "bg-slate-800 text-white border-slate-900 ring-2 ring-slate-400 ring-offset-1 shadow-sm"
+      : "bg-indigo-800 text-white border-indigo-900 ring-2 ring-indigo-400 ring-offset-1 shadow-sm";
+  }
+
+  if (muted) {
+    return "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800";
+  }
+
+  if (tier === "high") {
+    return "bg-rose-100 text-rose-950 border-rose-300 hover:bg-rose-200";
+  }
+  if (tier === "medium") {
+    return "bg-amber-100 text-amber-950 border-amber-300 hover:bg-amber-200";
+  }
+  return "bg-lime-50 text-lime-950 border-lime-300 hover:bg-lime-100";
+}
+
+export function sortFocusAreasByUrgency(focusAreas) {
+  return [...(focusAreas || [])].sort(
+    (a, b) =>
+      (b.wrongCount || 0) - (a.wrongCount || 0) ||
+      String(a.area).localeCompare(String(b.area)),
+  );
 }
 
 /**
@@ -141,6 +242,8 @@ export function focusAreasAnalysis(results) {
           area,
           examples: [],
           exampleKeys: new Set(),
+          wrongCountKeys: new Set(),
+          wrongCount: 0,
           latestAnalysisAt: "",
         });
       }
@@ -156,12 +259,17 @@ export function focusAreasAnalysis(results) {
   return [...bySubject.entries()]
     .map(([subjectKey, areaMap]) => {
       const focusAreas = [...areaMap.values()]
-        .map(({ area, examples, latestAnalysisAt }) => ({
+        .map(({ area, examples, latestAnalysisAt, wrongCount }) => ({
           area,
           examples,
           latestAnalysisAt,
+          wrongCount,
         }))
-        .sort((a, b) => a.area.localeCompare(b.area));
+        .sort(
+          (a, b) =>
+            (b.wrongCount || 0) - (a.wrongCount || 0) ||
+            a.area.localeCompare(b.area),
+        );
       return {
         subjectKey,
         subjectLabel: formatSubjectLabel(subjectKey),
@@ -183,11 +291,12 @@ export function focusAreasAnalysis(results) {
 export function focusAreasAnalysisWithDiscussion(results, discussedRecords) {
   const discussedMap = buildDiscussedMap(discussedRecords);
   return focusAreasAnalysis(results).map((subject) => {
-    const { needsDiscussion, alreadyDiscussed } = splitFocusAreasByDiscussion(
+    const buckets = splitFocusAreasByDiscussion(
       subject.focusAreas,
       subject.subjectKey,
       discussedMap,
     );
+    const { needsDiscussion, alreadyDiscussed } = sortDiscussionBuckets(buckets);
     return {
       ...subject,
       needsDiscussion,
