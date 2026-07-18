@@ -49,11 +49,13 @@ export default function FocusPracticeWorksheet({
   const [workScratchpads, setWorkScratchpads] = useState({});
   const [checked, setChecked] = useState(false);
   const [resetKey, setResetKey] = useState(0);
+  const [workSpaceVisible, setWorkSpaceVisible] = useState(true);
 
   if (!worksheet) return null;
 
   const questions = worksheet.questions || [];
   const scratchpadAllowed = worksheet.scratchpad !== false;
+  const showWorkSpace = scratchpadAllowed && workSpaceVisible;
 
   function handleSelect(questionId, choice) {
     if (checked) return;
@@ -139,6 +141,35 @@ export default function FocusPracticeWorksheet({
         </div>
       </div>
 
+      {scratchpadAllowed ? (
+        <div className="shrink-0 border-b border-slate-200 bg-white px-5 py-3">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-slate-900">Show your work</p>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Each question can include typed notes or a scratchpad.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={workSpaceVisible}
+              aria-label={`${workSpaceVisible ? "Hide" : "Show"} work space on questions`}
+              onClick={() => setWorkSpaceVisible((value) => !value)}
+              className={`relative h-9 w-14 shrink-0 rounded-full transition-colors ${
+                workSpaceVisible ? "bg-indigo-500" : "bg-slate-200"
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 block h-7 w-7 rounded-full bg-white shadow transition-transform ${
+                  workSpaceVisible ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
         {questions.map((question, index) => {
           const selected = answers[question.id];
@@ -157,20 +188,17 @@ export default function FocusPracticeWorksheet({
                 <QuestionDifficultyStars stars={question.stars} />
               </div>
 
-              {scratchpadAllowed ? (
+              {showWorkSpace ? (
                 <div className="mt-3 rounded-xl border border-slate-200 bg-white p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Show your work
-                    </p>
-                    {!checked ? (
+                  {!checked ? (
+                    <div className="flex justify-end mb-3">
                       <WorkModeToggle
                         mode={workMode}
                         onChange={(mode) => handleWorkModeChange(question.id, mode)}
                         disabled={checked}
                       />
-                    ) : null}
-                  </div>
+                    </div>
+                  ) : null}
                   {workMode === "scratchpad" ? (
                     checked ? (
                       workScratchpads[question.id] ? (
@@ -196,6 +224,7 @@ export default function FocusPracticeWorksheet({
                         }
                         showHeading={false}
                         showTextTool
+                        canvasHeight={700}
                         className="mt-0"
                       />
                     )
@@ -210,8 +239,8 @@ export default function FocusPracticeWorksheet({
                       }
                       disabled={checked}
                       placeholder="Jot notes or steps for this question…"
-                      rows={4}
-                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y min-h-[6rem]"
+                      rows={8}
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y min-h-[12rem]"
                     />
                   )}
                 </div>
