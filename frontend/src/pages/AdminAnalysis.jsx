@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getResults, getFocusAreasDiscussed, logout, markFocusAreaDiscussed, uploadFocusEvaluation } from "../api";
+import {
+  getAdminSettings,
+  getFocusAreasDiscussed,
+  getResults,
+  logout,
+  markFocusAreaDiscussed,
+  uploadFocusEvaluation,
+} from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
@@ -347,6 +354,9 @@ function FocusAreaDetailPanel({
   selectionKey,
   onMarkDiscussed,
   markingDiscussed,
+  grade,
+  aiEnabled,
+  apiKeyConfigured,
 }) {
   const { subject, focus } = selection;
   const examples = focus.examples || [];
@@ -392,7 +402,13 @@ function FocusAreaDetailPanel({
       )}
       <FocusAreaExplainPanel
         selectionKey={selectionKey}
-        areaLabel={focus.area}
+        areaLabel={formatAreaLabel(focus.area)}
+        area={focus.area}
+        subjectKey={subject.subjectKey}
+        examples={examples}
+        grade={grade}
+        aiEnabled={aiEnabled}
+        apiKeyConfigured={apiKeyConfigured}
         needsDiscussion={focus.needsDiscussion !== false}
         onMarkDiscussed={onMarkDiscussed}
         markingDiscussed={markingDiscussed}
@@ -481,7 +497,19 @@ export default function AdminAnalysis() {
   const [uploading, setUploading] = useState(false);
   const [selectedKey, setSelectedKey] = useState("");
   const [markingDiscussed, setMarkingDiscussed] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(true);
+  const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
   const uploadInputRef = useRef(null);
+  const studentGrade = Number(localStorage.getItem("studentGrade")) || null;
+
+  useEffect(() => {
+    getAdminSettings()
+      .then((data) => {
+        setAiEnabled(Boolean(data.ai_enabled));
+        setApiKeyConfigured(Boolean(data.openai_key_configured));
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -675,6 +703,9 @@ export default function AdminAnalysis() {
                     selectionKey={selectedKey}
                     onMarkDiscussed={handleMarkDiscussed}
                     markingDiscussed={markingDiscussed}
+                    grade={studentGrade}
+                    aiEnabled={aiEnabled}
+                    apiKeyConfigured={apiKeyConfigured}
                   />
                 ) : (
                   <FocusAreaDetailPlaceholder />

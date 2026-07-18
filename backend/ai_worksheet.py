@@ -64,6 +64,7 @@ def _build_prompt(
             "Each question must include area: a specific, narrow skill label in lowercase "
             "(e.g. order of operations, fraction division) — not broad labels like algebra."
         )
+        accuracy_rule = "- Accurate correct answers — double-check math and facts.\n"
     else:
         include_reference = _ai_generates_short_answer_reference(subject)
         if include_reference:

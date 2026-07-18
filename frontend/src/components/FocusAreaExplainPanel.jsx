@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { generateFocusDiscussionReference } from "../api";
 import Drawpad from "./Drawpad";
 import { ScratchpadIcon, TextAnswerIcon } from "./ResponseModeIcons";
 
@@ -51,14 +53,60 @@ function ExplainModeToggle({ mode, onChange }) {
 export default function FocusAreaExplainPanel({
   selectionKey,
   areaLabel,
+  area = "",
+  subjectKey = "",
+  examples = [],
+  grade = null,
+  aiEnabled = true,
+  apiKeyConfigured = false,
   needsDiscussion = true,
   onMarkDiscussed,
   markingDiscussed = false,
 }) {
   const [byKey, setByKey] = useState({});
   const [openByKey, setOpenByKey] = useState({});
+  const [generatingAll, setGeneratingAll] = useState(false);
+  const [generateError, setGenerateError] = useState("");
   const notes = byKey[selectionKey] || DEFAULT_NOTES;
   const isOpen = openByKey[selectionKey] ?? false;
+  const canGenerate = aiEnabled && apiKeyConfigured && examples.length > 0;
+
+  async function handleGenerateFromAllExamples() {
+    setGenerateError("");
+    setGeneratingAll(true);
+    try {
+      const { reference } = await generateFocusDiscussionReference({
+        subject: subjectKey,
+        area,
+        grade: grade || undefined,
+        examples: examples.map((example) => ({
+          question: example.question,
+          answer: example.answer || "",
+          expected: example.expected || "",
+          choices: example.choices?.length ? example.choices : undefined,
+        })),
+      });
+      setByKey((prev) => {
+        const existing = prev[selectionKey] || DEFAULT_NOTES;
+        const separator = existing.text.trim() ? "\n\n" : "";
+        return {
+          ...prev,
+          [selectionKey]: {
+            ...existing,
+            mode: "text",
+            text: existing.text.trim()
+              ? `${existing.text.trim()}${separator}${reference}`
+              : reference,
+          },
+        };
+      });
+      setOpenByKey((prev) => ({ ...prev, [selectionKey]: true }));
+    } catch (err) {
+      setGenerateError(err.message || "Could not generate reference.");
+    } finally {
+      setGeneratingAll(false);
+    }
+  }
 
   return (
     <div className="mt-6 border-t border-slate-200 pt-5">
@@ -93,6 +141,31 @@ export default function FocusAreaExplainPanel({
           />
         </button>
       </div>
+
+      {examples.length > 0 ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleGenerateFromAllExamples}
+            disabled={!canGenerate || generatingAll}
+            className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-900 hover:bg-indigo-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {generatingAll
+              ? "Generating…"
+              : `Generate AI reference from ${examples.length} example${examples.length === 1 ? "" : "s"}`}
+          </button>
+          {!aiEnabled ? (
+            <span className="text-xs text-slate-500">AI disabled on server</span>
+          ) : !apiKeyConfigured ? (
+            <Link to="/admin/settings" className="text-xs font-semibold text-indigo-700 underline">
+              Add API key
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
+      {generateError ? (
+        <p className="text-xs text-red-700 mt-2">{generateError}</p>
+      ) : null}
 
       {isOpen ? (
         <>

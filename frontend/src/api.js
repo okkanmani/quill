@@ -588,6 +588,22 @@ export async function generateWorksheetDraft(payload) {
   return res.json();
 }
 
+export async function generateFocusDiscussionReference(payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/analysis/generate-discussion-reference`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to generate discussion reference";
+    if (typeof d === "string") msg = d;
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function generateAndPublishLearnResource(payload) {
   const res = await apiFetch(`${BASE_URL}/admin/learn/generate-and-publish`, {
     method: "POST",
