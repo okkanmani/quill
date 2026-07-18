@@ -203,6 +203,21 @@ def init_schema() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_focus_area_discussed_student
                 ON focus_area_discussed (student);
+            CREATE TABLE IF NOT EXISTS student_revision_worksheets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                student TEXT NOT NULL,
+                subject TEXT NOT NULL,
+                focus_area TEXT NOT NULL,
+                title TEXT NOT NULL,
+                payload TEXT NOT NULL,
+                discussed_at TEXT,
+                created_at TEXT NOT NULL,
+                completed_at TEXT,
+                score INTEGER,
+                total INTEGER NOT NULL DEFAULT 5
+            );
+            CREATE INDEX IF NOT EXISTS idx_revision_worksheets_student
+                ON student_revision_worksheets (student, created_at DESC);
             CREATE TABLE IF NOT EXISTS learn_sections (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 subject_key TEXT NOT NULL,

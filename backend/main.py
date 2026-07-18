@@ -29,7 +29,10 @@ from admin_secrets import (
 from ai_worksheet import generate_worksheet_draft
 from ai_learn import generate_learn_resource
 from ai_focus_discussion import generate_focus_discussion_reference
-from focus_practice import generate_focus_practice_worksheet
+from focus_practice import (
+    build_manual_focus_practice_worksheet,
+    generate_focus_practice_worksheet,
+)
 from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -56,6 +59,12 @@ from learn_content import (
     update_learn_section,
 )
 from focus_discussion import list_focus_areas_discussed, mark_focus_area_discussed
+from revision import (
+    complete_revision_worksheet,
+    get_revision_worksheet,
+    list_revision_worksheets,
+    save_revision_worksheet,
+)
 from writing import (
     delete_writing_submission,
     grade_writing_submission,
@@ -257,6 +266,26 @@ class GenerateFocusPracticeRequest(BaseModel):
     examples: list[FocusDiscussionExample] | None = None
     grade: int | None = None
     use_ai: bool = False
+
+
+class ManualFocusPracticeQuestionRequest(BaseModel):
+    prompt: str
+    choices: list[str]
+    answer: str
+    stars: int = 2
+
+
+class SaveManualFocusPracticeRequest(BaseModel):
+    subject: str
+    area: str
+    questions: list[ManualFocusPracticeQuestionRequest]
+    grade: int | None = None
+    title: str | None = None
+
+
+class CompleteRevisionRequest(BaseModel):
+    score: int
+    total: int
 
 
 class PublishLearnResourceRequest(BaseModel):
@@ -754,6 +783,33 @@ def admin_generate_focus_practice(
             use_ai=req.use_ai,
             api_key=api_key,
         )
+        who = _student_context_name(payload)
+        saved = save_revision_worksheet(student=who, worksheet=worksheet)
+        worksheet["revision_id"] = saved["id"]
+        return worksheet
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/admin/analysis/save-manual-focus-practice")
+def admin_save_manual_focus_practice(
+    req: SaveManualFocusPracticeRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        worksheet = build_manual_focus_practice_worksheet(
+            subject=req.subject,
+            area=req.area,
+            grade=req.grade,
+            title=req.title,
+            questions=[question.model_dump() for question in req.questions],
+        )
+        who = _student_context_name(payload)
+        saved = save_revision_worksheet(student=who, worksheet=worksheet)
+        worksheet["revision_id"] = saved["id"]
         return worksheet
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -1270,6 +1326,62 @@ def mark_focus_area_discussed_route(
         return mark_focus_area_discussed(who, req.subject, req.area)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/revision")
+def get_revision_worksheets(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") == "student":
+        return list_revision_worksheets(payload["name"])
+    if payload.get("role") == "admin":
+        who = _student_context_name(payload)
+        return list_revision_worksheets(who)
+    raise HTTPException(status_code=403, detail="Admin or student only")
+
+
+@app.get("/revision/{revision_id}")
+def get_revision_worksheet_by_id(
+    revision_id: int,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") == "student":
+        who = payload["name"]
+    elif payload.get("role") == "admin":
+        who = _student_context_name(payload)
+    else:
+        raise HTTPException(status_code=403, detail="Admin or student only")
+    worksheet = get_revision_worksheet(revision_id, who)
+    if not worksheet:
+        raise HTTPException(status_code=404, detail="Revision worksheet not found")
+    return worksheet
+
+
+@app.patch("/revision/{revision_id}/complete")
+def complete_revision_worksheet_route(
+    revision_id: int,
+    req: CompleteRevisionRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") == "student":
+        who = payload["name"]
+    elif payload.get("role") == "admin":
+        who = _student_context_name(payload)
+    else:
+        raise HTTPException(status_code=403, detail="Admin or student only")
+    try:
+        result = complete_revision_worksheet(
+            revision_id,
+            who,
+            score=req.score,
+            total=req.total,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if not result:
+        raise HTTPException(status_code=404, detail="Revision worksheet not found")
+    return result
 
 
 @app.delete("/results/{result_id}")

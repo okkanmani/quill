@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getResults, getWorksheets, getWritingSubmissions, logout } from "../api";
+import { getResults, getRevisionWorksheets, getWorksheets, getWritingSubmissions, logout } from "../api";
 import { buildStudentNavLinks } from "../adminNav";
 import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
@@ -21,13 +21,19 @@ export default function StudentResults() {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([getResults(), getWorksheets(), getWritingSubmissions()])
-      .then(([resultData, worksheets, writingData]) => {
+    Promise.all([
+      getResults(),
+      getWorksheets(),
+      getWritingSubmissions(),
+      getRevisionWorksheets().catch(() => []),
+    ])
+      .then(([resultData, worksheets, writingData, revisionData]) => {
         setError("");
         setResults(resultData);
         setWriting(writingData);
         const latest = filterLatestUndoneWorksheets(worksheets);
-        setNavLinks(buildStudentNavLinks(latest.length > 0));
+        const revisions = Array.isArray(revisionData) ? revisionData : [];
+        setNavLinks(buildStudentNavLinks(latest.length > 0, revisions.length > 0));
       })
       .catch(() => setError("Could not load results."))
       .finally(() => setLoading(false));

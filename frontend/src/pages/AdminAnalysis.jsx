@@ -7,6 +7,7 @@ import {
   getResults,
   logout,
   markFocusAreaDiscussed,
+  saveManualFocusPracticeWorksheet,
   uploadFocusEvaluation,
 } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
@@ -16,6 +17,7 @@ import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import AdminStudentBanner from "../components/AdminStudentBanner";
 import QuillLoading from "../components/QuillLoading";
 import FocusAreaExplainPanel from "../components/FocusAreaExplainPanel";
+import FocusPracticeBuilder from "../components/FocusPracticeBuilder";
 import FocusPracticeWorksheet from "../components/FocusPracticeWorksheet";
 import {
   buildFocusAreaUrgencyMap,
@@ -351,6 +353,39 @@ function FocusAreaDetailPlaceholder() {
   );
 }
 
+function PracticeNoticeBanner({ notice, onCreateManual }) {
+  if (!notice) return null;
+
+  const showSettingsLink =
+    notice.message.includes("Admin → Settings") ||
+    notice.message.includes("OpenAI API key");
+
+  return (
+    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <p className="text-green-800 text-sm leading-relaxed">
+        {notice.message}
+        {showSettingsLink ? (
+          <>
+            {" "}
+            <Link to="/admin/settings" className="font-semibold underline">
+              Open Settings
+            </Link>
+          </>
+        ) : null}
+      </p>
+      {notice.showManualButton && onCreateManual ? (
+        <button
+          type="button"
+          onClick={onCreateManual}
+          className="shrink-0 rounded-xl border border-indigo-200 bg-white px-4 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-50 transition"
+        >
+          Create practice manually
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 function FocusAreaDetailPanel({
   selection,
   selectionKey,
@@ -358,6 +393,7 @@ function FocusAreaDetailPanel({
   markingDiscussed,
   generatingPractice,
   onGeneratePractice,
+  onCreateManual,
   grade,
   aiEnabled,
   apiKeyConfigured,
@@ -418,6 +454,9 @@ function FocusAreaDetailPanel({
         markingDiscussed={markingDiscussed}
         generatingPractice={generatingPractice}
         onGeneratePractice={onGeneratePractice}
+        onCreateManual={
+          focus.needsDiscussion === false ? onCreateManual : undefined
+        }
       />
     </div>
   );
@@ -506,7 +545,11 @@ export default function AdminAnalysis() {
   const [aiEnabled, setAiEnabled] = useState(true);
   const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
   const [practiceWorksheet, setPracticeWorksheet] = useState(null);
+  const [practicePanelMode, setPracticePanelMode] = useState(null);
+  const [builderSelection, setBuilderSelection] = useState(null);
+  const [practiceNotice, setPracticeNotice] = useState(null);
   const [generatingPractice, setGeneratingPractice] = useState(false);
+  const [savingManualPractice, setSavingManualPractice] = useState(false);
   const uploadInputRef = useRef(null);
   const practiceScrollerRef = useRef(null);
   const studentGrade = Number(localStorage.getItem("studentGrade")) || null;
@@ -576,6 +619,8 @@ export default function AdminAnalysis() {
       buildPracticePayload(focusSelection),
     );
     setPracticeWorksheet(worksheet);
+    setPracticePanelMode("worksheet");
+    setBuilderSelection(null);
     if (scrollAfter) {
       requestAnimationFrame(() => {
         scrollToPracticePanel();
@@ -584,10 +629,51 @@ export default function AdminAnalysis() {
     return worksheet;
   }
 
+  function openManualBuilder(focusSelection) {
+    if (!focusSelection) return;
+    setBuilderSelection(focusSelection);
+    setPracticePanelMode("builder");
+    requestAnimationFrame(() => {
+      scrollToPracticePanel();
+    });
+  }
+
+  function handleOpenManualBuilder() {
+    openManualBuilder(selection);
+  }
+
+  async function handleSaveManualPractice(payload) {
+    setSavingManualPractice(true);
+    setError("");
+    try {
+      const worksheet = await saveManualFocusPracticeWorksheet(payload);
+      setPracticeWorksheet(worksheet);
+      setPracticePanelMode("worksheet");
+      setBuilderSelection(null);
+      const areaLabel = formatAreaLabel(payload.area);
+      setPracticeNotice({
+        message: `Manual practice worksheet saved for “${areaLabel}” — available on the student's Revision page.`,
+        showManualButton: true,
+      });
+    } catch (err) {
+      setError(err.message || "Could not save manual practice worksheet.");
+      throw err;
+    } finally {
+      setSavingManualPractice(false);
+    }
+  }
+
+  function handleCancelManualBuilder() {
+    setPracticePanelMode(practiceWorksheet ? "worksheet" : null);
+    setBuilderSelection(null);
+    scrollToAnalysisPanel();
+  }
+
   async function handleMarkDiscussed() {
     if (!selection) return;
     setMarkingDiscussed(true);
     setError("");
+    setPracticeNotice(null);
     const areaLabel = formatAreaLabel(selection.focus.area);
     try {
       const updated = await markFocusAreaDiscussed({
@@ -609,22 +695,25 @@ export default function AdminAnalysis() {
         setGeneratingPractice(true);
         try {
           await generatePracticeWorksheet(selection, { scrollAfter: true });
-          setUploadMessage(
-            `Marked “${areaLabel}” as discussed — AI practice worksheet ready.`,
-          );
+          setPracticeNotice({
+            message: `Marked “${areaLabel}” as discussed — AI practice worksheet ready and saved to the student's Revision page.`,
+            showManualButton: true,
+          });
         } catch (err) {
-          setUploadMessage(
-            `Marked “${areaLabel}” as discussed. Could not generate practice worksheet: ${err.message}`,
-          );
+          setPracticeNotice({
+            message: `Marked “${areaLabel}” as discussed. Could not generate practice worksheet: ${err.message}`,
+            showManualButton: true,
+          });
         } finally {
           setGeneratingPractice(false);
         }
       } else {
-        setUploadMessage(
-          aiEnabled
-            ? `Marked “${areaLabel}” as discussed. Add an OpenAI API key under Admin → Settings to generate a focus practice worksheet.`
-            : `Marked “${areaLabel}” as discussed. AI is disabled on this server.`,
-        );
+        setPracticeNotice({
+          message: aiEnabled
+            ? `Marked “${areaLabel}” as discussed. Add an OpenAI API key under Admin → Settings to generate a focus practice worksheet, or create one manually.`
+            : `Marked “${areaLabel}” as discussed. AI is disabled on this server — create a practice worksheet manually.`,
+          showManualButton: true,
+        });
       }
     } catch (err) {
       setError(err.message || "Could not complete discussion.");
@@ -639,9 +728,10 @@ export default function AdminAnalysis() {
     setError("");
     try {
       await generatePracticeWorksheet(selection, { scrollAfter: true });
-      setUploadMessage(
-        `AI practice worksheet ready for “${formatAreaLabel(selection.focus.area)}”.`,
-      );
+      setPracticeNotice({
+        message: `AI practice worksheet ready for “${formatAreaLabel(selection.focus.area)}” — saved to the student's Revision page.`,
+        showManualButton: true,
+      });
     } catch (err) {
       setError(err.message || "Could not generate practice worksheet.");
     } finally {
@@ -701,7 +791,7 @@ export default function AdminAnalysis() {
       trailing={`Admin · ${formatAdminHeaderTrail()}`}
       onLogout={handleLogout}
     >
-      {practiceWorksheet ? (
+      {practiceWorksheet || practicePanelMode === "builder" ? (
         <div className="sticky top-0 z-30 -mx-6 mb-2 flex flex-wrap items-center gap-2 bg-slate-50 px-6 pb-3 pt-3">
           <button
             type="button"
@@ -710,13 +800,28 @@ export default function AdminAnalysis() {
           >
             ← Back to analysis
           </button>
-          <button
-            type="button"
-            onClick={scrollToPracticePanel}
-            className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-100 transition"
-          >
-            View practice worksheet →
-          </button>
+          {practicePanelMode === "builder" ? (
+            <span className="text-sm font-semibold text-indigo-900">
+              Manual practice builder
+            </span>
+          ) : practiceWorksheet ? (
+            <button
+              type="button"
+              onClick={scrollToPracticePanel}
+              className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-100 transition"
+            >
+              View practice worksheet →
+            </button>
+          ) : null}
+          {selection && practicePanelMode !== "builder" ? (
+            <button
+              type="button"
+              onClick={handleOpenManualBuilder}
+              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
+            >
+              Create manually
+            </button>
+          ) : null}
         </div>
       ) : null}
 
@@ -773,6 +878,11 @@ export default function AdminAnalysis() {
             ) : null}
           </div>
 
+          <PracticeNoticeBanner
+            notice={practiceNotice}
+            onCreateManual={selection ? handleOpenManualBuilder : null}
+          />
+
           {uploadMessage && (
             <p className="text-green-700 text-sm mb-4">
               {uploadMessage}
@@ -826,6 +936,7 @@ export default function AdminAnalysis() {
                     markingDiscussed={markingDiscussed}
                     generatingPractice={generatingPractice}
                     onGeneratePractice={handleGeneratePractice}
+                    onCreateManual={() => openManualBuilder(selection)}
                     grade={studentGrade}
                     aiEnabled={aiEnabled}
                     apiKeyConfigured={apiKeyConfigured}
@@ -840,7 +951,18 @@ export default function AdminAnalysis() {
           </section>
 
           <section className="w-1/2 shrink-0 snap-start pl-4 sm:pl-6">
-            {practiceWorksheet ? (
+            {practicePanelMode === "builder" && builderSelection ? (
+              <FocusPracticeBuilder
+                subject={builderSelection.subject.subjectKey}
+                subjectLabel={builderSelection.subject.subjectLabel}
+                focusArea={builderSelection.focus.area}
+                focusAreaLabel={formatAreaLabel(builderSelection.focus.area)}
+                grade={studentGrade}
+                onSave={handleSaveManualPractice}
+                onCancel={handleCancelManualBuilder}
+                saving={savingManualPractice}
+              />
+            ) : practiceWorksheet ? (
               <FocusPracticeWorksheet worksheet={practiceWorksheet} />
             ) : (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-6 py-12 min-h-[22rem] flex flex-col justify-center">
@@ -851,9 +973,9 @@ export default function AdminAnalysis() {
                   Worksheet appears here
                 </h2>
                 <p className="text-sm text-slate-500 mt-3 leading-relaxed max-w-md">
-                  When you mark a focus area discussion complete, a 5-question AI practice
-                  worksheet (2–3★) is generated here. It is not added to the main
-                  worksheet list. An OpenAI API key is required.
+                  When you mark a focus area discussion complete, an AI practice worksheet
+                  is generated here (if an API key is configured). You can also build
+                  questions manually from the notification or the Discuss panel.
                 </p>
               </div>
             )}

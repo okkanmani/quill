@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import StudentHome from "./pages/StudentHome";
 import StudentLatest from "./pages/StudentLatest";
+import StudentRevision from "./pages/StudentRevision";
+import StudentRevisionWorksheet from "./pages/StudentRevisionWorksheet";
 import StudentResults from "./pages/StudentResults";
 import StudentSettings from "./pages/StudentSettings";
 import StudentWriting from "./pages/StudentWriting";
@@ -42,6 +44,24 @@ export default function App() {
           element={
             <ProtectedRoute role="student">
               <StudentLatest />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/revision"
+          element={
+            <ProtectedRoute role="student">
+              <StudentRevision />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/revision/:id"
+          element={
+            <ProtectedRoute role="student">
+              <StudentRevisionWorksheet />
             </ProtectedRoute>
           }
         />

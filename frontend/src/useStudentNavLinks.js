@@ -1,24 +1,39 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { getWorksheets } from "./api";
+import { getRevisionWorksheets, getWorksheets } from "./api";
 import { buildStudentNavLinks } from "./adminNav";
 import { filterLatestUndoneWorksheets } from "./worksheetUtils";
 
-/** Shared worksheet fetch + student nav links (Latest disabled when nothing new this week). */
+/** Shared worksheet + revision fetch and student nav links. */
 export function useStudentNavLinks() {
   const location = useLocation();
   const [worksheets, setWorksheets] = useState([]);
+  const [revisions, setRevisions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     setLoading(true);
-    getWorksheets()
-      .then((data) => {
+    Promise.all([
+      getWorksheets().catch(() => {
+        throw new Error("worksheets");
+      }),
+      getRevisionWorksheets().catch(() => []),
+    ])
+      .then(([wsData, revisionData]) => {
         setError("");
-        setWorksheets(data);
+        setWorksheets(wsData);
+        setRevisions(Array.isArray(revisionData) ? revisionData : []);
       })
-      .catch(() => setError("Could not load worksheets."))
+      .catch((err) => {
+        if (err?.message === "worksheets") {
+          setError("Could not load worksheets.");
+        } else {
+          setError("Could not load worksheets.");
+        }
+        setWorksheets([]);
+        setRevisions([]);
+      })
       .finally(() => setLoading(false));
   }, [location.key]);
 
@@ -28,9 +43,9 @@ export function useStudentNavLinks() {
   );
 
   const navLinks = useMemo(
-    () => buildStudentNavLinks(latest.length > 0),
-    [latest.length],
+    () => buildStudentNavLinks(latest.length > 0, revisions.length > 0),
+    [latest.length, revisions.length],
   );
 
-  return { worksheets, latest, navLinks, loading, error };
+  return { worksheets, revisions, latest, navLinks, loading, error };
 }

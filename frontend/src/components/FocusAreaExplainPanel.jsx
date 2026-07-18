@@ -64,6 +64,7 @@ export default function FocusAreaExplainPanel({
   markingDiscussed = false,
   generatingPractice = false,
   onGeneratePractice,
+  onCreateManual,
 }) {
   const [byKey, setByKey] = useState({});
   const [openByKey, setOpenByKey] = useState({});
@@ -229,6 +230,16 @@ export default function FocusAreaExplainPanel({
                       ? "Generating…"
                       : "Generate AI practice worksheet"}
                   </button>
+                  {onCreateManual ? (
+                    <button
+                      type="button"
+                      onClick={onCreateManual}
+                      disabled={generatingPractice}
+                      className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Create practice manually
+                    </button>
+                  ) : null}
                   {!aiEnabled ? (
                     <span className="text-xs text-slate-500">AI disabled on server</span>
                   ) : !apiKeyConfigured ? (
@@ -236,6 +247,17 @@ export default function FocusAreaExplainPanel({
                       Add API key
                     </Link>
                   ) : null}
+                </div>
+              ) : onCreateManual ? (
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={onCreateManual}
+                    disabled={generatingPractice}
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Create practice manually
+                  </button>
                 </div>
               ) : null}
             </>

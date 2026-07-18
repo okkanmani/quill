@@ -284,6 +284,7 @@ def _rename_student_name(conn, old_name: str, new_name: str) -> None:
         "results",
         "writing_submissions",
         "focus_area_discussed",
+        "student_revision_worksheets",
         "learn_page_notes",
         "learn_page_highlights",
         "worksheet_drafts",
@@ -537,6 +538,10 @@ def delete_student(admin_id: int, student_id: int) -> dict | None:
         conn.execute("DELETE FROM results WHERE student = ?", (row["name"],))
         conn.execute("DELETE FROM writing_submissions WHERE student = ?", (row["name"],))
         conn.execute("DELETE FROM focus_area_discussed WHERE student = ?", (row["name"],))
+        conn.execute(
+            "DELETE FROM student_revision_worksheets WHERE student = ?",
+            (row["name"],),
+        )
         conn.execute("DELETE FROM learn_page_notes WHERE student = ?", (row["name"],))
         conn.execute("DELETE FROM learn_page_highlights WHERE student = ?", (row["name"],))
         conn.execute(

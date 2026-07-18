@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { DifficultyStars, QuestionDifficultyStars } from "./DifficultyStars";
 
-export default function FocusPracticeWorksheet({ worksheet }) {
+export default function FocusPracticeWorksheet({
+  worksheet,
+  variant = "preview",
+  onComplete,
+}) {
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState(false);
 
@@ -16,6 +20,20 @@ export default function FocusPracticeWorksheet({ worksheet }) {
 
   function handleCheckAnswers() {
     setChecked(true);
+    if (onComplete) {
+      let score = 0;
+      for (const question of questions) {
+        const selected = answers[question.id];
+        if (
+          selected &&
+          selected.trim().toLowerCase() ===
+            (question.answer || "").trim().toLowerCase()
+        ) {
+          score += 1;
+        }
+      }
+      onComplete({ score, total: questions.length });
+    }
   }
 
   function handleReset() {
@@ -27,7 +45,7 @@ export default function FocusPracticeWorksheet({ worksheet }) {
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col max-h-[calc(100vh-6rem)]">
       <div className="shrink-0 border-b border-slate-200 bg-white px-5 py-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-          Focus practice · not published
+          {variant === "revision" ? "Revision practice" : "Focus practice · not published"}
         </p>
         <h2 className="text-xl font-semibold text-slate-950 mt-1">{worksheet.title}</h2>
         {worksheet.subtitle ? (
@@ -44,6 +62,10 @@ export default function FocusPracticeWorksheet({ worksheet }) {
           {worksheet.mock ? (
             <span className="text-amber-800 text-xs font-semibold rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5">
               Preview worksheet
+            </span>
+          ) : worksheet.manual ? (
+            <span className="text-violet-800 text-xs font-semibold rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5">
+              Manual
             </span>
           ) : (
             <span className="text-indigo-800 text-xs font-semibold rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5">
@@ -135,7 +157,9 @@ export default function FocusPracticeWorksheet({ worksheet }) {
           </button>
         )}
         <p className="text-xs text-slate-500 self-center">
-          For practice only — this worksheet does not appear in the main worksheet list.
+          {variant === "revision"
+            ? "Practice worksheet from a skill your teacher discussed with you."
+            : "For practice only — saved to the student's Revision page when generated."}
         </p>
       </div>
     </div>

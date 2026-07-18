@@ -172,15 +172,24 @@ def _worksheet_shell(
     questions: list[dict],
     grade: int | None,
     mock: bool,
+    manual: bool = False,
+    subtitle: str | None = None,
 ) -> dict:
     area_label = _area_label(area_slug)
     subject_text = _subject_label(subject_key)
     grade_note = f" · Grade {grade}" if isinstance(grade, int) and 1 <= grade <= 12 else ""
     star_values = [q.get("stars") or 2 for q in questions]
+    count = len(questions)
+    if subtitle is None:
+        if manual:
+            subtitle = f"{count}-question manual follow-up after discussion{grade_note}"
+        else:
+            subtitle = f"{count}-question AI follow-up after discussion{grade_note}"
 
     return {
         "ephemeral": True,
         "mock": mock,
+        "manual": manual,
         "title": title.strip() or f"Focus practice: {area_label}",
         "subject": subject_key,
         "subject_label": subject_text,
@@ -192,9 +201,9 @@ def _worksheet_shell(
         "scratchpad": subject_key in ("math", "data"),
         "difficulty_min": min(star_values) if star_values else 2,
         "difficulty_max": max(star_values) if star_values else 3,
-        "question_count": len(questions),
+        "question_count": count,
         "questions": questions,
-        "subtitle": f"5-question AI follow-up after discussion{grade_note}",
+        "subtitle": subtitle,
     }
 
 
@@ -373,6 +382,72 @@ def generate_ai_focus_practice_worksheet(
         questions=questions,
         grade=grade,
         mock=False,
+    )
+
+
+def build_manual_focus_practice_worksheet(
+    *,
+    subject: str,
+    area: str,
+    questions: list[dict],
+    grade: int | None = None,
+    title: str | None = None,
+) -> dict:
+    subject_key = (subject or "").strip().lower()
+    area_slug = (area or "").strip().lower()
+    if not subject_key:
+        raise ValueError("subject is required.")
+    if not area_slug:
+        raise ValueError("area is required.")
+    if not questions:
+        raise ValueError("Add at least one question.")
+
+    normalized: list[dict] = []
+    for index, raw in enumerate(questions):
+        if not isinstance(raw, dict):
+            raise ValueError(f"questions[{index}] must be an object.")
+        prompt = str(raw.get("prompt") or "").strip()
+        if not prompt:
+            raise ValueError(f"Question {index + 1} needs a prompt.")
+        choices_raw = raw.get("choices") or []
+        if not isinstance(choices_raw, list):
+            raise ValueError(f"Question {index + 1} choices must be a list.")
+        choices = [str(c).strip() for c in choices_raw]
+        if len(choices) != 4 or not all(choices):
+            raise ValueError(f"Question {index + 1} needs four non-empty choices.")
+        if len(set(c.lower() for c in choices)) != 4:
+            raise ValueError(f"Question {index + 1} choices must be unique.")
+        answer = str(raw.get("answer") or "").strip()
+        if not answer:
+            raise ValueError(f"Question {index + 1} needs a correct answer.")
+        if answer.lower() not in {c.lower() for c in choices}:
+            raise ValueError(
+                f"Question {index + 1} correct answer must match one of the choices."
+            )
+        stars = raw.get("stars")
+        if not isinstance(stars, int) or stars < 1 or stars > 3:
+            raise ValueError(f"Question {index + 1} stars must be 1, 2, or 3.")
+        normalized.append(
+            {
+                "id": f"focus-practice-{index + 1}",
+                "prompt": prompt,
+                "type": "multiple_choice",
+                "stars": stars,
+                "area": area_slug,
+                "choices": choices,
+                "answer": answer,
+            }
+        )
+
+    area_label = _area_label(area_slug)
+    return _worksheet_shell(
+        subject_key=subject_key,
+        area_slug=area_slug,
+        title=(title or "").strip() or f"Focus practice: {area_label}",
+        questions=normalized,
+        grade=grade,
+        mock=False,
+        manual=True,
     )
 
 

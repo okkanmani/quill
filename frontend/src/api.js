@@ -620,6 +620,54 @@ export async function generateFocusPracticeWorksheet(payload) {
   return res.json();
 }
 
+export async function saveManualFocusPracticeWorksheet(payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/analysis/save-manual-focus-practice`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to save manual practice worksheet";
+    if (typeof d === "string") msg = d;
+    else if (Array.isArray(d)) msg = d.join(" ");
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function getRevisionWorksheets() {
+  const res = await apiFetch(`${BASE_URL}/revision`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch revision worksheets");
+  return res.json();
+}
+
+export async function getRevisionWorksheet(revisionId) {
+  const res = await apiFetch(`${BASE_URL}/revision/${revisionId}`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch revision worksheet");
+  return res.json();
+}
+
+export async function completeRevisionWorksheet(revisionId, { score, total }) {
+  const res = await apiFetch(`${BASE_URL}/revision/${revisionId}/complete`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify({ score, total }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to save revision result";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function generateAndPublishLearnResource(payload) {
   const res = await apiFetch(`${BASE_URL}/admin/learn/generate-and-publish`, {
     method: "POST",
