@@ -198,7 +198,7 @@ def _worksheet_shell(
         "evaluation": "auto",
         "timed": False,
         "time_limit_minutes": None,
-        "scratchpad": subject_key in ("math", "data"),
+        "scratchpad": True,
         "difficulty_min": min(star_values) if star_values else 2,
         "difficulty_max": max(star_values) if star_values else 3,
         "question_count": count,

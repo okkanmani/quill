@@ -1,5 +1,42 @@
 import { useState } from "react";
+import Drawpad from "./Drawpad";
 import { DifficultyStars, QuestionDifficultyStars } from "./DifficultyStars";
+import { ScratchpadIcon, TextAnswerIcon } from "./ResponseModeIcons";
+
+function WorkModeToggle({ mode, onChange, disabled }) {
+  const baseBtn =
+    "inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 transition disabled:opacity-40 disabled:pointer-events-none";
+  const active = "bg-indigo-100 text-indigo-900 border-indigo-300";
+  const idle =
+    "bg-white text-slate-600 border-slate-200 hover:border-indigo-200 hover:text-indigo-800";
+
+  return (
+    <div className="flex items-center gap-2" role="group" aria-label="Work space mode">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => onChange("text")}
+        title="Type notes"
+        aria-label="Type notes"
+        aria-pressed={mode === "text"}
+        className={`${baseBtn} ${mode === "text" ? active : idle}`}
+      >
+        <TextAnswerIcon />
+      </button>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => onChange("scratchpad")}
+        title="Use scratchpad"
+        aria-label="Use scratchpad"
+        aria-pressed={mode === "scratchpad"}
+        className={`${baseBtn} ${mode === "scratchpad" ? active : idle}`}
+      >
+        <ScratchpadIcon />
+      </button>
+    </div>
+  );
+}
 
 export default function FocusPracticeWorksheet({
   worksheet,
@@ -7,15 +44,25 @@ export default function FocusPracticeWorksheet({
   onComplete,
 }) {
   const [answers, setAnswers] = useState({});
+  const [workModes, setWorkModes] = useState({});
+  const [workNotes, setWorkNotes] = useState({});
+  const [workScratchpads, setWorkScratchpads] = useState({});
   const [checked, setChecked] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
 
   if (!worksheet) return null;
 
   const questions = worksheet.questions || [];
+  const scratchpadAllowed = worksheet.scratchpad !== false;
 
   function handleSelect(questionId, choice) {
     if (checked) return;
     setAnswers((prev) => ({ ...prev, [questionId]: choice }));
+  }
+
+  function handleWorkModeChange(questionId, mode) {
+    if (checked) return;
+    setWorkModes((prev) => ({ ...prev, [questionId]: mode }));
   }
 
   async function handleCheckAnswers() {
@@ -46,7 +93,11 @@ export default function FocusPracticeWorksheet({
 
   function handleReset() {
     setAnswers({});
+    setWorkModes({});
+    setWorkNotes({});
+    setWorkScratchpads({});
     setChecked(false);
+    setResetKey((value) => value + 1);
   }
 
   return (
@@ -92,6 +143,7 @@ export default function FocusPracticeWorksheet({
         {questions.map((question, index) => {
           const selected = answers[question.id];
           const isMcq = question.type === "multiple_choice";
+          const workMode = workModes[question.id] || "text";
 
           return (
             <div
@@ -104,6 +156,66 @@ export default function FocusPracticeWorksheet({
                 </p>
                 <QuestionDifficultyStars stars={question.stars} />
               </div>
+
+              {scratchpadAllowed ? (
+                <div className="mt-3 rounded-xl border border-slate-200 bg-white p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Show your work
+                    </p>
+                    {!checked ? (
+                      <WorkModeToggle
+                        mode={workMode}
+                        onChange={(mode) => handleWorkModeChange(question.id, mode)}
+                        disabled={checked}
+                      />
+                    ) : null}
+                  </div>
+                  {workMode === "scratchpad" ? (
+                    checked ? (
+                      workScratchpads[question.id] ? (
+                        <img
+                          src={workScratchpads[question.id]}
+                          alt="Your scratchpad work"
+                          className="max-w-full rounded-xl border border-slate-200 bg-black"
+                        />
+                      ) : (
+                        <p className="text-sm text-slate-500 italic">
+                          No scratchpad work saved.
+                        </p>
+                      )
+                    ) : (
+                      <Drawpad
+                        key={`work-${question.id}-${resetKey}`}
+                        value={workScratchpads[question.id] || ""}
+                        onChange={(dataUrl) =>
+                          setWorkScratchpads((prev) => ({
+                            ...prev,
+                            [question.id]: dataUrl,
+                          }))
+                        }
+                        showHeading={false}
+                        showTextTool
+                        className="mt-0"
+                      />
+                    )
+                  ) : (
+                    <textarea
+                      value={workNotes[question.id] || ""}
+                      onChange={(e) =>
+                        setWorkNotes((prev) => ({
+                          ...prev,
+                          [question.id]: e.target.value,
+                        }))
+                      }
+                      disabled={checked}
+                      placeholder="Jot notes or steps for this question…"
+                      rows={4}
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y min-h-[6rem]"
+                    />
+                  )}
+                </div>
+              ) : null}
 
               {isMcq ? (
                 <div className="flex flex-col gap-2 mt-3">
