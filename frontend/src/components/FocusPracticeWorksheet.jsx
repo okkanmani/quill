@@ -18,21 +18,29 @@ export default function FocusPracticeWorksheet({
     setAnswers((prev) => ({ ...prev, [questionId]: choice }));
   }
 
-  function handleCheckAnswers() {
+  async function handleCheckAnswers() {
     setChecked(true);
     if (onComplete) {
       let score = 0;
+      const answerRows = [];
       for (const question of questions) {
-        const selected = answers[question.id];
-        if (
-          selected &&
-          selected.trim().toLowerCase() ===
-            (question.answer || "").trim().toLowerCase()
-        ) {
-          score += 1;
-        }
+        const selected = answers[question.id] || "";
+        const expected = (question.answer || "").trim();
+        const correct =
+          Boolean(selected) &&
+          selected.trim().toLowerCase() === expected.toLowerCase();
+        if (correct) score += 1;
+        answerRows.push({
+          question_id: question.id,
+          prompt: question.prompt,
+          given: selected,
+          expected,
+          correct,
+          choices: question.choices || [],
+          area: question.area || worksheet.focus_area || "",
+        });
       }
-      onComplete({ score, total: questions.length });
+      onComplete({ score, total: questions.length, answers: answerRows });
     }
   }
 

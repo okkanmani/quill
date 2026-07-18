@@ -62,6 +62,7 @@ from focus_discussion import list_focus_areas_discussed, mark_focus_area_discuss
 from revision import (
     complete_revision_worksheet,
     get_revision_worksheet,
+    list_revision_analysis_records,
     list_revision_worksheets,
     save_revision_worksheet,
 )
@@ -286,6 +287,7 @@ class SaveManualFocusPracticeRequest(BaseModel):
 class CompleteRevisionRequest(BaseModel):
     score: int
     total: int
+    answers: list[dict] | None = None
 
 
 class PublishLearnResourceRequest(BaseModel):
@@ -1328,6 +1330,15 @@ def mark_focus_area_discussed_route(
         raise HTTPException(status_code=400, detail=str(exc))
 
 
+@app.get("/admin/analysis/revision-records")
+def get_revision_analysis_records(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    return list_revision_analysis_records(who)
+
+
 @app.get("/revision")
 def get_revision_worksheets(authorization: str = Header(...)):
     payload = _payload(authorization)
@@ -1376,6 +1387,7 @@ def complete_revision_worksheet_route(
             who,
             score=req.score,
             total=req.total,
+            answers=req.answers,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

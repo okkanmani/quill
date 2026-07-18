@@ -637,6 +637,14 @@ export async function saveManualFocusPracticeWorksheet(payload) {
   return res.json();
 }
 
+export async function getRevisionAnalysisRecords() {
+  const res = await apiFetch(`${BASE_URL}/admin/analysis/revision-records`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch revision analysis records");
+  return res.json();
+}
+
 export async function getRevisionWorksheets() {
   const res = await apiFetch(`${BASE_URL}/revision`, {
     headers: authHeaders(),
@@ -653,11 +661,11 @@ export async function getRevisionWorksheet(revisionId) {
   return res.json();
 }
 
-export async function completeRevisionWorksheet(revisionId, { score, total }) {
+export async function completeRevisionWorksheet(revisionId, { score, total, answers }) {
   const res = await apiFetch(`${BASE_URL}/revision/${revisionId}/complete`, {
     method: "PATCH",
     headers: authHeaders(),
-    body: JSON.stringify({ score, total }),
+    body: JSON.stringify({ score, total, answers }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

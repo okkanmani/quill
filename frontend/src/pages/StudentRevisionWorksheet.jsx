@@ -31,9 +31,9 @@ export default function StudentRevisionWorksheet() {
     navigate("/");
   }
 
-  async function handleComplete({ score, total }) {
+  async function handleComplete({ score, total, answers }) {
     try {
-      await completeRevisionWorksheet(id, { score, total });
+      await completeRevisionWorksheet(id, { score, total, answers });
       setWorksheet((prev) =>
         prev
           ? {

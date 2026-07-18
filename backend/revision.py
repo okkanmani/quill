@@ -180,6 +180,7 @@ def complete_revision_worksheet(
     *,
     score: int,
     total: int,
+    answers: list[dict] | None = None,
 ) -> dict | None:
     if score < 0:
         raise ValueError("Score must be zero or greater.")
@@ -189,6 +190,7 @@ def complete_revision_worksheet(
         raise ValueError("Score cannot exceed total.")
 
     completed_at = datetime.now(timezone.utc).isoformat()
+    answers_json = json.dumps(answers or [])
     conn = db.connect()
     try:
         row = conn.execute(
@@ -204,17 +206,39 @@ def complete_revision_worksheet(
         conn.execute(
             """
             UPDATE student_revision_worksheets
-            SET completed_at = ?, score = ?, total = ?
+            SET completed_at = ?, score = ?, total = ?, answers = ?
             WHERE id = ? AND student = ?
             """,
-            (completed_at, score, total, revision_id, student_name),
+            (completed_at, score, total, answers_json, revision_id, student_name),
         )
+        row_meta = conn.execute(
+            """
+            SELECT subject, focus_area
+            FROM student_revision_worksheets
+            WHERE id = ? AND student = ?
+            """,
+            (revision_id, student_name),
+        ).fetchone()
         conn.commit()
     except Exception:
         conn.rollback()
         raise
     finally:
         conn.close()
+
+    if row_meta and answers:
+        has_wrong = any(
+            isinstance(a, dict) and a.get("correct") is False for a in answers
+        )
+        if has_wrong:
+            from focus_discussion import record_reinforcement_if_needed
+
+            record_reinforcement_if_needed(
+                student_name,
+                row_meta["subject"],
+                row_meta["focus_area"],
+                completed_at,
+            )
 
     return {
         "id": revision_id,
@@ -225,6 +249,62 @@ def complete_revision_worksheet(
         "last_score": score,
         "last_total": total,
     }
+
+
+def list_revision_analysis_records(student_name: str) -> list[dict]:
+    """Completed revision worksheets with wrong answers for Analysis aggregation."""
+    conn = db.connect()
+    try:
+        rows = conn.execute(
+            """
+            SELECT id, subject, focus_area, payload, completed_at, answers
+            FROM student_revision_worksheets
+            WHERE student = ? AND completed_at IS NOT NULL
+            ORDER BY completed_at DESC
+            """,
+            (student_name,),
+        ).fetchall()
+        records = []
+        for row in rows:
+            answers_raw = row["answers"]
+            if not answers_raw:
+                continue
+            try:
+                answers = json.loads(answers_raw)
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(answers, list):
+                continue
+            wrong = [a for a in answers if isinstance(a, dict) and a.get("correct") is False]
+            if not wrong:
+                continue
+            payload = json.loads(row["payload"])
+            questions = []
+            for answer in wrong:
+                questions.append(
+                    {
+                        "question_id": answer.get("question_id"),
+                        "question": answer.get("prompt") or answer.get("question") or "",
+                        "answer": answer.get("given") or answer.get("answer") or "",
+                        "expected": answer.get("expected") or "",
+                        "choices": answer.get("choices") or [],
+                        "correct": False,
+                        "area": answer.get("area") or row["focus_area"],
+                    }
+                )
+            records.append(
+                {
+                    "revision_id": row["id"],
+                    "subject": row["subject"],
+                    "focus_area": row["focus_area"],
+                    "title": payload.get("title") or "",
+                    "completed_at": row["completed_at"],
+                    "questions": questions,
+                }
+            )
+        return records
+    finally:
+        conn.close()
 
 
 def delete_revision_worksheets_for_student(student_name: str) -> None:

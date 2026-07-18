@@ -25,38 +25,70 @@ function analysisTimestamp(result, evaluation) {
   return "";
 }
 
-function needsDiscussionForArea(focusArea, subjectKey, discussedMap) {
+function needsReinforcingForArea(focusArea, subjectKey, discussedMap) {
   const key = focusDiscussionKey(subjectKey, focusArea.area);
   const discussedAt = discussedMap[key];
-  if (!discussedAt) return true;
+  if (!discussedAt) return false;
   const latestAnalysisAt = focusArea.latestAnalysisAt || "";
-  if (!latestAnalysisAt) return false;
-  return latestAnalysisAt > discussedAt;
+  return Boolean(latestAnalysisAt && latestAnalysisAt > discussedAt);
 }
 
 /**
- * Split focus areas into needs-discussion vs already-discussed buckets.
- * Newer analysis after a prior discussion moves an area back to needs discussion.
+ * Split focus areas into needs-addressing, needs-reinforcing, and discussed buckets.
+ * Never-discussed areas go to needs addressing; post-discussion mistakes go to needs reinforcing.
  */
-export function splitFocusAreasByDiscussion(focusAreas, subjectKey, discussedMap) {
-  const needsDiscussion = [];
-  const alreadyDiscussed = [];
+export function splitFocusAreasByDiscussion(
+  focusAreas,
+  subjectKey,
+  discussedMap,
+  reinforcementMap = {},
+) {
+  const needsAddressing = [];
+  const needsReinforcing = [];
+  const discussed = [];
 
   for (const focus of focusAreas || []) {
-    if (needsDiscussionForArea(focus, subjectKey, discussedMap)) {
-      needsDiscussion.push({ ...focus, needsDiscussion: true });
+    const key = focusDiscussionKey(subjectKey, focus.area);
+    const discussedAt = discussedMap[key];
+    if (!discussedAt) {
+      needsAddressing.push({ ...focus, discussionStatus: "needs_addressing" });
+    } else if (needsReinforcingForArea(focus, subjectKey, discussedMap)) {
+      needsReinforcing.push({
+        ...focus,
+        discussionStatus: "needs_reinforcing",
+        reinforcementCount: reinforcementMap[key] || 0,
+      });
     } else {
-      alreadyDiscussed.push({ ...focus, needsDiscussion: false });
+      discussed.push({ ...focus, discussionStatus: "discussed" });
     }
   }
 
-  return { needsDiscussion, alreadyDiscussed };
+  return { needsAddressing, needsReinforcing, discussed };
 }
 
-function sortDiscussionBuckets({ needsDiscussion, alreadyDiscussed }) {
+export function isValidFocusArea(focus) {
+  return Boolean(String(focus?.area || "").trim());
+}
+
+/** Drop nameless areas and chips with nothing meaningful to show. */
+export function filterFocusAreasForChipDisplay(
+  areas,
+  { chipCountMode = "wrong" } = {},
+) {
+  return (areas || []).filter((focus) => {
+    if (!isValidFocusArea(focus)) return false;
+    if (chipCountMode === "reinforcement" || chipCountMode === "wrong") {
+      return (focus.wrongCount || 0) > 0;
+    }
+    return true;
+  });
+}
+
+function sortDiscussionBuckets({ needsAddressing, needsReinforcing, discussed }) {
   return {
-    needsDiscussion: sortFocusAreasByUrgency(needsDiscussion),
-    alreadyDiscussed: sortFocusAreasByUrgency(alreadyDiscussed),
+    needsAddressing: sortFocusAreasByUrgency(needsAddressing),
+    needsReinforcing: sortFocusAreasByUrgency(needsReinforcing),
+    discussed: sortFocusAreasByUrgency(discussed),
   };
 }
 
@@ -65,6 +97,15 @@ export function buildDiscussedMap(discussedRecords) {
   for (const row of discussedRecords || []) {
     const subjectKey = normalizeSubjectKey(row.subject);
     map[focusDiscussionKey(subjectKey, row.area)] = row.discussed_at;
+  }
+  return map;
+}
+
+export function buildReinforcementCountMap(discussedRecords) {
+  const map = {};
+  for (const row of discussedRecords || []) {
+    const subjectKey = normalizeSubjectKey(row.subject);
+    map[focusDiscussionKey(subjectKey, row.area)] = row.reinforcement_count || 0;
   }
   return map;
 }
@@ -126,11 +167,49 @@ function addWrongExample(entry, question, result) {
 }
 
 function wrongCountKey(result, question, example) {
-  const resultId = result?.id ?? result?.focus_evaluation?.result_id ?? "unknown";
+  const resultId =
+    result?.id ??
+    result?.focus_evaluation?.result_id ??
+    result?.revision_id ??
+    "unknown";
   if (question?.question_id) {
     return `${resultId}:${question.question_id}`;
   }
   return `${resultId}:${exampleKey(example)}`;
+}
+
+function ingestEvaluationQuestions(
+  bySubject,
+  subjectKey,
+  questions,
+  result,
+  timestamp,
+) {
+  if (!Array.isArray(questions) || questions.length === 0) return;
+  if (!bySubject.has(subjectKey)) bySubject.set(subjectKey, new Map());
+  const areas = bySubject.get(subjectKey);
+
+  for (const q of questions) {
+    const area = typeof q?.area === "string" ? q.area.trim() : "";
+    if (!area) continue;
+
+    const key = areaKey(area);
+    if (!areas.has(key)) {
+      areas.set(key, {
+        area,
+        examples: [],
+        exampleKeys: new Set(),
+        wrongCountKeys: new Set(),
+        wrongCount: 0,
+        latestAnalysisAt: "",
+      });
+    }
+    const entry = areas.get(key);
+    if (timestamp && timestamp > entry.latestAnalysisAt) {
+      entry.latestAnalysisAt = timestamp;
+    }
+    addWrongExample(entry, q, result);
+  }
 }
 
 /** Use share-of-total when a subject has at least this many wrong answers overall. */
@@ -217,7 +296,7 @@ export function sortFocusAreasByUrgency(focusAreas) {
  * Per subject: focus areas from uploaded per-worksheet evaluations (`focus_evaluation`),
  * each with up to 3 sample incorrect questions when available.
  */
-export function focusAreasAnalysis(results) {
+export function focusAreasAnalysis(results, revisionRecords = []) {
   /** subjectKey → Map(areaKey → focus area entry) */
   const bySubject = new Map();
 
@@ -229,31 +308,24 @@ export function focusAreasAnalysis(results) {
     const subjectKey = normalizeSubjectKey(
       evaluation?.subject || result?.subject,
     );
-    if (!bySubject.has(subjectKey)) bySubject.set(subjectKey, new Map());
-    const areas = bySubject.get(subjectKey);
+    const ts = analysisTimestamp(result, evaluation);
+    ingestEvaluationQuestions(bySubject, subjectKey, questions, result, ts);
+  }
 
-    for (const q of questions) {
-      const area = typeof q?.area === "string" ? q.area.trim() : "";
-      if (!area) continue;
-
-      const key = areaKey(area);
-      if (!areas.has(key)) {
-        areas.set(key, {
-          area,
-          examples: [],
-          exampleKeys: new Set(),
-          wrongCountKeys: new Set(),
-          wrongCount: 0,
-          latestAnalysisAt: "",
-        });
-      }
-      const entry = areas.get(key);
-      const ts = analysisTimestamp(result, evaluation);
-      if (ts && ts > entry.latestAnalysisAt) {
-        entry.latestAnalysisAt = ts;
-      }
-      addWrongExample(entry, q, result);
-    }
+  for (const revision of revisionRecords || []) {
+    const subjectKey = normalizeSubjectKey(revision.subject);
+    const ts = revision.completed_at || "";
+    const pseudoResult = {
+      revision_id: revision.revision_id,
+      answers: revision.questions,
+    };
+    ingestEvaluationQuestions(
+      bySubject,
+      subjectKey,
+      revision.questions,
+      pseudoResult,
+      ts,
+    );
   }
 
   return [...bySubject.entries()]
@@ -265,6 +337,7 @@ export function focusAreasAnalysis(results) {
           latestAnalysisAt,
           wrongCount,
         }))
+        .filter((focus) => isValidFocusArea(focus) && (focus.wrongCount || 0) > 0)
         .sort(
           (a, b) =>
             (b.wrongCount || 0) - (a.wrongCount || 0) ||
@@ -288,21 +361,45 @@ export function focusAreasAnalysis(results) {
 /**
  * Aggregate focus areas and split by discussion status for the Analysis page.
  */
-export function focusAreasAnalysisWithDiscussion(results, discussedRecords) {
+export function focusAreasAnalysisWithDiscussion(
+  results,
+  discussedRecords,
+  revisionRecords = [],
+) {
   const discussedMap = buildDiscussedMap(discussedRecords);
-  return focusAreasAnalysis(results).map((subject) => {
+  const reinforcementMap = buildReinforcementCountMap(discussedRecords);
+  return focusAreasAnalysis(results, revisionRecords).map((subject) => {
     const buckets = splitFocusAreasByDiscussion(
       subject.focusAreas,
       subject.subjectKey,
       discussedMap,
+      reinforcementMap,
     );
-    const { needsDiscussion, alreadyDiscussed } = sortDiscussionBuckets(buckets);
+    const { needsAddressing, needsReinforcing, discussed } =
+      sortDiscussionBuckets(buckets);
+    const filtered = {
+      needsAddressing: filterFocusAreasForChipDisplay(needsAddressing, {
+        chipCountMode: "wrong",
+      }),
+      needsReinforcing: filterFocusAreasForChipDisplay(needsReinforcing, {
+        chipCountMode: "reinforcement",
+      }),
+      discussed: filterFocusAreasForChipDisplay(discussed, {
+        chipCountMode: "discussed",
+      }),
+    };
+    if (
+      filtered.needsAddressing.length === 0 &&
+      filtered.needsReinforcing.length === 0 &&
+      filtered.discussed.length === 0
+    ) {
+      return null;
+    }
     return {
       ...subject,
-      needsDiscussion,
-      alreadyDiscussed,
+      ...filtered,
     };
-  });
+  }).filter(Boolean);
 }
 
 export function formatFocusAreaList(areas) {

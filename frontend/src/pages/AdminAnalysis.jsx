@@ -5,6 +5,7 @@ import {
   getAdminSettings,
   getFocusAreasDiscussed,
   getResults,
+  getRevisionAnalysisRecords,
   logout,
   markFocusAreaDiscussed,
   saveManualFocusPracticeWorksheet,
@@ -21,6 +22,7 @@ import FocusPracticeBuilder from "../components/FocusPracticeBuilder";
 import FocusPracticeWorksheet from "../components/FocusPracticeWorksheet";
 import {
   buildFocusAreaUrgencyMap,
+  filterFocusAreasForChipDisplay,
   focusAreasAnalysisWithDiscussion,
   focusAreaUrgencyChipClass,
   formatAreaLabel,
@@ -60,8 +62,9 @@ function findSelectedFocus(bySubject, selectedKey) {
   const subject = bySubject.find((s) => s.subjectKey === parsed.subjectKey);
   if (!subject) return null;
   const focus =
-    subject.needsDiscussion.find((f) => f.area === parsed.area) ||
-    subject.alreadyDiscussed.find((f) => f.area === parsed.area);
+    subject.needsAddressing.find((f) => f.area === parsed.area) ||
+    subject.needsReinforcing.find((f) => f.area === parsed.area) ||
+    subject.discussed.find((f) => f.area === parsed.area);
   if (!focus) return null;
   return { subject, focus };
 }
@@ -73,11 +76,19 @@ function FocusAreaChipButton({
   onSelectArea,
   urgencyTier = "low",
   muted = false,
+  chipCountMode = "wrong",
 }) {
   const key = focusSelectionKey(subjectKey, focus.area);
   const isSelected = selectedKey === key;
   const label = formatAreaLabel(focus.area);
-  const wrongCount = focus.wrongCount || 0;
+  if (!label.trim()) return null;
+
+  const chipCount =
+    chipCountMode === "reinforcement"
+      ? Math.max(focus.reinforcementCount || 0, 1)
+      : focus.wrongCount || 0;
+
+  if (!muted && chipCount <= 0) return null;
 
   return (
     <button
@@ -90,12 +101,12 @@ function FocusAreaChipButton({
       )}`}
     >
       <span>{label}</span>
-      {!muted && wrongCount > 0 ? (
+      {!muted ? (
         <>
           <span className="mx-1.5 opacity-70" aria-hidden="true">
             ·
           </span>
-          <span className="tabular-nums">{wrongCount}</span>
+          <span className="tabular-nums">{chipCount}</span>
         </>
       ) : null}
     </button>
@@ -109,12 +120,17 @@ function FocusAreaChipRow({
   onSelectArea,
   urgencyMap = {},
   muted = false,
+  chipCountMode = "wrong",
 }) {
-  if (!areas.length) return null;
+  const displayAreas = useMemo(
+    () => filterFocusAreasForChipDisplay(areas, { chipCountMode: muted ? "discussed" : chipCountMode }),
+    [areas, chipCountMode, muted],
+  );
+  if (!displayAreas.length) return null;
 
   return (
     <div className="flex flex-wrap gap-2">
-      {areas.map((focus) => (
+      {displayAreas.map((focus) => (
         <FocusAreaChipButton
           key={focus.area}
           focus={focus}
@@ -123,6 +139,7 @@ function FocusAreaChipRow({
           onSelectArea={onSelectArea}
           urgencyTier={urgencyMap[focus.area] || "low"}
           muted={muted}
+          chipCountMode={chipCountMode}
         />
       ))}
     </div>
@@ -135,12 +152,17 @@ function GroupedNeedsDiscussionChips({
   selectedKey,
   onSelectArea,
   collapseAfter = null,
+  chipCountMode = "wrong",
 }) {
+  const displayAreas = useMemo(
+    () => filterFocusAreasForChipDisplay(areas, { chipCountMode }),
+    [areas, chipCountMode],
+  );
   const [expanded, setExpanded] = useState(false);
-  const urgencyMap = useMemo(() => buildFocusAreaUrgencyMap(areas), [areas]);
+  const urgencyMap = useMemo(() => buildFocusAreaUrgencyMap(displayAreas), [displayAreas]);
   const groupedAreas = useMemo(
-    () => groupFocusAreas(areas, subjectKey),
-    [areas, subjectKey],
+    () => groupFocusAreas(displayAreas, subjectKey),
+    [displayAreas, subjectKey],
   );
   const flatAreas = useMemo(
     () => flattenGroupedFocusAreas(groupedAreas),
@@ -174,12 +196,14 @@ function GroupedNeedsDiscussionChips({
   const hiddenCount = expanded ? 0 : flatAreas.length - visibleFlatAreas.length;
   const showToggle = Boolean(collapseAfter) && flatAreas.length > collapseAfter;
 
-  if (!areas.length) return null;
+  if (!displayAreas.length) return null;
 
   return (
     <div className="mt-2">
       <div className="flex flex-col gap-4">
-        {visibleGroupedAreas.map(([groupLabel, groupAreas]) => (
+        {visibleGroupedAreas.map(([groupLabel, groupAreas]) => {
+          if (!groupAreas.length) return null;
+          return (
           <div key={groupLabel}>
             <p className="text-xs font-semibold text-slate-600 mb-2">{groupLabel}</p>
             <FocusAreaChipRow
@@ -188,9 +212,11 @@ function GroupedNeedsDiscussionChips({
               selectedKey={selectedKey}
               onSelectArea={onSelectArea}
               urgencyMap={urgencyMap}
+              chipCountMode={chipCountMode}
             />
           </div>
-        ))}
+          );
+        })}
       </div>
       {showToggle ? (
         <button
@@ -216,31 +242,35 @@ function FocusAreaChips({
   muted = false,
   collapseAfter = null,
 }) {
+  const displayAreas = useMemo(
+    () => filterFocusAreasForChipDisplay(areas, { chipCountMode: "discussed" }),
+    [areas],
+  );
   const [expanded, setExpanded] = useState(false);
 
   const visibleAreas = useMemo(() => {
-    if (!collapseAfter || expanded || areas.length <= collapseAfter) {
-      return areas;
+    if (!collapseAfter || expanded || displayAreas.length <= collapseAfter) {
+      return displayAreas;
     }
 
-    const initial = areas.slice(0, collapseAfter);
+    const initial = displayAreas.slice(0, collapseAfter);
     const parsed = parseFocusSelectionKey(selectedKey);
     if (parsed?.subjectKey !== subjectKey) {
       return initial;
     }
 
-    const selectedFocus = areas.find((focus) => focus.area === parsed.area);
+    const selectedFocus = displayAreas.find((focus) => focus.area === parsed.area);
     if (selectedFocus && !initial.some((focus) => focus.area === selectedFocus.area)) {
       return [...initial, selectedFocus];
     }
 
     return initial;
-  }, [areas, collapseAfter, expanded, selectedKey, subjectKey]);
+  }, [displayAreas, collapseAfter, expanded, selectedKey, subjectKey]);
 
-  const hiddenCount = expanded ? 0 : areas.length - visibleAreas.length;
-  const showToggle = Boolean(collapseAfter) && areas.length > collapseAfter;
+  const hiddenCount = expanded ? 0 : displayAreas.length - visibleAreas.length;
+  const showToggle = Boolean(collapseAfter) && displayAreas.length > collapseAfter;
 
-  if (!areas.length) return null;
+  if (!displayAreas.length) return null;
 
   return (
     <div className="mt-2">
@@ -409,13 +439,23 @@ function FocusAreaDetailPanel({
       <h2 className="text-xl font-semibold text-slate-950 mt-1">
         {formatAreaLabel(focus.area)}
       </h2>
-      {focus.needsDiscussion === false ? (
+      {focus.discussionStatus === "discussed" ? (
         <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 mt-2">
           Discussed
         </p>
+      ) : focus.discussionStatus === "needs_reinforcing" ? (
+        <p className="text-xs font-semibold uppercase tracking-wide text-violet-800 mt-2">
+          Needs reinforcing
+          {(focus.wrongCount || 0) > 0 ? (
+            <span className="normal-case font-medium text-slate-600">
+              {" "}
+              · {focus.wrongCount} wrong answer{focus.wrongCount === 1 ? "" : "s"} since discussion
+            </span>
+          ) : null}
+        </p>
       ) : (
         <p className="text-xs font-semibold uppercase tracking-wide text-amber-800 mt-2">
-          Needs discussion
+          Needs addressing
           {(focus.wrongCount || 0) > 0 ? (
             <span className="normal-case font-medium text-slate-600">
               {" "}
@@ -449,25 +489,26 @@ function FocusAreaDetailPanel({
         grade={grade}
         aiEnabled={aiEnabled}
         apiKeyConfigured={apiKeyConfigured}
-        needsDiscussion={focus.needsDiscussion !== false}
+        needsDiscussion={focus.discussionStatus !== "discussed"}
         onMarkDiscussed={onMarkDiscussed}
         markingDiscussed={markingDiscussed}
         generatingPractice={generatingPractice}
         onGeneratePractice={onGeneratePractice}
         onCreateManual={
-          focus.needsDiscussion === false ? onCreateManual : undefined
+          focus.discussionStatus === "discussed" ? onCreateManual : undefined
         }
+        reinforcing={focus.discussionStatus === "needs_reinforcing"}
       />
     </div>
   );
 }
 
 function SubjectBlock({ subject, selectedKey, onSelectArea }) {
-  const { needsDiscussion, alreadyDiscussed } = subject;
+  const { needsAddressing, needsReinforcing, discussed } = subject;
   const parsed = parseFocusSelectionKey(selectedKey);
   const selectedIsDiscussed =
     parsed?.subjectKey === subject.subjectKey &&
-    alreadyDiscussed.some((focus) => focus.area === parsed.area);
+    discussed.some((focus) => focus.area === parsed.area);
   const [discussedExpanded, setDiscussedExpanded] = useState(false);
 
   useEffect(() => {
@@ -479,13 +520,13 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-4">
       <p className="text-lg font-semibold text-slate-900">{subject.subjectLabel}</p>
-      {needsDiscussion.length > 0 ? (
+      {needsAddressing.length > 0 ? (
         <div className="mt-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
-            Needs discussion
+            Needs addressing
           </p>
           <GroupedNeedsDiscussionChips
-            areas={needsDiscussion}
+            areas={needsAddressing}
             subjectKey={subject.subjectKey}
             selectedKey={selectedKey}
             onSelectArea={onSelectArea}
@@ -493,15 +534,36 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
           />
         </div>
       ) : null}
-      {alreadyDiscussed.length > 0 ? (
-        <div className={needsDiscussion.length > 0 ? "mt-4" : "mt-3"}>
+      {needsReinforcing.length > 0 ? (
+        <div className={needsAddressing.length > 0 ? "mt-4" : "mt-3"}>
+          <p className="text-xs font-semibold uppercase tracking-wide text-violet-800">
+            Needs reinforcing
+          </p>
+          <GroupedNeedsDiscussionChips
+            areas={needsReinforcing}
+            subjectKey={subject.subjectKey}
+            selectedKey={selectedKey}
+            onSelectArea={onSelectArea}
+            collapseAfter={NEEDS_DISCUSSION_VISIBLE_COUNT}
+            chipCountMode="reinforcement"
+          />
+        </div>
+      ) : null}
+      {discussed.length > 0 ? (
+        <div
+          className={
+            needsAddressing.length > 0 || needsReinforcing.length > 0
+              ? "mt-4"
+              : "mt-3"
+          }
+        >
           {discussedExpanded ? (
             <>
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Discussed
               </p>
               <FocusAreaChips
-                areas={alreadyDiscussed}
+                areas={discussed}
                 subjectKey={subject.subjectKey}
                 selectedKey={selectedKey}
                 onSelectArea={onSelectArea}
@@ -523,7 +585,7 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
               aria-expanded={false}
               className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:underline"
             >
-              View discussed ({alreadyDiscussed.length})
+              View discussed ({discussed.length})
             </button>
           )}
         </div>
@@ -535,6 +597,7 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
 export default function AdminAnalysis() {
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
+  const [revisionRecords, setRevisionRecords] = useState([]);
   const [discussed, setDiscussed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -565,19 +628,24 @@ export default function AdminAnalysis() {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([getResults(), getFocusAreasDiscussed()])
-      .then(([resultData, discussedData]) => {
+    Promise.all([
+      getResults(),
+      getFocusAreasDiscussed(),
+      getRevisionAnalysisRecords().catch(() => []),
+    ])
+      .then(([resultData, discussedData, revisionData]) => {
         setError("");
         setResults(resultData);
         setDiscussed(discussedData);
+        setRevisionRecords(Array.isArray(revisionData) ? revisionData : []);
       })
       .catch(() => setError("Could not load analysis data."))
       .finally(() => setLoading(false));
   }, []);
 
   const bySubject = useMemo(
-    () => focusAreasAnalysisWithDiscussion(results, discussed),
-    [results, discussed],
+    () => focusAreasAnalysisWithDiscussion(results, discussed, revisionRecords),
+    [results, discussed, revisionRecords],
   );
   const uploadedCount = results.filter((r) => r.focus_evaluation).length;
   const selection = useMemo(

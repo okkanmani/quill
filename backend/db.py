@@ -291,6 +291,26 @@ def init_schema() -> None:
                 )
             if "feedback" not in writing_cols:
                 conn.execute("ALTER TABLE writing_submissions ADD COLUMN feedback TEXT")
+        revision_cols = {
+            row[1]
+            for row in conn.execute("PRAGMA table_info(student_revision_worksheets)")
+        }
+        if revision_cols and "answers" not in revision_cols:
+            conn.execute(
+                "ALTER TABLE student_revision_worksheets ADD COLUMN answers TEXT"
+            )
+        focus_discussion_cols = {
+            row[1] for row in conn.execute("PRAGMA table_info(focus_area_discussed)")
+        }
+        if focus_discussion_cols:
+            if "reinforcement_count" not in focus_discussion_cols:
+                conn.execute(
+                    "ALTER TABLE focus_area_discussed ADD COLUMN reinforcement_count INTEGER NOT NULL DEFAULT 0"
+                )
+            if "last_reinforced_at" not in focus_discussion_cols:
+                conn.execute(
+                    "ALTER TABLE focus_area_discussed ADD COLUMN last_reinforced_at TEXT"
+                )
         from auth_users import migrate_legacy_from_auth_json
 
         migrate_legacy_from_auth_json(conn)

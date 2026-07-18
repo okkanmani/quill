@@ -60,6 +60,7 @@ export default function FocusAreaExplainPanel({
   aiEnabled = true,
   apiKeyConfigured = false,
   needsDiscussion = true,
+  reinforcing = false,
   onMarkDiscussed,
   markingDiscussed = false,
   generatingPractice = false,
@@ -211,7 +212,9 @@ export default function FocusAreaExplainPanel({
             >
               {markingDiscussed || generatingPractice
                 ? "Creating practice…"
-                : "Mark discussion complete"}
+                : reinforcing
+                  ? "Mark reinforcement complete"
+                  : "Mark discussion complete"}
             </button>
           ) : (
             <>
