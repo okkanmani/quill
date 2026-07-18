@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../api";
 import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
@@ -12,6 +12,8 @@ const CREATE_TABS = [
 
 export default function AdminCreate() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isWorksheetBuilder = /\/admin\/create\/worksheet/.test(location.pathname);
 
   async function handleLogout() {
     await logout();
@@ -25,7 +27,7 @@ export default function AdminCreate() {
       onLogout={handleLogout}
       mainClassName="pb-28"
     >
-      <div className="max-w-3xl mx-auto">
+      <div className={isWorksheetBuilder ? "max-w-none" : "max-w-3xl mx-auto"}>
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Create</h1>
         <p className="text-slate-600 text-sm mb-5 leading-relaxed">
           Build worksheets, upload JSON, or generate learning resources for students.

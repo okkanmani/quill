@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   createWorksheetFromBuilder,
@@ -10,6 +10,8 @@ import {
   updateWorksheetFromBuilder,
 } from "../api";
 import QuillLoading from "./QuillLoading";
+import WorksheetBuilderPreview from "./WorksheetBuilderPreview";
+import { useShellLayout } from "./ShellLayoutContext";
 import {
   BUILDER_SUBJECTS,
   CHOICE_LABELS,
@@ -20,6 +22,7 @@ import {
   buildDefaultRcPassages,
   buildQuestionList,
   buildQuestionsFromPassages,
+  buildWorksheetPreviewFromBuilder,
   addRcPassage,
   removeRcPassageAt,
   defaultQuestionCount,
@@ -36,6 +39,7 @@ import {
   validateBuilderParamsForAi,
   worksheetToBuilderState,
 } from "../questionBuilderUtils";
+import { usePreviewScrollSync } from "../usePreviewScrollSync";
 
 function McqChoices({ question, index, onChange }) {
   return (
@@ -91,6 +95,9 @@ function PassageCard({
   expandedQuestions,
   onToggleQuestion,
   onChangeQuestion,
+  onFocusQuestion,
+  registerPassage,
+  registerQuestion,
 }) {
   const summary = passage.title.trim() || `Passage ${index + 1}`;
   const questionsComplete =
@@ -104,7 +111,10 @@ function PassageCard({
   const showQuestions = !buildUsingAi && passageQuestions.length > 0;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+    <div
+      ref={registerPassage ? (node) => registerPassage(passage.id, node) : undefined}
+      className="rounded-2xl border border-slate-200 bg-white overflow-hidden"
+    >
       <button
         type="button"
         onClick={() => onToggle(index)}
@@ -221,10 +231,13 @@ function PassageCard({
                   key={globalIndex}
                   question={question}
                   index={localIndex}
+                  syncIndex={globalIndex}
+                  registerQuestion={registerQuestion}
                   format={format}
                   expanded={expandedQuestions.has(globalIndex)}
                   onToggle={() => onToggleQuestion(globalIndex)}
                   onChange={(_, patch) => onChangeQuestion(globalIndex, patch)}
+                  onFocus={() => onFocusQuestion?.(globalIndex)}
                 />
               ))}
             </div>
@@ -242,7 +255,10 @@ function QuestionCard({
   expanded,
   onToggle,
   onChange,
+  onFocus,
   passageLabel = "",
+  syncIndex = null,
+  registerQuestion,
 }) {
   const summary =
     question.prompt.trim() ||
@@ -255,7 +271,14 @@ function QuestionCard({
       : question.answer.trim());
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+    <div
+      ref={
+        syncIndex != null && registerQuestion
+          ? (node) => registerQuestion(syncIndex, node)
+          : undefined
+      }
+      className="rounded-2xl border border-slate-200 bg-white overflow-hidden"
+    >
       <button
         type="button"
         onClick={() => onToggle(index)}
@@ -288,6 +311,7 @@ function QuestionCard({
             <textarea
               value={question.prompt}
               onChange={(e) => onChange(index, { prompt: e.target.value })}
+              onFocus={() => onFocus?.(index)}
               rows={3}
               className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               placeholder="Enter the question text"
@@ -329,6 +353,8 @@ function QuestionCard({
 export default function QuestionBuilderPanel() {
   const [searchParams] = useSearchParams();
   const editId = searchParams.get("edit");
+  const { sidebarCollapsed, setSidebarCollapsed } = useShellLayout();
+  const didAutoCollapseSidebar = useRef(false);
   const initialGrade = Number(localStorage.getItem("studentGrade")) || 5;
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("math");
@@ -359,6 +385,31 @@ export default function QuestionBuilderPanel() {
   const [publishPhase, setPublishPhase] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [mobilePane, setMobilePane] = useState("build");
+  const [previewFocusQuestionIndex, setPreviewFocusQuestionIndex] = useState(0);
+  const [previewFocusPassageId, setPreviewFocusPassageId] = useState(null);
+
+  useEffect(() => {
+    if (previewOpen) return;
+    setPreviewFocusPassageId(null);
+  }, [previewOpen]);
+
+  useEffect(() => {
+    if (previewOpen) {
+      setSidebarCollapsed((collapsed) => {
+        if (!collapsed) {
+          didAutoCollapseSidebar.current = true;
+          return true;
+        }
+        didAutoCollapseSidebar.current = false;
+        return collapsed;
+      });
+    } else if (didAutoCollapseSidebar.current) {
+      setSidebarCollapsed(false);
+      didAutoCollapseSidebar.current = false;
+    }
+  }, [previewOpen, setSidebarCollapsed]);
 
   useEffect(() => {
     if (!editId) return;
@@ -447,6 +498,64 @@ export default function QuestionBuilderPanel() {
       isReadingComprehension ? groupQuestionsByPassage(passages, questions) : [],
     [isReadingComprehension, passages, questions],
   );
+  const previewModel = useMemo(
+    () =>
+      buildWorksheetPreviewFromBuilder({
+        title,
+        subject,
+        stars,
+        format,
+        englishType,
+        passages,
+        questions,
+        questionCount: isReadingComprehension ? rcQuestionTotal : questionCount,
+        timed,
+        timeLimitMinutes,
+        scratchpad,
+        buildUsingAi,
+      }),
+    [
+      title,
+      subject,
+      stars,
+      format,
+      englishType,
+      passages,
+      questions,
+      isReadingComprehension,
+      rcQuestionTotal,
+      questionCount,
+      timed,
+      timeLimitMinutes,
+      scratchpad,
+      buildUsingAi,
+    ],
+  );
+  const footerSidebarClass = sidebarCollapsed ? "md:left-5" : "md:left-52";
+
+  const scrollSyncResyncKey = useMemo(
+    () =>
+      `${questions.length}-${passages.length}-${[...expanded].join(",")}-${[...expandedPassages].join(",")}`,
+    [questions.length, passages.length, expanded, expandedPassages],
+  );
+
+  const handleScrollFocusQuestion = useCallback((index) => {
+    setPreviewFocusPassageId(null);
+    setPreviewFocusQuestionIndex(index);
+  }, []);
+
+  const handleScrollFocusPassage = useCallback((passageId) => {
+    setPreviewFocusQuestionIndex(null);
+    setPreviewFocusPassageId(passageId);
+  }, []);
+
+  const { registerQuestion, registerPassage, markQuestionFocused, markPassageFocused } =
+    usePreviewScrollSync({
+      enabled: previewOpen,
+      onFocusQuestion: handleScrollFocusQuestion,
+      onFocusPassage: handleScrollFocusPassage,
+      resyncKey: scrollSyncResyncKey,
+    });
 
   useEffect(() => {
     if (!isReadingComprehension) return;
@@ -547,22 +656,70 @@ export default function QuestionBuilderPanel() {
     setQuestions((prev) => resizeQuestions(prev, n, format));
   }
 
+  function focusPreviewQuestion(index) {
+    markQuestionFocused(index);
+    setPreviewFocusPassageId(null);
+    setPreviewFocusQuestionIndex(index);
+  }
+
+  function focusPreviewPassage(passageIndex) {
+    const passage = passages[passageIndex];
+    if (!passage) return;
+    markPassageFocused(passage.id);
+    setPreviewFocusQuestionIndex(null);
+    setPreviewFocusPassageId(passage.id);
+  }
+
   function togglePassageExpanded(index) {
+    let willExpand = false;
     setExpandedPassages((prev) => {
       const next = new Set(prev);
+      willExpand = !next.has(index);
       if (next.has(index)) next.delete(index);
       else next.add(index);
       return next;
     });
+    if (willExpand) focusPreviewPassage(index);
   }
 
   function toggleExpanded(index) {
+    let willExpand = false;
     setExpanded((prev) => {
       const next = new Set(prev);
+      willExpand = !next.has(index);
       if (next.has(index)) next.delete(index);
       else next.add(index);
       return next;
     });
+    if (willExpand) focusPreviewQuestion(index);
+  }
+
+  function revealGeneratedWorksheet({
+    generatedTitle,
+    generatedQuestions,
+    generatedPassages = null,
+  }) {
+    setTitle(generatedTitle);
+    setQuestions(generatedQuestions);
+    if (generatedPassages) {
+      setPassages(generatedPassages);
+      setQuestionCount(generatedQuestions.length);
+      setExpandedPassages(new Set([0]));
+    }
+    setBuildUsingAi(false);
+    setExpanded(new Set([0]));
+    focusPreviewQuestion(0);
+    setPreviewOpen(true);
+    setMobilePane("build");
+
+    const count = generatedQuestions.length;
+    const needsAnswers = isShortAnswer && !aiGeneratesReferenceAnswers(subject);
+    setSuccess(
+      needsAnswers
+        ? `AI generated ${count} question${count === 1 ? "" : "s"} — add reference answers, review in preview, then publish.`
+        : `AI generated ${count} question${count === 1 ? "" : "s"} — review in the builder and preview, then publish when ready.`,
+    );
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function handlePublish() {
@@ -643,17 +800,12 @@ export default function QuestionBuilderPanel() {
           publishQuestions = draftToBuilderQuestions(draft, format);
         }
 
-        if (aiDraftNeedsReferenceAnswers) {
-          setTitle(publishTitle);
-          setQuestions(publishQuestions);
-          setBuildUsingAi(false);
-          setExpanded(new Set([0]));
-          setSuccess(
-            `AI generated ${publishQuestions.length} questions — add reference answers below, then publish.`,
-          );
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          return;
-        }
+        revealGeneratedWorksheet({
+          generatedTitle: publishTitle,
+          generatedQuestions: publishQuestions,
+          generatedPassages: isReadingComprehension ? publishPassages : null,
+        });
+        return;
       }
 
       setPublishPhase(editId ? "Saving…" : "Publishing…");
@@ -687,15 +839,16 @@ export default function QuestionBuilderPanel() {
             ? " Locked for your students."
             : "";
       setSuccess(
-        buildUsingAi
-          ? `AI generated and published ${result.id} — “${result.title}” (${result.question_count} questions).${lockNote}`
-          : editId
-            ? `Saved changes to ${result.id} — “${result.title}” (${result.question_count} questions).`
-            : `Published ${result.id} — “${result.title}” (${result.question_count} questions).${lockNote}`,
+        editId
+          ? `Saved changes to ${result.id} — “${result.title}” (${result.question_count} questions).`
+          : `Published ${result.id} — “${result.title}” (${result.question_count} questions).${lockNote}`,
       );
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      setError(err.message || "Could not publish worksheet.");
+      setError(
+        err.message ||
+          (buildUsingAi ? "Could not generate worksheet." : "Could not publish worksheet."),
+      );
     } finally {
       setPublishing(false);
       setPublishPhase("");
@@ -706,9 +859,7 @@ export default function QuestionBuilderPanel() {
   const publishLabel = publishing
     ? publishPhase || (editId ? "Saving…" : "Publishing…")
     : buildUsingAi
-      ? aiDraftNeedsReferenceAnswers
-        ? "Generate questions"
-        : "Generate & publish"
+      ? "Generate worksheet"
       : editId
         ? "Save changes"
         : "Publish worksheet";
@@ -719,6 +870,43 @@ export default function QuestionBuilderPanel() {
 
   return (
     <>
+      {previewOpen ? (
+        <div className="lg:hidden flex gap-2 mb-4">
+          <button
+            type="button"
+            onClick={() => setMobilePane("build")}
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+              mobilePane === "build"
+                ? "bg-indigo-600 text-white"
+                : "bg-slate-100 text-slate-700"
+            }`}
+          >
+            Build
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobilePane("preview")}
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+              mobilePane === "preview"
+                ? "bg-indigo-600 text-white"
+                : "bg-slate-100 text-slate-700"
+            }`}
+          >
+            Preview
+          </button>
+        </div>
+      ) : null}
+
+      <div
+        className={
+          previewOpen ? "lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start" : undefined
+        }
+      >
+        <div
+          className={`min-w-0 ${
+            previewOpen && mobilePane === "preview" ? "hidden lg:block" : ""
+          }`}
+        >
       <p className="text-slate-600 text-sm mb-6 leading-relaxed">
         {editId
           ? `Editing ${editId}. Mark the correct MCQ answer with ✓ — choices are shuffled on save.`
@@ -742,20 +930,52 @@ export default function QuestionBuilderPanel() {
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6 space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <h2 className="font-bold text-slate-900">Worksheet details</h2>
-          <label
-            className={`flex items-center gap-2 text-sm font-semibold ${
-              aiEnabled && !editId ? "text-slate-800 cursor-pointer" : "text-slate-500"
-            }`}
-          >
-            <input
-              type="checkbox"
-              checked={buildUsingAi}
-              onChange={(e) => setBuildUsingAi(e.target.checked)}
-              disabled={!aiEnabled || Boolean(editId)}
-              className="rounded border-slate-300"
-            />
-            Build using AI
-          </label>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setPreviewOpen((open) => {
+                  const next = !open;
+                  if (next) {
+                    setMobilePane("preview");
+                    const firstExpandedQuestion = [...expanded].sort((a, b) => a - b)[0];
+                    if (firstExpandedQuestion != null) {
+                      focusPreviewQuestion(firstExpandedQuestion);
+                    } else if (isReadingComprehension && passages.length > 0) {
+                      const firstPassage = [...expandedPassages].sort((a, b) => a - b)[0] ?? 0;
+                      focusPreviewPassage(firstPassage);
+                    } else {
+                      focusPreviewQuestion(0);
+                    }
+                  } else {
+                    setMobilePane("build");
+                  }
+                  return next;
+                });
+              }}
+              className={`rounded-xl border px-3 py-1.5 text-sm font-semibold transition ${
+                previewOpen
+                  ? "border-indigo-300 bg-indigo-50 text-indigo-900"
+                  : "border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
+              }`}
+            >
+              {previewOpen ? "Hide preview" : "Preview worksheet"}
+            </button>
+            <label
+              className={`flex items-center gap-2 text-sm font-semibold ${
+                aiEnabled && !editId ? "text-slate-800 cursor-pointer" : "text-slate-500"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={buildUsingAi}
+                onChange={(e) => setBuildUsingAi(e.target.checked)}
+                disabled={!aiEnabled || Boolean(editId)}
+                className="rounded border-slate-300"
+              />
+              Build using AI
+            </label>
+          </div>
         </div>
         {buildUsingAi && !canPublishWithAi ? (
           <p className="text-sm text-amber-900 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 -mt-1">
@@ -767,7 +987,7 @@ export default function QuestionBuilderPanel() {
                 <Link to="/admin/settings" className="font-semibold underline">
                   Admin → Settings
                 </Link>{" "}
-                before publishing.
+                before generating.
               </>
             )}
           </p>
@@ -1074,6 +1294,9 @@ export default function QuestionBuilderPanel() {
               expandedQuestions={expanded}
               onToggleQuestion={toggleExpanded}
               onChangeQuestion={updateQuestion}
+              onFocusQuestion={focusPreviewQuestion}
+              registerPassage={registerPassage}
+              registerQuestion={registerQuestion}
             />
           ))}
         </section>
@@ -1084,10 +1307,10 @@ export default function QuestionBuilderPanel() {
           <h2 className="font-bold text-indigo-950 mb-2">AI generation</h2>
           <p className="text-sm text-indigo-900 leading-relaxed">
             {isReadingComprehension
-              ? "Passages and questions will be generated from the specs above when you press Generate & publish. Use per-passage prompts for topic focus."
+              ? "Passages and questions will be generated from the specs above when you press Generate worksheet. Review them side-by-side with preview, then publish."
               : isShortAnswer && !aiGeneratesReferenceAnswers(subject)
-                ? "AI will generate question prompts only — add reference answers yourself before publishing. Each question gets a specific area tag for focus analysis."
-                : "Questions will be generated from the worksheet details above when you press Generate & publish. Each question gets a specific area tag for focus analysis."}{" "}
+                ? "AI will generate question prompts — you add reference answers, review in preview, then publish."
+                : "Questions will be generated from the worksheet details above when you press Generate worksheet. Review them in the builder and preview, then publish."}{" "}
             Usage bills to your OpenAI account.
           </p>
           <label className="block mt-4 text-sm font-semibold text-indigo-950">
@@ -1120,30 +1343,55 @@ export default function QuestionBuilderPanel() {
               key={i}
               question={q}
               index={i}
+              syncIndex={i}
+              registerQuestion={registerQuestion}
               format={format}
               expanded={expanded.has(i)}
               onToggle={toggleExpanded}
               onChange={updateQuestion}
+              onFocus={focusPreviewQuestion}
             />
           ))}
         </section>
       ) : (
         <div className="mb-24" />
       )}
+        </div>
 
-      <div className="fixed bottom-0 inset-x-0 md:left-52 border-t border-slate-200 bg-white/95 backdrop-blur px-6 py-4 z-30">
-        <div className="max-w-3xl mx-auto flex flex-wrap items-center justify-between gap-3">
+        {previewOpen ? (
+          <div
+            className={`lg:sticky lg:top-6 min-w-0 ${
+              mobilePane === "build" ? "hidden lg:block" : ""
+            }`}
+          >
+            <WorksheetBuilderPreview
+              model={previewModel}
+              focusQuestionIndex={previewFocusQuestionIndex}
+              focusPassageId={previewFocusPassageId}
+            />
+          </div>
+        ) : null}
+      </div>
+
+      <div
+        className={`fixed bottom-0 inset-x-0 ${footerSidebarClass} border-t border-slate-200 bg-white/95 backdrop-blur px-6 py-4 z-30`}
+      >
+        <div
+          className={`mx-auto flex flex-wrap items-center justify-between gap-3 ${
+            previewOpen ? "max-w-none" : "max-w-3xl"
+          }`}
+        >
           {buildUsingAi ? (
             <p className="text-sm text-slate-600">
               {aiDraftNeedsReferenceAnswers
-                ? `AI will draft ${isReadingComprehension ? rcQuestionTotal : questionCount} short-answer question${
+                ? `Generate ${isReadingComprehension ? rcQuestionTotal : questionCount} short-answer question${
                     (isReadingComprehension ? rcQuestionTotal : questionCount) === 1 ? "" : "s"
-                  } — you add reference answers before publishing`
-                : `AI will write ${isReadingComprehension ? rcQuestionTotal : questionCount} ${
+                  } with AI — then add reference answers and publish`
+                : `Generate ${isReadingComprehension ? rcQuestionTotal : questionCount} ${
                     format === "multiple_choice" ? "multiple-choice" : "short-answer"
                   } question${
                     (isReadingComprehension ? rcQuestionTotal : questionCount) === 1 ? "" : "s"
-                  }${isReadingComprehension ? ` across ${passages.length} passages` : ""}`}
+                  } with AI${isReadingComprehension ? ` across ${passages.length} passages` : ""} — review, then publish`}
             </p>
           ) : (
             <p className="text-sm text-slate-600">
