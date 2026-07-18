@@ -62,6 +62,8 @@ export default function FocusAreaExplainPanel({
   needsDiscussion = true,
   onMarkDiscussed,
   markingDiscussed = false,
+  generatingPractice = false,
+  onGeneratePractice,
 }) {
   const [byKey, setByKey] = useState({});
   const [openByKey, setOpenByKey] = useState({});
@@ -206,12 +208,37 @@ export default function FocusAreaExplainPanel({
               onClick={onMarkDiscussed}
               className="mt-4 w-full rounded-xl bg-slate-800 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-900 transition disabled:opacity-50"
             >
-              {markingDiscussed ? "Saving…" : "Mark discussion complete"}
+              {markingDiscussed || generatingPractice
+                ? "Creating practice…"
+                : "Mark discussion complete"}
             </button>
           ) : (
-            <p className="mt-4 text-sm font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
-              Discussion complete — this focus area is in the discussed list.
-            </p>
+            <>
+              <p className="mt-4 text-sm font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+                Discussion complete — this focus area is in the discussed list.
+              </p>
+              {onGeneratePractice ? (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={onGeneratePractice}
+                    disabled={!aiEnabled || !apiKeyConfigured || generatingPractice}
+                    className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-900 hover:bg-indigo-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {generatingPractice
+                      ? "Generating…"
+                      : "Generate AI practice worksheet"}
+                  </button>
+                  {!aiEnabled ? (
+                    <span className="text-xs text-slate-500">AI disabled on server</span>
+                  ) : !apiKeyConfigured ? (
+                    <Link to="/admin/settings" className="text-xs font-semibold text-indigo-700 underline">
+                      Add API key
+                    </Link>
+                  ) : null}
+                </div>
+              ) : null}
+            </>
           )}
         </>
       ) : null}

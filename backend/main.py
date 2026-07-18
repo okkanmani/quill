@@ -29,6 +29,7 @@ from admin_secrets import (
 from ai_worksheet import generate_worksheet_draft
 from ai_learn import generate_learn_resource
 from ai_focus_discussion import generate_focus_discussion_reference
+from focus_practice import generate_focus_practice_worksheet
 from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -248,6 +249,14 @@ class GenerateFocusDiscussionReferenceRequest(BaseModel):
     area: str
     examples: list[FocusDiscussionExample]
     grade: int | None = None
+
+
+class GenerateFocusPracticeRequest(BaseModel):
+    subject: str
+    area: str
+    examples: list[FocusDiscussionExample] | None = None
+    grade: int | None = None
+    use_ai: bool = False
 
 
 class PublishLearnResourceRequest(BaseModel):
@@ -711,6 +720,41 @@ def admin_generate_focus_discussion_reference(
             api_key=api_key,
         )
         return {"reference": reference}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/admin/analysis/generate-focus-practice")
+def admin_generate_focus_practice(
+    req: GenerateFocusPracticeRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        if req.use_ai:
+            api_key = resolve_openai_api_key(payload["admin_id"])
+            if not api_key:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Add your OpenAI API key under Admin → Settings.",
+                )
+        else:
+            api_key = None
+        worksheet = generate_focus_practice_worksheet(
+            subject=req.subject,
+            area=req.area,
+            grade=req.grade,
+            examples=(
+                [example.model_dump() for example in req.examples]
+                if req.examples
+                else None
+            ),
+            use_ai=req.use_ai,
+            api_key=api_key,
+        )
+        return worksheet
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

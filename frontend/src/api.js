@@ -604,6 +604,22 @@ export async function generateFocusDiscussionReference(payload) {
   return res.json();
 }
 
+export async function generateFocusPracticeWorksheet(payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/analysis/generate-focus-practice`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to generate focus practice worksheet";
+    if (typeof d === "string") msg = d;
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function generateAndPublishLearnResource(payload) {
   const res = await apiFetch(`${BASE_URL}/admin/learn/generate-and-publish`, {
     method: "POST",

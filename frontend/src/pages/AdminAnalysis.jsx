@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
+  generateFocusPracticeWorksheet,
   getAdminSettings,
   getFocusAreasDiscussed,
   getResults,
@@ -15,6 +16,7 @@ import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import AdminStudentBanner from "../components/AdminStudentBanner";
 import QuillLoading from "../components/QuillLoading";
 import FocusAreaExplainPanel from "../components/FocusAreaExplainPanel";
+import FocusPracticeWorksheet from "../components/FocusPracticeWorksheet";
 import {
   buildFocusAreaUrgencyMap,
   focusAreasAnalysisWithDiscussion,
@@ -354,6 +356,8 @@ function FocusAreaDetailPanel({
   selectionKey,
   onMarkDiscussed,
   markingDiscussed,
+  generatingPractice,
+  onGeneratePractice,
   grade,
   aiEnabled,
   apiKeyConfigured,
@@ -412,6 +416,8 @@ function FocusAreaDetailPanel({
         needsDiscussion={focus.needsDiscussion !== false}
         onMarkDiscussed={onMarkDiscussed}
         markingDiscussed={markingDiscussed}
+        generatingPractice={generatingPractice}
+        onGeneratePractice={onGeneratePractice}
       />
     </div>
   );
@@ -499,7 +505,10 @@ export default function AdminAnalysis() {
   const [markingDiscussed, setMarkingDiscussed] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(true);
   const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
+  const [practiceWorksheet, setPracticeWorksheet] = useState(null);
+  const [generatingPractice, setGeneratingPractice] = useState(false);
   const uploadInputRef = useRef(null);
+  const practiceScrollerRef = useRef(null);
   const studentGrade = Number(localStorage.getItem("studentGrade")) || null;
 
   useEffect(() => {
@@ -547,10 +556,39 @@ export default function AdminAnalysis() {
     setSelectedKey((current) => (current === key ? "" : key));
   }
 
+  function buildPracticePayload(focusSelection) {
+    return {
+      subject: focusSelection.subject.subjectKey,
+      area: focusSelection.focus.area,
+      grade: studentGrade || undefined,
+      use_ai: true,
+      examples: (focusSelection.focus.examples || []).map((example) => ({
+        question: example.question,
+        answer: example.answer || "",
+        expected: example.expected || "",
+        choices: example.choices?.length ? example.choices : undefined,
+      })),
+    };
+  }
+
+  async function generatePracticeWorksheet(focusSelection, { scrollAfter = false } = {}) {
+    const worksheet = await generateFocusPracticeWorksheet(
+      buildPracticePayload(focusSelection),
+    );
+    setPracticeWorksheet(worksheet);
+    if (scrollAfter) {
+      requestAnimationFrame(() => {
+        scrollToPracticePanel();
+      });
+    }
+    return worksheet;
+  }
+
   async function handleMarkDiscussed() {
     if (!selection) return;
     setMarkingDiscussed(true);
     setError("");
+    const areaLabel = formatAreaLabel(selection.focus.area);
     try {
       const updated = await markFocusAreaDiscussed({
         subject: selection.subject.subjectKey,
@@ -566,11 +604,59 @@ export default function AdminAnalysis() {
         );
         return [...next, updated];
       });
-      setUploadMessage(`Marked “${selection.focus.area}” as discussed.`);
+
+      if (aiEnabled && apiKeyConfigured) {
+        setGeneratingPractice(true);
+        try {
+          await generatePracticeWorksheet(selection, { scrollAfter: true });
+          setUploadMessage(
+            `Marked “${areaLabel}” as discussed — AI practice worksheet ready.`,
+          );
+        } catch (err) {
+          setUploadMessage(
+            `Marked “${areaLabel}” as discussed. Could not generate practice worksheet: ${err.message}`,
+          );
+        } finally {
+          setGeneratingPractice(false);
+        }
+      } else {
+        setUploadMessage(
+          aiEnabled
+            ? `Marked “${areaLabel}” as discussed. Add an OpenAI API key under Admin → Settings to generate a focus practice worksheet.`
+            : `Marked “${areaLabel}” as discussed. AI is disabled on this server.`,
+        );
+      }
     } catch (err) {
-      setError(err.message || "Could not save discussion status.");
+      setError(err.message || "Could not complete discussion.");
     } finally {
       setMarkingDiscussed(false);
+    }
+  }
+
+  async function handleGeneratePractice() {
+    if (!selection || !aiEnabled || !apiKeyConfigured) return;
+    setGeneratingPractice(true);
+    setError("");
+    try {
+      await generatePracticeWorksheet(selection, { scrollAfter: true });
+      setUploadMessage(
+        `AI practice worksheet ready for “${formatAreaLabel(selection.focus.area)}”.`,
+      );
+    } catch (err) {
+      setError(err.message || "Could not generate practice worksheet.");
+    } finally {
+      setGeneratingPractice(false);
+    }
+  }
+
+  function scrollToAnalysisPanel() {
+    practiceScrollerRef.current?.scrollTo({ left: 0, behavior: "smooth" });
+  }
+
+  function scrollToPracticePanel() {
+    const scroller = practiceScrollerRef.current;
+    if (scroller) {
+      scroller.scrollTo({ left: scroller.clientWidth, behavior: "smooth" });
     }
   }
 
@@ -615,6 +701,31 @@ export default function AdminAnalysis() {
       trailing={`Admin · ${formatAdminHeaderTrail()}`}
       onLogout={handleLogout}
     >
+      {practiceWorksheet ? (
+        <div className="sticky top-0 z-30 -mx-6 mb-2 flex flex-wrap items-center gap-2 bg-slate-50 px-6 pb-3 pt-3">
+          <button
+            type="button"
+            onClick={scrollToAnalysisPanel}
+            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
+          >
+            ← Back to analysis
+          </button>
+          <button
+            type="button"
+            onClick={scrollToPracticePanel}
+            className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-100 transition"
+          >
+            View practice worksheet →
+          </button>
+        </div>
+      ) : null}
+
+      <div
+        ref={practiceScrollerRef}
+        className="overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4"
+      >
+        <div className="flex w-[200%] min-w-[200%]">
+          <section className="w-1/2 shrink-0 snap-start pr-4 sm:pr-6">
       <div className="max-w-6xl">
           <AdminStudentBanner />
           <AdminStudentSwitcher />
@@ -663,7 +774,17 @@ export default function AdminAnalysis() {
           </div>
 
           {uploadMessage && (
-            <p className="text-green-700 text-sm mb-4">{uploadMessage}</p>
+            <p className="text-green-700 text-sm mb-4">
+              {uploadMessage}
+              {uploadMessage.includes("Admin → Settings") ? (
+                <>
+                  {" "}
+                  <Link to="/admin/settings" className="font-semibold underline">
+                    Open Settings
+                  </Link>
+                </>
+              ) : null}
+            </p>
           )}
 
           {loading && <QuillLoading label="Loading analysis…" />}
@@ -703,6 +824,8 @@ export default function AdminAnalysis() {
                     selectionKey={selectedKey}
                     onMarkDiscussed={handleMarkDiscussed}
                     markingDiscussed={markingDiscussed}
+                    generatingPractice={generatingPractice}
+                    onGeneratePractice={handleGeneratePractice}
                     grade={studentGrade}
                     aiEnabled={aiEnabled}
                     apiKeyConfigured={apiKeyConfigured}
@@ -714,6 +837,29 @@ export default function AdminAnalysis() {
             </div>
           )}
         </div>
+          </section>
+
+          <section className="w-1/2 shrink-0 snap-start pl-4 sm:pl-6">
+            {practiceWorksheet ? (
+              <FocusPracticeWorksheet worksheet={practiceWorksheet} />
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-6 py-12 min-h-[22rem] flex flex-col justify-center">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Focus practice
+                </p>
+                <h2 className="text-xl font-semibold text-slate-500 mt-2">
+                  Worksheet appears here
+                </h2>
+                <p className="text-sm text-slate-500 mt-3 leading-relaxed max-w-md">
+                  When you mark a focus area discussion complete, a 5-question AI practice
+                  worksheet (2–3★) is generated here. It is not added to the main
+                  worksheet list. An OpenAI API key is required.
+                </p>
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
     </AppShell>
   );
 }
