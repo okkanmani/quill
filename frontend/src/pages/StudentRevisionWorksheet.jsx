@@ -55,7 +55,7 @@ export default function StudentRevisionWorksheet() {
       trailing={`Hi, ${name}!`}
       onLogout={handleLogout}
     >
-      <div className="max-w-3xl">
+      <div className="max-w-6xl">
         <Link
           to="/student/revision"
           className="inline-flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-800 mb-4"

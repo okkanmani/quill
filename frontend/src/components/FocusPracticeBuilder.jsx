@@ -94,7 +94,14 @@ function BuilderQuestionCard({ question, index, onChange, onRemove, canRemove })
             <button
               key={option.value}
               type="button"
-              onClick={() => onChange(index, { stars: option.value })}
+              onClick={() =>
+                onChange(index, {
+                  stars: option.value,
+                  ...(option.value < 3
+                    ? { hintEnabled: false, hintContext: "" }
+                    : {}),
+                })
+              }
               className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
                 selected
                   ? "bg-indigo-100 border-indigo-300 text-indigo-900"
@@ -108,6 +115,43 @@ function BuilderQuestionCard({ question, index, onChange, onRemove, canRemove })
       </div>
 
       <McqChoices question={question} index={index} onChange={onChange} />
+
+      {question.stars >= 3 ? (
+      <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50/60 px-4 py-3">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={Boolean(question.hintEnabled)}
+            onChange={(e) =>
+              onChange(index, {
+                hintEnabled: e.target.checked,
+                hintContext: e.target.checked ? question.hintContext : "",
+              })
+            }
+            className="mt-1 h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+          />
+          <span className="text-sm text-slate-800 leading-relaxed">
+            <span className="font-semibold">Include hint</span>
+            <span className="block text-xs text-slate-600 mt-1">
+              Optional guidance shown when the student asks for help — especially
+              useful for harder questions.
+            </span>
+          </span>
+        </label>
+        {question.hintEnabled ? (
+          <label className="block mt-3 text-sm font-semibold text-slate-800">
+            Hint text
+            <textarea
+              value={question.hintContext}
+              onChange={(e) => onChange(index, { hintContext: e.target.value })}
+              rows={3}
+              placeholder="Nudge the student without giving away the answer…"
+              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 leading-relaxed focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200 resize-y"
+            />
+          </label>
+        ) : null}
+      </div>
+      ) : null}
 
       {canRemove ? (
         <button

@@ -99,6 +99,9 @@ Requirements:
 - Each question must have exactly 4 distinct, plausible choices and correct_index 0–3.
 - Do not prefix choices with letters.
 - Questions should progress from medium practice to slightly harder application.
+- For each question with stars === 3, include "hint": true and "hint_context": one or two sentences
+  of guidance that nudge the student without stating the final answer or correct choice.
+- For 2-star questions, set "hint": false and omit hint_context.
 - Age-appropriate for the grade when given.
 - Title under 80 characters, specific to the skill area.
 
@@ -110,7 +113,16 @@ Return JSON only:
       "prompt": "question text",
       "stars": 2,
       "choices": ["...", "...", "...", "..."],
-      "correct_index": 0
+      "correct_index": 0,
+      "hint": false
+    }},
+    {{
+      "prompt": "harder question text",
+      "stars": 3,
+      "choices": ["...", "...", "...", "..."],
+      "correct_index": 0,
+      "hint": true,
+      "hint_context": "short nudge without the answer"
     }}
   ]
 }}
@@ -150,17 +162,33 @@ def _normalize_ai_questions(raw_questions: list, *, area_slug: str) -> list[dict
         if not isinstance(correct_index, int) or correct_index not in (0, 1, 2, 3):
             raise ValueError(f"{prefix} has invalid correct_index.")
 
-        questions.append(
-            {
-                "id": f"focus-practice-{index + 1}",
-                "prompt": prompt.strip(),
-                "type": "multiple_choice",
-                "stars": stars,
-                "area": area_slug,
-                "choices": trimmed,
-                "answer": trimmed[correct_index],
-            }
+        hint_context = str(
+            raw.get("hint_context") or raw.get("hintContext") or ""
+        ).strip()
+        hint = stars >= 3 and (
+            bool(raw.get("hint")) or bool(hint_context)
         )
+        if stars >= 3 and not hint_context:
+            hint_context = (
+                "Break the problem into smaller steps before choosing an answer."
+            )
+        if stars < 3:
+            hint = False
+            hint_context = ""
+
+        question_row = {
+            "id": f"focus-practice-{index + 1}",
+            "prompt": prompt.strip(),
+            "type": "multiple_choice",
+            "stars": stars,
+            "area": area_slug,
+            "choices": trimmed,
+            "answer": trimmed[correct_index],
+        }
+        if hint and hint_context:
+            question_row["hint"] = True
+            question_row["hint_context"] = hint_context
+        questions.append(question_row)
     return questions
 
 
@@ -266,22 +294,27 @@ def generate_mock_focus_practice_worksheet(
     questions = []
     for index, stars in enumerate(STAR_PATTERN):
         choices, answer = _choice_set(area_label, index, stars)
-        questions.append(
-            {
-                "id": f"focus-practice-{index + 1}",
-                "prompt": _prompt_for_question(
-                    area_label=area_label,
-                    index=index,
-                    stars=stars,
-                    examples=example_rows,
-                ),
-                "type": "multiple_choice",
-                "stars": stars,
-                "area": area_slug,
-                "choices": choices,
-                "answer": answer,
-            }
-        )
+        question_row = {
+            "id": f"focus-practice-{index + 1}",
+            "prompt": _prompt_for_question(
+                area_label=area_label,
+                index=index,
+                stars=stars,
+                examples=example_rows,
+            ),
+            "type": "multiple_choice",
+            "stars": stars,
+            "area": area_slug,
+            "choices": choices,
+            "answer": answer,
+        }
+        if stars >= 3:
+            question_row["hint"] = True
+            question_row["hint_context"] = (
+                f"Break this {area_label} problem into steps — identify what the "
+                f"question is asking before you pick an answer."
+            )
+        questions.append(question_row)
 
     return _worksheet_shell(
         subject_key=subject_key,
@@ -427,17 +460,23 @@ def build_manual_focus_practice_worksheet(
         stars = raw.get("stars")
         if not isinstance(stars, int) or stars < 1 or stars > 3:
             raise ValueError(f"Question {index + 1} stars must be 1, 2, or 3.")
-        normalized.append(
-            {
-                "id": f"focus-practice-{index + 1}",
-                "prompt": prompt,
-                "type": "multiple_choice",
-                "stars": stars,
-                "area": area_slug,
-                "choices": choices,
-                "answer": answer,
-            }
-        )
+        hint_context = str(
+            raw.get("hint_context") or raw.get("hintContext") or ""
+        ).strip()
+        hint = stars >= 3 and bool(raw.get("hint")) and bool(hint_context)
+        question_row = {
+            "id": f"focus-practice-{index + 1}",
+            "prompt": prompt,
+            "type": "multiple_choice",
+            "stars": stars,
+            "area": area_slug,
+            "choices": choices,
+            "answer": answer,
+        }
+        if hint:
+            question_row["hint"] = True
+            question_row["hint_context"] = hint_context
+        normalized.append(question_row)
 
     area_label = _area_label(area_slug)
     return _worksheet_shell(

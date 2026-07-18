@@ -274,6 +274,8 @@ class ManualFocusPracticeQuestionRequest(BaseModel):
     choices: list[str]
     answer: str
     stars: int = 2
+    hint: bool | None = None
+    hint_context: str | None = None
 
 
 class SaveManualFocusPracticeRequest(BaseModel):

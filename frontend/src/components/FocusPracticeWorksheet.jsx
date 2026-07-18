@@ -2,6 +2,10 @@ import { useState } from "react";
 import Drawpad from "./Drawpad";
 import { DifficultyStars, QuestionDifficultyStars } from "./DifficultyStars";
 import { ScratchpadIcon, TextAnswerIcon } from "./ResponseModeIcons";
+import {
+  getQuestionHintContext,
+  questionHasHint,
+} from "../focusPracticeBuilderUtils";
 
 function WorkModeToggle({ mode, onChange, disabled }) {
   const baseBtn =
@@ -38,6 +42,63 @@ function WorkModeToggle({ mode, onChange, disabled }) {
   );
 }
 
+function FocusPracticeHintPanel({
+  questions,
+  activeHintId,
+  revealedHintIds,
+}) {
+  const activeIndex = questions.findIndex((question) => question.id === activeHintId);
+  const activeQuestion = activeIndex >= 0 ? questions[activeIndex] : null;
+  const hintText = activeQuestion ? getQuestionHintContext(activeQuestion) : "";
+  const isRevealed = activeHintId && revealedHintIds.has(activeHintId);
+
+  return (
+    <aside className="hidden xl:flex w-72 shrink-0 flex-col rounded-2xl border border-amber-200 bg-amber-50/80 shadow-sm overflow-hidden max-h-[calc(100vh-6rem)] sticky top-6">
+      <div className="shrink-0 border-b border-amber-200/80 bg-white/70 px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+          Hint
+        </p>
+        <p className="text-sm text-slate-700 mt-1 leading-relaxed">
+          Tap Hint on a question when you need a nudge.
+        </p>
+      </div>
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        {!isRevealed ? (
+          <p className="text-sm text-slate-500 leading-relaxed">
+            Hints appear here for harder questions after you choose Hint on that
+            question.
+          </p>
+        ) : (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+              Question {activeIndex + 1}
+            </p>
+            <p className="text-sm text-slate-900 mt-3 leading-relaxed whitespace-pre-wrap">
+              {hintText}
+            </p>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+function MobileHintReveal({ hintText, alwaysInline = false }) {
+  if (!hintText) return null;
+  return (
+    <div
+      className={`${alwaysInline ? "" : "xl:hidden"} mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3`}
+    >
+      <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+        Hint
+      </p>
+      <p className="text-sm text-slate-900 mt-2 leading-relaxed whitespace-pre-wrap">
+        {hintText}
+      </p>
+    </div>
+  );
+}
+
 export default function FocusPracticeWorksheet({
   worksheet,
   variant = "preview",
@@ -50,12 +111,25 @@ export default function FocusPracticeWorksheet({
   const [checked, setChecked] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const [workSpaceVisible, setWorkSpaceVisible] = useState(true);
+  const [activeHintId, setActiveHintId] = useState(null);
+  const [revealedHintIds, setRevealedHintIds] = useState(() => new Set());
 
   if (!worksheet) return null;
 
   const questions = worksheet.questions || [];
   const scratchpadAllowed = worksheet.scratchpad !== false;
   const showWorkSpace = scratchpadAllowed && workSpaceVisible;
+  const hasAnyHints = questions.some(questionHasHint);
+  const showSideHintPanel = hasAnyHints && variant === "revision";
+
+  function revealHint(questionId) {
+    setActiveHintId(questionId);
+    setRevealedHintIds((prev) => {
+      const next = new Set(prev);
+      next.add(questionId);
+      return next;
+    });
+  }
 
   function handleSelect(questionId, choice) {
     if (checked) return;
@@ -100,10 +174,12 @@ export default function FocusPracticeWorksheet({
     setWorkScratchpads({});
     setChecked(false);
     setResetKey((value) => value + 1);
+    setActiveHintId(null);
+    setRevealedHintIds(new Set());
   }
 
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col max-h-[calc(100vh-6rem)]">
+  const worksheetCard = (
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col max-h-[calc(100vh-6rem)] flex-1 min-w-0">
       <div className="shrink-0 border-b border-slate-200 bg-white px-5 py-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
           {variant === "revision" ? "Revision practice" : "Focus practice · not published"}
@@ -175,18 +251,47 @@ export default function FocusPracticeWorksheet({
           const selected = answers[question.id];
           const isMcq = question.type === "multiple_choice";
           const workMode = workModes[question.id] || "text";
+          const hintAvailable = questionHasHint(question);
+          const hintRevealed = revealedHintIds.has(question.id);
+          const hintText = getQuestionHintContext(question);
 
           return (
             <div
               key={question.id}
-              className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 shadow-sm"
+              className={`rounded-2xl border bg-slate-50/50 p-5 shadow-sm ${
+                activeHintId === question.id && hintRevealed
+                  ? "border-amber-300 ring-1 ring-amber-200"
+                  : "border-slate-200"
+              }`}
             >
               <div className="flex items-start justify-between gap-3 mb-3">
                 <p className="font-medium text-slate-900 flex-1 leading-relaxed">
                   {index + 1}. {question.prompt}
                 </p>
-                <QuestionDifficultyStars stars={question.stars} />
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                  <QuestionDifficultyStars stars={question.stars} />
+                  {hintAvailable && question.stars >= 3 && !checked ? (
+                    <button
+                      type="button"
+                      onClick={() => revealHint(question.id)}
+                      className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
+                        hintRevealed
+                          ? "border-amber-300 bg-amber-100 text-amber-900"
+                          : "border-amber-200 bg-white text-amber-800 hover:bg-amber-50"
+                      }`}
+                    >
+                      {hintRevealed ? "Hint shown" : "Hint"}
+                    </button>
+                  ) : null}
+                </div>
               </div>
+
+              {hintRevealed ? (
+                <MobileHintReveal
+                  hintText={hintText}
+                  alwaysInline={!showSideHintPanel}
+                />
+              ) : null}
 
               {showWorkSpace ? (
                 <div className="mt-3 rounded-xl border border-slate-200 bg-white p-4">
@@ -311,6 +416,19 @@ export default function FocusPracticeWorksheet({
             : "For practice only — saved to the student's Revision page when generated."}
         </p>
       </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col xl:flex-row gap-4 xl:gap-5 items-start w-full">
+      {worksheetCard}
+      {showSideHintPanel ? (
+        <FocusPracticeHintPanel
+          questions={questions}
+          activeHintId={activeHintId}
+          revealedHintIds={revealedHintIds}
+        />
+      ) : null}
     </div>
   );
 }
