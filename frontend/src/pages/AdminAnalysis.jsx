@@ -383,15 +383,30 @@ function FocusAreaDetailPlaceholder() {
   );
 }
 
-function PracticeNoticeBanner({ notice, onCreateManual }) {
+function PracticeNoticeBanner({
+  notice,
+  onGeneratePractice,
+  onCreateManual,
+  aiEnabled,
+  apiKeyConfigured,
+  generatingPractice,
+}) {
   if (!notice) return null;
 
   const showSettingsLink =
     notice.message.includes("Admin → Settings") ||
     notice.message.includes("OpenAI API key");
 
+  const showGenerate =
+    notice.showPracticeActions &&
+    !notice.practiceGenerated &&
+    aiEnabled &&
+    apiKeyConfigured &&
+    onGeneratePractice;
+  const showManual = notice.showPracticeActions && onCreateManual;
+
   return (
-    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 mb-4 flex flex-col gap-3">
       <p className="text-green-800 text-sm leading-relaxed">
         {notice.message}
         {showSettingsLink ? (
@@ -403,14 +418,29 @@ function PracticeNoticeBanner({ notice, onCreateManual }) {
           </>
         ) : null}
       </p>
-      {notice.showManualButton && onCreateManual ? (
-        <button
-          type="button"
-          onClick={onCreateManual}
-          className="shrink-0 rounded-xl border border-indigo-200 bg-white px-4 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-50 transition"
-        >
-          Create practice manually
-        </button>
+      {showGenerate || showManual ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {showGenerate ? (
+            <button
+              type="button"
+              onClick={onGeneratePractice}
+              disabled={generatingPractice}
+              className="rounded-xl border border-indigo-200 bg-white px-4 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-50 transition disabled:opacity-50"
+            >
+              {generatingPractice ? "Generating…" : "Generate AI practice worksheet"}
+            </button>
+          ) : null}
+          {showManual ? (
+            <button
+              type="button"
+              onClick={onCreateManual}
+              disabled={generatingPractice}
+              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition disabled:opacity-50"
+            >
+              Create practice manually
+            </button>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );
@@ -422,8 +452,8 @@ function FocusAreaDetailPanel({
   onMarkDiscussed,
   markingDiscussed,
   generatingPractice,
-  onGeneratePractice,
-  onCreateManual,
+  generatePracticeOnComplete,
+  onGeneratePracticeOnCompleteChange,
   grade,
   aiEnabled,
   apiKeyConfigured,
@@ -493,10 +523,8 @@ function FocusAreaDetailPanel({
         onMarkDiscussed={onMarkDiscussed}
         markingDiscussed={markingDiscussed}
         generatingPractice={generatingPractice}
-        onGeneratePractice={onGeneratePractice}
-        onCreateManual={
-          focus.discussionStatus === "discussed" ? onCreateManual : undefined
-        }
+        generatePracticeOnComplete={generatePracticeOnComplete}
+        onGeneratePracticeOnCompleteChange={onGeneratePracticeOnCompleteChange}
         reinforcing={focus.discussionStatus === "needs_reinforcing"}
       />
     </div>
@@ -611,6 +639,7 @@ export default function AdminAnalysis() {
   const [practicePanelMode, setPracticePanelMode] = useState(null);
   const [builderSelection, setBuilderSelection] = useState(null);
   const [practiceNotice, setPracticeNotice] = useState(null);
+  const [generatePracticeOnComplete, setGeneratePracticeOnComplete] = useState(false);
   const [generatingPractice, setGeneratingPractice] = useState(false);
   const [savingManualPractice, setSavingManualPractice] = useState(false);
   const uploadInputRef = useRef(null);
@@ -667,6 +696,19 @@ export default function AdminAnalysis() {
     setSelectedKey((current) => (current === key ? "" : key));
   }
 
+  useEffect(() => {
+    if (!selection) return;
+    const isReinforcing = selection.focus.discussionStatus === "needs_reinforcing";
+    setGeneratePracticeOnComplete(!isReinforcing);
+  }, [selectedKey, selection]);
+
+  useEffect(() => {
+    if (!practiceNotice) return;
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    });
+  }, [practiceNotice]);
+
   function buildPracticePayload(focusSelection) {
     return {
       subject: focusSelection.subject.subjectKey,
@@ -721,7 +763,8 @@ export default function AdminAnalysis() {
       const areaLabel = formatAreaLabel(payload.area);
       setPracticeNotice({
         message: `Manual practice worksheet saved for “${areaLabel}” — available on the student's Revision page.`,
-        showManualButton: true,
+        showPracticeActions: true,
+        practiceGenerated: true,
       });
     } catch (err) {
       setError(err.message || "Could not save manual practice worksheet.");
@@ -743,6 +786,7 @@ export default function AdminAnalysis() {
     setError("");
     setPracticeNotice(null);
     const areaLabel = formatAreaLabel(selection.focus.area);
+    const reinforcing = selection.focus.discussionStatus === "needs_reinforcing";
     try {
       const updated = await markFocusAreaDiscussed({
         subject: selection.subject.subjectKey,
@@ -759,28 +803,42 @@ export default function AdminAnalysis() {
         return [...next, updated];
       });
 
-      if (aiEnabled && apiKeyConfigured) {
+      const shouldGenerate =
+        generatePracticeOnComplete && aiEnabled && apiKeyConfigured;
+
+      if (shouldGenerate) {
         setGeneratingPractice(true);
         try {
           await generatePracticeWorksheet(selection, { scrollAfter: true });
           setPracticeNotice({
-            message: `Marked “${areaLabel}” as discussed — AI practice worksheet ready and saved to the student's Revision page.`,
-            showManualButton: true,
+            message: reinforcing
+              ? `Marked “${areaLabel}” reinforcement complete — AI practice worksheet ready and saved to the student's Revision page.`
+              : `Marked “${areaLabel}” as discussed — AI practice worksheet ready and saved to the student's Revision page.`,
+            showPracticeActions: true,
+            practiceGenerated: true,
           });
         } catch (err) {
           setPracticeNotice({
-            message: `Marked “${areaLabel}” as discussed. Could not generate practice worksheet: ${err.message}`,
-            showManualButton: true,
+            message: reinforcing
+              ? `Marked “${areaLabel}” reinforcement complete. Could not generate practice worksheet: ${err.message}`
+              : `Marked “${areaLabel}” as discussed. Could not generate practice worksheet: ${err.message}`,
+            showPracticeActions: true,
+            practiceGenerated: false,
           });
         } finally {
           setGeneratingPractice(false);
         }
       } else {
         setPracticeNotice({
-          message: aiEnabled
-            ? `Marked “${areaLabel}” as discussed. Add an OpenAI API key under Admin → Settings to generate a focus practice worksheet, or create one manually.`
-            : `Marked “${areaLabel}” as discussed. AI is disabled on this server — create a practice worksheet manually.`,
-          showManualButton: true,
+          message: reinforcing
+            ? `Marked “${areaLabel}” reinforcement complete.`
+            : aiEnabled && !apiKeyConfigured
+              ? `Marked “${areaLabel}” as discussed. Add an OpenAI API key under Admin → Settings to generate a focus practice worksheet, or create one manually.`
+              : aiEnabled
+                ? `Marked “${areaLabel}” as discussed.`
+                : `Marked “${areaLabel}” as discussed. AI is disabled on this server.`,
+          showPracticeActions: true,
+          practiceGenerated: false,
         });
       }
     } catch (err) {
@@ -798,7 +856,8 @@ export default function AdminAnalysis() {
       await generatePracticeWorksheet(selection, { scrollAfter: true });
       setPracticeNotice({
         message: `AI practice worksheet ready for “${formatAreaLabel(selection.focus.area)}” — saved to the student's Revision page.`,
-        showManualButton: true,
+        showPracticeActions: true,
+        practiceGenerated: true,
       });
     } catch (err) {
       setError(err.message || "Could not generate practice worksheet.");
@@ -948,7 +1007,11 @@ export default function AdminAnalysis() {
 
           <PracticeNoticeBanner
             notice={practiceNotice}
+            onGeneratePractice={handleGeneratePractice}
             onCreateManual={selection ? handleOpenManualBuilder : null}
+            aiEnabled={aiEnabled}
+            apiKeyConfigured={apiKeyConfigured}
+            generatingPractice={generatingPractice}
           />
 
           {uploadMessage && (
@@ -1003,8 +1066,8 @@ export default function AdminAnalysis() {
                     onMarkDiscussed={handleMarkDiscussed}
                     markingDiscussed={markingDiscussed}
                     generatingPractice={generatingPractice}
-                    onGeneratePractice={handleGeneratePractice}
-                    onCreateManual={() => openManualBuilder(selection)}
+                    generatePracticeOnComplete={generatePracticeOnComplete}
+                    onGeneratePracticeOnCompleteChange={setGeneratePracticeOnComplete}
                     grade={studentGrade}
                     aiEnabled={aiEnabled}
                     apiKeyConfigured={apiKeyConfigured}
@@ -1043,7 +1106,7 @@ export default function AdminAnalysis() {
                 <p className="text-sm text-slate-500 mt-3 leading-relaxed max-w-md">
                   When you mark a focus area discussion complete, an AI practice worksheet
                   is generated here (if an API key is configured). You can also build
-                  questions manually from the notification or the Discuss panel.
+                  questions manually from the notification banner.
                 </p>
               </div>
             )}

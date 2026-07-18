@@ -64,8 +64,8 @@ export default function FocusAreaExplainPanel({
   onMarkDiscussed,
   markingDiscussed = false,
   generatingPractice = false,
-  onGeneratePractice,
-  onCreateManual,
+  generatePracticeOnComplete = false,
+  onGeneratePracticeOnCompleteChange,
 }) {
   const [byKey, setByKey] = useState({});
   const [openByKey, setOpenByKey] = useState({});
@@ -203,67 +203,47 @@ export default function FocusAreaExplainPanel({
               className="w-full mt-3 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-y min-h-[10rem]"
             />
           )}
+          {needsDiscussion && aiEnabled && apiKeyConfigured ? (
+            <div className="mt-4 rounded-xl border border-indigo-100 bg-indigo-50/60 px-4 py-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={generatePracticeOnComplete}
+                  onChange={(e) => onGeneratePracticeOnCompleteChange?.(e.target.checked)}
+                  disabled={markingDiscussed || generatingPractice}
+                  className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span className="text-sm text-slate-800 leading-relaxed">
+                  <span className="font-semibold">Generate AI practice worksheet</span>
+                  <span className="block text-xs text-slate-600 mt-1">
+                    Optional — saves a worksheet to the student&apos;s Revision page. Uncheck
+                    if you don&apos;t want practice after this discussion.
+                  </span>
+                </span>
+              </label>
+            </div>
+          ) : null}
           {needsDiscussion ? (
             <button
               type="button"
-              disabled={markingDiscussed}
+              disabled={markingDiscussed || generatingPractice}
               onClick={onMarkDiscussed}
               className="mt-4 w-full rounded-xl bg-slate-800 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-900 transition disabled:opacity-50"
             >
-              {markingDiscussed || generatingPractice
-                ? "Creating practice…"
-                : reinforcing
-                  ? "Mark reinforcement complete"
-                  : "Mark discussion complete"}
+              {generatingPractice
+                ? "Generating practice…"
+                : markingDiscussed
+                  ? reinforcing
+                    ? "Marking reinforcement complete…"
+                    : "Marking discussion complete…"
+                  : reinforcing
+                    ? "Mark reinforcement complete"
+                    : "Mark discussion complete"}
             </button>
           ) : (
-            <>
-              <p className="mt-4 text-sm font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
-                Discussion complete — this focus area is in the discussed list.
-              </p>
-              {onGeneratePractice ? (
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={onGeneratePractice}
-                    disabled={!aiEnabled || !apiKeyConfigured || generatingPractice}
-                    className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-900 hover:bg-indigo-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {generatingPractice
-                      ? "Generating…"
-                      : "Generate AI practice worksheet"}
-                  </button>
-                  {onCreateManual ? (
-                    <button
-                      type="button"
-                      onClick={onCreateManual}
-                      disabled={generatingPractice}
-                      className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Create practice manually
-                    </button>
-                  ) : null}
-                  {!aiEnabled ? (
-                    <span className="text-xs text-slate-500">AI disabled on server</span>
-                  ) : !apiKeyConfigured ? (
-                    <Link to="/admin/settings" className="text-xs font-semibold text-indigo-700 underline">
-                      Add API key
-                    </Link>
-                  ) : null}
-                </div>
-              ) : onCreateManual ? (
-                <div className="mt-3">
-                  <button
-                    type="button"
-                    onClick={onCreateManual}
-                    disabled={generatingPractice}
-                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Create practice manually
-                  </button>
-                </div>
-              ) : null}
-            </>
+            <p className="mt-4 text-sm font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+              Discussion complete — this focus area is in the discussed list.
+            </p>
           )}
         </>
       ) : null}
