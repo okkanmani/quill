@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 
 from auth import context_student_name, create_admin_token, create_student_token, verify_token
 from auth_users import (
+    add_admin,
     add_student,
     authenticate_admin_by_name,
     authenticate_admin_for_student,
