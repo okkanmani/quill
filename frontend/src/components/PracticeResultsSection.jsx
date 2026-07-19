@@ -31,7 +31,7 @@ export default function PracticeResultsSection({
   toggleOpen,
   embedded = false,
 }) {
-  const [isOpen, setIsOpen] = useState(!embedded);
+  const [isOpen, setIsOpen] = useState(false);
   const [sortMode, setSortMode] = useState(SECTION_SORT_TIME);
 
   const sortedItems = useMemo(
