@@ -92,8 +92,10 @@ from worksheets import (
     attach_areas_to_answers,
     clear_worksheet_access_lock,
     create_worksheet_from_builder,
+    create_test_from_builder,
     set_worksheet_access_lock_for_admin_students,
     update_worksheet_from_builder,
+    update_test_from_builder,
     delete_worksheet,
     delete_result,
     evaluate_result,
@@ -254,6 +256,28 @@ class GenerateTestDraftRequest(BaseModel):
     sitting_count: int
     adaptive: bool = True
     custom_prompt: str = ""
+
+
+class TestBuilderQuestionRequest(BaseModel):
+    id: str | None = None
+    type: str = "multiple_choice"
+    stars: int
+    prompt: str
+    choices: list[str]
+    answer: str
+    hint: bool = False
+    area: str | None = None
+
+
+class CreateTestBuilderRequest(BaseModel):
+    title: str
+    subject: str
+    test_sitting_count: int
+    test_adaptive: bool = True
+    time_limit_minutes: int
+    questions: list[TestBuilderQuestionRequest]
+    content_badge: str | None = "Test"
+    lock_on_create: bool = False
 
 
 class AdminOpenAiKeyRequest(BaseModel):
@@ -758,6 +782,57 @@ def admin_generate_worksheet_draft(
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/admin/tests/create")
+def admin_create_test_from_builder(
+    req: CreateTestBuilderRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    body = req.model_dump()
+    lock_on_create = bool(body.pop("lock_on_create", False))
+    try:
+        result = create_test_from_builder(body)
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid test data."]
+        if isinstance(errors, list):
+            detail = errors
+        else:
+            detail = [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
+    if lock_on_create:
+        locked_count = set_worksheet_access_lock_for_admin_students(
+            payload["admin_id"],
+            result["id"],
+            locked=True,
+        )
+        result["locked_for_students"] = locked_count
+    return result
+
+
+@app.put("/admin/tests/{worksheet_id}")
+def admin_update_test_from_builder(
+    worksheet_id: str,
+    req: CreateTestBuilderRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    body = req.model_dump()
+    body.pop("lock_on_create", None)
+    try:
+        return update_test_from_builder(worksheet_id, body)
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid test data."]
+        if isinstance(errors, list):
+            detail = errors
+        else:
+            detail = [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
 
 
 @app.post("/admin/tests/generate-draft")

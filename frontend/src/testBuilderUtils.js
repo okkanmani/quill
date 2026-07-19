@@ -99,8 +99,8 @@ export function validateTestBuilder({
   return errors;
 }
 
-export function draftToTestBuilderQuestions(draft) {
-  return (draft?.questions || []).map((question) => ({
+export function draftToTestBuilderQuestions(draft, { adaptive = true, sittingCount } = {}) {
+  let items = (draft?.questions || []).map((question) => ({
     id: newTestQuestionId(),
     tier: Number(question.stars) || 2,
     prompt: question.prompt || "",
@@ -108,6 +108,10 @@ export function draftToTestBuilderQuestions(draft) {
     correctIndex: Number(question.correct_index) || 0,
     area: question.area || "",
   }));
+  if (!adaptive && sittingCount > 0) {
+    items = items.slice(0, sittingCount);
+  }
+  return items;
 }
 
 export function buildTestBuilderPreview({

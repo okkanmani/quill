@@ -553,11 +553,11 @@ Generate exactly {total} multiple-choice questions in total:
 These feed an adaptive test where each student answers {sitting_count} questions per sitting and difficulty adjusts by tier after each response.
 """
     else:
-        total = max(sitting_count + 4, int(sitting_count * 1.2))
+        total = sitting_count
         bank_rules = f"""
-Generate exactly {total} multiple-choice questions with a mix of "stars" values 1, 2, and 3.
-Students take a fixed-order test of {sitting_count} questions — no mid-test difficulty changes.
-Include variety across tiers for weighted scoring, but the full bank only needs to support one linear sitting.
+Generate exactly {total} multiple-choice questions — no more and no fewer.
+Use a mix of "stars" values 1, 2, and 3 across the set.
+Students take a fixed-order test of {sitting_count} questions in sequence — the bank is the sitting.
 """
 
     schema = """
@@ -670,12 +670,28 @@ def _normalize_test_draft(
         )
 
     if adaptive:
+        per_tier: dict[int, list[dict]] = {1: [], 2: [], 3: []}
+        for question in questions:
+            per_tier[int(question["stars"])].append(question)
+        trimmed: list[dict] = []
+        for tier in (1, 2, 3):
+            trimmed.extend(per_tier[tier][:sitting_count])
+        questions = trimmed
+        tier_counts = {1: 0, 2: 0, 3: 0}
+        for question in questions:
+            tier_counts[int(question["stars"])] += 1
         for tier in (1, 2, 3):
             if tier_counts[tier] < sitting_count:
                 raise ValueError(
                     f"AI returned {tier_counts[tier]} tier-{tier} questions; "
                     f"expected at least {sitting_count}."
                 )
+    else:
+        questions = questions[:sitting_count]
+        if len(questions) < sitting_count:
+            raise ValueError(
+                f"AI returned {len(questions)} questions; expected exactly {sitting_count}."
+            )
 
     return {"title": title.strip(), "questions": questions}
 

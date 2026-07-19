@@ -1626,6 +1626,81 @@ def update_worksheet_from_builder(ws_id: str, body: dict, *, admin_id: int) -> d
     data = worksheet_data_from_builder(body, existing=existing)
     return upsert_worksheet_from_data(ws_id, data, refresh_sort_ts=False, admin_id=admin_id)
 
+
+def test_data_from_builder(body: dict) -> dict:
+    """Turn test builder / preview payload into worksheet JSON for upsert."""
+    errors: list[str] = []
+
+    title = body.get("title")
+    if not isinstance(title, str) or not title.strip():
+        errors.append("title is required.")
+
+    subject = body.get("subject", "general")
+    if not isinstance(subject, str) or subject.strip().lower() not in VALID_SUBJECTS:
+        errors.append(
+            f"subject must be one of: {', '.join(sorted(VALID_SUBJECTS))}."
+        )
+    else:
+        subject = subject.strip().lower()
+
+    sitting_raw = body.get("test_sitting_count", body.get("sitting_count", 20))
+    try:
+        sitting = int(sitting_raw)
+    except (TypeError, ValueError):
+        sitting = 0
+    if sitting < 1 or sitting > 100:
+        errors.append("test_sitting_count must be between 1 and 100.")
+
+    limit_raw = body.get("time_limit_minutes")
+    try:
+        time_limit = int(limit_raw)
+    except (TypeError, ValueError):
+        time_limit = 0
+    if time_limit <= 0:
+        errors.append("time_limit_minutes must be a positive integer.")
+
+    raw_questions = body.get("questions")
+    if not isinstance(raw_questions, list) or not raw_questions:
+        errors.append("questions must be a non-empty array.")
+
+    if errors:
+        raise ValueError(errors)
+
+    return {
+        "title": title.strip(),
+        "subject": subject,
+        "is_test": True,
+        "test_adaptive": body.get("test_adaptive") is not False,
+        "test_sitting_count": sitting,
+        "timed": True,
+        "time_limit_minutes": time_limit,
+        "scratchpad": False,
+        "content_badge": (body.get("content_badge") or "Test").strip() or "Test",
+        "questions": raw_questions,
+    }
+
+
+def create_test_from_builder(body: dict) -> dict:
+    """Validate test builder input, assign id, and upsert worksheet."""
+    data = test_data_from_builder(body)
+    ws_id = next_worksheet_id()
+    return upsert_worksheet_from_data(ws_id, data)
+
+
+def update_test_from_builder(ws_id: str, body: dict) -> dict:
+    """Validate test builder input and replace an existing test worksheet."""
+    ws_id = (ws_id or "").strip()
+    if not ws_id:
+        raise ValueError(["Test id is required."])
+    existing = get_worksheet(ws_id)
+    if existing is None:
+        raise ValueError([f"Test {ws_id} not found."])
+    if not existing.get("is_test"):
+        raise ValueError([f"Worksheet {ws_id} is not a test."])
+    data = test_data_from_builder(body)
+    return upsert_worksheet_from_data(ws_id, data, refresh_sort_ts=False)
+
+
 def validate_worksheet_data(data: dict) -> list[str]:
     """Return human-readable validation errors; empty list means valid."""
     errors: list[str] = []

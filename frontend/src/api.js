@@ -601,6 +601,40 @@ export async function generateTestDraft(payload) {
   return res.json();
 }
 
+export async function createTestFromBuilder(payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/tests/create`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to publish test";
+    if (typeof d === "string") msg = d;
+    else if (Array.isArray(d)) msg = d.join(" ");
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function updateTestFromBuilder(worksheetId, payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/tests/${worksheetId}`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to save test";
+    if (typeof d === "string") msg = d;
+    else if (Array.isArray(d)) msg = d.join(" ");
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function generateFocusDiscussionReference(payload) {
   const res = await apiFetch(`${BASE_URL}/admin/analysis/generate-discussion-reference`, {
     method: "POST",

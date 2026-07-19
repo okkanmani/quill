@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { generateTestDraft, getAdminSettings } from "../api";
+import { generateTestDraft, getAdminSettings, createTestFromBuilder, updateTestFromBuilder } from "../api";
 import QuillLoading from "./QuillLoading";
 import { QuestionDifficultyStars } from "./DifficultyStars";
 import {
@@ -221,6 +221,7 @@ export default function TestBuilderPanel() {
   const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [lockOnPublish, setLockOnPublish] = useState(true);
   const [questions, setQuestions] = useState(() => [
     emptyTestQuestion(1),
@@ -319,10 +320,57 @@ export default function TestBuilderPanel() {
     setErrors(nextErrors);
     setNotice(
       nextErrors.length === 0
-        ? "Validation passed. Publish API wiring is next — this skeleton stops here for now."
+        ? "Validation passed — you can publish this test."
         : "",
     );
     window.scrollTo({ top: 0, behavior: "smooth" });
+    return nextErrors.length === 0;
+  }
+
+  async function handlePublish() {
+    setErrors([]);
+    setNotice("");
+    const valid = handleValidate();
+    if (!valid) return;
+
+    setPublishing(true);
+    try {
+      const payload = {
+        ...buildTestBuilderPreview({
+          title,
+          subject,
+          sittingCount,
+          timeLimitMinutes,
+          questions,
+          adaptive: adaptiveEnabled,
+        }),
+        lock_on_create: lockOnPublish,
+      };
+      const result = editId
+        ? await updateTestFromBuilder(editId, payload)
+        : await createTestFromBuilder(payload);
+      const lockNote =
+        !editId &&
+        lockOnPublish &&
+        typeof result.locked_for_students === "number"
+          ? ` Locked for ${result.locked_for_students} student${
+              result.locked_for_students === 1 ? "" : "s"
+            }.`
+          : !editId && lockOnPublish
+            ? " Locked for your students."
+            : "";
+      setNotice(
+        editId
+          ? `Saved changes to ${result.id} — “${result.title}”.`
+          : `Published ${result.id} — “${result.title}” (${result.question_count} questions).${lockNote}`,
+      );
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      setErrors([err.message || "Could not publish test."]);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } finally {
+      setPublishing(false);
+    }
   }
 
   async function handleGenerateWithAi() {
@@ -342,7 +390,10 @@ export default function TestBuilderPanel() {
         adaptive: adaptiveEnabled,
         custom_prompt: aiCustomPrompt.trim(),
       });
-      const generated = draftToTestBuilderQuestions(draft);
+      const generated = draftToTestBuilderQuestions(draft, {
+        adaptive: adaptiveEnabled,
+        sittingCount,
+      });
       if (!title.trim() && draft.title) {
         setTitle(draft.title);
       }
@@ -708,15 +759,12 @@ export default function TestBuilderPanel() {
         </button>
         <button
           type="button"
-          disabled
-          className="rounded-xl bg-slate-200 text-slate-500 text-sm font-bold px-5 py-2.5 cursor-not-allowed"
-          title="Publish API wiring comes next"
+          onClick={handlePublish}
+          disabled={publishing || generating}
+          className="rounded-xl bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-sm font-bold px-5 py-2.5 transition"
         >
-          Publish test
+          {publishing ? "Publishing…" : editId ? "Save test" : "Publish test"}
         </button>
-        <p className="text-xs text-slate-500">
-          Skeleton only — publish and edit-load will connect to the API next.
-        </p>
         <Link
           to="/admin/worksheets"
           className="ml-auto text-sm font-semibold text-indigo-700 hover:text-indigo-900"
