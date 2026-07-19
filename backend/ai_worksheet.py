@@ -530,3 +530,229 @@ def generate_worksheet_draft(
             fmt != "short_answer" or _ai_generates_short_answer_reference(subject)
         ),
     )
+
+
+def _build_test_prompt(
+    *,
+    subject: str,
+    grade: int,
+    sitting_count: int,
+    adaptive: bool,
+    custom_prompt: str = "",
+) -> str:
+    subject_text = _subject_label(subject)
+    if adaptive:
+        per_tier = sitting_count
+        total = per_tier * 3
+        bank_rules = f"""
+Generate exactly {total} multiple-choice questions in total:
+- exactly {per_tier} questions with "stars": 1 (easy)
+- exactly {per_tier} questions with "stars": 2 (medium)
+- exactly {per_tier} questions with "stars": 3 (hard)
+
+These feed an adaptive test where each student answers {sitting_count} questions per sitting and difficulty adjusts by tier after each response.
+"""
+    else:
+        total = max(sitting_count + 4, int(sitting_count * 1.2))
+        bank_rules = f"""
+Generate exactly {total} multiple-choice questions with a mix of "stars" values 1, 2, and 3.
+Students take a fixed-order test of {sitting_count} questions — no mid-test difficulty changes.
+Include variety across tiers for weighted scoring, but the full bank only needs to support one linear sitting.
+"""
+
+    schema = """
+{
+  "title": "short test title",
+  "questions": [
+    {
+      "prompt": "question text",
+      "area": "specific skill label",
+      "stars": 2,
+      "choices": ["choice A text", "choice B text", "choice C text", "choice D text"],
+      "correct_index": 0
+    }
+  ]
+}
+"""
+
+    base = f"""Generate a timed assessment question bank as JSON only.
+
+Audience: grade {grade} students in Canada/US curriculum style.
+Subject: {subject_text}
+{bank_rules}
+
+Rules:
+- Each question must have exactly 4 distinct, non-empty choices.
+- correct_index is 0 for A, 1 for B, 2 for C, 3 for D.
+- Do not prefix choices with letters.
+- Each question must include area: a specific, narrow skill label in lowercase.
+- stars must be 1, 2, or 3 for every question.
+- No duplicate or near-duplicate questions.
+- Accurate correct answers — double-check math and facts.
+- Title should be specific and under 80 characters.
+
+Return JSON matching this schema:
+{schema}
+"""
+    extra = (custom_prompt or "").strip()
+    if extra:
+        if len(extra) > 2000:
+            extra = extra[:2000]
+        return base + f"\nAdditional instructions from the teacher:\n{extra}\n"
+    return base
+
+
+def _normalize_test_draft(
+    data: dict,
+    *,
+    sitting_count: int,
+    adaptive: bool,
+) -> dict:
+    title = data.get("title")
+    if not isinstance(title, str) or not title.strip():
+        raise ValueError("AI draft is missing a title.")
+
+    raw_questions = data.get("questions")
+    if not isinstance(raw_questions, list) or not raw_questions:
+        raise ValueError("AI draft has no questions.")
+
+    if adaptive:
+        expected = sitting_count * 3
+        min_count = expected
+    else:
+        expected = sitting_count
+        min_count = sitting_count
+
+    if len(raw_questions) < min_count:
+        raise ValueError(
+            f"AI returned {len(raw_questions)} questions; expected at least {min_count}."
+        )
+
+    tier_counts = {1: 0, 2: 0, 3: 0}
+    questions: list[dict] = []
+    for i, raw in enumerate(raw_questions):
+        if not isinstance(raw, dict):
+            raise ValueError(f"AI question {i + 1} is invalid.")
+        prompt = raw.get("prompt")
+        if not isinstance(prompt, str) or not prompt.strip():
+            raise ValueError(f"AI question {i + 1} is missing a prompt.")
+
+        area = raw.get("area")
+        if not isinstance(area, str) or not area.strip():
+            raise ValueError(f"AI question {i + 1} is missing a specific area label.")
+
+        stars = raw.get("stars")
+        if not isinstance(stars, (int, float)) or int(stars) not in (1, 2, 3):
+            raise ValueError(f"AI question {i + 1} must have stars 1, 2, or 3.")
+        stars = int(stars)
+        tier_counts[stars] += 1
+
+        choices = raw.get("choices")
+        correct_index = raw.get("correct_index")
+        if not isinstance(choices, list) or len(choices) != 4:
+            raise ValueError(f"AI question {i + 1} must have 4 choices.")
+        trimmed = [str(c).strip() for c in choices]
+        if any(not c for c in trimmed):
+            raise ValueError(f"AI question {i + 1} has empty choices.")
+        if len(set(trimmed)) < 4:
+            raise ValueError(f"AI question {i + 1} has duplicate choices.")
+        if not isinstance(correct_index, int) or correct_index not in (0, 1, 2, 3):
+            raise ValueError(f"AI question {i + 1} has invalid correct_index.")
+
+        questions.append(
+            {
+                "prompt": prompt.strip(),
+                "area": area.strip().lower(),
+                "stars": stars,
+                "choices": trimmed,
+                "correct_index": correct_index,
+            }
+        )
+
+    if adaptive:
+        for tier in (1, 2, 3):
+            if tier_counts[tier] < sitting_count:
+                raise ValueError(
+                    f"AI returned {tier_counts[tier]} tier-{tier} questions; "
+                    f"expected at least {sitting_count}."
+                )
+
+    return {"title": title.strip(), "questions": questions}
+
+
+def generate_test_draft(
+    *,
+    subject: str,
+    grade: int,
+    sitting_count: int,
+    adaptive: bool = True,
+    custom_prompt: str = "",
+    api_key: str,
+) -> dict:
+    """Call OpenAI and return test-builder-ready draft."""
+    api_key = (api_key or "").strip()
+    if not api_key:
+        raise ValueError("No OpenAI API key. Add yours under Admin → Settings.")
+
+    subject = subject.strip().lower()
+    if subject not in VALID_SUBJECTS:
+        raise ValueError(f"subject must be one of: {', '.join(sorted(VALID_SUBJECTS))}.")
+    if not isinstance(grade, int) or grade < 1 or grade > 12:
+        raise ValueError("grade must be an integer from 1 to 12.")
+    if not isinstance(sitting_count, int) or sitting_count < 1 or sitting_count > 100:
+        raise ValueError("sitting_count must be between 1 and 100.")
+
+    user_prompt = _build_test_prompt(
+        subject=subject,
+        grade=grade,
+        sitting_count=sitting_count,
+        adaptive=adaptive,
+        custom_prompt=custom_prompt,
+    )
+
+    model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
+
+    try:
+        with httpx.Client(timeout=240.0) as client:
+            res = client.post(
+                OPENAI_CHAT_URL,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": model,
+                    "response_format": {"type": "json_object"},
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are an expert K-12 assessment author. "
+                                "Return only valid JSON matching the requested schema."
+                            ),
+                        },
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "temperature": 0.7,
+                },
+            )
+    except httpx.TimeoutException as exc:
+        raise ValueError("AI request timed out. Try again with a smaller sitting size.") from exc
+    except httpx.HTTPError as exc:
+        raise ValueError("Could not reach the AI service.") from exc
+
+    if res.status_code != 200:
+        raise ValueError(_openai_error_message(res.status_code, res.text))
+
+    payload = res.json()
+    try:
+        content = payload["choices"][0]["message"]["content"]
+    except (KeyError, IndexError, TypeError) as exc:
+        raise ValueError("Unexpected AI response format.") from exc
+
+    parsed = _parse_ai_json(content)
+    return _normalize_test_draft(
+        parsed,
+        sitting_count=sitting_count,
+        adaptive=adaptive,
+    )

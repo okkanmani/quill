@@ -44,13 +44,18 @@ def test_sitting_count_from_data(data: dict) -> int:
     return max(1, min(n, 100))
 
 
+def test_adaptive_from_data(data: dict) -> bool:
+    return data.get("test_adaptive") is not False
+
+
 def validate_test_worksheet_data(data: dict) -> list[str]:
-    """Extra validation for adaptive test worksheets."""
+    """Extra validation for test worksheets."""
     errors: list[str] = []
     if not _test_from_sheet_data(data):
         return errors
 
     sitting = test_sitting_count_from_data(data)
+    adaptive = test_adaptive_from_data(data)
     if not data.get("timed"):
         errors.append("Tests must be timed (timed: true).")
     limit = data.get("time_limit_minutes")
@@ -72,12 +77,17 @@ def validate_test_worksheet_data(data: dict) -> list[str]:
             continue
         tier_counts[int(stars)] += 1
 
-    for tier in VALID_TIERS:
-        if tier_counts[tier] < sitting:
-            errors.append(
-                f"Test bank needs at least {sitting} tier-{tier} questions "
-                f"(has {tier_counts[tier]})."
-            )
+    if adaptive:
+        for tier in VALID_TIERS:
+            if tier_counts[tier] < sitting:
+                errors.append(
+                    f"Test bank needs at least {sitting} tier-{tier} questions "
+                    f"(has {tier_counts[tier]})."
+                )
+    elif len(questions) < sitting:
+        errors.append(
+            f"Test bank needs at least {sitting} questions (has {len(questions)})."
+        )
 
     if data.get("evaluation") == "manual":
         errors.append("Tests must use auto-evaluated multiple choice questions.")
@@ -150,8 +160,10 @@ def _assign_through_slot(
     sitting_count: int,
     target_slot: int,
     rng: random.Random,
+    *,
+    adaptive: bool = True,
 ) -> list[dict | None]:
-    """Ensure slots 1..target_slot are assigned using adaptive rules."""
+    """Ensure slots 1..target_slot are assigned using adaptive or fixed rules."""
     target_slot = max(1, min(target_slot, sitting_count))
     used_ids = {
         str(entry["question_id"])
@@ -164,16 +176,18 @@ def _assign_through_slot(
         idx = slot - 1
         if idx < len(sequence) and isinstance(sequence[idx], dict):
             current_tier = int(sequence[idx].get("tier") or START_TIER)
-            prev_key = str(slot)
-            if prev_key in answers:
-                prev = answers[prev_key]
-                if isinstance(prev, dict) and "correct" in prev:
-                    current_tier = _next_tier(
-                        current_tier, correct=bool(prev.get("correct"))
-                    )
+            if adaptive:
+                prev_key = str(slot)
+                if prev_key in answers:
+                    prev = answers[prev_key]
+                    if isinstance(prev, dict) and "correct" in prev:
+                        current_tier = _next_tier(
+                            current_tier, correct=bool(prev.get("correct"))
+                        )
             continue
 
-        picked = _pick_question(pools, current_tier, used_ids, rng)
+        tier_to_use = current_tier if adaptive else ((slot - 1) % 3) + 1
+        picked = _pick_question(pools, tier_to_use, used_ids, rng)
         if not picked:
             break
         while len(sequence) < slot:
@@ -181,14 +195,15 @@ def _assign_through_slot(
         sequence[idx] = {"slot": slot, **picked}
         used_ids.add(picked["question_id"])
 
-        prev_key = str(slot)
-        if prev_key in answers:
-            prev = answers[prev_key]
-            if isinstance(prev, dict) and "correct" in prev:
-                current_tier = _next_tier(
-                    int(picked["tier"]),
-                    correct=bool(prev.get("correct")),
-                )
+        if adaptive:
+            prev_key = str(slot)
+            if prev_key in answers:
+                prev = answers[prev_key]
+                if isinstance(prev, dict) and "correct" in prev:
+                    current_tier = _next_tier(
+                        int(picked["tier"]),
+                        correct=bool(prev.get("correct")),
+                    )
 
     return sequence
 
@@ -214,6 +229,7 @@ def _attempt_row_to_session(
     answers = _parse_json(row["answers"], {})
     pools = _questions_by_tier(worksheet)
     rng = random.Random(f"{row['student']}:{row['worksheet_id']}:{row['id']}")
+    adaptive = test_adaptive_from_data(worksheet)
 
     if not sequence:
         sequence = [None] * sitting_count
@@ -222,10 +238,19 @@ def _attempt_row_to_session(
 
     if target_slot is None:
         assigned = sum(1 for s in sequence if isinstance(s, dict))
-        target_slot = max(1, assigned)
+        if adaptive:
+            target_slot = max(1, assigned)
+        else:
+            target_slot = sitting_count
 
     sequence = _assign_through_slot(
-        sequence, answers, pools, sitting_count, target_slot, rng
+        sequence,
+        answers,
+        pools,
+        sitting_count,
+        target_slot,
+        rng,
+        adaptive=adaptive,
     )
 
     lookup = _question_lookup(worksheet)
@@ -336,6 +361,7 @@ def list_tests(student_name: str) -> list[dict]:
             "timed": True,
             "time_limit_minutes": ws.get("time_limit_minutes") or r["time_limit_minutes"],
             "test_sitting_count": sitting,
+            "test_adaptive": test_adaptive_from_data(ws),
             "bank_size": r["bank_size"],
             "content_badge": ws.get("content_badge") or "Test",
             "done": bool(r["completed_at"]),

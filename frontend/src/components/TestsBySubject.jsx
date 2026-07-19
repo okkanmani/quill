@@ -86,7 +86,8 @@ function TestRow({ item, onOpenTest, onOpenReview }) {
           <ContentBadge label={item.content_badge || "Test"} />
           <SubjectBadge subject={item.subject} />
           <span className="text-teal-700 text-sm font-medium">
-            {item.test_sitting_count || 20} questions · adaptive
+            {item.test_sitting_count || 20} questions ·{" "}
+            {item.test_adaptive === false ? "fixed order" : "adaptive"}
           </span>
           {item.time_limit_minutes ? (
             <span className="text-slate-500 text-sm">{item.time_limit_minutes} min</span>

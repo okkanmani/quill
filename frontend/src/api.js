@@ -585,6 +585,22 @@ export async function generateWorksheetDraft(payload) {
   return res.json();
 }
 
+export async function generateTestDraft(payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/tests/generate-draft`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to generate test draft";
+    if (typeof d === "string") msg = d;
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function generateFocusDiscussionReference(payload) {
   const res = await apiFetch(`${BASE_URL}/admin/analysis/generate-discussion-reference`, {
     method: "POST",

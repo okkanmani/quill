@@ -26,7 +26,7 @@ from admin_secrets import (
     resolve_openai_api_key,
     set_admin_openai_api_key,
 )
-from ai_worksheet import generate_worksheet_draft
+from ai_worksheet import generate_worksheet_draft, generate_test_draft
 from ai_learn import generate_learn_resource
 from ai_focus_discussion import generate_focus_discussion_reference
 from focus_practice import (
@@ -246,6 +246,14 @@ class GenerateWorksheetDraftRequest(BaseModel):
     english_type: str | None = None
     min_words: int | None = None
     passage_specs: list[GenerateWorksheetDraftPassageSpec] | None = None
+
+
+class GenerateTestDraftRequest(BaseModel):
+    subject: str
+    grade: int
+    sitting_count: int
+    adaptive: bool = True
+    custom_prompt: str = ""
 
 
 class AdminOpenAiKeyRequest(BaseModel):
@@ -746,6 +754,33 @@ def admin_generate_worksheet_draft(
                 if req.passage_specs
                 else None
             ),
+            api_key=api_key,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/admin/tests/generate-draft")
+def admin_generate_test_draft(
+    req: GenerateTestDraftRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        api_key = resolve_openai_api_key(payload["admin_id"])
+        if not api_key:
+            raise HTTPException(
+                status_code=400,
+                detail="Add your OpenAI API key under Admin → Settings.",
+            )
+        return generate_test_draft(
+            subject=req.subject,
+            grade=req.grade,
+            sitting_count=req.sitting_count,
+            adaptive=req.adaptive,
+            custom_prompt=req.custom_prompt,
             api_key=api_key,
         )
     except ValueError as exc:

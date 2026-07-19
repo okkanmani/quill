@@ -180,17 +180,26 @@ def _test_sitting_count_from_sheet_data(data: dict) -> int:
     return max(1, min(n, 100))
 
 
-def _resolve_test(worksheet_id: str, row_flag, row_sitting) -> dict:
+def _test_adaptive_from_sheet_data(data: dict) -> bool:
+    return data.get("test_adaptive") is not False
+
+
+def _resolve_test(
+    worksheet_id: str, row_flag, row_sitting, row_adaptive=None
+) -> dict:
     data = _load_bundled_sheet_data(worksheet_id)
     if data:
         flag = _test_from_sheet_data(data)
-        sitting = _test_sitting_count_from_sheet_data(data)
+        sitting = _test_sitting_count_from_data(data)
+        adaptive = _test_adaptive_from_sheet_data(data)
     else:
         flag = bool(row_flag)
         sitting = int(row_sitting or 20)
+        adaptive = True if row_adaptive is None else bool(row_adaptive)
     meta: dict = {"is_test": flag}
     if flag:
         meta["test_sitting_count"] = sitting
+        meta["test_adaptive"] = adaptive
     return meta
 
 
@@ -957,12 +966,13 @@ def _insert_worksheet(
     gifted_week = _gifted_track_week_from_sheet_data(data) if is_gifted else None
     is_test = _test_from_sheet_data(data)
     test_sitting = _test_sitting_count_from_sheet_data(data) if is_test else 20
+    test_adaptive = 1 if _test_adaptive_from_sheet_data(data) else 0
     conn.execute(
         """
-        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, is_test, test_sitting_count, admin_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, is_test, test_sitting_count, test_adaptive, admin_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, 1 if is_timed else 0, time_limit, 1 if is_enrichment else 0, 1 if is_gifted else 0, gifted_week, 1 if is_test else 0, test_sitting, admin_id),
+        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, 1 if is_timed else 0, time_limit, 1 if is_enrichment else 0, 1 if is_gifted else 0, gifted_week, 1 if is_test else 0, test_sitting, test_adaptive, admin_id),
     )
     for order, q in enumerate(questions):
         conn.execute(
@@ -1077,14 +1087,14 @@ def list_worksheets(
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
                        t.learn_subject, t.learn_section, t.content_badge, t.evaluation,
                        t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track, t.gifted_track_week,
-                       t.is_test, t.test_sitting_count,
+                       t.is_test, t.test_sitting_count, t.test_adaptive,
                        t.last_score, t.last_total, t.last_status, t.draft_saved_at,
                        t.timed_locked, t.timed_started, t.last_duration_seconds
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section, w.content_badge, w.evaluation,
                            w.is_timed, w.time_limit_minutes, w.is_math_enrichment, w.is_gifted_track, w.gifted_track_week,
-                           w.is_test, w.test_sitting_count,
+                           w.is_test, w.test_sitting_count, w.test_adaptive,
                            (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
                            EXISTS (
                              SELECT 1 FROM results r
@@ -1121,14 +1131,14 @@ def list_worksheets(
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
                        t.learn_subject, t.learn_section, t.content_badge, t.evaluation,
                        t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track, t.gifted_track_week,
-                       t.is_test, t.test_sitting_count,
+                       t.is_test, t.test_sitting_count, t.test_adaptive,
                        t.last_score, t.last_total, t.last_status, t.draft_saved_at,
                        t.timed_locked, t.timed_started, t.last_duration_seconds
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section, w.content_badge, w.evaluation,
                            w.is_timed, w.time_limit_minutes, w.is_math_enrichment, w.is_gifted_track, w.gifted_track_week,
-                           w.is_test, w.test_sitting_count,
+                           w.is_test, w.test_sitting_count, w.test_adaptive,
                            (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
                            EXISTS (
                              SELECT 1 FROM results r
@@ -1186,7 +1196,7 @@ def list_worksheets(
             item.update(_resolve_math_enrichment(r["id"], r["is_math_enrichment"]))
             item.update(_resolve_gifted_track(r["id"], r["is_gifted_track"]))
             item.update(_resolve_gifted_track_week(r["id"], r["gifted_track_week"]))
-            item.update(_resolve_test(r["id"], r["is_test"], r["test_sitting_count"]))
+            item.update(_resolve_test(r["id"], r["is_test"], r["test_sitting_count"], r["test_adaptive"]))
             draft_at = r["draft_saved_at"] if "draft_saved_at" in r.keys() else None
             if draft_at and not item["done"] and not item.get("timed"):
                 item["has_draft"] = True
@@ -1244,7 +1254,7 @@ def get_worksheet(worksheet_id: str, *, admin_id: int | None = None) -> dict | N
     try:
         row = conn.execute(
             """
-            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, is_test, test_sitting_count, admin_id
+            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, is_test, test_sitting_count, test_adaptive, admin_id
             FROM worksheets WHERE id = ?
             """,
             (worksheet_id,),
@@ -1295,7 +1305,7 @@ def get_worksheet(worksheet_id: str, *, admin_id: int | None = None) -> dict | N
         out.update(_resolve_math_enrichment(worksheet_id, row["is_math_enrichment"]))
         out.update(_resolve_gifted_track(worksheet_id, row["is_gifted_track"]))
         out.update(_resolve_gifted_track_week(worksheet_id, row["gifted_track_week"]))
-        out.update(_resolve_test(worksheet_id, row["is_test"], row["test_sitting_count"]))
+        out.update(_resolve_test(worksheet_id, row["is_test"], row["test_sitting_count"], row["test_adaptive"]))
         return out
     finally:
         conn.close()
