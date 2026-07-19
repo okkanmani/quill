@@ -1,0 +1,28 @@
+# Staging backend — deploy with: fly deploy -c fly.staging.toml
+# Or: ./scripts/deploy-staging.sh
+
+app = 'quill-backend-staging'
+primary_region = 'yyz'
+
+[build]
+
+[mounts]
+  source = "quill_data_staging"
+  destination = "/data"
+  processes = ["app"]
+
+[env]
+  QUILL_DATA_DIR = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '256mb'
+  cpus = 1
+  memory_mb = 256

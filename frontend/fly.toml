@@ -8,6 +8,9 @@ primary_region = 'yyz'
 
 [build]
 
+[build.args]
+  VITE_API_URL = "https://quill-backend.fly.dev"
+
 [http_service]
   internal_port = 80
   force_https = true

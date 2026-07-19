@@ -1,0 +1,21 @@
+# Staging frontend — deploy with: fly deploy -c fly.staging.toml
+# Or: ./scripts/deploy-staging.sh
+
+app = 'quill-app-staging'
+primary_region = 'yyz'
+
+[build.args]
+  VITE_API_URL = "https://quill-backend-staging.fly.dev"
+
+[http_service]
+  internal_port = 80
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '256mb'
+  cpus = 1
+  memory_mb = 256

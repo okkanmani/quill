@@ -146,6 +146,10 @@ def init_schema() -> None:
             conn.execute("ALTER TABLE admins ADD COLUMN name TEXT")
         if "openai_api_key_enc" not in admin_cols:
             conn.execute("ALTER TABLE admins ADD COLUMN openai_api_key_enc TEXT")
+        if "plan" not in admin_cols:
+            conn.execute(
+                "ALTER TABLE admins ADD COLUMN plan TEXT NOT NULL DEFAULT 'standard'"
+            )
         orphans = conn.execute(
             """
             SELECT id FROM admins
@@ -314,6 +318,42 @@ def init_schema() -> None:
         from auth_users import migrate_legacy_from_auth_json
 
         migrate_legacy_from_auth_json(conn)
+
+        default_admin_row = conn.execute("SELECT MIN(id) AS id FROM admins").fetchone()
+        default_admin_id = (
+            int(default_admin_row["id"]) if default_admin_row and default_admin_row["id"] is not None else None
+        )
+        worksheet_cols = {
+            row[1] for row in conn.execute("PRAGMA table_info(worksheets)")
+        }
+        if "admin_id" not in worksheet_cols:
+            conn.execute(
+                "ALTER TABLE worksheets ADD COLUMN admin_id INTEGER REFERENCES admins(id)"
+            )
+            if default_admin_id is not None:
+                conn.execute(
+                    "UPDATE worksheets SET admin_id = ? WHERE admin_id IS NULL",
+                    (default_admin_id,),
+                )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_worksheets_admin ON worksheets (admin_id)"
+            )
+        learn_section_cols = {
+            row[1] for row in conn.execute("PRAGMA table_info(learn_sections)")
+        }
+        if learn_section_cols and "admin_id" not in learn_section_cols:
+            conn.execute(
+                "ALTER TABLE learn_sections ADD COLUMN admin_id INTEGER REFERENCES admins(id)"
+            )
+            if default_admin_id is not None:
+                conn.execute(
+                    "UPDATE learn_sections SET admin_id = ? WHERE admin_id IS NULL",
+                    (default_admin_id,),
+                )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_learn_sections_admin ON learn_sections (admin_id)"
+            )
+
         highlight_tables = {
             row[0]
             for row in conn.execute(
