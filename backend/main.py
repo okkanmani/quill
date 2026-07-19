@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 
 from auth import context_student_name, create_admin_token, create_student_token, verify_token
 from auth_users import (
-    add_admin,
     add_student,
     authenticate_admin_by_name,
     authenticate_admin_for_student,
@@ -20,6 +19,7 @@ from auth_users import (
     update_student_by_admin,
     update_admin_account,
 )
+from tenancy import resolve_admin_id
 from admin_secrets import (
     admin_openai_key_configured,
     clear_admin_openai_api_key,
@@ -75,6 +75,7 @@ from writing import (
 )
 from worksheets import (
     assert_worksheet_accessible,
+    assert_worksheet_owned_by_admin,
     attach_areas_to_answers,
     clear_worksheet_access_lock,
     create_worksheet_from_builder,
@@ -408,6 +409,17 @@ def _raise_if_access_locked(exc: ValueError) -> None:
     raise HTTPException(status_code=400, detail=msg)
 
 
+def _admin_id(payload: dict) -> int:
+    try:
+        return resolve_admin_id(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
+def _raise_if_worksheet_not_found(exc: ValueError) -> None:
+    raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
 @app.post("/auth/student/login")
 def student_login(req: StudentLoginRequest):
     row = authenticate_student(req.name, req.password)
@@ -549,18 +561,19 @@ def update_admin_account_route(
 def get_worksheets(authorization: str = Header(...)):
     payload = _payload(authorization)
     who = _student_context_name(payload)
-    return list_worksheets(student_name=who)
+    return list_worksheets(student_name=who, admin_id=_admin_id(payload))
 
 
 @app.get("/worksheets/{worksheet_id}")
 def get_worksheet_by_id(worksheet_id: str, authorization: str = Header(...)):
     payload = _payload(authorization)
+    admin_id = _admin_id(payload)
     if payload.get("role") == "student":
         try:
-            assert_worksheet_accessible(payload["name"], worksheet_id)
+            assert_worksheet_accessible(payload["name"], worksheet_id, admin_id=admin_id)
         except ValueError as exc:
             _raise_if_access_locked(exc)
-    worksheet = get_worksheet(worksheet_id)
+    worksheet = get_worksheet(worksheet_id, admin_id=admin_id)
     if not worksheet:
         raise HTTPException(status_code=404, detail="Worksheet not found")
     if payload.get("role") == "student":
@@ -591,7 +604,7 @@ def remove_worksheet(worksheet_id: str, authorization: str = Header(...)):
     payload = _payload(authorization)
     if payload["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    if not delete_worksheet(worksheet_id):
+    if not delete_worksheet(worksheet_id, admin_id=_admin_id(payload)):
         raise HTTPException(status_code=404, detail="Worksheet not found")
     return {"message": "Worksheet deleted"}
 
@@ -621,7 +634,7 @@ async def admin_upload_worksheet(
         raise HTTPException(status_code=400, detail="File must be valid UTF-8 JSON.")
 
     try:
-        result = upsert_worksheet_from_data(ws_id, data)
+        result = upsert_worksheet_from_data(ws_id, data, admin_id=_admin_id(payload))
     except ValueError as exc:
         errors = exc.args[0] if exc.args else ["Invalid worksheet data."]
         if isinstance(errors, list):
@@ -655,7 +668,7 @@ def admin_create_worksheet_from_builder(
     body = req.model_dump()
     lock_on_create = bool(body.pop("lock_on_create", False))
     try:
-        result = create_worksheet_from_builder(body)
+        result = create_worksheet_from_builder(body, admin_id=_admin_id(payload))
     except ValueError as exc:
         errors = exc.args[0] if exc.args else ["Invalid worksheet data."]
         if isinstance(errors, list):
@@ -685,7 +698,9 @@ def admin_update_worksheet_from_builder(
     body = req.model_dump()
     body.pop("lock_on_create", None)
     try:
-        return update_worksheet_from_builder(worksheet_id, body)
+        return update_worksheet_from_builder(
+            worksheet_id, body, admin_id=_admin_id(payload)
+        )
     except ValueError as exc:
         errors = exc.args[0] if exc.args else ["Invalid worksheet data."]
         if isinstance(errors, list):
@@ -1029,7 +1044,9 @@ def get_worksheet_draft_route(worksheet_id: str, authorization: str = Header(...
     if payload.get("role") != "student":
         raise HTTPException(status_code=403, detail="Only students can load drafts")
     try:
-        assert_worksheet_accessible(payload["name"], worksheet_id)
+        assert_worksheet_accessible(
+            payload["name"], worksheet_id, admin_id=_admin_id(payload)
+        )
     except ValueError as exc:
         _raise_if_access_locked(exc)
     draft = get_worksheet_draft(payload["name"], worksheet_id)
@@ -1108,6 +1125,10 @@ def admin_unlock_timed_worksheet(worksheet_id: str, authorization: str = Header(
         raise HTTPException(status_code=403, detail="Admin only")
     who = _student_context_name(payload)
     try:
+        assert_worksheet_owned_by_admin(worksheet_id, _admin_id(payload))
+    except ValueError as exc:
+        _raise_if_worksheet_not_found(exc)
+    try:
         unlock_timed_worksheet(who, worksheet_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -1166,6 +1187,11 @@ def admin_set_worksheet_access_lock(
     if payload.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
     who = _student_context_name(payload)
+    admin_id = _admin_id(payload)
+    try:
+        assert_worksheet_owned_by_admin(worksheet_id, admin_id)
+    except ValueError as exc:
+        _raise_if_worksheet_not_found(exc)
     try:
         if req.locked:
             set_worksheet_access_lock(who, worksheet_id, locked=True)
@@ -1184,6 +1210,10 @@ def admin_clear_worksheet_access_lock(
     if payload.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
     who = _student_context_name(payload)
+    try:
+        assert_worksheet_owned_by_admin(worksheet_id, _admin_id(payload))
+    except ValueError as exc:
+        _raise_if_worksheet_not_found(exc)
     clear_worksheet_access_lock(who, worksheet_id)
     return {"message": "Access override cleared"}
 
@@ -1194,13 +1224,13 @@ def submit_result(req: SubmitResultRequest, authorization: str = Header(...)):
     if payload["role"] != "student":
         raise HTTPException(status_code=403, detail="Only students can submit results")
 
-    worksheet = get_worksheet(req.worksheet_id)
+    worksheet = get_worksheet(req.worksheet_id, admin_id=_admin_id(payload))
     if not worksheet:
         raise HTTPException(status_code=404, detail="Worksheet not found")
 
     student = context_student_name(payload)
     try:
-        assert_worksheet_accessible(student, req.worksheet_id)
+        assert_worksheet_accessible(student, req.worksheet_id, admin_id=_admin_id(payload))
     except ValueError as exc:
         _raise_if_access_locked(exc)
     if student_has_result_for_worksheet(student, req.worksheet_id):

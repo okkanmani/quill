@@ -19,6 +19,48 @@ STARS_DEFAULT_QUESTION_COUNTS = {1: 25, 2: 20, 3: 15}
 LATEST_WINDOW_MS = 14 * 24 * 60 * 60 * 1000
 
 
+def _default_admin_id(conn) -> int:
+    row = conn.execute("SELECT MIN(id) AS id FROM admins").fetchone()
+    if row and row["id"] is not None:
+        return int(row["id"])
+    return 1
+
+
+def get_worksheet_admin_id(worksheet_id: str) -> int | None:
+    """Return owning admin_id, or None if the worksheet does not exist."""
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT admin_id FROM worksheets WHERE id = ?",
+            (worksheet_id,),
+        ).fetchone()
+        if not row:
+            return None
+        if row["admin_id"] is None:
+            return _default_admin_id(conn)
+        return int(row["admin_id"])
+    finally:
+        conn.close()
+
+
+def assert_worksheet_owned_by_admin(worksheet_id: str, admin_id: int) -> None:
+    owner = get_worksheet_admin_id(worksheet_id)
+    if owner is None or owner != admin_id:
+        raise ValueError("Worksheet not found.")
+
+
+def admin_id_for_student_name(student_name: str) -> int | None:
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT admin_id FROM students WHERE name = ?",
+            (student_name,),
+        ).fetchone()
+        return int(row["admin_id"]) if row else None
+    finally:
+        conn.close()
+
+
 def _is_latest_sort_ts(sort_ts: int, now_ms: int | None = None) -> bool:
     if sort_ts <= 0:
         return False
@@ -239,8 +281,15 @@ def compute_worksheet_access_lock(
     return False, None
 
 
-def assert_worksheet_accessible(student_name: str, worksheet_id: str) -> None:
-    ws = get_worksheet(worksheet_id)
+def assert_worksheet_accessible(
+    student_name: str, worksheet_id: str, admin_id: int | None = None
+) -> None:
+    if admin_id is None:
+        admin_id = admin_id_for_student_name(student_name)
+        if admin_id is None:
+            raise ValueError("Student not found.")
+    assert_worksheet_owned_by_admin(worksheet_id, admin_id)
+    ws = get_worksheet(worksheet_id, admin_id=admin_id)
     if not ws:
         raise ValueError("Worksheet not found.")
     conn = db.connect()
@@ -846,8 +895,12 @@ def init_worksheet_tables() -> None:
     db.init_schema()
 
 
-def _insert_worksheet(conn, ws_id: str, data: dict, path: Path) -> None:
+def _insert_worksheet(
+    conn, ws_id: str, data: dict, path: Path, *, admin_id: int | None = None
+) -> None:
     """Insert one worksheet and its questions (worksheet id must not already exist)."""
+    if admin_id is None:
+        admin_id = _default_admin_id(conn)
     title = data.get("title", ws_id)
     subject = data.get("subject", "general")
     scratchpad = 1 if data.get("scratchpad", True) else 0
@@ -863,10 +916,10 @@ def _insert_worksheet(conn, ws_id: str, data: dict, path: Path) -> None:
     gifted_week = _gifted_track_week_from_sheet_data(data) if is_gifted else None
     conn.execute(
         """
-        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, admin_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, 1 if is_timed else 0, time_limit, 1 if is_enrichment else 0, 1 if is_gifted else 0, gifted_week),
+        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, 1 if is_timed else 0, time_limit, 1 if is_enrichment else 0, 1 if is_gifted else 0, gifted_week, admin_id),
     )
     for order, q in enumerate(questions):
         conn.execute(
@@ -875,16 +928,25 @@ def _insert_worksheet(conn, ws_id: str, data: dict, path: Path) -> None:
         )
 
 
-def sync_worksheets_from_json_files() -> None:
-    """Replace ALL worksheets from JSON files. Destructive — use empty DB, reset, or tooling."""
+def sync_worksheets_from_json_files(*, admin_id: int | None = None) -> None:
+    """Replace ALL worksheets for one admin from JSON files. Destructive."""
     conn = db.connect()
     try:
-        conn.execute("DELETE FROM worksheet_questions")
-        conn.execute("DELETE FROM worksheets")
+        if admin_id is None:
+            admin_id = _default_admin_id(conn)
+        conn.execute(
+            "DELETE FROM worksheet_questions WHERE worksheet_id IN "
+            "(SELECT id FROM worksheets WHERE admin_id = ? OR (admin_id IS NULL AND ? = ?))",
+            (admin_id, admin_id, _default_admin_id(conn)),
+        )
+        conn.execute(
+            "DELETE FROM worksheets WHERE admin_id = ? OR (admin_id IS NULL AND ? = ?)",
+            (admin_id, admin_id, _default_admin_id(conn)),
+        )
         for path in sorted(WORKSHEETS_DIR.glob("*.json")):
             with open(path) as f:
                 data = json.load(f)
-            _insert_worksheet(conn, path.stem, data, path)
+            _insert_worksheet(conn, path.stem, data, path, admin_id=admin_id)
         conn.commit()
     except Exception:
         conn.rollback()
@@ -913,8 +975,10 @@ def _worksheet_subject_key(data: dict) -> str:
 
 def merge_worksheets_from_json_files(
     subjects: frozenset[str] | None = None,
+    *,
+    admin_id: int | None = None,
 ) -> dict[str, object]:
-    """Upsert each worksheet that has a JSON file; other rows in the DB are unchanged.
+    """Upsert each worksheet that has a JSON file for one admin; other rows unchanged.
 
     If ``subjects`` is set, only merge files whose worksheet ``subject`` (normalized)
     is in that set. Returns counts for logging and cron responses.
@@ -923,6 +987,9 @@ def merge_worksheets_from_json_files(
     merged_ids: list[str] = []
     skipped_count = 0
     try:
+        if admin_id is None:
+            admin_id = _default_admin_id(conn)
+        default_admin = _default_admin_id(conn)
         for path in sorted(WORKSHEETS_DIR.glob("*.json")):
             with open(path) as f:
                 data = json.load(f)
@@ -930,8 +997,11 @@ def merge_worksheets_from_json_files(
                 skipped_count += 1
                 continue
             ws_id = path.stem
-            conn.execute("DELETE FROM worksheets WHERE id = ?", (ws_id,))
-            _insert_worksheet(conn, ws_id, data, path)
+            conn.execute(
+                "DELETE FROM worksheets WHERE id = ? AND (admin_id = ? OR (admin_id IS NULL AND ? = ?))",
+                (ws_id, admin_id, admin_id, default_admin),
+            )
+            _insert_worksheet(conn, ws_id, data, path, admin_id=admin_id)
             merged_ids.append(ws_id)
         conn.commit()
     except Exception:
@@ -946,14 +1016,21 @@ def merge_worksheets_from_json_files(
     }
 
 
-def list_worksheets(student_name: str | None = None) -> list:
+def list_worksheets(
+    student_name: str | None = None, *, admin_id: int
+) -> list:
     """If student_name is set, done = this student submitted. If None (admin), done = any submission."""
     conn = db.connect()
     try:
+        admin_filter = (
+            "WHERE w.admin_id = ? OR (w.admin_id IS NULL AND ? = ?)"
+        )
+        default_admin = _default_admin_id(conn)
+        admin_params = (admin_id, admin_id, default_admin)
         # Scalar subqueries avoid GROUP BY + EXISTS quirks in SQLite.
         if student_name is not None:
             rows = conn.execute(
-                """
+                f"""
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
                        t.learn_subject, t.learn_section, t.content_badge, t.evaluation,
                        t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track, t.gifted_track_week,
@@ -987,14 +1064,15 @@ def list_worksheets(student_name: str | None = None) -> list:
                            (SELECT 1 FROM timed_attempts t
                             WHERE t.worksheet_id = w.id AND t.student = ?) AS timed_started
                     FROM worksheets w
+                    {admin_filter}
                 ) t
                 ORDER BY t.done ASC, t.sort_ts DESC, t.id DESC
                 """,
-                (student_name, student_name, student_name, student_name, student_name, student_name, student_name, student_name),
+                (student_name, student_name, student_name, student_name, student_name, student_name, student_name, student_name, *admin_params),
             ).fetchall()
         else:
             rows = conn.execute(
-                """
+                f"""
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
                        t.learn_subject, t.learn_section, t.content_badge, t.evaluation,
                        t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track, t.gifted_track_week,
@@ -1017,9 +1095,11 @@ def list_worksheets(student_name: str | None = None) -> list:
                            CAST(NULL AS INTEGER) AS timed_started,
                            CAST(NULL AS INTEGER) AS last_duration_seconds
                     FROM worksheets w
+                    {admin_filter}
                 ) t
                 ORDER BY t.done ASC, t.sort_ts DESC, t.id DESC
-                """
+                """,
+                admin_params,
             ).fetchall()
         out_list = []
         unlocked_through_week = None
@@ -1111,18 +1191,24 @@ def list_worksheets(student_name: str | None = None) -> list:
         conn.close()
 
 
-def get_worksheet(worksheet_id: str) -> dict | None:
+def get_worksheet(worksheet_id: str, *, admin_id: int | None = None) -> dict | None:
     conn = db.connect()
     try:
         row = conn.execute(
             """
-            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week
+            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, admin_id
             FROM worksheets WHERE id = ?
             """,
             (worksheet_id,),
         ).fetchone()
         if not row:
             return None
+        if admin_id is not None:
+            row_admin = row["admin_id"]
+            if row_admin is None:
+                row_admin = _default_admin_id(conn)
+            if int(row_admin) != admin_id:
+                return None
         qrows = conn.execute(
             """
             SELECT payload FROM worksheet_questions
@@ -1177,12 +1263,16 @@ def _worksheet_id_numeric_suffix(ws_id: str) -> int | None:
     return int(m.group(1))
 
 
-def next_worksheet_id() -> str:
-    """Allocate the next ``questions_N`` id from DB and bundled JSON files."""
+def next_worksheet_id(*, admin_id: int) -> str:
+    """Allocate the next ``questions_N`` id for this admin from DB and bundled JSON files."""
     max_n = 0
     conn = db.connect()
     try:
-        rows = conn.execute("SELECT id FROM worksheets").fetchall()
+        default_admin = _default_admin_id(conn)
+        rows = conn.execute(
+            "SELECT id FROM worksheets WHERE admin_id = ? OR (admin_id IS NULL AND ? = ?)",
+            (admin_id, admin_id, default_admin),
+        ).fetchall()
     finally:
         conn.close()
     for row in rows:
@@ -1443,23 +1533,23 @@ def worksheet_data_from_builder(body: dict, *, existing: dict | None = None) -> 
     return data
 
 
-def create_worksheet_from_builder(body: dict) -> dict:
+def create_worksheet_from_builder(body: dict, *, admin_id: int) -> dict:
     """Validate builder input, assign id, and upsert worksheet."""
     data = worksheet_data_from_builder(body)
-    ws_id = next_worksheet_id()
-    return upsert_worksheet_from_data(ws_id, data)
+    ws_id = next_worksheet_id(admin_id=admin_id)
+    return upsert_worksheet_from_data(ws_id, data, admin_id=admin_id)
 
 
-def update_worksheet_from_builder(ws_id: str, body: dict) -> dict:
+def update_worksheet_from_builder(ws_id: str, body: dict, *, admin_id: int) -> dict:
     """Validate builder input and replace an existing worksheet in place."""
     ws_id = (ws_id or "").strip()
     if not ws_id:
         raise ValueError(["Worksheet id is required."])
-    if get_worksheet(ws_id) is None:
+    if get_worksheet(ws_id, admin_id=admin_id) is None:
         raise ValueError([f"Worksheet {ws_id} not found."])
     existing = _load_worksheet_publish_metadata(ws_id)
     data = worksheet_data_from_builder(body, existing=existing)
-    return upsert_worksheet_from_data(ws_id, data, refresh_sort_ts=False)
+    return upsert_worksheet_from_data(ws_id, data, refresh_sort_ts=False, admin_id=admin_id)
 
 def validate_worksheet_data(data: dict) -> list[str]:
     """Return human-readable validation errors; empty list means valid."""
@@ -1615,9 +1705,9 @@ def validate_worksheet_data(data: dict) -> list[str]:
 
 
 def upsert_worksheet_from_data(
-    ws_id: str, data: dict, *, refresh_sort_ts: bool = True
+    ws_id: str, data: dict, *, refresh_sort_ts: bool = True, admin_id: int
 ) -> dict:
-    """Validate and upsert one worksheet into SQLite."""
+    """Validate and upsert one worksheet into SQLite for one admin."""
     errors = validate_worksheet_data(data)
     if errors:
         raise ValueError(errors)
@@ -1633,9 +1723,23 @@ def upsert_worksheet_from_data(
 
     conn = db.connect()
     try:
-        conn.execute("DELETE FROM worksheets WHERE id = ?", (ws_id,))
+        default_admin = _default_admin_id(conn)
+        existing = conn.execute(
+            "SELECT admin_id FROM worksheets WHERE id = ?",
+            (ws_id,),
+        ).fetchone()
+        if existing:
+            owner = existing["admin_id"]
+            if owner is None:
+                owner = default_admin
+            if int(owner) != admin_id:
+                raise ValueError([f"Worksheet {ws_id} not found."])
+        conn.execute(
+            "DELETE FROM worksheets WHERE id = ? AND (admin_id = ? OR (admin_id IS NULL AND ? = ?))",
+            (ws_id, admin_id, admin_id, default_admin),
+        )
         path = WORKSHEETS_DIR / f"{ws_id}.json"
-        _insert_worksheet(conn, ws_id, payload, path)
+        _insert_worksheet(conn, ws_id, payload, path, admin_id=admin_id)
         conn.commit()
     except Exception:
         conn.rollback()
@@ -1652,11 +1756,15 @@ def upsert_worksheet_from_data(
     }
 
 
-def delete_worksheet(worksheet_id: str) -> bool:
-    """Remove worksheet from DB (questions cascade). JSON files are not used after initial seed."""
+def delete_worksheet(worksheet_id: str, *, admin_id: int) -> bool:
+    """Remove worksheet from DB (questions cascade) for one admin."""
     conn = db.connect()
     try:
-        cur = conn.execute("DELETE FROM worksheets WHERE id = ?", (worksheet_id,))
+        default_admin = _default_admin_id(conn)
+        cur = conn.execute(
+            "DELETE FROM worksheets WHERE id = ? AND (admin_id = ? OR (admin_id IS NULL AND ? = ?))",
+            (worksheet_id, admin_id, admin_id, default_admin),
+        )
         deleted = cur.rowcount > 0
         conn.commit()
     except Exception:
