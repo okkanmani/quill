@@ -6,6 +6,7 @@ import AppShell from "../components/AppShell";
 
 const CREATE_TABS = [
   { to: "/admin/create/worksheet", label: "Question builder" },
+  { to: "/admin/create/test", label: "Test builder" },
   { to: "/admin/create/upload", label: "Upload JSON" },
   { to: "/admin/create/learn", label: "Learning resource" },
 ];
@@ -13,7 +14,7 @@ const CREATE_TABS = [
 export default function AdminCreate() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isWorksheetBuilder = /\/admin\/create\/worksheet/.test(location.pathname);
+  const isWideBuilder = /\/admin\/create\/(worksheet|test)/.test(location.pathname);
 
   async function handleLogout() {
     await logout();
@@ -27,10 +28,10 @@ export default function AdminCreate() {
       onLogout={handleLogout}
       mainClassName="pb-28"
     >
-      <div className={isWorksheetBuilder ? "max-w-none" : "max-w-3xl mx-auto"}>
+      <div className={isWideBuilder ? "max-w-none" : "max-w-3xl mx-auto"}>
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Create</h1>
         <p className="text-slate-600 text-sm mb-5 leading-relaxed">
-          Build worksheets, upload JSON, or generate learning resources for students.
+          Build worksheets and adaptive tests, upload JSON, or generate learning resources for students.
         </p>
 
         <nav

@@ -410,7 +410,7 @@ export default function AdminWorksheets() {
                           );
                         })()}
                         <EditActionButton
-                          to={`/admin/create/worksheet?edit=${encodeURIComponent(ws.id)}`}
+                          to={`/admin/create/test?edit=${encodeURIComponent(ws.id)}`}
                           label={`Edit ${ws.title}`}
                         />
                       </div>
