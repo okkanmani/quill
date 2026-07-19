@@ -32,21 +32,18 @@ export default function StudentRevisionWorksheet() {
   }
 
   async function handleComplete({ score, total, answers }) {
-    try {
-      await completeRevisionWorksheet(id, { score, total, answers });
-      setWorksheet((prev) =>
-        prev
-          ? {
-              ...prev,
-              last_score: score,
-              last_total: total,
-              completed_at: new Date().toISOString(),
-            }
-          : prev,
-      );
-    } catch {
-      // Self-check still works even if save fails.
-    }
+    const updated = await completeRevisionWorksheet(id, { score, total, answers });
+    setWorksheet((prev) =>
+      prev
+        ? {
+            ...prev,
+            last_score: updated.last_score ?? score,
+            last_total: updated.last_total ?? total,
+            completed_at: updated.completed_at ?? new Date().toISOString(),
+            submitted_answers: answers,
+          }
+        : prev,
+    );
   }
 
   return (

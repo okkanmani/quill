@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   deleteResult,
   deleteWritingSubmission,
+  getPracticeResults,
   getResults,
   getWritingSubmissions,
   gradeWritingSubmission,
@@ -15,15 +16,19 @@ import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import AdminStudentBanner from "../components/AdminStudentBanner";
 import QuillLoading from "../components/QuillLoading";
 import ResultsBySubject from "../components/ResultsBySubject";
+import ResultsPageCategory from "../components/ResultsPageCategory";
+import PracticeResultsSection from "../components/PracticeResultsSection";
 import WritingResultsSection from "../components/WritingResultsSection";
 
 export default function AdminHome() {
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
+  const [practiceResults, setPracticeResults] = useState([]);
   const [writing, setWriting] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [openIds, setOpenIds] = useState(() => new Set());
+  const [openPracticeIds, setOpenPracticeIds] = useState(() => new Set());
   const [openWritingIds, setOpenWritingIds] = useState(() => new Set());
   const [deletingResultId, setDeletingResultId] = useState(null);
   const [deletingWritingId, setDeletingWritingId] = useState(null);
@@ -32,9 +37,10 @@ export default function AdminHome() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    Promise.all([getResults(), getWritingSubmissions()])
-      .then(([resultData, writingData]) => {
+    Promise.all([getResults(), getPracticeResults(), getWritingSubmissions()])
+      .then(([resultData, practiceData, writingData]) => {
         setResults(resultData);
+        setPracticeResults(Array.isArray(practiceData) ? practiceData : []);
         setWriting(writingData);
       })
       .catch(() => setError("Could not load results."))
@@ -52,6 +58,15 @@ export default function AdminHome() {
 
   function toggleWriting(id) {
     setOpenWritingIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function togglePractice(id) {
+    setOpenPracticeIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -145,7 +160,9 @@ export default function AdminHome() {
     }
   }
 
-  const hasAny = results.length > 0 || writing.length > 0;
+  const hasMainWorksheets = results.length > 0 || writing.length > 0;
+  const hasRevision = practiceResults.length > 0;
+  const hasAny = hasMainWorksheets || hasRevision;
 
   return (
     <AppShell
@@ -159,7 +176,7 @@ export default function AdminHome() {
 
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Results</h1>
         <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-          Graded worksheets and writing submissions for the selected student.
+          Main worksheet and revision practice results for the selected student.
         </p>
 
         {message && (
@@ -174,33 +191,46 @@ export default function AdminHome() {
         )}
 
         {!loading && !error && hasAny ? (
-          <div className="flex flex-col gap-3">
-            {results.length > 0 ? (
-              <ResultsBySubject
-                results={results}
-                openIds={openIds}
-                toggleAnswers={toggleAnswers}
-                onDeleteResult={handleDeleteResult}
-                deletingResultId={deletingResultId}
-                onResultEvaluated={(updated) =>
-                  setResults((prev) =>
-                    prev.map((r) => (r.id === updated.id ? updated : r)),
-                  )
-                }
-                onAnalysisError={setError}
-              />
+          <div className="flex flex-col gap-8">
+            {hasMainWorksheets ? (
+              <ResultsPageCategory title="Main Worksheets">
+                {results.length > 0 ? (
+                  <ResultsBySubject
+                    results={results}
+                    openIds={openIds}
+                    toggleAnswers={toggleAnswers}
+                    onDeleteResult={handleDeleteResult}
+                    deletingResultId={deletingResultId}
+                    onResultEvaluated={(updated) =>
+                      setResults((prev) =>
+                        prev.map((r) => (r.id === updated.id ? updated : r)),
+                      )
+                    }
+                    onAnalysisError={setError}
+                  />
+                ) : null}
+                {writing.length > 0 ? (
+                  <WritingResultsSection
+                    submissions={writing}
+                    openIds={openWritingIds}
+                    toggleOpen={toggleWriting}
+                    onDelete={handleDeleteWriting}
+                    onGrade={handleGradeWriting}
+                    deletingId={deletingWritingId}
+                    gradingId={gradingWritingId}
+                    savingFeedbackId={savingWritingFeedbackId}
+                  />
+                ) : null}
+              </ResultsPageCategory>
             ) : null}
-            {writing.length > 0 ? (
-              <WritingResultsSection
-                submissions={writing}
-                openIds={openWritingIds}
-                toggleOpen={toggleWriting}
-                onDelete={handleDeleteWriting}
-                onGrade={handleGradeWriting}
-                deletingId={deletingWritingId}
-                gradingId={gradingWritingId}
-                savingFeedbackId={savingWritingFeedbackId}
-              />
+            {hasRevision ? (
+              <ResultsPageCategory title="Revision">
+                <PracticeResultsSection
+                  results={practiceResults}
+                  openIds={openPracticeIds}
+                  toggleOpen={togglePractice}
+                />
+              </ResultsPageCategory>
             ) : null}
           </div>
         ) : null}

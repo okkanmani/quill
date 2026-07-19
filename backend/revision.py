@@ -153,7 +153,7 @@ def get_revision_worksheet(revision_id: int, student_name: str) -> dict | None:
         row = conn.execute(
             """
             SELECT id, student, subject, focus_area, title, payload,
-                   discussed_at, created_at, completed_at, score, total
+                   discussed_at, created_at, completed_at, score, total, answers
             FROM student_revision_worksheets
             WHERE id = ? AND student = ?
             """,
@@ -169,6 +169,13 @@ def get_revision_worksheet(revision_id: int, student_name: str) -> dict | None:
             worksheet["completed_at"] = row["completed_at"]
             worksheet["last_score"] = row["score"]
             worksheet["last_total"] = row["total"]
+            if row["answers"]:
+                try:
+                    parsed = json.loads(row["answers"])
+                    if isinstance(parsed, list):
+                        worksheet["submitted_answers"] = parsed
+                except json.JSONDecodeError:
+                    pass
         return worksheet
     finally:
         conn.close()
@@ -195,7 +202,7 @@ def complete_revision_worksheet(
     try:
         row = conn.execute(
             """
-            SELECT id
+            SELECT id, completed_at
             FROM student_revision_worksheets
             WHERE id = ? AND student = ?
             """,
@@ -203,6 +210,8 @@ def complete_revision_worksheet(
         ).fetchone()
         if not row:
             return None
+        if row["completed_at"]:
+            raise ValueError("This practice worksheet was already submitted.")
         conn.execute(
             """
             UPDATE student_revision_worksheets
@@ -249,6 +258,54 @@ def complete_revision_worksheet(
         "last_score": score,
         "last_total": total,
     }
+
+
+def list_practice_results(student_name: str) -> list[dict]:
+    """Completed focus practice worksheets for admin Results → Practice."""
+    conn = db.connect()
+    try:
+        rows = conn.execute(
+            """
+            SELECT id, subject, focus_area, title, payload,
+                   completed_at, score, total, answers
+            FROM student_revision_worksheets
+            WHERE student = ? AND completed_at IS NOT NULL
+            ORDER BY completed_at DESC
+            """,
+            (student_name,),
+        ).fetchall()
+        records = []
+        for row in rows:
+            try:
+                payload = json.loads(row["payload"])
+            except json.JSONDecodeError:
+                payload = {}
+            answers = []
+            if row["answers"]:
+                try:
+                    parsed = json.loads(row["answers"])
+                    if isinstance(parsed, list):
+                        answers = parsed
+                except json.JSONDecodeError:
+                    answers = []
+            records.append(
+                {
+                    "id": row["id"],
+                    "title": row["title"] or payload.get("title") or "",
+                    "subject": row["subject"],
+                    "focus_area": row["focus_area"],
+                    "focus_area_label": payload.get("focus_area_label")
+                    or row["focus_area"],
+                    "score": row["score"],
+                    "total": row["total"],
+                    "completed_at": row["completed_at"],
+                    "manual": bool(payload.get("manual")),
+                    "answers": answers,
+                }
+            )
+        return records
+    finally:
+        conn.close()
 
 
 def list_revision_analysis_records(student_name: str) -> list[dict]:

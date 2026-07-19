@@ -61,6 +61,30 @@ export function sortWritingItems(items, mode = SECTION_SORT_TIME) {
   });
 }
 
+/** Completed focus practice worksheets on admin Results. */
+export function sortPracticeItems(items, mode = SECTION_SORT_TIME) {
+  return [...(items || [])].sort((a, b) => {
+    if (mode === SECTION_SORT_GRADE_ASC || mode === SECTION_SORT_GRADE_DESC) {
+      const pctA =
+        typeof a.score === "number" && a.total > 0
+          ? (a.score / a.total) * 100
+          : null;
+      const pctB =
+        typeof b.score === "number" && b.total > 0
+          ? (b.score / b.total) * 100
+          : null;
+      const missing = mode === SECTION_SORT_GRADE_ASC ? Infinity : -Infinity;
+      const va = pctA ?? missing;
+      const vb = pctB ?? missing;
+      if (va !== vb) {
+        return mode === SECTION_SORT_GRADE_ASC ? va - vb : vb - va;
+      }
+    }
+
+    return (b.completed_at || "").localeCompare(a.completed_at || "");
+  });
+}
+
 export function worksheetGradePercent(ws) {
   if (
     typeof ws?.last_score === "number" &&

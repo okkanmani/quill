@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Drawpad from "./Drawpad";
 import { DifficultyStars, QuestionDifficultyStars } from "./DifficultyStars";
 import { ScratchpadIcon, TextAnswerIcon } from "./ResponseModeIcons";
@@ -109,6 +109,9 @@ export default function FocusPracticeWorksheet({
   const [workNotes, setWorkNotes] = useState({});
   const [workScratchpads, setWorkScratchpads] = useState({});
   const [checked, setChecked] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [resetKey, setResetKey] = useState(0);
   const [workSpaceVisible, setWorkSpaceVisible] = useState(true);
   const [activeHintId, setActiveHintId] = useState(null);
@@ -121,6 +124,36 @@ export default function FocusPracticeWorksheet({
   const showWorkSpace = scratchpadAllowed && workSpaceVisible;
   const hasAnyHints = questions.some(questionHasHint);
   const showSideHintPanel = hasAnyHints && variant === "revision";
+  const isRevision = variant === "revision";
+  const locked = checked || submitted;
+
+  useEffect(() => {
+    if (!isRevision || !worksheet?.completed_at) return;
+    const saved = worksheet.submitted_answers || [];
+    const initialAnswers = {};
+    for (const row of saved) {
+      if (row?.question_id) {
+        initialAnswers[row.question_id] = row.given || "";
+      }
+    }
+    setAnswers(initialAnswers);
+    setChecked(true);
+    setSubmitted(true);
+    setSubmitError("");
+  }, [isRevision, worksheet]);
+
+  const displayScore = useMemo(() => {
+    if (typeof worksheet.last_score === "number") return worksheet.last_score;
+    if (!checked) return null;
+    return questions.reduce((count, question) => {
+      const selected = answers[question.id] || "";
+      const expected = (question.answer || "").trim();
+      const correct =
+        Boolean(selected) &&
+        selected.trim().toLowerCase() === expected.toLowerCase();
+      return count + (correct ? 1 : 0);
+    }, 0);
+  }, [worksheet.last_score, checked, questions, answers]);
 
   function revealHint(questionId) {
     setActiveHintId(questionId);
@@ -132,37 +165,57 @@ export default function FocusPracticeWorksheet({
   }
 
   function handleSelect(questionId, choice) {
-    if (checked) return;
+    if (locked) return;
     setAnswers((prev) => ({ ...prev, [questionId]: choice }));
   }
 
   function handleWorkModeChange(questionId, mode) {
-    if (checked) return;
+    if (locked) return;
     setWorkModes((prev) => ({ ...prev, [questionId]: mode }));
   }
 
   async function handleCheckAnswers() {
+    setSubmitError("");
+    let score = 0;
+    const answerRows = [];
+    for (const question of questions) {
+      const selected = answers[question.id] || "";
+      const expected = (question.answer || "").trim();
+      const correct =
+        Boolean(selected) &&
+        selected.trim().toLowerCase() === expected.toLowerCase();
+      if (correct) score += 1;
+      answerRows.push({
+        question_id: question.id,
+        prompt: question.prompt,
+        given: selected,
+        expected,
+        correct,
+        choices: question.choices || [],
+        area: question.area || worksheet.focus_area || "",
+      });
+    }
+
+    if (isRevision && onComplete) {
+      setSubmitting(true);
+      try {
+        await onComplete({
+          score,
+          total: questions.length,
+          answers: answerRows,
+        });
+        setSubmitted(true);
+        setChecked(true);
+      } catch (err) {
+        setSubmitError(err.message || "Could not submit your answers.");
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
     setChecked(true);
     if (onComplete) {
-      let score = 0;
-      const answerRows = [];
-      for (const question of questions) {
-        const selected = answers[question.id] || "";
-        const expected = (question.answer || "").trim();
-        const correct =
-          Boolean(selected) &&
-          selected.trim().toLowerCase() === expected.toLowerCase();
-        if (correct) score += 1;
-        answerRows.push({
-          question_id: question.id,
-          prompt: question.prompt,
-          given: selected,
-          expected,
-          correct,
-          choices: question.choices || [],
-          area: question.area || worksheet.focus_area || "",
-        });
-      }
       onComplete({ score, total: questions.length, answers: answerRows });
     }
   }
@@ -232,6 +285,7 @@ export default function FocusPracticeWorksheet({
               aria-checked={workSpaceVisible}
               aria-label={`${workSpaceVisible ? "Hide" : "Show"} work space on questions`}
               onClick={() => setWorkSpaceVisible((value) => !value)}
+              disabled={submitted}
               className={`relative h-9 w-14 shrink-0 rounded-full transition-colors ${
                 workSpaceVisible ? "bg-indigo-500" : "bg-slate-200"
               }`}
@@ -270,7 +324,7 @@ export default function FocusPracticeWorksheet({
                 </p>
                 <div className="flex flex-col items-end gap-2 shrink-0">
                   <QuestionDifficultyStars stars={question.stars} />
-                  {hintAvailable && question.stars >= 3 && !checked ? (
+                  {hintAvailable && question.stars >= 3 && !locked ? (
                     <button
                       type="button"
                       onClick={() => revealHint(question.id)}
@@ -295,17 +349,17 @@ export default function FocusPracticeWorksheet({
 
               {showWorkSpace ? (
                 <div className="mt-3 rounded-xl border border-slate-200 bg-white p-4">
-                  {!checked ? (
+                  {!locked ? (
                     <div className="flex justify-end mb-3">
                       <WorkModeToggle
                         mode={workMode}
                         onChange={(mode) => handleWorkModeChange(question.id, mode)}
-                        disabled={checked}
+                        disabled={locked}
                       />
                     </div>
                   ) : null}
                   {workMode === "scratchpad" ? (
-                    checked ? (
+                    locked ? (
                       workScratchpads[question.id] ? (
                         <img
                           src={workScratchpads[question.id]}
@@ -342,7 +396,7 @@ export default function FocusPracticeWorksheet({
                           [question.id]: e.target.value,
                         }))
                       }
-                      disabled={checked}
+                      disabled={locked}
                       placeholder="Jot notes or steps for this question…"
                       rows={8}
                       className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y min-h-[12rem]"
@@ -376,7 +430,7 @@ export default function FocusPracticeWorksheet({
                       <button
                         key={choice}
                         type="button"
-                        disabled={checked}
+                        disabled={locked}
                         onClick={() => handleSelect(question.id, choice)}
                         className={`border rounded-xl px-4 py-3 text-sm text-left transition ${choiceStyle}`}
                       >
@@ -391,28 +445,48 @@ export default function FocusPracticeWorksheet({
         })}
       </div>
 
-      <div className="shrink-0 border-t border-slate-200 bg-white px-5 py-4 flex flex-wrap gap-2">
-        {!checked ? (
+      <div className="shrink-0 border-t border-slate-200 bg-white px-5 py-4 flex flex-col gap-3">
+        {submitError ? (
+          <p className="text-sm text-red-600">{submitError}</p>
+        ) : null}
+        {isRevision && submitted ? (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-slate-900 font-semibold">
+              You got {displayScore ?? 0} out of {questions.length} correct!
+            </p>
+            <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+              Submitted — your teacher can review this under Results → Revision.
+            </p>
+          </div>
+        ) : !checked ? (
           <button
             type="button"
             onClick={handleCheckAnswers}
-            disabled={questions.some((q) => !answers[q.id])}
-            className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold px-5 py-2.5 text-sm transition"
+            disabled={
+              submitting || questions.some((q) => !answers[q.id])
+            }
+            className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold px-5 py-2.5 text-sm transition w-fit"
           >
-            Check answers
+            {submitting
+              ? "Submitting…"
+              : isRevision
+                ? "Submit answers"
+                : "Check answers"}
           </button>
         ) : (
           <button
             type="button"
             onClick={handleReset}
-            className="rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-semibold px-5 py-2.5 text-sm transition"
+            className="rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-semibold px-5 py-2.5 text-sm transition w-fit"
           >
             Try again
           </button>
         )}
-        <p className="text-xs text-slate-500 self-center">
-          {variant === "revision"
-            ? "Practice worksheet from a skill your teacher discussed with you."
+        <p className="text-xs text-slate-500">
+          {isRevision
+            ? submitted
+              ? "This practice attempt is saved."
+              : "Submit once when you are ready — answers are saved for your teacher."
             : "For practice only — saved to the student's Revision page when generated."}
         </p>
       </div>

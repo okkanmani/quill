@@ -63,6 +63,7 @@ from revision import (
     complete_revision_worksheet,
     get_revision_worksheet,
     list_revision_analysis_records,
+    list_practice_results,
     list_revision_worksheets,
     save_revision_worksheet,
 )
@@ -1339,6 +1340,15 @@ def get_revision_analysis_records(authorization: str = Header(...)):
         raise HTTPException(status_code=403, detail="Admin only")
     who = _student_context_name(payload)
     return list_revision_analysis_records(who)
+
+
+@app.get("/admin/practice-results")
+def get_practice_results(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    return list_practice_results(who)
 
 
 @app.get("/revision")
