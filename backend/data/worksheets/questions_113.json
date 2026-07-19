@@ -1,0 +1,913 @@
+{
+  "title": "Math Adaptive Test — Dry Run",
+  "subject": "math",
+  "scratchpad": false,
+  "created_at": "2026-07-19T02:55:38.843479+00:00",
+  "content_badge": "Test",
+  "is_test": true,
+  "test_sitting_count": 20,
+  "timed": true,
+  "time_limit_minutes": 45,
+  "questions": [
+    {
+      "id": "t1q1",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "What is 7 + 8?",
+      "choices": [
+        "15",
+        "14",
+        "16",
+        "56"
+      ],
+      "answer": "15",
+      "hint": false,
+      "area": "addition"
+    },
+    {
+      "id": "t1q2",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "What is 20 − 13?",
+      "choices": [
+        "7",
+        "33",
+        "6",
+        "8"
+      ],
+      "answer": "7",
+      "hint": false,
+      "area": "subtraction"
+    },
+    {
+      "id": "t1q3",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "What is 6 × 4?",
+      "choices": [
+        "24",
+        "10",
+        "20",
+        "28"
+      ],
+      "answer": "24",
+      "hint": false,
+      "area": "multiplication"
+    },
+    {
+      "id": "t1q4",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "What is 36 ÷ 6?",
+      "choices": [
+        "6",
+        "30",
+        "42",
+        "9"
+      ],
+      "answer": "6",
+      "hint": false,
+      "area": "division"
+    },
+    {
+      "id": "t1q5",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "Which fraction equals 1/2?",
+      "choices": [
+        "3/6",
+        "2/5",
+        "1/3",
+        "2/3"
+      ],
+      "answer": "3/6",
+      "hint": false,
+      "area": "fractions"
+    },
+    {
+      "id": "t1q6",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "What is 0.5 as a fraction in lowest terms?",
+      "choices": [
+        "1/2",
+        "5/10",
+        "2/5",
+        "1/5"
+      ],
+      "answer": "1/2",
+      "hint": false,
+      "area": "decimals"
+    },
+    {
+      "id": "t1q7",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "How many sides does a hexagon have?",
+      "choices": [
+        "6",
+        "5",
+        "8",
+        "4"
+      ],
+      "answer": "6",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "t1q8",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "What is the perimeter of a square with side 5 cm?",
+      "choices": [
+        "20 cm",
+        "25 cm",
+        "10 cm",
+        "15 cm"
+      ],
+      "answer": "20 cm",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "t1q9",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "Which number is even?",
+      "choices": [
+        "18",
+        "15",
+        "21",
+        "17"
+      ],
+      "answer": "18",
+      "hint": false,
+      "area": "numbers"
+    },
+    {
+      "id": "t1q10",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "Round 47 to the nearest ten.",
+      "choices": [
+        "50",
+        "40",
+        "47",
+        "45"
+      ],
+      "answer": "50",
+      "hint": false,
+      "area": "rounding"
+    },
+    {
+      "id": "t1q11",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "What is 3²?",
+      "choices": [
+        "9",
+        "6",
+        "8",
+        "12"
+      ],
+      "answer": "9",
+      "hint": false,
+      "area": "exponents"
+    },
+    {
+      "id": "t1q12",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "Solve: x + 5 = 12",
+      "choices": [
+        "7",
+        "17",
+        "5",
+        "2"
+      ],
+      "answer": "7",
+      "hint": false,
+      "area": "algebra"
+    },
+    {
+      "id": "t1q13",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "What is 25% of 80?",
+      "choices": [
+        "20",
+        "25",
+        "40",
+        "16"
+      ],
+      "answer": "20",
+      "hint": false,
+      "area": "percent"
+    },
+    {
+      "id": "t1q14",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "Which angle is acute?",
+      "choices": [
+        "45°",
+        "95°",
+        "120°",
+        "180°"
+      ],
+      "answer": "45°",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "t1q15",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "What is the place value of 8 in 3,482?",
+      "choices": [
+        "Hundreds",
+        "Tens",
+        "Ones",
+        "Thousands"
+      ],
+      "answer": "Hundreds",
+      "hint": false,
+      "area": "place value"
+    },
+    {
+      "id": "t1q16",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "Convert 2.5 hours to minutes.",
+      "choices": [
+        "150",
+        "250",
+        "125",
+        "120"
+      ],
+      "answer": "150",
+      "hint": false,
+      "area": "measurement"
+    },
+    {
+      "id": "t1q17",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "What is the median of 4, 7, 9?",
+      "choices": [
+        "7",
+        "4",
+        "9",
+        "6"
+      ],
+      "answer": "7",
+      "hint": false,
+      "area": "statistics"
+    },
+    {
+      "id": "t1q18",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "A bag has 3 red and 5 blue marbles. P(red)?",
+      "choices": [
+        "3/8",
+        "5/8",
+        "3/5",
+        "1/3"
+      ],
+      "answer": "3/8",
+      "hint": false,
+      "area": "probability"
+    },
+    {
+      "id": "t1q19",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "Which expression equals 12?",
+      "choices": [
+        "3 × 4",
+        "5 + 4",
+        "20 − 9",
+        "6 + 4"
+      ],
+      "answer": "3 × 4",
+      "hint": false,
+      "area": "expressions"
+    },
+    {
+      "id": "t1q20",
+      "type": "multiple_choice",
+      "stars": 1,
+      "prompt": "What is −3 + 10?",
+      "choices": [
+        "7",
+        "−7",
+        "13",
+        "−13"
+      ],
+      "answer": "7",
+      "hint": false,
+      "area": "integers"
+    },
+    {
+      "id": "t2q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Evaluate: 18 − 3 × (2 + 4)",
+      "choices": [
+        "0",
+        "36",
+        "12",
+        "6"
+      ],
+      "answer": "0",
+      "hint": false,
+      "area": "order of operations"
+    },
+    {
+      "id": "t2q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Solve: 4x − 9 = 15",
+      "choices": [
+        "6",
+        "24",
+        "4",
+        "5"
+      ],
+      "answer": "6",
+      "hint": false,
+      "area": "algebra"
+    },
+    {
+      "id": "t2q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 2/3 + 1/6?",
+      "choices": [
+        "5/6",
+        "3/9",
+        "1/2",
+        "3/6"
+      ],
+      "answer": "5/6",
+      "hint": false,
+      "area": "fractions"
+    },
+    {
+      "id": "t2q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A rectangle is 9 cm by 4 cm. What is its area?",
+      "choices": [
+        "36 cm²",
+        "26 cm²",
+        "13 cm²",
+        "18 cm²"
+      ],
+      "answer": "36 cm²",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "t2q5",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 15% of 240?",
+      "choices": [
+        "36",
+        "24",
+        "40",
+        "30"
+      ],
+      "answer": "36",
+      "hint": false,
+      "area": "percent"
+    },
+    {
+      "id": "t2q6",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Simplify: 5x + 3x − 2",
+      "choices": [
+        "8x − 2",
+        "8x + 2",
+        "2x − 2",
+        "15x"
+      ],
+      "answer": "8x − 2",
+      "hint": false,
+      "area": "algebra"
+    },
+    {
+      "id": "t2q7",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is the GCF of 24 and 36?",
+      "choices": [
+        "12",
+        "6",
+        "72",
+        "4"
+      ],
+      "answer": "12",
+      "hint": false,
+      "area": "factors"
+    },
+    {
+      "id": "t2q8",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Convert 3/8 to a decimal.",
+      "choices": [
+        "0.375",
+        "0.38",
+        "0.35",
+        "0.83"
+      ],
+      "answer": "0.375",
+      "hint": false,
+      "area": "fractions"
+    },
+    {
+      "id": "t2q9",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A triangle has angles 65° and 55°. Find the third.",
+      "choices": [
+        "60°",
+        "70°",
+        "120°",
+        "50°"
+      ],
+      "answer": "60°",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "t2q10",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 1.2 × 0.5?",
+      "choices": [
+        "0.6",
+        "6",
+        "1.7",
+        "0.06"
+      ],
+      "answer": "0.6",
+      "hint": false,
+      "area": "decimals"
+    },
+    {
+      "id": "t2q11",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Find the mean of 12, 15, 18, 21.",
+      "choices": [
+        "16.5",
+        "15",
+        "18",
+        "66"
+      ],
+      "answer": "16.5",
+      "hint": false,
+      "area": "statistics"
+    },
+    {
+      "id": "t2q12",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "If 5 notebooks cost $7.50, one notebook costs —",
+      "choices": [
+        "$1.50",
+        "$2.50",
+        "$12.50",
+        "$0.75"
+      ],
+      "answer": "$1.50",
+      "hint": false,
+      "area": "ratios"
+    },
+    {
+      "id": "t2q13",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 4³?",
+      "choices": [
+        "64",
+        "12",
+        "16",
+        "81"
+      ],
+      "answer": "64",
+      "hint": false,
+      "area": "exponents"
+    },
+    {
+      "id": "t2q14",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Solve: 2(x + 3) = 14",
+      "choices": [
+        "4",
+        "7",
+        "5",
+        "11"
+      ],
+      "answer": "4",
+      "hint": false,
+      "area": "algebra"
+    },
+    {
+      "id": "t2q15",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is 7/12 − 1/4?",
+      "choices": [
+        "1/3",
+        "1/2",
+        "5/12",
+        "2/3"
+      ],
+      "answer": "1/3",
+      "hint": false,
+      "area": "fractions"
+    },
+    {
+      "id": "t2q16",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A circle has radius 5 cm. Diameter?",
+      "choices": [
+        "10 cm",
+        "25 cm",
+        "5 cm",
+        "15 cm"
+      ],
+      "answer": "10 cm",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "t2q17",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "Which ratio is equivalent to 2:5?",
+      "choices": [
+        "8:20",
+        "4:8",
+        "10:2",
+        "5:2"
+      ],
+      "answer": "8:20",
+      "hint": false,
+      "area": "ratios"
+    },
+    {
+      "id": "t2q18",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "What is (−4) × (−6)?",
+      "choices": [
+        "24",
+        "−24",
+        "10",
+        "−10"
+      ],
+      "answer": "24",
+      "hint": false,
+      "area": "integers"
+    },
+    {
+      "id": "t2q19",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "How many cm are in 2.3 m?",
+      "choices": [
+        "230",
+        "23",
+        "2300",
+        "0.23"
+      ],
+      "answer": "230",
+      "hint": false,
+      "area": "measurement"
+    },
+    {
+      "id": "t2q20",
+      "type": "multiple_choice",
+      "stars": 2,
+      "prompt": "A number increases from 50 to 65. Percent increase?",
+      "choices": [
+        "30%",
+        "15%",
+        "25%",
+        "35%"
+      ],
+      "answer": "30%",
+      "hint": false,
+      "area": "percent"
+    },
+    {
+      "id": "t3q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Evaluate: 24 − 2 × (3 + 5)²",
+      "choices": [
+        "−104",
+        "16",
+        "88",
+        "−88"
+      ],
+      "answer": "−104",
+      "hint": false,
+      "area": "order of operations"
+    },
+    {
+      "id": "t3q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Solve: 3x + 7 = 34",
+      "choices": [
+        "9",
+        "11",
+        "7",
+        "8"
+      ],
+      "answer": "9",
+      "hint": false,
+      "area": "algebra"
+    },
+    {
+      "id": "t3q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "What is 3/4 ÷ 2/5?",
+      "choices": [
+        "15/8",
+        "6/20",
+        "5/6",
+        "8/15"
+      ],
+      "answer": "15/8",
+      "hint": false,
+      "area": "fractions"
+    },
+    {
+      "id": "t3q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Parallelogram: base 12 cm, height 8 cm. Area?",
+      "choices": [
+        "96 cm²",
+        "40 cm²",
+        "48 cm²",
+        "192 cm²"
+      ],
+      "answer": "96 cm²",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "t3q5",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "After 15% off, price is $68. Original price?",
+      "choices": [
+        "$80",
+        "$78.20",
+        "$58.80",
+        "$85"
+      ],
+      "answer": "$80",
+      "hint": false,
+      "area": "percent"
+    },
+    {
+      "id": "t3q6",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "LCM of 15 and 20?",
+      "choices": [
+        "60",
+        "5",
+        "300",
+        "35"
+      ],
+      "answer": "60",
+      "hint": false,
+      "area": "factors"
+    },
+    {
+      "id": "t3q7",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "GCF of 48 and 72?",
+      "choices": [
+        "24",
+        "12",
+        "8",
+        "6"
+      ],
+      "answer": "24",
+      "hint": false,
+      "area": "factors"
+    },
+    {
+      "id": "t3q8",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Compute: 6.5 × 0.8",
+      "choices": [
+        "5.2",
+        "52",
+        "5.02",
+        "6.13"
+      ],
+      "answer": "5.2",
+      "hint": false,
+      "area": "decimals"
+    },
+    {
+      "id": "t3q9",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Cube edge 4 cm. Volume?",
+      "choices": [
+        "64 cm³",
+        "16 cm³",
+        "48 cm³",
+        "12 cm³"
+      ],
+      "answer": "64 cm³",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "t3q10",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Mean of 6, 10, 14, 18?",
+      "choices": [
+        "12",
+        "11",
+        "13",
+        "14"
+      ],
+      "answer": "12",
+      "hint": false,
+      "area": "statistics"
+    },
+    {
+      "id": "t3q11",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "5 notebooks for $12.50. Cost of 8?",
+      "choices": [
+        "$20",
+        "$17.50",
+        "$22.50",
+        "$25"
+      ],
+      "answer": "$20",
+      "hint": false,
+      "area": "ratios"
+    },
+    {
+      "id": "t3q12",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Flour:sugar = 5:2. Flour 350 g → sugar?",
+      "choices": [
+        "140 g",
+        "175 g",
+        "100 g",
+        "875 g"
+      ],
+      "answer": "140 g",
+      "hint": false,
+      "area": "ratios"
+    },
+    {
+      "id": "t3q13",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Complementary: one angle 38°. The other?",
+      "choices": [
+        "52°",
+        "142°",
+        "48°",
+        "62°"
+      ],
+      "answer": "52°",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "t3q14",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "45% of 320?",
+      "choices": [
+        "144",
+        "128",
+        "160",
+        "136"
+      ],
+      "answer": "144",
+      "hint": false,
+      "area": "percent"
+    },
+    {
+      "id": "t3q15",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Compute: (−8) + 15 − (−3)",
+      "choices": [
+        "10",
+        "−26",
+        "4",
+        "−4"
+      ],
+      "answer": "10",
+      "hint": false,
+      "area": "integers"
+    },
+    {
+      "id": "t3q16",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Simplify: 2(3x + 4) − 5x",
+      "choices": [
+        "x + 8",
+        "6x + 8",
+        "x − 8",
+        "11x + 8"
+      ],
+      "answer": "x + 8",
+      "hint": false,
+      "area": "algebra"
+    },
+    {
+      "id": "t3q17",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Isosceles: sides 13, 13, base 10. Perimeter?",
+      "choices": [
+        "36 cm",
+        "26 cm",
+        "33 cm",
+        "23 cm"
+      ],
+      "answer": "36 cm",
+      "hint": false,
+      "area": "geometry"
+    },
+    {
+      "id": "t3q18",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "7/8 − 1/3?",
+      "choices": [
+        "13/24",
+        "6/5",
+        "1/2",
+        "5/24"
+      ],
+      "answer": "13/24",
+      "hint": false,
+      "area": "fractions"
+    },
+    {
+      "id": "t3q19",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "240 km in 3 h. Average speed?",
+      "choices": [
+        "80 km/h",
+        "720 km/h",
+        "60 km/h",
+        "120 km/h"
+      ],
+      "answer": "80 km/h",
+      "hint": false,
+      "area": "rates"
+    },
+    {
+      "id": "t3q20",
+      "type": "multiple_choice",
+      "stars": 3,
+      "prompt": "Circle diameter 14 cm, π = 22/7. Area?",
+      "choices": [
+        "154 cm²",
+        "44 cm²",
+        "616 cm²",
+        "77 cm²"
+      ],
+      "answer": "154 cm²",
+      "hint": false,
+      "area": "geometry"
+    }
+  ]
+}

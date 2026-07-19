@@ -4,6 +4,9 @@ import StudentHome from "./pages/StudentHome";
 import StudentLatest from "./pages/StudentLatest";
 import StudentRevision from "./pages/StudentRevision";
 import StudentRevisionWorksheet from "./pages/StudentRevisionWorksheet";
+import StudentTests from "./pages/StudentTests";
+import StudentTestTake from "./pages/StudentTestTake";
+import StudentTestReview from "./pages/StudentTestReview";
 import StudentResults from "./pages/StudentResults";
 import StudentSettings from "./pages/StudentSettings";
 import StudentWriting from "./pages/StudentWriting";
@@ -53,6 +56,33 @@ export default function App() {
           element={
             <ProtectedRoute role="student">
               <StudentRevision />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/tests"
+          element={
+            <ProtectedRoute role="student">
+              <StudentTests />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/tests/review/:id"
+          element={
+            <ProtectedRoute role="student">
+              <StudentTestReview />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/tests/:id"
+          element={
+            <ProtectedRoute role="student">
+              <StudentTestTake />
             </ProtectedRoute>
           }
         />

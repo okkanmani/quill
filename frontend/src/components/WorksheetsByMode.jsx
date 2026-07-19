@@ -27,11 +27,11 @@ export default function WorksheetsByMode({
   giftedTrackUnlockedThroughWeek,
 }) {
   const practice = useMemo(
-    () => worksheets.filter((ws) => !ws.timed && !isSpecialTrack(ws)),
+    () => worksheets.filter((ws) => !ws.timed && !isSpecialTrack(ws) && !ws.is_test),
     [worksheets],
   );
   const timed = useMemo(
-    () => worksheets.filter((ws) => ws.timed && !isSpecialTrack(ws)),
+    () => worksheets.filter((ws) => ws.timed && !isSpecialTrack(ws) && !ws.is_test),
     [worksheets],
   );
   const mathEnrichment = useMemo(

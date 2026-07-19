@@ -18,8 +18,8 @@ export const STUDENT_MAIN_NAV = [
   { to: "/student/settings", label: "Settings", end: true },
 ];
 
-/** Student nav with Latest and Revision tabs (disabled when empty). */
-export function buildStudentNavLinks(hasLatest, hasRevision = false) {
+/** Student nav with Latest, Revision, and Tests tabs (disabled when empty). */
+export function buildStudentNavLinks(hasLatest, hasRevision = false, hasTests = false) {
   return [
     { to: "/student", label: "Your Worksheets", end: true },
     { to: "/student/writing", label: "Writing", end: true },
@@ -35,6 +35,12 @@ export function buildStudentNavLinks(hasLatest, hasRevision = false) {
       label: "Revision",
       end: true,
       disabled: !hasRevision,
+    },
+    {
+      to: "/student/tests",
+      label: "Tests",
+      end: true,
+      disabled: !hasTests,
     },
     { to: "/student/learn", label: "Learning Resources", end: false },
     { to: "/student/settings", label: "Settings", end: true },

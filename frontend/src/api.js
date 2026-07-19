@@ -681,6 +681,162 @@ export async function completeRevisionWorksheet(revisionId, { score, total, answ
   return res.json();
 }
 
+// --- Tests ---
+
+export async function getTests() {
+  const res = await apiFetch(`${BASE_URL}/tests`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch tests");
+  return res.json();
+}
+
+export async function getTestResults() {
+  const res = await apiFetch(`${BASE_URL}/tests/results`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch test results");
+  return res.json();
+}
+
+export async function getAdminTestResults() {
+  const res = await apiFetch(`${BASE_URL}/admin/test-results`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch test results");
+  return res.json();
+}
+
+export async function getTestReviews() {
+  const res = await apiFetch(`${BASE_URL}/tests/reviews`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch test reviews");
+  return res.json();
+}
+
+export async function getTestReview(reviewId) {
+  const res = await apiFetch(`${BASE_URL}/tests/reviews/${reviewId}`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch test review");
+  return res.json();
+}
+
+export async function saveTestReviewNotes(reviewId, questions) {
+  const res = await apiFetch(`${BASE_URL}/tests/reviews/${reviewId}/notes`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify({ questions }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to save review notes";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function completeTestReview(reviewId) {
+  const res = await apiFetch(`${BASE_URL}/tests/reviews/${reviewId}/complete`, {
+    method: "PATCH",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to complete review";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function getTestSession(worksheetId, { slot, resume = true } = {}) {
+  const params = new URLSearchParams();
+  if (slot != null) params.set("slot", String(slot));
+  params.set("resume", resume ? "1" : "0");
+  const res = await apiFetch(
+    `${BASE_URL}/tests/${worksheetId}/session?${params.toString()}`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const error = new Error(typeof d === "string" ? d : "Failed to load test session");
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
+
+export async function startTestSession(worksheetId, { slot, resume = false } = {}) {
+  const params = new URLSearchParams();
+  if (slot != null) params.set("slot", String(slot));
+  params.set("resume", resume ? "1" : "0");
+  const res = await apiFetch(
+    `${BASE_URL}/tests/${worksheetId}/session?${params.toString()}`,
+    { method: "POST", headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const error = new Error(typeof d === "string" ? d : "Failed to start test");
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
+
+export async function saveTestAnswer(worksheetId, { slot, given }) {
+  const res = await apiFetch(`${BASE_URL}/tests/${worksheetId}/answer`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify({ slot, given }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to save answer");
+  }
+  return res.json();
+}
+
+export async function submitTest(worksheetId) {
+  const res = await apiFetch(`${BASE_URL}/tests/${worksheetId}/submit`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to submit test");
+  }
+  return res.json();
+}
+
+export async function lockTestAttempt(worksheetId) {
+  const res = await apiFetch(`${BASE_URL}/tests/${worksheetId}/lock`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  if (!res.ok) return;
+  return res.json();
+}
+
+export async function unlockTestAttempt(worksheetId) {
+  const res = await apiFetch(`${BASE_URL}/admin/tests/${worksheetId}/unlock`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to unlock test");
+  }
+  return res.json();
+}
+
 export async function generateAndPublishLearnResource(payload) {
   const res = await apiFetch(`${BASE_URL}/admin/learn/generate-and-publish`, {
     method: "POST",

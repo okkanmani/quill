@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { getRevisionWorksheets, getWorksheets } from "./api";
+import { getRevisionWorksheets, getTests, getWorksheets } from "./api";
 import { buildStudentNavLinks } from "./adminNav";
 import { filterLatestUndoneWorksheets } from "./worksheetUtils";
 
@@ -9,30 +9,36 @@ export function useStudentNavLinks() {
   const location = useLocation();
   const [worksheets, setWorksheets] = useState([]);
   const [revisions, setRevisions] = useState([]);
+  const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([
-      getWorksheets().catch(() => {
-        throw new Error("worksheets");
-      }),
-      getRevisionWorksheets().catch(() => []),
+    Promise.allSettled([
+      getWorksheets(),
+      getRevisionWorksheets(),
+      getTests(),
     ])
-      .then(([wsData, revisionData]) => {
-        setError("");
-        setWorksheets(wsData);
-        setRevisions(Array.isArray(revisionData) ? revisionData : []);
-      })
-      .catch((err) => {
-        if (err?.message === "worksheets") {
-          setError("Could not load worksheets.");
+      .then(([wsResult, revisionResult, testResult]) => {
+        const errors = [];
+        if (wsResult.status === "fulfilled") {
+          setWorksheets(wsResult.value);
         } else {
-          setError("Could not load worksheets.");
+          errors.push("worksheets");
+          setWorksheets([]);
         }
-        setWorksheets([]);
-        setRevisions([]);
+        if (revisionResult.status === "fulfilled") {
+          setRevisions(Array.isArray(revisionResult.value) ? revisionResult.value : []);
+        } else {
+          setRevisions([]);
+        }
+        if (testResult.status === "fulfilled") {
+          setTests(Array.isArray(testResult.value) ? testResult.value : []);
+        } else {
+          setTests([]);
+        }
+        setError(errors.length > 0 ? "Could not load worksheets." : "");
       })
       .finally(() => setLoading(false));
   }, [location.key]);
@@ -43,9 +49,9 @@ export function useStudentNavLinks() {
   );
 
   const navLinks = useMemo(
-    () => buildStudentNavLinks(latest.length > 0, revisions.length > 0),
-    [latest.length, revisions.length],
+    () => buildStudentNavLinks(latest.length > 0, revisions.length > 0, tests.length > 0),
+    [latest.length, revisions.length, tests.length],
   );
 
-  return { worksheets, revisions, latest, navLinks, loading, error };
+  return { worksheets, revisions, tests, latest, navLinks, loading, error };
 }

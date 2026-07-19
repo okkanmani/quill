@@ -94,6 +94,14 @@ def init_schema() -> None:
             )
         if "gifted_track_week" not in cols:
             conn.execute("ALTER TABLE worksheets ADD COLUMN gifted_track_week INTEGER")
+        if "is_test" not in cols:
+            conn.execute(
+                "ALTER TABLE worksheets ADD COLUMN is_test INTEGER NOT NULL DEFAULT 0"
+            )
+        if "test_sitting_count" not in cols:
+            conn.execute(
+                "ALTER TABLE worksheets ADD COLUMN test_sitting_count INTEGER NOT NULL DEFAULT 20"
+            )
         result_cols = {row[1] for row in conn.execute("PRAGMA table_info(results)")}
         if "duration_seconds" not in result_cols:
             conn.execute("ALTER TABLE results ADD COLUMN duration_seconds INTEGER")
@@ -223,6 +231,37 @@ def init_schema() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_revision_worksheets_student
                 ON student_revision_worksheets (student, created_at DESC);
+            CREATE TABLE IF NOT EXISTS test_attempts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                student TEXT NOT NULL,
+                worksheet_id TEXT NOT NULL,
+                started_at TEXT NOT NULL,
+                completed_at TEXT,
+                locked INTEGER NOT NULL DEFAULT 0,
+                sitting_count INTEGER NOT NULL DEFAULT 20,
+                sequence TEXT NOT NULL DEFAULT '[]',
+                answers TEXT NOT NULL DEFAULT '{}',
+                weighted_score REAL,
+                max_weighted_score REAL,
+                duration_seconds INTEGER,
+                UNIQUE (student, worksheet_id)
+            );
+            CREATE INDEX IF NOT EXISTS idx_test_attempts_student
+                ON test_attempts (student, completed_at DESC);
+            CREATE TABLE IF NOT EXISTS test_review_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                attempt_id INTEGER NOT NULL,
+                student TEXT NOT NULL,
+                worksheet_id TEXT NOT NULL,
+                subject TEXT NOT NULL,
+                title TEXT NOT NULL,
+                payload TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                completed_at TEXT,
+                FOREIGN KEY (attempt_id) REFERENCES test_attempts(id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_test_review_student
+                ON test_review_sessions (student, created_at DESC);
             CREATE TABLE IF NOT EXISTS learn_sections (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 subject_key TEXT NOT NULL,

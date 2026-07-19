@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   deleteResult,
   deleteWritingSubmission,
+  getAdminTestResults,
   getPracticeResults,
   getResults,
   getWritingSubmissions,
@@ -18,17 +19,20 @@ import QuillLoading from "../components/QuillLoading";
 import ResultsBySubject from "../components/ResultsBySubject";
 import ResultsPageCategory from "../components/ResultsPageCategory";
 import PracticeResultsSection from "../components/PracticeResultsSection";
+import TestResultsSection from "../components/TestResultsSection";
 import WritingResultsSection from "../components/WritingResultsSection";
 
 export default function AdminHome() {
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const [practiceResults, setPracticeResults] = useState([]);
+  const [testResults, setTestResults] = useState([]);
   const [writing, setWriting] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [openIds, setOpenIds] = useState(() => new Set());
   const [openPracticeIds, setOpenPracticeIds] = useState(() => new Set());
+  const [openTestIds, setOpenTestIds] = useState(() => new Set());
   const [openWritingIds, setOpenWritingIds] = useState(() => new Set());
   const [deletingResultId, setDeletingResultId] = useState(null);
   const [deletingWritingId, setDeletingWritingId] = useState(null);
@@ -37,10 +41,11 @@ export default function AdminHome() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    Promise.all([getResults(), getPracticeResults(), getWritingSubmissions()])
-      .then(([resultData, practiceData, writingData]) => {
+    Promise.all([getResults(), getPracticeResults(), getAdminTestResults(), getWritingSubmissions()])
+      .then(([resultData, practiceData, testData, writingData]) => {
         setResults(resultData);
         setPracticeResults(Array.isArray(practiceData) ? practiceData : []);
+        setTestResults(Array.isArray(testData) ? testData : []);
         setWriting(writingData);
       })
       .catch(() => setError("Could not load results."))
@@ -67,6 +72,15 @@ export default function AdminHome() {
 
   function togglePractice(id) {
     setOpenPracticeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleTest(id) {
+    setOpenTestIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -162,7 +176,8 @@ export default function AdminHome() {
 
   const hasMainWorksheets = results.length > 0 || writing.length > 0;
   const hasRevision = practiceResults.length > 0;
-  const hasAny = hasMainWorksheets || hasRevision;
+  const hasTests = testResults.length > 0;
+  const hasAny = hasMainWorksheets || hasRevision || hasTests;
 
   return (
     <AppShell
@@ -229,6 +244,16 @@ export default function AdminHome() {
                   results={practiceResults}
                   openIds={openPracticeIds}
                   toggleOpen={togglePractice}
+                />
+              </ResultsPageCategory>
+            ) : null}
+            {hasTests ? (
+              <ResultsPageCategory title="Tests">
+                <TestResultsSection
+                  results={testResults}
+                  openIds={openTestIds}
+                  toggleOpen={toggleTest}
+                  embedded
                 />
               </ResultsPageCategory>
             ) : null}

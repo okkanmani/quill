@@ -67,6 +67,19 @@ from revision import (
     list_revision_worksheets,
     save_revision_worksheet,
 )
+from tests import (
+    complete_test_review,
+    get_or_start_test_session,
+    get_test_review,
+    list_test_results,
+    list_test_reviews,
+    list_tests,
+    lock_test_attempt,
+    save_test_answer,
+    save_test_review_notes,
+    submit_test,
+    unlock_test_attempt,
+)
 from writing import (
     delete_writing_submission,
     grade_writing_submission,
@@ -290,6 +303,15 @@ class CompleteRevisionRequest(BaseModel):
     score: int
     total: int
     answers: list[dict] | None = None
+
+
+class TestAnswerRequest(BaseModel):
+    slot: int
+    given: str
+
+
+class TestReviewNotesRequest(BaseModel):
+    questions: list[dict]
 
 
 class PublishLearnResourceRequest(BaseModel):
@@ -553,6 +575,11 @@ def get_worksheet_by_id(worksheet_id: str, authorization: str = Header(...)):
     worksheet = get_worksheet(worksheet_id, admin_id=admin_id)
     if not worksheet:
         raise HTTPException(status_code=404, detail="Worksheet not found")
+    if payload.get("role") == "student" and worksheet.get("is_test"):
+        raise HTTPException(
+            status_code=403,
+            detail="Open this test from the Tests page.",
+        )
     if payload.get("role") == "student":
         worksheet = strip_reference_answers_for_student(worksheet)
     return worksheet
@@ -1424,6 +1451,177 @@ def complete_revision_worksheet_route(
     if not result:
         raise HTTPException(status_code=404, detail="Revision worksheet not found")
     return result
+
+
+def _test_context_name(payload: dict) -> str:
+    if payload.get("role") == "student":
+        return payload["name"]
+    if payload.get("role") == "admin":
+        return _student_context_name(payload)
+    raise HTTPException(status_code=403, detail="Admin or student only")
+
+
+@app.get("/tests")
+def get_tests(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    who = _test_context_name(payload)
+    return list_tests(who)
+
+
+@app.get("/tests/results")
+def get_test_results(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    who = _test_context_name(payload)
+    return list_test_results(who)
+
+
+@app.get("/admin/test-results")
+def get_admin_test_results(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    return list_test_results(who)
+
+
+@app.get("/tests/reviews")
+def get_test_reviews(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    who = _test_context_name(payload)
+    return list_test_reviews(who)
+
+
+@app.get("/tests/reviews/{review_id}")
+def get_test_review_route(review_id: int, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    who = _test_context_name(payload)
+    review = get_test_review(review_id, who)
+    if not review:
+        raise HTTPException(status_code=404, detail="Review session not found")
+    return review
+
+
+@app.put("/tests/reviews/{review_id}/notes")
+def save_test_review_notes_route(
+    review_id: int,
+    req: TestReviewNotesRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    who = _test_context_name(payload)
+    try:
+        return save_test_review_notes(review_id, who, questions=req.questions)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.patch("/tests/reviews/{review_id}/complete")
+def complete_test_review_route(review_id: int, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    who = _test_context_name(payload)
+    try:
+        return complete_test_review(review_id, who)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/tests/{worksheet_id}/session")
+def get_test_session_route(
+    worksheet_id: str,
+    authorization: str = Header(...),
+    slot: int | None = Query(default=None),
+    resume: int = Query(default=1),
+):
+    payload = _payload(authorization)
+    who = _test_context_name(payload)
+    try:
+        return get_or_start_test_session(
+            who,
+            worksheet_id,
+            target_slot=slot,
+            resume=bool(resume),
+        )
+    except ValueError as exc:
+        msg = str(exc)
+        if "locked" in msg.lower() or "access" in msg.lower():
+            raise HTTPException(status_code=423, detail=msg)
+        raise HTTPException(status_code=400, detail=msg)
+
+
+@app.post("/tests/{worksheet_id}/session")
+def start_test_session_route(
+    worksheet_id: str,
+    authorization: str = Header(...),
+    slot: int | None = Query(default=None),
+    resume: int = Query(default=0),
+):
+    payload = _payload(authorization)
+    who = _test_context_name(payload)
+    try:
+        return get_or_start_test_session(
+            who,
+            worksheet_id,
+            target_slot=slot,
+            resume=bool(resume),
+        )
+    except ValueError as exc:
+        msg = str(exc)
+        if "locked" in msg.lower() or "access" in msg.lower():
+            raise HTTPException(status_code=423, detail=msg)
+        raise HTTPException(status_code=400, detail=msg)
+
+
+@app.patch("/tests/{worksheet_id}/answer")
+def save_test_answer_route(
+    worksheet_id: str,
+    req: TestAnswerRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can answer tests")
+    try:
+        return save_test_answer(
+            payload["name"],
+            worksheet_id,
+            slot=req.slot,
+            given=req.given,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/tests/{worksheet_id}/submit")
+def submit_test_route(worksheet_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can submit tests")
+    try:
+        return submit_test(payload["name"], worksheet_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/tests/{worksheet_id}/lock")
+def lock_test_route(worksheet_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can lock tests")
+    lock_test_attempt(payload["name"], worksheet_id)
+    return {"message": "Test locked"}
+
+
+@app.post("/admin/tests/{worksheet_id}/unlock")
+def admin_unlock_test_route(worksheet_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    try:
+        unlock_test_attempt(who, worksheet_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"message": "Test attempt reset"}
 
 
 @app.delete("/results/{result_id}")
