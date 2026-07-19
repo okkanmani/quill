@@ -1666,17 +1666,22 @@ def test_data_from_builder(body: dict) -> dict:
     if errors:
         raise ValueError(errors)
 
+    adaptive = body.get("test_adaptive") is not False
+    questions = list(raw_questions)
+    if not adaptive and len(questions) > sitting:
+        questions = questions[:sitting]
+
     return {
         "title": title.strip(),
         "subject": subject,
         "is_test": True,
-        "test_adaptive": body.get("test_adaptive") is not False,
+        "test_adaptive": adaptive,
         "test_sitting_count": sitting,
         "timed": True,
         "time_limit_minutes": time_limit,
         "scratchpad": False,
         "content_badge": (body.get("content_badge") or "Test").strip() or "Test",
-        "questions": raw_questions,
+        "questions": questions,
     }
 
 

@@ -553,11 +553,11 @@ Generate exactly {total} multiple-choice questions in total:
 These feed an adaptive test where each student answers {sitting_count} questions per sitting and difficulty adjusts by tier after each response.
 """
     else:
-        total = sitting_count
+        total = max(sitting_count + 4, int(sitting_count * 1.2))
         bank_rules = f"""
-Generate exactly {total} multiple-choice questions — no more and no fewer.
-Use a mix of "stars" values 1, 2, and 3 across the set.
-Students take a fixed-order test of {sitting_count} questions in sequence — the bank is the sitting.
+Generate {total} multiple-choice questions with a mix of "stars" values 1, 2, and 3.
+The sitting uses {sitting_count} questions — include a small buffer so the teacher can review, edit, and reorder before publish.
+Extra questions beyond the sitting are trimmed automatically when the test is published.
 """
 
     schema = """
@@ -620,7 +620,7 @@ def _normalize_test_draft(
         expected = sitting_count * 3
         min_count = expected
     else:
-        expected = sitting_count
+        expected = max(sitting_count + 4, int(sitting_count * 1.2))
         min_count = sitting_count
 
     if len(raw_questions) < min_count:
@@ -687,10 +687,9 @@ def _normalize_test_draft(
                     f"expected at least {sitting_count}."
                 )
     else:
-        questions = questions[:sitting_count]
         if len(questions) < sitting_count:
             raise ValueError(
-                f"AI returned {len(questions)} questions; expected exactly {sitting_count}."
+                f"AI returned {len(questions)} questions; expected at least {sitting_count}."
             )
 
     return {"title": title.strip(), "questions": questions}

@@ -17,11 +17,13 @@ import {
   draftToTestBuilderQuestions,
   emptyTestQuestion,
   isTestQuestionComplete,
+  fixedOrderAiBankSize,
   minimumBankSize,
+  trimQuestionsForPublish,
   validateTestBuilder,
 } from "../testBuilderUtils";
 
-function TierBankStatus({ sittingCount, tierCounts, adaptive }) {
+function TierBankStatus({ sittingCount, tierCounts, adaptive, aiBankTarget }) {
   if (!adaptive) {
     const total = Object.values(tierCounts).reduce((sum, count) => sum + count, 0);
     const ready = total >= sittingCount;
@@ -29,7 +31,8 @@ function TierBankStatus({ sittingCount, tierCounts, adaptive }) {
       <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
         <p className="text-sm font-semibold text-slate-900">Fixed-order bank</p>
         <p className="text-xs text-slate-600 mt-1">
-          Tier labels still affect scoring weight. You need {sittingCount} questions total.
+          Tier labels still affect scoring weight. Publish keeps the first {sittingCount}{" "}
+          questions{aiBankTarget ? ` (AI target ~${aiBankTarget} for review)` : ""}.
         </p>
         <p
           className={`text-lg font-bold tabular-nums mt-2 ${
@@ -259,6 +262,7 @@ export default function TestBuilderPanel() {
   const canUseAi = aiEnabled && apiKeyConfigured && !editId;
   const tierCounts = useMemo(() => countQuestionsByTier(questions), [questions]);
   const bankMinimum = minimumBankSize(sittingCount, adaptiveEnabled);
+  const aiBankTarget = fixedOrderAiBankSize(sittingCount);
 
   const filteredQuestions = useMemo(() => {
     if (activeTierFilter === "all") return questions;
@@ -335,13 +339,19 @@ export default function TestBuilderPanel() {
 
     setPublishing(true);
     try {
+      const publishQuestions = trimQuestionsForPublish(
+        questions,
+        sittingCount,
+        adaptiveEnabled,
+      );
+      const trimmedCount = questions.length - publishQuestions.length;
       const payload = {
         ...buildTestBuilderPreview({
           title,
           subject,
           sittingCount,
           timeLimitMinutes,
-          questions,
+          questions: publishQuestions,
           adaptive: adaptiveEnabled,
         }),
         lock_on_create: lockOnPublish,
@@ -362,7 +372,11 @@ export default function TestBuilderPanel() {
       setNotice(
         editId
           ? `Saved changes to ${result.id} — “${result.title}”.`
-          : `Published ${result.id} — “${result.title}” (${result.question_count} questions).${lockNote}`,
+          : `Published ${result.id} — “${result.title}” (${result.question_count} questions).${lockNote}${
+              trimmedCount > 0
+                ? ` ${trimmedCount} extra buffer question${trimmedCount === 1 ? "" : "s"} were not included.`
+                : ""
+            }`,
       );
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -390,10 +404,7 @@ export default function TestBuilderPanel() {
         adaptive: adaptiveEnabled,
         custom_prompt: aiCustomPrompt.trim(),
       });
-      const generated = draftToTestBuilderQuestions(draft, {
-        adaptive: adaptiveEnabled,
-        sittingCount,
-      });
+      const generated = draftToTestBuilderQuestions(draft);
       if (!title.trim() && draft.title) {
         setTitle(draft.title);
       }
@@ -441,9 +452,11 @@ export default function TestBuilderPanel() {
           ) : (
             <>
               <li>All {sittingCount} questions are assigned when the student starts.</li>
-              <li>Difficulty does not change mid-test based on answers.</li>
               <li>Scoring is still weighted by each question&apos;s tier.</li>
-              <li>You need at least {sittingCount} questions total in the bank.</li>
+              <li>
+                AI may generate ~{aiBankTarget} questions as a review buffer; publish keeps the
+                first {sittingCount}.
+              </li>
             </>
           )}
         </ul>
@@ -620,7 +633,9 @@ export default function TestBuilderPanel() {
             <p className="text-sm text-slate-600 mt-0.5">
               {adaptiveEnabled
                 ? `Add at least ${sittingCount} questions per tier (${bankMinimum} total minimum).`
-                : `Add at least ${bankMinimum} questions for one sitting.`}
+                : buildUsingAi
+                  ? `AI targets ~${aiBankTarget} questions for review; publish uses the first ${sittingCount}.`
+                  : `Add at least ${sittingCount} questions (${sittingCount + 1}+ recommended as a review buffer).`}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -648,6 +663,7 @@ export default function TestBuilderPanel() {
           sittingCount={sittingCount}
           tierCounts={tierCounts}
           adaptive={adaptiveEnabled}
+          aiBankTarget={buildUsingAi ? aiBankTarget : null}
         />
 
         {!buildUsingAi ? (
