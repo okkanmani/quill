@@ -162,6 +162,10 @@ def _normalize_ai_questions(raw_questions: list, *, area_slug: str) -> list[dict
         if not isinstance(correct_index, int) or correct_index not in (0, 1, 2, 3):
             raise ValueError(f"{prefix} has invalid correct_index.")
 
+        answer = trimmed[correct_index]
+        shuffled_choices = list(trimmed)
+        random.shuffle(shuffled_choices)
+
         hint_context = str(
             raw.get("hint_context") or raw.get("hintContext") or ""
         ).strip()
@@ -182,8 +186,8 @@ def _normalize_ai_questions(raw_questions: list, *, area_slug: str) -> list[dict
             "type": "multiple_choice",
             "stars": stars,
             "area": area_slug,
-            "choices": trimmed,
-            "answer": trimmed[correct_index],
+            "choices": shuffled_choices,
+            "answer": answer,
         }
         if hint and hint_context:
             question_row["hint"] = True
