@@ -349,6 +349,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://quill-app.fly.dev",
+        "https://quill-app-staging.fly.dev",
         "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:8000",
