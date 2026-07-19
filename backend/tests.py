@@ -519,6 +519,11 @@ def save_test_answer(
         _save_attempt_state(conn, row["id"], sequence, answers)
         conn.commit()
 
+        row = conn.execute(
+            "SELECT * FROM test_attempts WHERE id = ?",
+            (row["id"],),
+        ).fetchone()
+
         session = _attempt_row_to_session(
             row,
             ws,
