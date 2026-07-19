@@ -190,7 +190,7 @@ def _resolve_test(
     data = _load_bundled_sheet_data(worksheet_id)
     if data:
         flag = _test_from_sheet_data(data)
-        sitting = _test_sitting_count_from_data(data)
+        sitting = _test_sitting_count_from_sheet_data(data)
         adaptive = _test_adaptive_from_sheet_data(data)
     else:
         flag = bool(row_flag)
