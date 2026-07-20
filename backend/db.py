@@ -445,8 +445,6 @@ def init_schema() -> None:
                 ON question_bank_items (admin_id, subject);
             CREATE INDEX IF NOT EXISTS idx_question_bank_admin_stars
                 ON question_bank_items (admin_id, subject, stars);
-            CREATE INDEX IF NOT EXISTS idx_question_bank_prompt_key
-                ON question_bank_items (admin_id, subject, prompt_key);
             """
         )
 
