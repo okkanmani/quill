@@ -235,21 +235,59 @@ export default function AdminWorksheets() {
     await handleLockAccess(ws);
   }
 
-  const regularWorksheets = useMemo(
-    () => worksheets.filter((ws) => !ws.is_test),
-    [worksheets],
-  );
-  const testWorksheets = useMemo(
-    () => worksheets.filter((ws) => ws.is_test),
-    [worksheets],
-  );
-
   const giftedTrackUnlockedThroughWeek = useMemo(() => {
     const gifted = worksheets.find((ws) => ws.gifted_track);
     return gifted?.gifted_track_unlocked_through_week ?? null;
   }, [worksheets]);
 
   const selectedCount = selectedIds.size;
+
+  function renderWorksheetSideAction(ws) {
+    return (
+      <div className="flex flex-row sm:flex-col shrink-0 gap-2 self-center sm:self-stretch items-center sm:items-stretch sm:w-11">
+        <label
+          className="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition"
+          title={`Select ${ws.title}`}
+        >
+          <input
+            type="checkbox"
+            checked={selectedIds.has(ws.id)}
+            onChange={() => toggleSelected(ws.id)}
+            disabled={deleting}
+            aria-label={`Select ${ws.title}`}
+            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+          />
+        </label>
+        {(() => {
+          const lockInfo = adminWorksheetLockInfo(ws);
+          if (!lockInfo) return null;
+          return (
+            <WorksheetLockButton
+              locked={lockInfo.locked}
+              variant={lockInfo.variant}
+              label={lockInfo.label}
+              disabled={deleting}
+              onClick={() => handleToggleLock(ws)}
+            />
+          );
+        })()}
+        <EditActionButton
+          to={
+            ws.is_test
+              ? `/admin/create/test?edit=${encodeURIComponent(ws.id)}`
+              : `/admin/create/worksheet?edit=${encodeURIComponent(ws.id)}`
+          }
+          label={`Edit ${ws.title}`}
+          disabled={deleting}
+        />
+        <RecycleBinButton
+          onClick={() => handleDelete(ws)}
+          label={`Delete ${ws.title}`}
+          disabled={deleting}
+        />
+      </div>
+    );
+  }
 
   return (
     <AppShell
@@ -277,7 +315,7 @@ export default function AdminWorksheets() {
           <p className="text-slate-600">No worksheets.</p>
         )}
 
-        {!loading && !error && (regularWorksheets.length > 0 || testWorksheets.length > 0) && (
+        {!loading && !error && worksheets.length > 0 && (
           <>
             {selectedCount > 0 ? (
               <div className="sticky top-0 z-30 -mx-1 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-3 shadow-md">
@@ -321,7 +359,7 @@ export default function AdminWorksheets() {
             ) : null}
 
             <WorksheetsByMode
-              worksheets={regularWorksheets}
+              worksheets={worksheets}
               onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
               giftedTrackUnlockedThroughWeek={giftedTrackUnlockedThroughWeek}
               renderWeekAction={(week, _items, info) => (
@@ -336,89 +374,8 @@ export default function AdminWorksheets() {
                   onClick={() => handleToggleWeekLock(week, info.weekLockedForAdmin)}
                 />
               )}
-              renderSideAction={(ws) => (
-                <div className="flex flex-row sm:flex-col shrink-0 gap-2 self-center sm:self-stretch items-center sm:items-stretch sm:w-11">
-                  <label
-                    className="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition"
-                    title={`Select ${ws.title}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(ws.id)}
-                      onChange={() => toggleSelected(ws.id)}
-                      disabled={deleting}
-                      aria-label={`Select ${ws.title}`}
-                      className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                    />
-                  </label>
-                  {(() => {
-                    const lockInfo = adminWorksheetLockInfo(ws);
-                    if (!lockInfo) return null;
-                    return (
-                      <WorksheetLockButton
-                        locked={lockInfo.locked}
-                        variant={lockInfo.variant}
-                        label={lockInfo.label}
-                        disabled={deleting}
-                        onClick={() => handleToggleLock(ws)}
-                      />
-                    );
-                  })()}
-                  <EditActionButton
-                    to={`/admin/create/worksheet?edit=${encodeURIComponent(ws.id)}`}
-                    label={`Edit ${ws.title}`}
-                    disabled={deleting}
-                  />
-                  <RecycleBinButton
-                    onClick={() => handleDelete(ws)}
-                    label={`Delete ${ws.title}`}
-                    disabled={deleting}
-                  />
-                </div>
-              )}
+              renderSideAction={renderWorksheetSideAction}
             />
-
-            {testWorksheets.length > 0 ? (
-              <div className="mt-8 rounded-2xl border border-teal-200 bg-teal-50/40 overflow-hidden">
-                <div className="px-4 py-4 border-b border-teal-200/80">
-                  <p className="font-bold text-slate-950 text-lg">Tests</p>
-                  <p className="text-slate-700 text-sm mt-0.5">
-                    Adaptive assessments — unlock access or reset an in-progress sitting.
-                  </p>
-                </div>
-                <div className="p-3 flex flex-col gap-3">
-                  {testWorksheets.map((ws) => (
-                    <div
-                      key={ws.id}
-                      className="flex flex-col sm:flex-row gap-3 sm:items-stretch bg-white border border-slate-200 rounded-2xl p-4"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-900">{ws.title}</p>
-                        <p className="text-sm text-teal-800 mt-1 capitalize">{ws.subject}</p>
-                      </div>
-                      <div className="flex flex-row sm:flex-col shrink-0 gap-2">
-                        {(() => {
-                          const lockInfo = adminWorksheetLockInfo(ws);
-                          if (!lockInfo) return null;
-                          return (
-                            <WorksheetLockButton
-                              locked={lockInfo.locked}
-                              variant={lockInfo.variant}
-                              label={lockInfo.label}
-                              onClick={() => handleToggleLock(ws)}
-                            />
-                          );
-                        })()}
-                        <EditActionButton
-                          to={`/admin/create/test?edit=${encodeURIComponent(ws.id)}`}
-                          label={`Edit ${ws.title}`}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
           </>
         )}
       </div>

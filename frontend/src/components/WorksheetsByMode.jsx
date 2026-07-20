@@ -10,6 +10,8 @@ const SECTION_STYLES = {
     "bg-amber-100/90 hover:bg-amber-100 border-amber-200/80",
   gifted:
     "bg-violet-100/90 hover:bg-violet-100 border-violet-200/80",
+  tests:
+    "bg-teal-100/90 hover:bg-teal-100 border-teal-200/80",
 };
 
 function isSpecialTrack(ws) {
@@ -17,7 +19,7 @@ function isSpecialTrack(ws) {
 }
 
 /**
- * Practice, Timed, Math Enrichment, and Thinking Quest (gifted prep track).
+ * Practice, Timed, Math Enrichment, Thinking Quest, and Tests.
  */
 export default function WorksheetsByMode({
   worksheets,
@@ -40,6 +42,10 @@ export default function WorksheetsByMode({
   );
   const thinkingQuest = useMemo(
     () => worksheets.filter((ws) => ws.gifted_track),
+    [worksheets],
+  );
+  const tests = useMemo(
+    () => worksheets.filter((ws) => ws.is_test),
     [worksheets],
   );
   const [openModes, setOpenModes] = useState(() => new Set());
@@ -80,13 +86,21 @@ export default function WorksheetsByMode({
         "A 12-week brain-building path — patterns, logic, and problem-solving for special-program style challenges.",
       items: thinkingQuest,
     },
+    {
+      key: "tests",
+      title: "Tests",
+      description:
+        "Adaptive assessments — unlock access or reset an in-progress sitting.",
+      items: tests,
+    },
   ];
 
   if (
     practice.length === 0 &&
     timed.length === 0 &&
     mathEnrichment.length === 0 &&
-    thinkingQuest.length === 0
+    thinkingQuest.length === 0 &&
+    tests.length === 0
   ) {
     return null;
   }
@@ -116,7 +130,8 @@ export default function WorksheetsByMode({
                   <p className="font-bold text-slate-950 text-lg">{title}</p>
                   <p className="text-slate-700 text-sm mt-0.5">{description}</p>
                   <p className="text-slate-600 text-xs font-semibold mt-1 tabular-nums">
-                    {items.length} worksheet{items.length === 1 ? "" : "s"}
+                    {items.length} {key === "tests" ? "test" : "worksheet"}
+                    {items.length === 1 ? "" : "s"}
                   </p>
                 </div>
                 <span className="text-slate-900 text-sm font-bold shrink-0 pt-1">
