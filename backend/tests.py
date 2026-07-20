@@ -319,9 +319,15 @@ def _save_attempt_state(conn, attempt_id: int, sequence: list, answers: dict) ->
     )
 
 
-def list_tests(student_name: str) -> list[dict]:
+def list_tests(student_name: str, *, admin_id: int) -> list[dict]:
     conn = db.connect()
     try:
+        default_admin = conn.execute("SELECT MIN(id) AS id FROM admins").fetchone()
+        default_admin_id = (
+            int(default_admin["id"])
+            if default_admin and default_admin["id"] is not None
+            else admin_id
+        )
         rows = conn.execute(
             """
             SELECT w.id, w.title, w.subject, w.sort_ts, w.is_timed, w.time_limit_minutes,
@@ -336,9 +342,10 @@ def list_tests(student_name: str) -> list[dict]:
             LEFT JOIN test_review_sessions tr
               ON tr.attempt_id = ta.id
             WHERE COALESCE(w.is_test, 0) = 1
+              AND (w.admin_id = ? OR (w.admin_id IS NULL AND ? = ?))
             ORDER BY w.sort_ts DESC, w.id DESC
             """,
-            (student_name,),
+            (student_name, admin_id, admin_id, default_admin_id),
         ).fetchall()
 
         unlocked = get_gifted_track_unlocked_through_week(conn, student_name)
@@ -349,7 +356,7 @@ def list_tests(student_name: str) -> list[dict]:
 
     out = []
     for r in rows:
-        ws = get_worksheet(r["id"])
+        ws = get_worksheet(r["id"], admin_id=admin_id)
         if not ws:
             continue
         sitting = int(r["test_sitting_count"] or test_sitting_count_from_data(ws))

@@ -795,7 +795,7 @@ def admin_create_test_from_builder(
     body = req.model_dump()
     lock_on_create = bool(body.pop("lock_on_create", False))
     try:
-        result = create_test_from_builder(body)
+        result = create_test_from_builder(body, admin_id=_admin_id(payload))
     except ValueError as exc:
         errors = exc.args[0] if exc.args else ["Invalid test data."]
         if isinstance(errors, list):
@@ -825,7 +825,9 @@ def admin_update_test_from_builder(
     body = req.model_dump()
     body.pop("lock_on_create", None)
     try:
-        return update_test_from_builder(worksheet_id, body)
+        return update_test_from_builder(
+            worksheet_id, body, admin_id=_admin_id(payload)
+        )
     except ValueError as exc:
         errors = exc.args[0] if exc.args else ["Invalid test data."]
         if isinstance(errors, list):
@@ -1575,7 +1577,7 @@ def _test_context_name(payload: dict) -> str:
 def get_tests(authorization: str = Header(...)):
     payload = _payload(authorization)
     who = _test_context_name(payload)
-    return list_tests(who)
+    return list_tests(who, admin_id=resolve_admin_id(payload))
 
 
 @app.get("/tests/results")

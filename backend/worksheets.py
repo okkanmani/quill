@@ -1685,25 +1685,25 @@ def test_data_from_builder(body: dict) -> dict:
     }
 
 
-def create_test_from_builder(body: dict) -> dict:
+def create_test_from_builder(body: dict, *, admin_id: int) -> dict:
     """Validate test builder input, assign id, and upsert worksheet."""
     data = test_data_from_builder(body)
-    ws_id = next_worksheet_id()
-    return upsert_worksheet_from_data(ws_id, data)
+    ws_id = generate_worksheet_id(data.get("subject", "general"))
+    return upsert_worksheet_from_data(ws_id, data, admin_id=admin_id)
 
 
-def update_test_from_builder(ws_id: str, body: dict) -> dict:
+def update_test_from_builder(ws_id: str, body: dict, *, admin_id: int) -> dict:
     """Validate test builder input and replace an existing test worksheet."""
     ws_id = (ws_id or "").strip()
     if not ws_id:
         raise ValueError(["Test id is required."])
-    existing = get_worksheet(ws_id)
+    existing = get_worksheet(ws_id, admin_id=admin_id)
     if existing is None:
         raise ValueError([f"Test {ws_id} not found."])
     if not existing.get("is_test"):
         raise ValueError([f"Worksheet {ws_id} is not a test."])
     data = test_data_from_builder(body)
-    return upsert_worksheet_from_data(ws_id, data, refresh_sort_ts=False)
+    return upsert_worksheet_from_data(ws_id, data, refresh_sort_ts=False, admin_id=admin_id)
 
 
 def validate_worksheet_data(data: dict) -> list[str]:
