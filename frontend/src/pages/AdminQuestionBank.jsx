@@ -11,7 +11,8 @@ import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
-import TestQuestionCard from "../components/TestQuestionCard";
+import QuestionBankEditorModal from "../components/QuestionBankEditorModal";
+import { QuestionDifficultyStars } from "../components/DifficultyStars";
 import {
   BUILDER_SUBJECTS,
   TEST_TIERS,
@@ -21,34 +22,58 @@ import {
   isTestQuestionComplete,
 } from "../testBuilderUtils";
 
+function formatBankDate(iso) {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function truncateText(text, max = 120) {
+  const value = String(text || "").trim();
+  if (value.length <= max) return value || "—";
+  return `${value.slice(0, max)}…`;
+}
+
+function matchesSearch(item, query) {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  const haystack = [
+    item.prompt,
+    item.area,
+    item.id,
+    item.source,
+    item.answer,
+    ...(Array.isArray(item.choices) ? item.choices : []),
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(needle);
+}
+
 export default function AdminQuestionBank() {
   const navigate = useNavigate();
   const [subject, setSubject] = useState("math");
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [savingId, setSavingId] = useState("");
-  const [deletingId, setDeletingId] = useState("");
-  const [expandedIds, setExpandedIds] = useState(() => new Set());
-  const [drafts, setDrafts] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [activeTierFilter, setActiveTierFilter] = useState("all");
-  const [areaFilter, setAreaFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
-  const [addingNew, setAddingNew] = useState(false);
-  const [newQuestion, setNewQuestion] = useState(() => emptyTestQuestion(2));
+  const [editorMode, setEditorMode] = useState(null);
+  const [editorDraft, setEditorDraft] = useState(null);
 
   const loadItems = useCallback(() => {
     setLoading(true);
     setError("");
     listQuestionBank({ subject })
-      .then((data) => {
-        setItems(data);
-        const nextDrafts = {};
-        for (const item of data) {
-          nextDrafts[item.id] = bankItemToEditorQuestion(item);
-        }
-        setDrafts(nextDrafts);
-      })
+      .then((data) => setItems(data))
       .catch((err) => setError(err.message || "Could not load question bank."))
       .finally(() => setLoading(false));
   }, [subject]);
@@ -77,109 +102,89 @@ export default function AdminQuestionBank() {
       const tier = Number(activeTierFilter);
       next = next.filter((item) => Number(item.stars) === tier);
     }
-    const area = areaFilter.trim().toLowerCase();
-    if (area) {
-      next = next.filter((item) => String(item.area || "").toLowerCase().includes(area));
+    if (searchQuery.trim()) {
+      next = next.filter((item) => matchesSearch(item, searchQuery));
     }
     return next;
-  }, [activeTierFilter, areaFilter, items]);
+  }, [activeTierFilter, items, searchQuery]);
 
-  function toggleExpanded(id) {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  function openCreateEditor() {
+    setEditorMode("create");
+    setEditorDraft(emptyTestQuestion(2));
+    setError("");
   }
 
-  function updateDraft(id, patch) {
-    setDrafts((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], ...patch },
-    }));
+  function openEditEditor(item) {
+    setEditorMode(item.id);
+    setEditorDraft(bankItemToEditorQuestion(item));
+    setError("");
   }
 
-  async function handleSave(itemId) {
-    const draft = drafts[itemId];
-    if (!draft || !isTestQuestionComplete(draft)) {
+  function closeEditor() {
+    setEditorMode(null);
+    setEditorDraft(null);
+  }
+
+  async function handleSaveEditor() {
+    if (!editorDraft || !isTestQuestionComplete(editorDraft)) {
       setError("Complete all fields before saving.");
       return;
     }
-    setSavingId(itemId);
+    setSaving(true);
     setError("");
     setNotice("");
     try {
-      const saved = await updateQuestionBankItem(
-        itemId,
-        editorQuestionToBankPayload(draft, subject),
-      );
-      setItems((prev) => prev.map((item) => (item.id === itemId ? saved : item)));
-      setDrafts((prev) => ({ ...prev, [itemId]: bankItemToEditorQuestion(saved) }));
-      setNotice("Question saved.");
+      if (editorMode === "create") {
+        const created = await createQuestionBankItem(
+          editorQuestionToBankPayload(editorDraft, subject),
+        );
+        setItems((prev) => [created, ...prev]);
+        setNotice("Question added to bank.");
+      } else {
+        const saved = await updateQuestionBankItem(
+          editorMode,
+          editorQuestionToBankPayload(editorDraft, subject),
+        );
+        setItems((prev) => prev.map((item) => (item.id === editorMode ? saved : item)));
+        setNotice("Question saved.");
+      }
+      closeEditor();
     } catch (err) {
       setError(err.message || "Could not save question.");
     } finally {
-      setSavingId("");
+      setSaving(false);
     }
   }
 
-  async function handleDelete(itemId) {
-    const draft = drafts[itemId];
-    const preview = draft?.prompt?.trim() || itemId;
-    const ok = window.confirm(`Delete “${preview.slice(0, 80)}${preview.length > 80 ? "…" : ""}”?`);
+  async function handleDeleteEditor() {
+    if (editorMode === "create" || !editorMode) return;
+    const preview = editorDraft?.prompt?.trim() || editorMode;
+    const ok = window.confirm(
+      `Delete “${preview.slice(0, 80)}${preview.length > 80 ? "…" : ""}”?`,
+    );
     if (!ok) return;
-    setDeletingId(itemId);
+    setDeleting(true);
     setError("");
     setNotice("");
     try {
-      await deleteQuestionBankItem(itemId);
-      setItems((prev) => prev.filter((item) => item.id !== itemId));
-      setDrafts((prev) => {
-        const next = { ...prev };
-        delete next[itemId];
-        return next;
-      });
-      setExpandedIds((prev) => {
-        const next = new Set(prev);
-        next.delete(itemId);
-        return next;
-      });
+      await deleteQuestionBankItem(editorMode);
+      setItems((prev) => prev.filter((item) => item.id !== editorMode));
       setNotice("Question deleted.");
+      closeEditor();
     } catch (err) {
       setError(err.message || "Could not delete question.");
     } finally {
-      setDeletingId("");
-    }
-  }
-
-  async function handleCreateNew() {
-    if (!isTestQuestionComplete(newQuestion)) {
-      setError("Complete all fields before adding a question.");
-      return;
-    }
-    setSavingId("new");
-    setError("");
-    setNotice("");
-    try {
-      const created = await createQuestionBankItem(
-        editorQuestionToBankPayload(newQuestion, subject),
-      );
-      setItems((prev) => [created, ...prev]);
-      setDrafts((prev) => ({ ...prev, [created.id]: bankItemToEditorQuestion(created) }));
-      setExpandedIds((prev) => new Set(prev).add(created.id));
-      setNewQuestion(emptyTestQuestion(2));
-      setAddingNew(false);
-      setNotice("Question added to bank.");
-    } catch (err) {
-      setError(err.message || "Could not add question.");
-    } finally {
-      setSavingId("");
+      setDeleting(false);
     }
   }
 
   const subjectLabel =
     BUILDER_SUBJECTS.find((option) => option.value === subject)?.label || subject;
+
+  const editingItem =
+    editorMode && editorMode !== "create"
+      ? items.find((item) => item.id === editorMode)
+      : null;
 
   return (
     <AppShell
@@ -188,11 +193,11 @@ export default function AdminQuestionBank() {
       onLogout={handleLogout}
       mainClassName="pb-28"
     >
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Question bank</h1>
         <p className="text-slate-600 text-sm mb-5 leading-relaxed">
-          Reusable MCQs organized by subject. Edit questions here, then pick them when building tests
-          to save AI tokens and reuse content across assessments.
+          Reusable MCQs organized by subject. Search and edit records here, then pick them when
+          building tests.
         </p>
 
         {notice ? (
@@ -217,8 +222,8 @@ export default function AdminQuestionBank() {
               onClick={() => {
                 setSubject(option.value);
                 setActiveTierFilter("all");
-                setAreaFilter("");
-                setAddingNew(false);
+                setSearchQuery("");
+                closeEditor();
                 setNotice("");
               }}
               className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
@@ -232,154 +237,183 @@ export default function AdminQuestionBank() {
           ))}
         </nav>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6 space-y-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="font-bold text-slate-900">{subjectLabel}</h2>
-              <p className="text-sm text-slate-600 mt-0.5">
-                {items.length} saved question{items.length === 1 ? "" : "s"}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                to="/admin/create/test"
-                className="rounded-xl border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
-              >
-                Build a test →
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  setAddingNew((open) => !open);
-                  setNewQuestion(emptyTestQuestion(2));
-                  setExpandedIds(new Set());
-                }}
-                className="rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 text-sm font-semibold transition"
-              >
-                {addingNew ? "Cancel new question" : "+ Add question"}
-              </button>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-3">
-            {TEST_TIERS.map((tier) => (
-              <div
-                key={tier.value}
-                className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
-              >
-                <p className="text-sm font-semibold text-slate-900">{tier.label}</p>
-                <p className="text-lg font-bold tabular-nums mt-1 text-slate-800">
-                  {tierCounts[tier.value] || 0}
+        <section className="rounded-2xl border border-slate-200 bg-white shadow-sm mb-6 overflow-hidden">
+          <div className="p-5 border-b border-slate-100 space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="font-bold text-slate-900">{subjectLabel}</h2>
+                <p className="text-sm text-slate-600 mt-0.5">
+                  {filteredItems.length} of {items.length} question
+                  {items.length === 1 ? "" : "s"}
                 </p>
               </div>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap gap-2 items-center">
-            <button
-              type="button"
-              onClick={() => setActiveTierFilter("all")}
-              className={`rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
-                activeTierFilter === "all"
-                  ? "bg-teal-600 text-white"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              All tiers ({items.length})
-            </button>
-            {TEST_TIERS.map((tier) => (
-              <button
-                key={tier.value}
-                type="button"
-                onClick={() => setActiveTierFilter(String(tier.value))}
-                className={`rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
-                  activeTierFilter === String(tier.value)
-                    ? "bg-teal-600 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                {tier.label} ({tierCounts[tier.value] || 0})
-              </button>
-            ))}
-            <input
-              type="search"
-              value={areaFilter}
-              onChange={(e) => setAreaFilter(e.target.value)}
-              placeholder="Filter by topic area"
-              className="ml-auto min-w-[12rem] rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-          </div>
-
-          {addingNew ? (
-            <div className="space-y-3 rounded-xl border border-teal-200 bg-teal-50/40 p-4">
-              <p className="text-sm font-semibold text-teal-950">New question</p>
-              <TestQuestionCard
-                question={newQuestion}
-                index={0}
-                expanded
-                onToggle={() => {}}
-                onChange={(patch) => setNewQuestion((prev) => ({ ...prev, ...patch }))}
-                onRemove={null}
-              />
-              <div className="flex justify-end">
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  to="/admin/create/test"
+                  className="rounded-xl border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
+                >
+                  Build a test →
+                </Link>
                 <button
                   type="button"
-                  onClick={handleCreateNew}
-                  disabled={savingId === "new"}
-                  className="rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-bold px-5 py-2.5 transition"
+                  onClick={openCreateEditor}
+                  className="rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 text-sm font-semibold transition"
                 >
-                  {savingId === "new" ? "Saving…" : "Save to bank"}
+                  + Add question
                 </button>
               </div>
             </div>
-          ) : null}
+
+            <div className="flex flex-wrap gap-2 items-center">
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search questions, area, choices…"
+                className="min-w-[16rem] flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              />
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTierFilter("all")}
+                  className={`rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
+                    activeTierFilter === "all"
+                      ? "bg-teal-600 text-white"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  All tiers
+                </button>
+                {TEST_TIERS.map((tier) => (
+                  <button
+                    key={tier.value}
+                    type="button"
+                    onClick={() => setActiveTierFilter(String(tier.value))}
+                    className={`rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
+                      activeTierFilter === String(tier.value)
+                        ? "bg-teal-600 text-white"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    {tier.label} ({tierCounts[tier.value] || 0})
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
 
           {loading ? (
-            <QuillLoading label="Loading questions…" />
+            <div className="p-8">
+              <QuillLoading label="Loading questions…" />
+            </div>
           ) : filteredItems.length === 0 ? (
-            <p className="text-sm text-slate-500 rounded-xl border border-dashed border-slate-200 px-4 py-10 text-center">
+            <p className="text-sm text-slate-500 px-5 py-12 text-center">
               {items.length === 0
                 ? "No questions saved for this subject yet. Add one manually or save questions from the test builder."
-                : "No questions match these filters."}
+                : "No questions match your search or filters."}
             </p>
           ) : (
-            <div className="space-y-3">
-              {filteredItems.map((item, index) => {
-                const draft = drafts[item.id] || bankItemToEditorQuestion(item);
-                return (
-                  <div key={item.id} className="space-y-2">
-                    <TestQuestionCard
-                      question={draft}
-                      index={index}
-                      expanded={expandedIds.has(item.id)}
-                      onToggle={() => toggleExpanded(item.id)}
-                      onChange={(patch) => updateDraft(item.id, patch)}
-                      onRemove={() => handleDelete(item.id)}
-                      removeLabel={deletingId === item.id ? "Deleting…" : "Delete from bank"}
-                    />
-                    {expandedIds.has(item.id) ? (
-                      <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-                        <p className="text-xs text-slate-500">
-                          {item.id}
-                          {item.source ? ` · ${item.source}` : ""}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => handleSave(item.id)}
-                          disabled={savingId === item.id || !isTestQuestionComplete(draft)}
-                          className="rounded-xl bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-sm font-bold px-4 py-2 transition"
-                        >
-                          {savingId === item.id ? "Saving…" : "Save changes"}
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-slate-50 text-slate-700 border-b border-slate-200">
+                  <tr>
+                    <th scope="col" className="px-4 py-3 font-semibold min-w-[18rem]">
+                      Question
+                    </th>
+                    <th scope="col" className="px-4 py-3 font-semibold w-36">
+                      Area
+                    </th>
+                    <th scope="col" className="px-4 py-3 font-semibold w-28">
+                      Tier
+                    </th>
+                    <th scope="col" className="px-4 py-3 font-semibold w-24">
+                      Source
+                    </th>
+                    <th scope="col" className="px-4 py-3 font-semibold w-32">
+                      Updated
+                    </th>
+                    <th scope="col" className="px-4 py-3 font-semibold w-20 text-right">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredItems.map((item) => {
+                    const tier = TEST_TIERS.find((t) => t.value === Number(item.stars));
+                    return (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-slate-50/80 transition cursor-pointer"
+                        onClick={() => openEditEditor(item)}
+                      >
+                        <td className="px-4 py-3 align-top">
+                          <p className="text-slate-900 leading-relaxed">
+                            {truncateText(item.prompt, 140)}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-1 font-mono">{item.id}</p>
+                        </td>
+                        <td className="px-4 py-3 align-top text-slate-700">
+                          {item.area?.trim() ? (
+                            <span className="inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+                              {item.area}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          <div className="flex items-center gap-2">
+                            <QuestionDifficultyStars stars={item.stars} />
+                            <span className="text-xs text-slate-600">
+                              {tier?.shortLabel || `Tier ${item.stars}`}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 align-top capitalize text-slate-600">
+                          {item.source || "manual"}
+                        </td>
+                        <td className="px-4 py-3 align-top text-slate-600 whitespace-nowrap">
+                          {formatBankDate(item.updated_at)}
+                        </td>
+                        <td className="px-4 py-3 align-top text-right">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openEditEditor(item);
+                            }}
+                            className="text-sm font-semibold text-indigo-700 hover:text-indigo-900"
+                          >
+                            Edit
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </section>
       </div>
+
+      <QuestionBankEditorModal
+        open={Boolean(editorMode && editorDraft)}
+        title={editorMode === "create" ? "Add question" : "Edit question"}
+        subtitle={
+          editorMode === "create"
+            ? `${subjectLabel} · new record`
+            : `${editingItem?.id || ""}${editingItem?.source ? ` · ${editingItem.source}` : ""}`
+        }
+        question={editorDraft}
+        onChange={(patch) => setEditorDraft((prev) => ({ ...prev, ...patch }))}
+        onClose={closeEditor}
+        onSave={handleSaveEditor}
+        onDelete={editorMode === "create" ? null : handleDeleteEditor}
+        saving={saving}
+        deleting={deleting}
+        saveLabel={editorMode === "create" ? "Save to bank" : "Save changes"}
+      />
     </AppShell>
   );
 }
