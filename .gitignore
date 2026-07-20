@@ -1,1 +1,6 @@
 backend/__pycache__
+
+# Local-only scripts (not shared via git)
+scripts/publish_worksheet.local.sh
+scripts/*.local.sh
+.quill.local/

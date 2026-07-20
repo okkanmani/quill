@@ -85,6 +85,7 @@ from worksheets import (
     delete_worksheet,
     delete_result,
     evaluate_result,
+    generate_worksheet_id,
     get_or_start_timed_session,
     get_student_result_for_worksheet,
     get_worksheet,
@@ -105,7 +106,6 @@ from worksheets import (
     unlock_gifted_track_week,
     unlock_timed_worksheet,
     upsert_worksheet_from_data,
-    worksheet_id_from_filename,
     strip_reference_answers_for_student,
 )
 
@@ -620,12 +620,8 @@ async def admin_upload_worksheet(
     if payload["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
 
-    ws_id = worksheet_id_from_filename(file.filename or "")
-    if not ws_id:
-        raise HTTPException(
-            status_code=400,
-            detail="Filename must be questions_N.json (e.g. questions_54.json).",
-        )
+    if not file.filename or not file.filename.lower().endswith(".json"):
+        raise HTTPException(status_code=400, detail="Upload must be a .json file.")
 
     raw = await file.read()
     if not raw:
@@ -634,6 +630,12 @@ async def admin_upload_worksheet(
         data = json.loads(raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError):
         raise HTTPException(status_code=400, detail="File must be valid UTF-8 JSON.")
+
+    subject = data.get("subject", "general")
+    try:
+        ws_id = generate_worksheet_id(subject)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
     try:
         result = upsert_worksheet_from_data(ws_id, data, admin_id=_admin_id(payload))

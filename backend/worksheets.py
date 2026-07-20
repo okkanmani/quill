@@ -1,6 +1,8 @@
 import json
 import random
 import re
+import secrets
+import string
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -12,7 +14,15 @@ VALID_SUBJECTS = frozenset({"math", "english", "science", "data", "general"})
 VALID_EVALUATION = frozenset({"auto", "manual"})
 VALID_QUESTION_TYPES = frozenset({"multiple_choice", "short_answer"})
 VALID_CHART_TYPES = frozenset({"bar", "line", "pie"})
-WORKSHEET_ID_RE = re.compile(r"^questions_\d+$")
+WORKSHEET_ID_LEGACY_RE = re.compile(r"^questions_\d+$")
+_WORKSHEET_SUBJECTS_ALT = "|".join(sorted(VALID_SUBJECTS, key=len, reverse=True))
+WORKSHEET_ID_SUBJECT_CODE_RE = re.compile(
+    rf"^questions_({_WORKSHEET_SUBJECTS_ALT})([a-z0-9]{{6}})$"
+)
+WORKSHEET_ID_RE = re.compile(
+    rf"^(?:questions_\d+|questions_(?:{_WORKSHEET_SUBJECTS_ALT})[a-z0-9]{{6}})$"
+)
+WORKSHEET_ID_CODE_ALPHABET = string.ascii_lowercase + string.digits
 STARS_DEFAULT_QUESTION_COUNTS = {1: 25, 2: 20, 3: 15}
 
 # Worksheets uploaded within this window appear under Latest (ms).
@@ -1247,7 +1257,7 @@ def get_worksheet(worksheet_id: str, *, admin_id: int | None = None) -> dict | N
 
 
 def worksheet_id_from_filename(filename: str) -> str | None:
-    """Return worksheet id when filename is ``questions_N.json``."""
+    """Return worksheet id when filename matches a known id format."""
     if not filename or not filename.lower().endswith(".json"):
         return None
     stem = Path(filename).stem
@@ -1256,35 +1266,45 @@ def worksheet_id_from_filename(filename: str) -> str | None:
     return None
 
 
+def _normalize_worksheet_subject(subject: str) -> str:
+    s = str(subject or "general").strip().lower()
+    if s not in VALID_SUBJECTS:
+        raise ValueError(
+            f"subject must be one of: {', '.join(sorted(VALID_SUBJECTS))}."
+        )
+    return s
+
+
+def _random_worksheet_code(length: int = 6) -> str:
+    return "".join(secrets.choice(WORKSHEET_ID_CODE_ALPHABET) for _ in range(length))
+
+
+def worksheet_id_exists(ws_id: str) -> bool:
+    conn = db.connect()
+    try:
+        return (
+            conn.execute("SELECT 1 FROM worksheets WHERE id = ?", (ws_id,)).fetchone()
+            is not None
+        )
+    finally:
+        conn.close()
+
+
+def generate_worksheet_id(subject: str) -> str:
+    """Allocate ``questions_<subject><6-char-code>`` (globally unique)."""
+    subject = _normalize_worksheet_subject(subject)
+    for _ in range(32):
+        ws_id = f"questions_{subject}{_random_worksheet_code()}"
+        if not worksheet_id_exists(ws_id):
+            return ws_id
+    raise RuntimeError("Could not allocate a unique worksheet id.")
+
+
 def _worksheet_id_numeric_suffix(ws_id: str) -> int | None:
     m = re.fullmatch(r"questions_(\d+)", ws_id)
     if not m:
         return None
     return int(m.group(1))
-
-
-def next_worksheet_id(*, admin_id: int) -> str:
-    """Allocate the next ``questions_N`` id for this admin from DB and bundled JSON files."""
-    max_n = 0
-    conn = db.connect()
-    try:
-        default_admin = _default_admin_id(conn)
-        rows = conn.execute(
-            "SELECT id FROM worksheets WHERE admin_id = ? OR (admin_id IS NULL AND ? = ?)",
-            (admin_id, admin_id, default_admin),
-        ).fetchall()
-    finally:
-        conn.close()
-    for row in rows:
-        n = _worksheet_id_numeric_suffix(row["id"])
-        if n is not None:
-            max_n = max(max_n, n)
-    if WORKSHEETS_DIR.is_dir():
-        for path in WORKSHEETS_DIR.glob("questions_*.json"):
-            n = _worksheet_id_numeric_suffix(path.stem)
-            if n is not None:
-                max_n = max(max_n, n)
-    return f"questions_{max_n + 1}"
 
 
 def _shuffle_mcq_choices(choices: list[str], answer: str) -> list[str]:
@@ -1536,7 +1556,7 @@ def worksheet_data_from_builder(body: dict, *, existing: dict | None = None) -> 
 def create_worksheet_from_builder(body: dict, *, admin_id: int) -> dict:
     """Validate builder input, assign id, and upsert worksheet."""
     data = worksheet_data_from_builder(body)
-    ws_id = next_worksheet_id(admin_id=admin_id)
+    ws_id = generate_worksheet_id(data.get("subject", "general"))
     return upsert_worksheet_from_data(ws_id, data, admin_id=admin_id)
 
 
