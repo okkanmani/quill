@@ -115,6 +115,40 @@ export function draftToTestBuilderQuestions(draft) {
   }));
 }
 
+export function worksheetQuestionToTestBuilderQuestion(question) {
+  const choices = Array.isArray(question?.choices) ? [...question.choices] : ["", "", "", ""];
+  while (choices.length < 4) choices.push("");
+  const answer = String(question?.answer || "").trim();
+  let correctIndex = choices.findIndex((c) => String(c).trim() === answer);
+  if (correctIndex < 0) correctIndex = 0;
+  return {
+    id: newTestQuestionId(),
+    tier: Number(question?.stars) || 2,
+    prompt: question?.prompt || "",
+    choices: choices.slice(0, 4),
+    correctIndex,
+    area: question?.area || "",
+  };
+}
+
+export function worksheetToTestBuilderState(worksheet) {
+  if (!worksheet?.is_test) {
+    throw new Error("This worksheet is not a test.");
+  }
+  const mapped = (worksheet.questions || []).map(worksheetQuestionToTestBuilderQuestion);
+  return {
+    title: worksheet.title || "",
+    subject: worksheet.subject || "math",
+    sittingCount: Number(worksheet.test_sitting_count) || DEFAULT_SITTING_COUNT,
+    timeLimitMinutes: Number(worksheet.time_limit_minutes) || DEFAULT_TIME_LIMIT_MINUTES,
+    adaptiveEnabled: worksheet.test_adaptive !== false,
+    questions:
+      mapped.length > 0
+        ? mapped
+        : [emptyTestQuestion(1), emptyTestQuestion(2), emptyTestQuestion(3)],
+  };
+}
+
 export function trimQuestionsForPublish(questions, sittingCount, adaptive) {
   if (adaptive || questions.length <= sittingCount) return questions;
   return questions.slice(0, sittingCount);

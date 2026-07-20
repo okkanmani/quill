@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { generateTestDraft, getAdminSettings, createTestFromBuilder, updateTestFromBuilder, bulkSaveQuestionBank } from "../api";
+import { generateTestDraft, getAdminSettings, getWorksheet, createTestFromBuilder, updateTestFromBuilder, bulkSaveQuestionBank } from "../api";
 import QuillLoading from "./QuillLoading";
 import { QuestionDifficultyStars } from "./DifficultyStars";
 import TestQuestionCard from "./TestQuestionCard";
@@ -24,6 +24,7 @@ import {
   validateTestBuilder,
   testQuestionToBankPayload,
   bankItemToTestQuestion,
+  worksheetToTestBuilderState,
 } from "../testBuilderUtils";
 
 function TierBankStatus({ sittingCount, tierCounts, adaptive, aiBankTarget }) {
@@ -98,6 +99,7 @@ export default function TestBuilderPanel() {
   const [aiEnabled, setAiEnabled] = useState(false);
   const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
+  const [loadingEdit, setLoadingEdit] = useState(Boolean(editId));
   const [generating, setGenerating] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [lockOnPublish, setLockOnPublish] = useState(true);
@@ -135,6 +137,37 @@ export default function TestBuilderPanel() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!editId) return undefined;
+    let cancelled = false;
+    setLoadingEdit(true);
+    setErrors([]);
+    getWorksheet(editId)
+      .then((worksheet) => {
+        if (cancelled) return;
+        const state = worksheetToTestBuilderState(worksheet);
+        setTitle(state.title);
+        setSubject(state.subject);
+        setSittingCount(state.sittingCount);
+        setTimeLimitMinutes(state.timeLimitMinutes);
+        setAdaptiveEnabled(state.adaptiveEnabled);
+        setBuildUsingAi(false);
+        setQuestions(state.questions);
+        setExpandedIds(new Set(state.questions.slice(0, 3).map((question) => question.id)));
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setErrors([err.message || "Could not load test for editing."]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingEdit(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [editId]);
 
   const canUseAi = aiEnabled && apiKeyConfigured && !editId;
   const tierCounts = useMemo(() => countQuestionsByTier(questions), [questions]);
@@ -332,15 +365,19 @@ export default function TestBuilderPanel() {
     }
   }
 
-  if (settingsLoading) {
-    return <QuillLoading label="Loading test builder…" />;
+  if (settingsLoading || loadingEdit) {
+    return (
+      <QuillLoading
+        label={loadingEdit ? `Loading ${editId}…` : "Loading test builder…"}
+      />
+    );
   }
 
   return (
     <div className="min-w-0">
       <p className="text-slate-600 text-sm mb-4 leading-relaxed">
         {editId
-          ? `Editing ${editId}. Loading existing tests is not wired yet — this is the builder skeleton.`
+          ? `Editing ${editId}. Update questions below, then save.`
           : adaptiveEnabled
             ? "Build an adaptive timed test. Students answer one sitting; difficulty adjusts by tier after each question."
             : "Build a fixed-order timed test. All questions are assigned at the start — tier labels affect scoring weight only."}
