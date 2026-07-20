@@ -719,14 +719,14 @@ def _resolve_content_badge_metadata(
     return meta
 
 
-def _apply_learn_section_title(out: dict) -> None:
+def _apply_learn_section_title(out: dict, *, admin_id: int) -> None:
     """Add learn_section_title when learn_subject + learn_section match the learn manifest."""
     out.pop("learn_section_title", None)
     sec_id = out.get("learn_section")
     subj_key = out.get("learn_subject")
     if not sec_id or not subj_key:
         return
-    sdata = get_subject(subj_key)
+    sdata = get_subject(subj_key, admin_id=admin_id)
     if not sdata:
         return
     for sec in sdata.get("sections") or []:
@@ -790,6 +790,8 @@ def _resolve_learn_metadata(
     worksheet_id: str,
     row_learn_subject,
     row_learn_section,
+    *,
+    admin_id: int,
 ) -> dict:
     """learn_* from bundled JSON (preferred) or DB. Used for GET worksheet and list."""
     learn_subject, learn_section = None, None
@@ -816,7 +818,7 @@ def _resolve_learn_metadata(
         meta["learn_subject"] = learn_subject
     if learn_section:
         meta["learn_section"] = learn_section
-    _apply_learn_section_title(meta)
+    _apply_learn_section_title(meta, admin_id=admin_id)
     return meta
 
 
@@ -1133,7 +1135,7 @@ def list_worksheets(
             }
             item.update(
                 _resolve_learn_metadata(
-                    r["id"], r["learn_subject"], r["learn_section"]
+                    r["id"], r["learn_subject"], r["learn_section"], admin_id=admin_id
                 )
             )
             item.update(
@@ -1237,9 +1239,15 @@ def get_worksheet(worksheet_id: str, *, admin_id: int | None = None) -> dict | N
         if passage_list:
             out["passages"] = passage_list
 
+        owner_admin_id = get_worksheet_admin_id(worksheet_id)
+        if owner_admin_id is None:
+            owner_admin_id = _default_admin_id(conn)
         out.update(
             _resolve_learn_metadata(
-                worksheet_id, row["learn_subject"], row["learn_section"]
+                worksheet_id,
+                row["learn_subject"],
+                row["learn_section"],
+                admin_id=owner_admin_id,
             )
         )
         out.update(

@@ -26,12 +26,12 @@ def fox_section(title: str, line_count: int, *, heading: str) -> str:
     return f"# {heading}\n\n{body}\n"
 
 
-def clear_collection(subject_key: str) -> int:
+def clear_collection(subject_key: str, *, admin_id: int) -> int:
     conn = db.connect()
     try:
         cur = conn.execute(
-            "DELETE FROM learn_sections WHERE subject_key = ?",
-            (subject_key,),
+            "DELETE FROM learn_sections WHERE subject_key = ? AND admin_id = ?",
+            (subject_key, admin_id),
         )
         conn.commit()
         return cur.rowcount
@@ -39,9 +39,9 @@ def clear_collection(subject_key: str) -> int:
         conn.close()
 
 
-def seed(*, replace: bool) -> None:
+def seed(*, replace: bool, admin_id: int) -> None:
     if replace:
-        removed = clear_collection(SUBJECT_KEY)
+        removed = clear_collection(SUBJECT_KEY, admin_id=admin_id)
         if removed:
             print(f"Removed {removed} existing row(s) for {SUBJECT_KEY}.")
 
@@ -70,6 +70,7 @@ def seed(*, replace: bool) -> None:
             subject_description=SUBJECT_DESCRIPTION,
             grade=6,
             curriculum="Ontario",
+            admin_id=admin_id,
         )
         print(
             f"Published {result['title']} ({line_count} lines) → "
@@ -86,7 +87,13 @@ def main() -> None:
     )
     args = parser.parse_args()
     db.init_schema()
-    seed(replace=args.replace)
+    conn = db.connect()
+    try:
+        default_admin = conn.execute("SELECT MIN(id) AS id FROM admins").fetchone()
+        admin_id = int(default_admin["id"]) if default_admin and default_admin["id"] is not None else 1
+    finally:
+        conn.close()
+    seed(replace=args.replace, admin_id=admin_id)
     print(f"\nOpen /student/learn/{SUBJECT_KEY} to preview line-based pages.")
 
 

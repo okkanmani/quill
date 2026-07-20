@@ -1,4 +1,5 @@
 import os
+import re
 import sqlite3
 from pathlib import Path
 
@@ -376,6 +377,92 @@ def init_schema() -> None:
                     ON learn_page_highlights (student, subject_key);
                 """
             )
+
+        _migrate_learn_sections_per_tenant_unique(conn)
+        if default_admin_id is not None:
+            _migrate_learn_hub_order_admin_scopes(conn, default_admin_id)
+
         conn.commit()
     finally:
         conn.close()
+
+
+def _is_admin_scoped_hub_scope(scope: str) -> bool:
+    if not scope or not scope.startswith("a"):
+        return False
+    rest = scope[1:]
+    colon = rest.find(":")
+    if colon <= 0:
+        return False
+    return rest[:colon].isdigit()
+
+
+def _migrate_learn_sections_per_tenant_unique(conn: sqlite3.Connection) -> None:
+    row = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='learn_sections'"
+    ).fetchone()
+    if not row or not row[0]:
+        return
+    ddl = re.sub(r"\s+", "", row[0])
+    if "UNIQUE(admin_id,subject_key,section_id)" in ddl:
+        return
+    if "UNIQUE(subject_key,section_id)" not in ddl:
+        return
+    conn.executescript(
+        """
+        CREATE TABLE learn_sections_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subject_key TEXT NOT NULL,
+            section_id TEXT NOT NULL,
+            title TEXT NOT NULL,
+            markdown TEXT NOT NULL,
+            group_id TEXT NOT NULL DEFAULT 'main',
+            group_title TEXT NOT NULL DEFAULT 'Sections',
+            subject_title TEXT,
+            subject_description TEXT,
+            grade INTEGER,
+            curriculum TEXT,
+            created_at TEXT NOT NULL,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            admin_id INTEGER REFERENCES admins(id),
+            UNIQUE(admin_id, subject_key, section_id)
+        );
+        INSERT INTO learn_sections_new (
+            id, subject_key, section_id, title, markdown,
+            group_id, group_title, subject_title, subject_description,
+            grade, curriculum, created_at, sort_order, admin_id
+        )
+        SELECT
+            id, subject_key, section_id, title, markdown,
+            group_id, group_title, subject_title, subject_description,
+            grade, curriculum, created_at, sort_order, admin_id
+        FROM learn_sections;
+        DROP TABLE learn_sections;
+        ALTER TABLE learn_sections_new RENAME TO learn_sections;
+        CREATE INDEX IF NOT EXISTS idx_learn_sections_subject
+            ON learn_sections (subject_key);
+        CREATE INDEX IF NOT EXISTS idx_learn_sections_admin
+            ON learn_sections (admin_id);
+        """
+    )
+
+
+def _migrate_learn_hub_order_admin_scopes(
+    conn: sqlite3.Connection, default_admin_id: int
+) -> None:
+    rows = conn.execute(
+        "SELECT scope, subject_key FROM learn_hub_order"
+    ).fetchall()
+    for row in rows:
+        scope = row["scope"]
+        if _is_admin_scoped_hub_scope(scope):
+            continue
+        new_scope = f"a{default_admin_id}:{scope}"
+        conn.execute(
+            """
+            UPDATE learn_hub_order
+            SET scope = ?
+            WHERE scope = ? AND subject_key = ?
+            """,
+            (new_scope, scope, row["subject_key"]),
+        )

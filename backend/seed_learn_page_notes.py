@@ -63,7 +63,13 @@ def seed_notes(
     replace: bool,
 ) -> int:
     db.init_schema()
-    subject = get_subject(subject_key)
+    conn = db.connect()
+    try:
+        row = conn.execute("SELECT MIN(id) AS id FROM admins").fetchone()
+        admin_id = int(row["id"]) if row and row["id"] is not None else 1
+    finally:
+        conn.close()
+    subject = get_subject(subject_key, admin_id=admin_id)
     if not subject:
         raise SystemExit(f"Subject not found: {subject_key}")
 

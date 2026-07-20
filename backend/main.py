@@ -633,7 +633,7 @@ def admin_learn_link_options(
     payload = _payload(authorization)
     if payload.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    return {"options": list_learn_link_options(worksheet_subject)}
+    return {"options": list_learn_link_options(worksheet_subject, admin_id=_admin_id(payload))}
 
 
 @app.post("/admin/worksheets/create")
@@ -858,6 +858,7 @@ def admin_generate_learn_resource(
             subject_description=f"Grade {req.grade} · {req.curriculum.strip()}",
             grade=req.grade,
             curriculum=req.curriculum,
+            admin_id=_admin_id(payload),
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -893,6 +894,7 @@ def admin_publish_learn_resource(
             subject_description=f"Grade {req.grade} · {req.curriculum.strip()}",
             grade=req.grade,
             curriculum=req.curriculum,
+            admin_id=_admin_id(payload),
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -903,7 +905,7 @@ def admin_list_learn_sections(authorization: str = Header(...)):
     payload = _payload(authorization)
     if payload["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    return {"sections": list_admin_learn_sections()}
+    return {"sections": list_admin_learn_sections(admin_id=_admin_id(payload))}
 
 
 @app.put("/admin/learn/hub/reorder")
@@ -918,6 +920,7 @@ def admin_reorder_learn_hub(
         return reorder_learn_hub_collections(
             scope=req.scope,
             subject_keys=req.subject_keys,
+            admin_id=_admin_id(payload),
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -936,6 +939,7 @@ def admin_reorder_learn_sections(
         return reorder_learn_sections(
             subject_key=subject_key,
             section_ids=req.section_ids,
+            admin_id=_admin_id(payload),
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -957,6 +961,7 @@ def admin_update_learn_section(
             section_id=section_id,
             title=req.title,
             markdown=req.markdown,
+            admin_id=_admin_id(payload),
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -972,7 +977,11 @@ def admin_delete_learn_section(
     if payload["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
     try:
-        return delete_learn_section(subject_key=subject_key, section_id=section_id)
+        return delete_learn_section(
+            subject_key=subject_key,
+            section_id=section_id,
+            admin_id=_admin_id(payload),
+        )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
 
@@ -1503,16 +1512,17 @@ def grade_writing_submission_route(
 @app.get("/learn/subjects")
 def learn_subjects(authorization: str = Header(...)):
     payload = _payload(authorization)
-    hub = list_learn_hub()
+    admin_id = resolve_admin_id(payload)
+    hub = list_learn_hub(admin_id=admin_id)
     if payload.get("role") == "admin":
-        hub["editable_sections"] = list_admin_learn_sections()
+        hub["editable_sections"] = list_admin_learn_sections(admin_id=admin_id)
     return hub
 
 
 @app.get("/learn/{subject_key}")
 def learn_subject(subject_key: str, authorization: str = Header(...)):
-    _payload(authorization)
-    data = get_subject(subject_key)
+    payload = _payload(authorization)
+    data = get_subject(subject_key, admin_id=resolve_admin_id(payload))
     if not data:
         raise HTTPException(status_code=404, detail="Subject not found")
     return data

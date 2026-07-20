@@ -19,16 +19,46 @@ def _normalize_subject_key(key: str) -> str:
     return _slugify(key, max_len=80)
 
 
-def _db_subject_catalog() -> dict[str, dict]:
-    """subject_key → {title, description} from newest row per key."""
+def _default_admin_id(conn) -> int:
+    row = conn.execute("SELECT MIN(id) AS id FROM admins").fetchone()
+    if row and row["id"] is not None:
+        return int(row["id"])
+    raise RuntimeError("No admin row in database")
+
+
+def _admin_filter_sql(column: str = "admin_id") -> str:
+    return f"({column} = ? OR ({column} IS NULL AND ? = ?))"
+
+
+def _admin_filter_params(admin_id: int, conn) -> tuple[int, int, int]:
+    default = _default_admin_id(conn)
+    return (admin_id, admin_id, default)
+
+
+def _can_read_bundled_learn(admin_id: int, conn) -> bool:
+    return admin_id == _default_admin_id(conn)
+
+
+def _hub_scope(admin_id: int, scope: str) -> str:
+    s = (scope or "").strip()
+    if re.match(r"^a\d+:", s):
+        return s
+    return f"a{admin_id}:{s}"
+
+
+def _db_subject_catalog(*, admin_id: int) -> dict[str, dict]:
+    """subject_key → {title, description} from newest row per key for this admin."""
     conn = db.connect()
     try:
+        admin_params = _admin_filter_params(admin_id, conn)
         rows = conn.execute(
-            """
+            f"""
             SELECT subject_key, subject_title, subject_description, grade, curriculum, created_at
             FROM learn_sections
+            WHERE {_admin_filter_sql()}
             ORDER BY created_at DESC
-            """
+            """,
+            admin_params,
         ).fetchall()
         out: dict[str, dict] = {}
         for row in rows:
@@ -51,7 +81,8 @@ def _db_subject_catalog() -> dict[str, dict]:
         conn.close()
 
 
-def _hub_order_map(scope: str) -> dict[str, int]:
+def _hub_order_map(scope: str, *, admin_id: int) -> dict[str, int]:
+    scoped = _hub_scope(admin_id, scope)
     conn = db.connect()
     try:
         rows = conn.execute(
@@ -61,7 +92,7 @@ def _hub_order_map(scope: str) -> dict[str, int]:
             WHERE scope = ?
             ORDER BY sort_order ASC
             """,
-            (scope.strip(),),
+            (scoped,),
         ).fetchall()
         return {row["subject_key"]: int(row["sort_order"]) for row in rows}
     finally:
@@ -87,8 +118,8 @@ def _default_subject_sort_key(meta: dict) -> tuple:
     return (-_grade_from_subject(meta), meta.get("created_at") or "", meta.get("key") or "")
 
 
-def _sort_subjects_for_scope(scope: str, subjects: list[dict]) -> list[dict]:
-    order_map = _hub_order_map(scope)
+def _sort_subjects_for_scope(scope: str, subjects: list[dict], *, admin_id: int) -> list[dict]:
+    order_map = _hub_order_map(scope, admin_id=admin_id)
     if order_map:
         return sorted(
             subjects,
@@ -115,6 +146,7 @@ def _subjects_for_group(
     explicit_items: list,
     subjects_by_key: dict[str, dict],
     placed_keys: set[str],
+    admin_id: int,
 ) -> list[dict]:
     subjects: list[dict] = []
     seen: set[str] = set()
@@ -132,20 +164,21 @@ def _subjects_for_group(
             subjects.append(meta)
             seen.add(key)
             placed_keys.add(key)
-    return _sort_subjects_for_scope(group_id, subjects)
+    return _sort_subjects_for_scope(group_id, subjects, admin_id=admin_id)
 
 
-def _db_sections(subject_key: str) -> list[dict]:
+def _db_sections(subject_key: str, *, admin_id: int) -> list[dict]:
     conn = db.connect()
     try:
+        admin_params = _admin_filter_params(admin_id, conn)
         rows = conn.execute(
-            """
+            f"""
             SELECT section_id, title, markdown, group_id, group_title
             FROM learn_sections
-            WHERE subject_key = ?
+            WHERE subject_key = ? AND {_admin_filter_sql()}
             ORDER BY sort_order ASC, id ASC
             """,
-            (subject_key,),
+            (subject_key, *admin_params),
         ).fetchall()
         return [
             {
@@ -161,15 +194,18 @@ def _db_sections(subject_key: str) -> list[dict]:
         conn.close()
 
 
-def list_admin_learn_sections() -> list[dict]:
+def list_admin_learn_sections(*, admin_id: int) -> list[dict]:
     conn = db.connect()
     try:
+        admin_params = _admin_filter_params(admin_id, conn)
         rows = conn.execute(
-            """
+            f"""
             SELECT subject_key, section_id, title, subject_title, subject_description, created_at
             FROM learn_sections
+            WHERE {_admin_filter_sql()}
             ORDER BY subject_key ASC, sort_order ASC, id ASC
-            """
+            """,
+            admin_params,
         ).fetchall()
         return [
             {
@@ -187,9 +223,14 @@ def list_admin_learn_sections() -> list[dict]:
         conn.close()
 
 
-def list_subjects() -> list[dict]:
+def list_subjects(*, admin_id: int) -> list[dict]:
     out: list[dict] = []
-    if LEARN_DIR.is_dir():
+    conn = db.connect()
+    try:
+        bundled = _can_read_bundled_learn(admin_id, conn)
+    finally:
+        conn.close()
+    if bundled and LEARN_DIR.is_dir():
         for d in sorted(LEARN_DIR.iterdir()):
             if not d.is_dir():
                 continue
@@ -205,7 +246,7 @@ def list_subjects() -> list[dict]:
                     "description": m.get("description", ""),
                 }
             )
-    db_catalog = _db_subject_catalog()
+    db_catalog = _db_subject_catalog(admin_id=admin_id)
     keys = {s["key"] for s in out}
     for key, meta in db_catalog.items():
         if key not in keys:
@@ -231,13 +272,18 @@ def _fs_subject_meta(subject_key: str) -> dict | None:
     }
 
 
-def list_learn_hub() -> dict:
+def list_learn_hub(*, admin_id: int) -> dict:
     """Hub layout for Learn landing page (flat subjects or grouped)."""
-    subjects_by_key = {s["key"]: s for s in list_subjects()}
+    subjects_by_key = {s["key"]: s for s in list_subjects(admin_id=admin_id)}
+    conn = db.connect()
+    try:
+        bundled = _can_read_bundled_learn(admin_id, conn)
+    finally:
+        conn.close()
     hub_path = LEARN_DIR / "hub.json"
-    if not hub_path.is_file():
+    if not bundled or not hub_path.is_file():
         subjects = _sort_subjects_for_scope(
-            "__root__", list(subjects_by_key.values())
+            "__root__", list(subjects_by_key.values()), admin_id=admin_id
         )
         return {
             "entries": [{"type": "subject", **s} for s in subjects]
@@ -258,6 +304,7 @@ def list_learn_hub() -> dict:
                 explicit_items=explicit_items,
                 subjects_by_key=subjects_by_key,
                 placed_keys=placed_keys,
+                admin_id=admin_id,
             )
             if group_subjects:
                 entries.append(
@@ -280,13 +327,13 @@ def list_learn_hub() -> dict:
         for key, meta in subjects_by_key.items()
         if key not in placed_keys
     ]
-    root_subjects = _sort_subjects_for_scope("__root__", root_subjects)
+    root_subjects = _sort_subjects_for_scope("__root__", root_subjects, admin_id=admin_id)
     for meta in root_subjects:
         entries.append({"type": "subject", **meta})
 
     if not entries:
         subjects = _sort_subjects_for_scope(
-            "__root__", list(subjects_by_key.values())
+            "__root__", list(subjects_by_key.values()), admin_id=admin_id
         )
         return {
             "entries": [{"type": "subject", **s} for s in subjects]
@@ -295,7 +342,9 @@ def list_learn_hub() -> dict:
     return {"entries": entries}
 
 
-def reorder_learn_hub_collections(*, scope: str, subject_keys: list[str]) -> dict:
+def reorder_learn_hub_collections(
+    *, scope: str, subject_keys: list[str], admin_id: int
+) -> dict:
     scope = scope.strip()
     if not scope:
         raise ValueError("Hub scope is required.")
@@ -305,7 +354,7 @@ def reorder_learn_hub_collections(*, scope: str, subject_keys: list[str]) -> dic
     if len(set(ordered)) != len(ordered):
         raise ValueError("Duplicate collections in order list.")
 
-    hub = list_learn_hub()
+    hub = list_learn_hub(admin_id=admin_id)
     expected = []
     for entry in hub.get("entries", []):
         if entry.get("type") == "group" and entry.get("id") == scope:
@@ -320,16 +369,17 @@ def reorder_learn_hub_collections(*, scope: str, subject_keys: list[str]) -> dic
             "Collection order must include every item in this hub section."
         )
 
+    scoped = _hub_scope(admin_id, scope)
     conn = db.connect()
     try:
-        conn.execute("DELETE FROM learn_hub_order WHERE scope = ?", (scope,))
+        conn.execute("DELETE FROM learn_hub_order WHERE scope = ?", (scoped,))
         for index, subject_key in enumerate(ordered):
             conn.execute(
                 """
                 INSERT INTO learn_hub_order (scope, subject_key, sort_order)
                 VALUES (?, ?, ?)
                 """,
-                (scope, subject_key, index),
+                (scoped, subject_key, index),
             )
         conn.commit()
     except Exception:
@@ -358,8 +408,12 @@ def _ungrouped_bucket(groups_out: list, by_group: dict) -> dict:
         groups_out.append(bucket)
         by_group[key] = bucket
     return by_group[key]
-def _merge_db_sections(subject_key: str, groups_out: list, flat_sections: list) -> None:
-    db_secs = _db_sections(subject_key)
+
+
+def _merge_db_sections(
+    subject_key: str, groups_out: list, flat_sections: list, *, admin_id: int
+) -> None:
+    db_secs = _db_sections(subject_key, admin_id=admin_id)
     if not db_secs:
         return
     by_group: dict[str, dict] = {}
@@ -387,6 +441,7 @@ def publish_learn_section(
     subject_key: str,
     section_title: str,
     markdown: str,
+    admin_id: int,
     subject_title: str | None = None,
     subject_description: str | None = None,
     group_id: str = "main",
@@ -408,11 +463,15 @@ def publish_learn_section(
     section_id = base_id
     conn = db.connect()
     try:
+        admin_params = _admin_filter_params(admin_id, conn)
         existing_ids = {
             row[0]
             for row in conn.execute(
-                "SELECT section_id FROM learn_sections WHERE subject_key = ?",
-                (subject_key,),
+                f"""
+                SELECT section_id FROM learn_sections
+                WHERE subject_key = ? AND {_admin_filter_sql()}
+                """,
+                (subject_key, *admin_params),
             ).fetchall()
         }
         n = 2
@@ -420,7 +479,9 @@ def publish_learn_section(
             section_id = f"{base_id}-{n}"
             n += 1
 
-        fs_meta = _fs_subject_meta(subject_key)
+        fs_meta = None
+        if _can_read_bundled_learn(admin_id, conn):
+            fs_meta = _fs_subject_meta(subject_key)
         if fs_meta and not subject_title:
             subject_title = fs_meta.get("title")
         if fs_meta and not subject_description:
@@ -433,8 +494,11 @@ def publish_learn_section(
 
         created_at = datetime.now(timezone.utc).isoformat()
         sort_row = conn.execute(
-            "SELECT COALESCE(MAX(sort_order), -1) FROM learn_sections WHERE subject_key = ?",
-            (subject_key,),
+            f"""
+            SELECT COALESCE(MAX(sort_order), -1) FROM learn_sections
+            WHERE subject_key = ? AND {_admin_filter_sql()}
+            """,
+            (subject_key, *admin_params),
         ).fetchone()
         sort_order = int(sort_row[0]) + 1
         conn.execute(
@@ -442,8 +506,8 @@ def publish_learn_section(
             INSERT INTO learn_sections (
                 subject_key, section_id, title, markdown,
                 group_id, group_title, subject_title, subject_description,
-                grade, curriculum, created_at, sort_order
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                grade, curriculum, created_at, sort_order, admin_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 subject_key,
@@ -458,16 +522,17 @@ def publish_learn_section(
                 (curriculum or "").strip() or None,
                 created_at,
                 sort_order,
+                admin_id,
             ),
         )
         if subject_title or subject_description:
             conn.execute(
-                """
+                f"""
                 UPDATE learn_sections
                 SET subject_title = ?, subject_description = ?
-                WHERE subject_key = ?
+                WHERE subject_key = ? AND {_admin_filter_sql()}
                 """,
-                (subject_title, subject_description, subject_key),
+                (subject_title, subject_description, subject_key, *admin_params),
             )
         conn.commit()
     except Exception:
@@ -490,6 +555,7 @@ def update_learn_section(
     section_id: str,
     title: str,
     markdown: str,
+    admin_id: int,
 ) -> dict:
     subject_key = subject_key.strip().lower()
     section_id = section_id.strip().lower()
@@ -502,12 +568,13 @@ def update_learn_section(
 
     conn = db.connect()
     try:
+        admin_params = _admin_filter_params(admin_id, conn)
         row = conn.execute(
-            """
+            f"""
             SELECT id FROM learn_sections
-            WHERE subject_key = ? AND section_id = ?
+            WHERE subject_key = ? AND section_id = ? AND {_admin_filter_sql()}
             """,
-            (subject_key, section_id),
+            (subject_key, section_id, *admin_params),
         ).fetchone()
         if not row:
             raise ValueError("Learning resource not found or not editable.")
@@ -515,8 +582,11 @@ def update_learn_section(
         existing_ids = {
             row[0]
             for row in conn.execute(
-                "SELECT section_id FROM learn_sections WHERE subject_key = ?",
-                (subject_key,),
+                f"""
+                SELECT section_id FROM learn_sections
+                WHERE subject_key = ? AND {_admin_filter_sql()}
+                """,
+                (subject_key, *admin_params),
             ).fetchall()
         }
         base_id = _slugify(title)
@@ -531,12 +601,12 @@ def update_learn_section(
                 next_section_id = candidate
 
         conn.execute(
-            """
+            f"""
             UPDATE learn_sections
             SET section_id = ?, title = ?, markdown = ?
-            WHERE subject_key = ? AND section_id = ?
+            WHERE subject_key = ? AND section_id = ? AND {_admin_filter_sql()}
             """,
-            (next_section_id, title, markdown, subject_key, section_id),
+            (next_section_id, title, markdown, subject_key, section_id, *admin_params),
         )
         conn.commit()
         section_id = next_section_id
@@ -554,25 +624,29 @@ def update_learn_section(
     }
 
 
-def delete_learn_section(*, subject_key: str, section_id: str) -> dict:
+def delete_learn_section(*, subject_key: str, section_id: str, admin_id: int) -> dict:
     subject_key = subject_key.strip().lower()
     section_id = section_id.strip().lower()
 
     conn = db.connect()
     try:
+        admin_params = _admin_filter_params(admin_id, conn)
         row = conn.execute(
-            """
+            f"""
             SELECT id FROM learn_sections
-            WHERE subject_key = ? AND section_id = ?
+            WHERE subject_key = ? AND section_id = ? AND {_admin_filter_sql()}
             """,
-            (subject_key, section_id),
+            (subject_key, section_id, *admin_params),
         ).fetchone()
         if not row:
             raise ValueError("Learning resource not found or not deletable.")
 
         conn.execute(
-            "DELETE FROM learn_sections WHERE subject_key = ? AND section_id = ?",
-            (subject_key, section_id),
+            f"""
+            DELETE FROM learn_sections
+            WHERE subject_key = ? AND section_id = ? AND {_admin_filter_sql()}
+            """,
+            (subject_key, section_id, *admin_params),
         )
         conn.commit()
     except Exception:
@@ -584,7 +658,9 @@ def delete_learn_section(*, subject_key: str, section_id: str) -> dict:
     return {"subject_key": subject_key, "section_id": section_id}
 
 
-def reorder_learn_sections(*, subject_key: str, section_ids: list[str]) -> dict:
+def reorder_learn_sections(
+    *, subject_key: str, section_ids: list[str], admin_id: int
+) -> dict:
     subject_key = subject_key.strip().lower()
     ordered = [sid.strip().lower() for sid in section_ids if (sid or "").strip()]
     if not ordered:
@@ -594,11 +670,15 @@ def reorder_learn_sections(*, subject_key: str, section_ids: list[str]) -> dict:
 
     conn = db.connect()
     try:
+        admin_params = _admin_filter_params(admin_id, conn)
         db_ids = {
             row[0]
             for row in conn.execute(
-                "SELECT section_id FROM learn_sections WHERE subject_key = ?",
-                (subject_key,),
+                f"""
+                SELECT section_id FROM learn_sections
+                WHERE subject_key = ? AND {_admin_filter_sql()}
+                """,
+                (subject_key, *admin_params),
             ).fetchall()
         }
         if not db_ids:
@@ -609,12 +689,12 @@ def reorder_learn_sections(*, subject_key: str, section_ids: list[str]) -> dict:
             )
         for index, section_id in enumerate(ordered):
             conn.execute(
-                """
+                f"""
                 UPDATE learn_sections
                 SET sort_order = ?
-                WHERE subject_key = ? AND section_id = ?
+                WHERE subject_key = ? AND section_id = ? AND {_admin_filter_sql()}
                 """,
-                (index, subject_key, section_id),
+                (index, subject_key, section_id, *admin_params),
             )
         conn.commit()
     except Exception:
@@ -697,7 +777,7 @@ def _learn_subject_matches_worksheet(learn_key: str, worksheet_subject: str) -> 
     return learn_key == worksheet_subject or learn_key.startswith(f"{worksheet_subject}-")
 
 
-def list_learn_link_options(worksheet_subject: str) -> list[dict]:
+def list_learn_link_options(worksheet_subject: str, *, admin_id: int) -> list[dict]:
     """Flatten learn sections for worksheets whose subject matches a collection key."""
     worksheet_subject = (worksheet_subject or "").strip().lower()
     if not worksheet_subject:
@@ -705,11 +785,11 @@ def list_learn_link_options(worksheet_subject: str) -> list[dict]:
 
     options: list[dict] = []
     seen: set[tuple[str, str]] = set()
-    for meta in list_subjects():
+    for meta in list_subjects(admin_id=admin_id):
         subject_key = meta["key"]
         if not _learn_subject_matches_worksheet(subject_key, worksheet_subject):
             continue
-        subject_data = get_subject(subject_key)
+        subject_data = get_subject(subject_key, admin_id=admin_id)
         if not subject_data:
             continue
         subject_title = subject_data.get("title") or subject_key
@@ -733,15 +813,21 @@ def list_learn_link_options(worksheet_subject: str) -> list[dict]:
     return options
 
 
-def get_subject(subject: str) -> dict | None:
+def get_subject(subject: str, *, admin_id: int) -> dict | None:
     subject = subject.strip().lower()
-    data = _load_fs_subject(subject)
+    conn = db.connect()
+    try:
+        bundled = _can_read_bundled_learn(admin_id, conn)
+    finally:
+        conn.close()
+
+    data = _load_fs_subject(subject) if bundled else None
     if data:
-        _merge_db_sections(subject, data["groups"], data["sections"])
+        _merge_db_sections(subject, data["groups"], data["sections"], admin_id=admin_id)
         return data
 
-    catalog = _db_subject_catalog()
-    db_secs = _db_sections(subject)
+    catalog = _db_subject_catalog(admin_id=admin_id)
+    db_secs = _db_sections(subject, admin_id=admin_id)
     if subject not in catalog and not db_secs:
         return None
 
@@ -751,7 +837,7 @@ def get_subject(subject: str) -> dict | None:
     )
     groups_out: list[dict] = []
     flat_sections: list[dict] = []
-    _merge_db_sections(subject, groups_out, flat_sections)
+    _merge_db_sections(subject, groups_out, flat_sections, admin_id=admin_id)
     if not flat_sections:
         return None
 
