@@ -313,7 +313,6 @@ export default function TestBuilderPanel() {
 
   async function handleSaveToBank(source = "manual") {
     setErrors([]);
-    setNotice("");
     const completeQuestions = questions.filter(isTestQuestionComplete);
     if (completeQuestions.length === 0) {
       setErrors(["Add at least one complete question before saving to the bank."]);
@@ -321,23 +320,11 @@ export default function TestBuilderPanel() {
     }
     setSavingToBank(true);
     try {
-      const result = await bulkSaveQuestionBank({
+      await bulkSaveQuestionBank({
         subject,
         source,
         questions: completeQuestions.map((question) => testQuestionToBankPayload(question, subject)),
       });
-      const skipped = questions.length - completeQuestions.length;
-      const partialNote =
-        result.errors?.length > 0
-          ? ` ${result.errors.length} issue${result.errors.length === 1 ? "" : "s"} skipped.`
-          : "";
-      const incompleteNote =
-        skipped > 0
-          ? ` ${skipped} incomplete question${skipped === 1 ? "" : "s"} were not saved.`
-          : "";
-      setNotice(
-        `Saved ${result.created_count} question${result.created_count === 1 ? "" : "s"} to the ${subject} bank.${incompleteNote}${partialNote}`,
-      );
     } catch (err) {
       setErrors([err.message || "Could not save questions to the bank."]);
     } finally {

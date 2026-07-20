@@ -32,6 +32,36 @@ def _random_code(length: int = 6) -> str:
     return "".join(secrets.choice(_BANK_CODE_ALPHABET) for _ in range(length))
 
 
+def normalize_prompt_key(prompt: str) -> str:
+    """Exact-match key for duplicate checks; fuzzy matching can build on this later."""
+    return str(prompt or "").strip().lower()
+
+
+def ensure_question_bank_schema(conn) -> None:
+    """Add prompt_key column, backfill, and index for duplicate lookups."""
+    cols = {row[1] for row in conn.execute("PRAGMA table_info(question_bank_items)")}
+    if not cols:
+        return
+    if "prompt_key" not in cols:
+        conn.execute(
+            "ALTER TABLE question_bank_items ADD COLUMN prompt_key TEXT NOT NULL DEFAULT ''"
+        )
+    rows = conn.execute(
+        "SELECT id, prompt, prompt_key FROM question_bank_items WHERE prompt_key = ''"
+    ).fetchall()
+    for row in rows:
+        conn.execute(
+            "UPDATE question_bank_items SET prompt_key = ? WHERE id = ?",
+            (normalize_prompt_key(row["prompt"]), row["id"]),
+        )
+    conn.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_question_bank_prompt_key
+            ON question_bank_items (admin_id, subject, prompt_key)
+        """
+    )
+
+
 def generate_bank_item_id(subject: str) -> str:
     subject = _normalize_subject(subject)
     for _ in range(32):
@@ -125,6 +155,39 @@ def list_question_bank_items(
         conn.close()
 
 
+def find_question_bank_item_by_prompt_key(
+    *,
+    admin_id: int,
+    subject: str,
+    prompt: str,
+    exclude_id: str | None = None,
+) -> dict | None:
+    prompt_key = normalize_prompt_key(prompt)
+    if not prompt_key:
+        return None
+    subject = _normalize_subject(subject)
+    clauses = ["admin_id = ?", "subject = ?", "prompt_key = ?"]
+    params: list = [admin_id, subject, prompt_key]
+    if exclude_id:
+        clauses.append("id != ?")
+        params.append(exclude_id)
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            f"""
+            SELECT id, subject, stars, area, prompt, choices, answer, source,
+                   created_at, updated_at
+            FROM question_bank_items
+            WHERE {" AND ".join(clauses)}
+            LIMIT 1
+            """,
+            params,
+        ).fetchone()
+    finally:
+        conn.close()
+    return _row_to_item(row) if row else None
+
+
 def get_question_bank_item(item_id: str, *, admin_id: int) -> dict | None:
     conn = db.connect()
     try:
@@ -142,11 +205,26 @@ def get_question_bank_item(item_id: str, *, admin_id: int) -> dict | None:
     return _row_to_item(row) if row else None
 
 
-def create_question_bank_item(*, admin_id: int, data: dict) -> dict:
+def create_question_bank_item(
+    *,
+    admin_id: int,
+    data: dict,
+    skip_duplicates: bool = True,
+) -> dict:
     subject = _normalize_subject(data.get("subject", "general"))
     errors = _validate_question_payload(data)
     if errors:
         raise ValueError(errors)
+    prompt = str(data["prompt"]).strip()
+    prompt_key = normalize_prompt_key(prompt)
+    if skip_duplicates:
+        existing = find_question_bank_item_by_prompt_key(
+            admin_id=admin_id,
+            subject=subject,
+            prompt=prompt,
+        )
+        if existing:
+            return {**existing, "duplicate": True}
     source = str(data.get("source") or "manual").strip().lower()
     if source not in VALID_SOURCES:
         source = "manual"
@@ -159,9 +237,9 @@ def create_question_bank_item(*, admin_id: int, data: dict) -> dict:
         conn.execute(
             """
             INSERT INTO question_bank_items (
-                id, admin_id, subject, stars, area, prompt, choices, answer,
-                source, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                id, admin_id, subject, stars, area, prompt, prompt_key, choices,
+                answer, source, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 item_id,
@@ -169,7 +247,8 @@ def create_question_bank_item(*, admin_id: int, data: dict) -> dict:
                 subject,
                 int(data["stars"]),
                 area,
-                str(data["prompt"]).strip(),
+                prompt,
+                prompt_key,
                 choices_json,
                 str(data["answer"]).strip(),
                 source,
@@ -183,7 +262,8 @@ def create_question_bank_item(*, admin_id: int, data: dict) -> dict:
         raise
     finally:
         conn.close()
-    return get_question_bank_item(item_id, admin_id=admin_id)  # type: ignore[arg-type]
+    item = get_question_bank_item(item_id, admin_id=admin_id)
+    return {**item, "duplicate": False}  # type: ignore[arg-type, dict-item]
 
 
 def update_question_bank_item(item_id: str, *, admin_id: int, data: dict) -> dict:
@@ -204,6 +284,16 @@ def update_question_bank_item(item_id: str, *, admin_id: int, data: dict) -> dic
     if errors:
         raise ValueError(errors)
     subject = _normalize_subject(merged["subject"])
+    prompt = str(merged["prompt"]).strip()
+    prompt_key = normalize_prompt_key(prompt)
+    duplicate = find_question_bank_item_by_prompt_key(
+        admin_id=admin_id,
+        subject=subject,
+        prompt=prompt,
+        exclude_id=item_id,
+    )
+    if duplicate:
+        raise ValueError(["A question with this prompt already exists in the bank."])
     now = _now_iso()
     area = str(merged.get("area") or "").strip()
     choices_json = json.dumps([str(c).strip() for c in merged["choices"]])
@@ -212,15 +302,16 @@ def update_question_bank_item(item_id: str, *, admin_id: int, data: dict) -> dic
         cur = conn.execute(
             """
             UPDATE question_bank_items
-            SET subject = ?, stars = ?, area = ?, prompt = ?, choices = ?,
-                answer = ?, updated_at = ?
+            SET subject = ?, stars = ?, area = ?, prompt = ?, prompt_key = ?,
+                choices = ?, answer = ?, updated_at = ?
             WHERE id = ? AND admin_id = ?
             """,
             (
                 subject,
                 int(merged["stars"]),
                 area,
-                str(merged["prompt"]).strip(),
+                prompt,
+                prompt_key,
                 choices_json,
                 str(merged["answer"]).strip(),
                 now,
@@ -270,28 +361,43 @@ def bulk_create_question_bank_items(
         raise ValueError(["At least one question is required."])
     created: list[dict] = []
     errors: list[str] = []
+    seen_prompt_keys: set[str] = set()
+    skipped_duplicate_count = 0
     for index, raw in enumerate(questions):
         payload = question_dict_from_builder(raw, subject=subject)
         item_errors = _validate_question_payload(payload)
         if item_errors:
             errors.extend(f"Question {index + 1}: {msg}" for msg in item_errors)
             continue
+        prompt_key = normalize_prompt_key(payload.get("prompt", ""))
+        if prompt_key in seen_prompt_keys:
+            skipped_duplicate_count += 1
+            continue
         try:
-            created.append(
-                create_question_bank_item(
-                    admin_id=admin_id,
-                    data={**payload, "source": source},
-                )
+            item = create_question_bank_item(
+                admin_id=admin_id,
+                data={**payload, "source": source},
+                skip_duplicates=True,
             )
+            if item.get("duplicate"):
+                skipped_duplicate_count += 1
+                continue
+            seen_prompt_keys.add(prompt_key)
+            created.append(item)
         except ValueError as exc:
             msgs = exc.args[0] if exc.args else ["Invalid question."]
             if isinstance(msgs, list):
                 errors.extend(f"Question {index + 1}: {msg}" for msg in msgs)
             else:
                 errors.append(f"Question {index + 1}: {msgs}")
-    if errors and not created:
+    if errors and not created and skipped_duplicate_count == 0:
         raise ValueError(errors)
-    return {"created_count": len(created), "items": created, "errors": errors}
+    return {
+        "created_count": len(created),
+        "skipped_duplicate_count": skipped_duplicate_count,
+        "items": created,
+        "errors": errors,
+    }
 
 
 def question_dict_from_builder(raw: dict, *, subject: str) -> dict:

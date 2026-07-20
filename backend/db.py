@@ -434,6 +434,7 @@ def init_schema() -> None:
                 stars INTEGER NOT NULL,
                 area TEXT NOT NULL DEFAULT '',
                 prompt TEXT NOT NULL,
+                prompt_key TEXT NOT NULL DEFAULT '',
                 choices TEXT NOT NULL,
                 answer TEXT NOT NULL,
                 source TEXT NOT NULL DEFAULT 'manual',
@@ -444,8 +445,14 @@ def init_schema() -> None:
                 ON question_bank_items (admin_id, subject);
             CREATE INDEX IF NOT EXISTS idx_question_bank_admin_stars
                 ON question_bank_items (admin_id, subject, stars);
+            CREATE INDEX IF NOT EXISTS idx_question_bank_prompt_key
+                ON question_bank_items (admin_id, subject, prompt_key);
             """
         )
+
+        from question_bank import ensure_question_bank_schema
+
+        ensure_question_bank_schema(conn)
 
         conn.commit()
     finally:

@@ -138,8 +138,10 @@ export default function AdminQuestionBank() {
         const created = await createQuestionBankItem(
           editorQuestionToBankPayload(editorDraft, subject),
         );
-        setItems((prev) => [created, ...prev]);
-        setNotice("Question added to bank.");
+        if (!created.duplicate) {
+          setItems((prev) => [created, ...prev]);
+          setNotice("Question added to bank.");
+        }
       } else {
         const saved = await updateQuestionBankItem(
           editorMode,
