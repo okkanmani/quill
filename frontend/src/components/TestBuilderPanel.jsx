@@ -557,16 +557,6 @@ export default function TestBuilderPanel() {
             >
               Add from bank
             </button>
-            {questions.some(isTestQuestionComplete) ? (
-              <button
-                type="button"
-                onClick={() => handleSaveToBank(buildUsingAi ? "ai" : "manual")}
-                disabled={savingToBank || generating}
-                className="rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-900 hover:bg-indigo-100 disabled:opacity-50 transition"
-              >
-                {savingToBank ? "Saving…" : "Save to bank"}
-              </button>
-            ) : null}
             {buildUsingAi ? (
               <button
                 type="button"
@@ -709,6 +699,16 @@ export default function TestBuilderPanel() {
         >
           {publishing ? "Publishing…" : editId ? "Save test" : "Publish test"}
         </button>
+        {questions.some(isTestQuestionComplete) ? (
+          <button
+            type="button"
+            onClick={() => handleSaveToBank(buildUsingAi ? "ai" : "manual")}
+            disabled={savingToBank || generating || publishing}
+            className="rounded-xl border border-indigo-300 bg-indigo-50 hover:bg-indigo-100 disabled:opacity-50 text-indigo-900 text-sm font-bold px-5 py-2.5 transition"
+          >
+            {savingToBank ? "Saving…" : "Save to bank"}
+          </button>
+        ) : null}
         <Link
           to="/admin/worksheets"
           className="ml-auto text-sm font-semibold text-indigo-700 hover:text-indigo-900"
