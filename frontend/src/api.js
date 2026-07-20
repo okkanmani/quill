@@ -72,11 +72,11 @@ export async function signupAdmin({ name, password }) {
   return res.json();
 }
 
-export async function loginStudent({ name, password }) {
+export async function loginStudent({ adminName, name, password }) {
   const res = await fetch(`${BASE_URL}/auth/student/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, password }),
+    body: JSON.stringify({ admin_name: adminName, name, password }),
   });
   if (!res.ok) throw new Error("Login failed");
   return res.json();

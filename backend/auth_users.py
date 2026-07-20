@@ -53,25 +53,37 @@ def migrate_legacy_from_auth_json(conn) -> None:
     )
 
 
-def authenticate_student(name: str, password: str) -> dict | None:
+def authenticate_student(admin_name: str, name: str, password: str) -> dict | None:
     """Return {id, name, admin_id} or None."""
+    admin_name = admin_name.strip()
     name = name.strip()
-    if not name or not password:
+    if not admin_name or not name or not password:
         return None
     conn = db.connect()
     try:
-        rows = conn.execute(
-            "SELECT id, admin_id, name, password_hash, grade FROM students WHERE name = ?",
-            (name,),
-        ).fetchall()
+        admin = conn.execute(
+            "SELECT id FROM admins WHERE name = ? COLLATE NOCASE",
+            (admin_name,),
+        ).fetchone()
+        if not admin:
+            return None
+        row = conn.execute(
+            """
+            SELECT id, admin_id, name, password_hash, grade
+            FROM students
+            WHERE admin_id = ? AND name = ?
+            """,
+            (admin["id"], name),
+        ).fetchone()
     finally:
         conn.close()
-    for r in rows:
-        if bcrypt.checkpw(password.encode(), r["password_hash"].encode()):
-            out = {"id": r["id"], "name": r["name"], "admin_id": r["admin_id"]}
-            if r["grade"] is not None:
-                out["grade"] = int(r["grade"])
-            return out
+    if not row:
+        return None
+    if bcrypt.checkpw(password.encode(), row["password_hash"].encode()):
+        out = {"id": row["id"], "name": row["name"], "admin_id": row["admin_id"]}
+        if row["grade"] is not None:
+            out["grade"] = int(row["grade"])
+        return out
     return None
 
 

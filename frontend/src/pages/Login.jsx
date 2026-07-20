@@ -7,6 +7,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const signedOut = searchParams.get("signedOut");
+  const [studentAdminName, setStudentAdminName] = useState("");
   const [studentName, setStudentName] = useState("");
   const [studentPassword, setStudentPassword] = useState("");
   const [adminStudentName, setAdminStudentName] = useState("");
@@ -27,6 +28,7 @@ export default function Login() {
     setLoginBusy(true);
     try {
       const data = await loginStudent({
+        adminName: studentAdminName.trim(),
         name: studentName,
         password: studentPassword,
       });
@@ -40,7 +42,7 @@ export default function Login() {
       touchActivity();
       navigate("/student");
     } catch {
-      setError("Invalid name or password.");
+      setError("Invalid admin name, student name, or password.");
     } finally {
       setLoginBusy(false);
     }
@@ -134,6 +136,14 @@ export default function Login() {
             <p className="text-slate-800 text-sm font-semibold text-center">
               Student
             </p>
+            <input
+              type="text"
+              autoComplete="organization"
+              placeholder="Admin name"
+              value={studentAdminName}
+              onChange={(e) => setStudentAdminName(e.target.value)}
+              className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
             <input
               type="text"
               autoComplete="username"

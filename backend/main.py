@@ -184,6 +184,7 @@ class CreateWorksheetBuilderRequest(BaseModel):
 
 
 class StudentLoginRequest(BaseModel):
+    admin_name: str
     name: str
     password: str
 
@@ -424,9 +425,12 @@ def _raise_if_worksheet_not_found(exc: ValueError) -> None:
 
 @app.post("/auth/student/login")
 def student_login(req: StudentLoginRequest):
-    row = authenticate_student(req.name, req.password)
+    row = authenticate_student(req.admin_name, req.name, req.password)
     if not row:
-        raise HTTPException(status_code=401, detail="Invalid name or password")
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid admin name, student name, or password",
+        )
     token = create_student_token(row["id"], row["name"])
     out = {"token": token, "role": "student", "name": row["name"]}
     if row.get("grade") is not None:
