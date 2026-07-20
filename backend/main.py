@@ -8,7 +8,6 @@ from auth_users import (
     add_admin,
     add_student,
     authenticate_admin_by_name,
-    authenticate_admin_for_student,
     authenticate_student,
     delete_student,
     get_admin_name,
@@ -190,11 +189,8 @@ class StudentLoginRequest(BaseModel):
 
 
 class AdminLoginRequest(BaseModel):
-    """Use ``student_name`` to view a student's data, or ``admin_name`` to sign in (e.g. after signup)."""
-
+    admin_name: str
     password: str
-    student_name: str | None = None
-    admin_name: str | None = None
 
 
 class CreateAdminSignupRequest(BaseModel):
@@ -457,53 +453,28 @@ def admin_signup(req: CreateAdminSignupRequest):
 
 @app.post("/auth/admin/login")
 def admin_login(req: AdminLoginRequest):
-    stu = (req.student_name or "").strip()
-    adm = (req.admin_name or "").strip()
-    if stu:
-        row = authenticate_admin_for_student(stu, req.password)
-        if not row:
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid student name or admin password",
-            )
-        an = get_admin_name(row["admin_id"])
-        token = create_admin_token(
-            row["admin_id"],
-            row["student_id"],
-            row["student_name"],
-            admin_name=an,
+    adm = req.admin_name.strip()
+    if not adm:
+        raise HTTPException(status_code=400, detail="Admin name is required")
+    row = authenticate_admin_by_name(adm, req.password)
+    if not row:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid admin name or password",
         )
-        return {
-            "token": token,
-            "role": "admin",
-            "student_name": row["student_name"],
-            "admin_name": an,
-            "needs_student": False,
-        }
-    if adm:
-        row = authenticate_admin_by_name(adm, req.password)
-        if not row:
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid admin name or password",
-            )
-        token = create_admin_token(
-            row["admin_id"],
-            None,
-            None,
-            admin_name=row["admin_name"],
-        )
-        return {
-            "token": token,
-            "role": "admin",
-            "student_name": None,
-            "admin_name": row["admin_name"],
-            "needs_student": True,
-        }
-    raise HTTPException(
-        status_code=400,
-        detail="Provide student name or admin name with your password",
+    token = create_admin_token(
+        row["admin_id"],
+        None,
+        None,
+        admin_name=row["admin_name"],
     )
+    return {
+        "token": token,
+        "role": "admin",
+        "student_name": None,
+        "admin_name": row["admin_name"],
+        "needs_student": True,
+    }
 
 
 @app.post("/auth/logout")

@@ -87,34 +87,6 @@ def authenticate_student(admin_name: str, name: str, password: str) -> dict | No
     return None
 
 
-def authenticate_admin_for_student(student_name: str, admin_password: str) -> dict | None:
-    """Verify admin password; student must belong to that admin."""
-    student_name = student_name.strip()
-    if not student_name or not admin_password:
-        return None
-    conn = db.connect()
-    try:
-        rows = conn.execute(
-            """
-            SELECT s.id AS student_id, s.name AS student_name, s.admin_id, a.password_hash AS admin_hash
-            FROM students s
-            JOIN admins a ON s.admin_id = a.id
-            WHERE s.name = ?
-            """,
-            (student_name,),
-        ).fetchall()
-    finally:
-        conn.close()
-    for r in rows:
-        if bcrypt.checkpw(admin_password.encode(), r["admin_hash"].encode()):
-            return {
-                "admin_id": r["admin_id"],
-                "student_id": r["student_id"],
-                "student_name": r["student_name"],
-            }
-    return None
-
-
 def add_admin(name: str, password: str) -> int:
     name = name.strip()
     if not name:

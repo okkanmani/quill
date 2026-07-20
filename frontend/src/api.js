@@ -44,14 +44,11 @@ export { touchActivity };
 
 // --- Auth ---
 
-export async function loginAdmin({ studentName, adminName, password }) {
-  const body = { password };
-  if (studentName) body.student_name = studentName;
-  if (adminName) body.admin_name = adminName;
+export async function loginAdmin({ adminName, password }) {
   const res = await fetch(`${BASE_URL}/auth/admin/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ admin_name: adminName, password }),
   });
   if (!res.ok) throw new Error("Invalid admin login");
   return res.json();

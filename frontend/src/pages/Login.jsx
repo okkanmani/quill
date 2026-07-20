@@ -7,80 +7,63 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const signedOut = searchParams.get("signedOut");
-  const [studentAdminName, setStudentAdminName] = useState("");
+  const [adminName, setAdminName] = useState("");
   const [studentName, setStudentName] = useState("");
-  const [studentPassword, setStudentPassword] = useState("");
-  const [adminStudentName, setAdminStudentName] = useState("");
-  const [adminAccountName, setAdminAccountName] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
+  const [password, setPassword] = useState("");
   const [signupName, setSignupName] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [error, setError] = useState("");
-  const [screen, setScreen] = useState("student");
-  /** When screen === "admin": sign in via student name + password, or admin name + password. */
-  const [adminLoginMode, setAdminLoginMode] = useState("byStudent");
+  const [screen, setScreen] = useState("login");
   const [loginBusy, setLoginBusy] = useState(false);
   const [signupBusy, setSignupBusy] = useState(false);
 
-  async function handleStudentLogin(e) {
+  async function handleLogin(e) {
     e.preventDefault();
     setError("");
-    setLoginBusy(true);
-    try {
-      const data = await loginStudent({
-        adminName: studentAdminName.trim(),
-        name: studentName,
-        password: studentPassword,
-      });
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.role);
-      localStorage.setItem("name", data.name);
-      localStorage.removeItem("studentName");
-      localStorage.removeItem("adminName");
-      if (data.grade != null) localStorage.setItem("grade", String(data.grade));
-      else localStorage.removeItem("grade");
-      touchActivity();
-      navigate("/student");
-    } catch {
-      setError("Invalid admin name, student name, or password.");
-    } finally {
-      setLoginBusy(false);
+    const trimmedAdmin = adminName.trim();
+    const trimmedStudent = studentName.trim();
+    if (!trimmedAdmin) {
+      setError("Admin name is required.");
+      return;
     }
-  }
-
-  async function handleAdminLogin(e) {
-    e.preventDefault();
-    setError("");
     setLoginBusy(true);
     try {
-      const data =
-        adminLoginMode === "byStudent"
-          ? await loginAdmin({
-              studentName: adminStudentName.trim(),
-              password: adminPassword,
-            })
-          : await loginAdmin({
-              adminName: adminAccountName.trim(),
-              password: adminPassword,
-            });
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.role);
-      if (data.admin_name) {
-        localStorage.setItem("adminName", data.admin_name);
-      }
-      if (data.student_name) {
-        localStorage.setItem("studentName", data.student_name);
-      } else {
+      if (trimmedStudent) {
+        const data = await loginStudent({
+          adminName: trimmedAdmin,
+          name: trimmedStudent,
+          password,
+        });
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.role);
+        localStorage.setItem("name", data.name);
         localStorage.removeItem("studentName");
+        localStorage.removeItem("adminName");
+        if (data.grade != null) localStorage.setItem("grade", String(data.grade));
+        else localStorage.removeItem("grade");
+        touchActivity();
+        navigate("/student");
+      } else {
+        const data = await loginAdmin({
+          adminName: trimmedAdmin,
+          password,
+        });
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.role);
+        if (data.admin_name) {
+          localStorage.setItem("adminName", data.admin_name);
+        }
+        localStorage.removeItem("studentName");
+        localStorage.removeItem("studentGrade");
+        localStorage.removeItem("grade");
+        localStorage.removeItem("name");
+        touchActivity();
+        navigate("/admin");
       }
-      if (data.grade != null) localStorage.setItem("studentGrade", String(data.grade));
-      else localStorage.removeItem("studentGrade");
-      touchActivity();
-      navigate("/admin");
     } catch {
       setError(
-        adminLoginMode === "byStudent"
-          ? "Invalid student name or admin password."
+        trimmedStudent
+          ? "Invalid admin name, student name, or password."
           : "Invalid admin name or password.",
       );
     } finally {
@@ -97,11 +80,12 @@ export default function Login() {
         name: signupName.trim(),
         password: signupPassword,
       });
+      setAdminName(signupName.trim());
+      setStudentName("");
+      setPassword("");
       setSignupPassword("");
-      setScreen("admin");
-      setAdminLoginMode("byAccount");
-      setAdminAccountName(signupName.trim());
       setSignupName("");
+      setScreen("login");
       setError("");
     } catch (ex) {
       setError(ex.message || "Could not create admin account.");
@@ -128,26 +112,28 @@ export default function Login() {
           </div>
         )}
 
-        {screen === "student" && (
-          <form
-            onSubmit={handleStudentLogin}
-            className="flex flex-col gap-3"
-          >
+        {screen === "login" && (
+          <form onSubmit={handleLogin} className="flex flex-col gap-3">
             <p className="text-slate-800 text-sm font-semibold text-center">
-              Student
+              Sign in
+            </p>
+            <p className="text-slate-600 text-xs text-center leading-snug">
+              Enter your family admin name. Add a student name to sign in as a
+              student, or leave it blank for admin access.
             </p>
             <input
               type="text"
               autoComplete="organization"
               placeholder="Admin name"
-              value={studentAdminName}
-              onChange={(e) => setStudentAdminName(e.target.value)}
+              value={adminName}
+              onChange={(e) => setAdminName(e.target.value)}
+              required
               className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
             <input
               type="text"
               autoComplete="username"
-              placeholder="Your name"
+              placeholder="Student name (optional)"
               value={studentName}
               onChange={(e) => setStudentName(e.target.value)}
               className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
@@ -156,99 +142,17 @@ export default function Login() {
               type="password"
               autoComplete="current-password"
               placeholder="Password"
-              value={studentPassword}
-              onChange={(e) => setStudentPassword(e.target.value)}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
               className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
             <button
               type="submit"
               disabled={loginBusy}
-              className="bg-indigo-500 hover:bg-slate-600 text-white text-lg font-semibold py-4 rounded-2xl shadow transition disabled:opacity-50"
+              className="bg-indigo-500 hover:bg-indigo-600 text-white text-lg font-semibold py-4 rounded-2xl shadow transition disabled:opacity-50"
             >
-              Log in as student
-            </button>
-          </form>
-        )}
-
-        {screen === "admin" && (
-          <form onSubmit={handleAdminLogin} className="flex flex-col gap-3">
-            <p className="text-slate-800 text-sm font-semibold text-center">
-              Admin
-            </p>
-            <div className="flex rounded-xl border border-slate-200 overflow-hidden text-xs font-semibold">
-              <button
-                type="button"
-                onClick={() => {
-                  setAdminLoginMode("byStudent");
-                  setError("");
-                }}
-                className={`flex-1 py-2.5 transition ${
-                  adminLoginMode === "byStudent"
-                    ? "bg-slate-800 text-white"
-                    : "bg-white text-slate-800 hover:bg-slate-50"
-                }`}
-              >
-                Student + password
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAdminLoginMode("byAccount");
-                  setError("");
-                }}
-                className={`flex-1 py-2.5 transition ${
-                  adminLoginMode === "byAccount"
-                    ? "bg-slate-800 text-white"
-                    : "bg-white text-slate-800 hover:bg-slate-50"
-                }`}
-              >
-                Admin name + password
-              </button>
-            </div>
-            {adminLoginMode === "byStudent" ? (
-              <>
-                <p className="text-slate-600 text-xs text-center leading-snug">
-                  Enter a student&apos;s name and your admin password to view
-                  that student&apos;s worksheets and results.
-                </p>
-                <input
-                  type="text"
-                  placeholder="Student name"
-                  value={adminStudentName}
-                  onChange={(e) => setAdminStudentName(e.target.value)}
-                  className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                />
-              </>
-            ) : (
-              <>
-                <p className="text-slate-600 text-xs text-center leading-snug">
-                  Use the admin name you chose at sign-up. Then add students on
-                  the Students page.
-                </p>
-                <input
-                  type="text"
-                  autoComplete="username"
-                  placeholder="Admin name"
-                  value={adminAccountName}
-                  onChange={(e) => setAdminAccountName(e.target.value)}
-                  className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                />
-              </>
-            )}
-            <input
-              type="password"
-              autoComplete="current-password"
-              placeholder="Password"
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
-              className="border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
-            <button
-              type="submit"
-              disabled={loginBusy}
-              className="bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-xl text-sm font-semibold transition disabled:opacity-50"
-            >
-              Log in as admin
+              Log in
             </button>
           </form>
         )}
@@ -290,41 +194,16 @@ export default function Login() {
           </form>
         )}
 
-        {screen === "student" && (
-          <div className="flex flex-col gap-2 items-center">
-            <button
-              type="button"
-              onClick={() => {
-                setScreen("admin");
-                setError("");
-              }}
-              className="text-slate-700 text-sm underline text-center"
-            >
-              Admin login
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setScreen("signup");
-                setError("");
-              }}
-              className="text-slate-700 text-sm underline text-center"
-            >
-              Sign up as admin
-            </button>
-          </div>
-        )}
-
-        {screen === "admin" && (
+        {screen === "login" && (
           <button
             type="button"
             onClick={() => {
-              setScreen("student");
+              setScreen("signup");
               setError("");
             }}
             className="text-slate-700 text-sm underline text-center"
           >
-            Back to student login
+            Sign up as admin
           </button>
         )}
 
@@ -332,12 +211,12 @@ export default function Login() {
           <button
             type="button"
             onClick={() => {
-              setScreen("student");
+              setScreen("login");
               setError("");
             }}
             className="text-slate-700 text-sm underline text-center"
           >
-            Back to student login
+            Back to sign in
           </button>
         )}
 
