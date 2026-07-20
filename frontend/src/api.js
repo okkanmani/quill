@@ -635,6 +635,81 @@ export async function updateTestFromBuilder(worksheetId, payload) {
   return res.json();
 }
 
+function formatApiDetail(d, fallback) {
+  if (typeof d === "string") return d;
+  if (Array.isArray(d)) return d.join(" ");
+  return fallback;
+}
+
+export async function listQuestionBank({ subject, stars, area } = {}) {
+  const params = new URLSearchParams();
+  if (subject) params.set("subject", subject);
+  if (stars != null) params.set("stars", String(stars));
+  if (area) params.set("area", area);
+  const qs = params.toString();
+  const res = await apiFetch(
+    `${BASE_URL}/admin/question-bank${qs ? `?${qs}` : ""}`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiDetail(err.detail, "Could not load question bank."));
+  }
+  const data = await res.json();
+  return data.items || [];
+}
+
+export async function createQuestionBankItem(payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/question-bank`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiDetail(err.detail, "Could not save question."));
+  }
+  return res.json();
+}
+
+export async function bulkSaveQuestionBank({ subject, source = "manual", questions }) {
+  const res = await apiFetch(`${BASE_URL}/admin/question-bank/bulk`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ subject, source, questions }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiDetail(err.detail, "Could not save questions to bank."));
+  }
+  return res.json();
+}
+
+export async function updateQuestionBankItem(itemId, payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/question-bank/${encodeURIComponent(itemId)}`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiDetail(err.detail, "Could not update question."));
+  }
+  return res.json();
+}
+
+export async function deleteQuestionBankItem(itemId) {
+  const res = await apiFetch(`${BASE_URL}/admin/question-bank/${encodeURIComponent(itemId)}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiDetail(err.detail, "Could not delete question."));
+  }
+  return res.json();
+}
+
 export async function generateFocusDiscussionReference(payload) {
   const res = await apiFetch(`${BASE_URL}/admin/analysis/generate-discussion-reference`, {
     method: "POST",

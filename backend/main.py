@@ -80,6 +80,14 @@ from tests import (
     submit_test,
     unlock_test_attempt,
 )
+from question_bank import (
+    bulk_create_question_bank_items,
+    create_question_bank_item,
+    delete_question_bank_item,
+    get_question_bank_item,
+    list_question_bank_items,
+    update_question_bank_item,
+)
 from writing import (
     delete_writing_submission,
     grade_writing_submission,
@@ -278,6 +286,22 @@ class CreateTestBuilderRequest(BaseModel):
     questions: list[TestBuilderQuestionRequest]
     content_badge: str | None = "Test"
     lock_on_create: bool = False
+
+
+class QuestionBankItemRequest(BaseModel):
+    subject: str
+    stars: int
+    prompt: str
+    choices: list[str]
+    answer: str
+    area: str | None = ""
+    source: str | None = "manual"
+
+
+class QuestionBankBulkRequest(BaseModel):
+    subject: str
+    source: str | None = "manual"
+    questions: list[TestBuilderQuestionRequest]
 
 
 class AdminOpenAiKeyRequest(BaseModel):
@@ -862,6 +886,113 @@ def admin_generate_test_draft(
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/admin/question-bank")
+def admin_list_question_bank(
+    authorization: str = Header(...),
+    subject: str | None = None,
+    stars: int | None = None,
+    area: str | None = None,
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        items = list_question_bank_items(
+            admin_id=_admin_id(payload),
+            subject=subject,
+            stars=stars,
+            area=area,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"items": items}
+
+
+@app.post("/admin/question-bank")
+def admin_create_question_bank_item(
+    req: QuestionBankItemRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        item = create_question_bank_item(
+            admin_id=_admin_id(payload),
+            data=req.model_dump(),
+        )
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid question."]
+        if isinstance(errors, list):
+            detail = errors
+        else:
+            detail = [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
+    return item
+
+
+@app.post("/admin/question-bank/bulk")
+def admin_bulk_create_question_bank(
+    req: QuestionBankBulkRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        result = bulk_create_question_bank_items(
+            admin_id=_admin_id(payload),
+            subject=req.subject,
+            questions=[q.model_dump() for q in req.questions],
+            source=req.source or "manual",
+        )
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid questions."]
+        if isinstance(errors, list):
+            detail = errors
+        else:
+            detail = [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
+    return result
+
+
+@app.put("/admin/question-bank/{item_id}")
+def admin_update_question_bank_item(
+    item_id: str,
+    req: QuestionBankItemRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return update_question_bank_item(
+            item_id,
+            admin_id=_admin_id(payload),
+            data=req.model_dump(),
+        )
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid question."]
+        if isinstance(errors, list):
+            detail = errors
+        else:
+            detail = [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
+
+
+@app.delete("/admin/question-bank/{item_id}")
+def admin_delete_question_bank_item(
+    item_id: str,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    if not delete_question_bank_item(item_id, admin_id=_admin_id(payload)):
+        raise HTTPException(status_code=404, detail="Question bank item not found")
+    return {"message": "Deleted"}
 
 
 @app.post("/admin/analysis/generate-discussion-reference")

@@ -425,6 +425,28 @@ def init_schema() -> None:
         if default_admin_id is not None:
             _migrate_learn_hub_order_admin_scopes(conn, default_admin_id)
 
+        conn.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS question_bank_items (
+                id TEXT PRIMARY KEY,
+                admin_id INTEGER NOT NULL REFERENCES admins(id) ON DELETE CASCADE,
+                subject TEXT NOT NULL,
+                stars INTEGER NOT NULL,
+                area TEXT NOT NULL DEFAULT '',
+                prompt TEXT NOT NULL,
+                choices TEXT NOT NULL,
+                answer TEXT NOT NULL,
+                source TEXT NOT NULL DEFAULT 'manual',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_question_bank_admin_subject
+                ON question_bank_items (admin_id, subject);
+            CREATE INDEX IF NOT EXISTS idx_question_bank_admin_stars
+                ON question_bank_items (admin_id, subject, stars);
+            """
+        )
+
         conn.commit()
     finally:
         conn.close()

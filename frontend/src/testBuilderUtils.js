@@ -120,6 +120,44 @@ export function trimQuestionsForPublish(questions, sittingCount, adaptive) {
   return questions.slice(0, sittingCount);
 }
 
+export function bankItemToTestQuestion(item) {
+  const choices = Array.isArray(item?.choices) ? [...item.choices] : ["", "", "", ""];
+  while (choices.length < 4) choices.push("");
+  const answer = String(item?.answer || "").trim();
+  let correctIndex = choices.findIndex((c) => String(c).trim() === answer);
+  if (correctIndex < 0) correctIndex = 0;
+  return {
+    id: newTestQuestionId(),
+    tier: Number(item?.stars) || 2,
+    prompt: item?.prompt || "",
+    choices: choices.slice(0, 4),
+    correctIndex,
+    area: item?.area || "",
+  };
+}
+
+export function testQuestionToBankPayload(question, subject) {
+  const choices = question.choices.map((c) => String(c || "").trim());
+  const idx = Number(question.correctIndex);
+  return {
+    subject,
+    stars: Number(question.tier),
+    prompt: question.prompt.trim(),
+    choices,
+    answer: choices[idx] || "",
+    area: question.area?.trim() || "",
+  };
+}
+
+export function bankItemToEditorQuestion(item) {
+  const q = bankItemToTestQuestion(item);
+  return { ...q, bankId: item.id };
+}
+
+export function editorQuestionToBankPayload(question, subject) {
+  return testQuestionToBankPayload(question, subject);
+}
+
 export function buildTestBuilderPreview({
   title,
   subject,

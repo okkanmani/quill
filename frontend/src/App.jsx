@@ -21,6 +21,7 @@ import AdminCreateTest from "./pages/AdminCreateTest";
 import AdminLearnEdit from "./pages/AdminLearnEdit";
 import AdminStudents from "./pages/AdminStudents";
 import AdminSettings from "./pages/AdminSettings";
+import AdminQuestionBank from "./pages/AdminQuestionBank";
 import Worksheet from "./pages/Worksheet";
 import LearnHub from "./pages/LearnHub";
 import LearnSubject from "./pages/LearnSubject";
@@ -203,6 +204,15 @@ export default function App() {
           element={
             <ProtectedRoute role="admin">
               <AdminWorksheets />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/question-bank"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminQuestionBank />
             </ProtectedRoute>
           }
         />
