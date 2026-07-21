@@ -6,8 +6,8 @@ import AppShell from "../components/AppShell";
 const CREATE_TABS = [
   { to: "/admin/create/worksheet", label: "Worksheet builder" },
   { to: "/admin/create/test", label: "Test builder" },
-  { to: "/admin/create/upload", label: "Upload JSON" },
   { to: "/admin/create/learn", label: "Learning resource" },
+  { to: "/admin/create/upload", label: "Upload JSON" },
 ];
 
 export default function AdminCreate() {
