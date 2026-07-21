@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   deleteResult,
   deleteWritingSubmission,
@@ -22,8 +22,38 @@ import PracticeResultsSection from "../components/PracticeResultsSection";
 import TestResultsSection from "../components/TestResultsSection";
 import WritingResultsSection from "../components/WritingResultsSection";
 
+function ResultsViewTabs({ activeView }) {
+  const worksheetClass =
+    activeView === "worksheets"
+      ? "bg-slate-900 text-white border-slate-900"
+      : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50";
+  const testClass =
+    activeView === "tests"
+      ? "bg-slate-900 text-white border-slate-900"
+      : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50";
+
+  return (
+    <div className="flex flex-wrap gap-2 mb-6">
+      <Link
+        to="/admin"
+        className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${worksheetClass}`}
+      >
+        Worksheet results
+      </Link>
+      <Link
+        to="/admin?view=tests"
+        className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${testClass}`}
+      >
+        Test results
+      </Link>
+    </div>
+  );
+}
+
 export default function AdminHome() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const resultsView = searchParams.get("view") === "tests" ? "tests" : "worksheets";
   const [results, setResults] = useState([]);
   const [practiceResults, setPracticeResults] = useState([]);
   const [testResults, setTestResults] = useState([]);
@@ -177,7 +207,7 @@ export default function AdminHome() {
   const hasMainWorksheets = results.length > 0 || writing.length > 0;
   const hasRevision = practiceResults.length > 0;
   const hasTests = testResults.length > 0;
-  const hasAny = hasMainWorksheets || hasRevision || hasTests;
+  const hasWorksheetResults = hasMainWorksheets || hasRevision;
 
   return (
     <AppShell
@@ -190,8 +220,11 @@ export default function AdminHome() {
         <AdminStudentSwitcher />
 
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Results</h1>
+        <ResultsViewTabs activeView={resultsView} />
         <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-          Main worksheet and revision practice results for the selected student.
+          {resultsView === "tests"
+            ? "Adaptive test sittings for the selected student — weighted scores and answer review."
+            : "Main worksheet, writing, and revision practice results for the selected student."}
         </p>
 
         {message && (
@@ -201,11 +234,15 @@ export default function AdminHome() {
         {loading && <QuillLoading label="Loading results…" />}
         {error && <p className="text-red-500">{error}</p>}
 
-        {!loading && !error && !hasAny && (
-          <p className="text-slate-600">No results yet.</p>
-        )}
+        {!loading && !error && resultsView === "worksheets" && !hasWorksheetResults ? (
+          <p className="text-slate-600">No worksheet or revision results yet.</p>
+        ) : null}
 
-        {!loading && !error && hasAny ? (
+        {!loading && !error && resultsView === "tests" && !hasTests ? (
+          <p className="text-slate-600">No test results yet.</p>
+        ) : null}
+
+        {!loading && !error && resultsView === "worksheets" && hasWorksheetResults ? (
           <div className="flex flex-col gap-8">
             {hasMainWorksheets ? (
               <ResultsPageCategory title="Main Worksheets">
@@ -247,17 +284,16 @@ export default function AdminHome() {
                 />
               </ResultsPageCategory>
             ) : null}
-            {hasTests ? (
-              <ResultsPageCategory title="Tests">
-                <TestResultsSection
-                  results={testResults}
-                  openIds={openTestIds}
-                  toggleOpen={toggleTest}
-                  embedded
-                />
-              </ResultsPageCategory>
-            ) : null}
           </div>
+        ) : null}
+
+        {!loading && !error && resultsView === "tests" && hasTests ? (
+          <TestResultsSection
+            results={testResults}
+            openIds={openTestIds}
+            toggleOpen={toggleTest}
+            embedded
+          />
         ) : null}
       </div>
     </AppShell>
