@@ -4,6 +4,7 @@ import { getAdminHome, logout, switchAdminStudent } from "../api";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import AdminStudentBanner from "../components/AdminStudentBanner";
+import AdminStudentRoster from "../components/AdminStudentRoster";
 import QuillLoading from "../components/QuillLoading";
 
 function formatRelativeTime(iso) {
@@ -46,31 +47,6 @@ function activityLabel(item) {
     );
   }
   return `${name} had activity`;
-}
-
-function StudentHealthBadges({ needsAddressing, reinforcement }) {
-  if (needsAddressing <= 0 && reinforcement <= 0) {
-    return (
-      <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200">
-        All caught up
-      </span>
-    );
-  }
-
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {needsAddressing > 0 ? (
-        <span className="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-900 border border-rose-200">
-          {needsAddressing} needs addressing
-        </span>
-      ) : null}
-      {reinforcement > 0 ? (
-        <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900 border border-amber-200">
-          {reinforcement} reinforcement
-        </span>
-      ) : null}
-    </div>
-  );
 }
 
 function SectionLabel({ children }) {
@@ -160,43 +136,12 @@ export default function AdminLanding() {
           <div className="flex flex-col gap-6">
             <section>
               <SectionLabel>Students</SectionLabel>
-              <div className="grid sm:grid-cols-2 gap-3">
-                {students.map((student) => {
-                  const selected =
-                    student.is_selected ||
-                    student.name === localStorage.getItem("studentName");
-                  return (
-                    <button
-                      key={student.id}
-                      type="button"
-                      onClick={() => handleSelectStudent(student.name)}
-                      disabled={Boolean(switchingStudent)}
-                      className={`text-left rounded-xl border px-4 py-4 transition ${
-                        selected
-                          ? "border-slate-400 bg-slate-50 shadow-sm ring-1 ring-slate-200"
-                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80"
-                      } disabled:opacity-60`}
-                    >
-                      <p className="font-semibold text-slate-950">
-                        {student.name}
-                        {student.grade != null ? (
-                          <span className="text-slate-500 font-normal text-sm">
-                            {" "}
-                            · Gr. {student.grade}
-                          </span>
-                        ) : null}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1 mb-3">
-                        Last activity: {formatRelativeTime(student.last_activity_at)}
-                      </p>
-                      <StudentHealthBadges
-                        needsAddressing={student.needs_addressing_count || 0}
-                        reinforcement={student.reinforcement_count || 0}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
+              <AdminStudentRoster
+                students={students}
+                selectedName={localStorage.getItem("studentName") || ""}
+                onSelectStudent={handleSelectStudent}
+                switchingStudent={switchingStudent}
+              />
             </section>
 
             <div className="grid lg:grid-cols-[1.4fr_1fr] gap-5 items-start">
