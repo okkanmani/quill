@@ -14,6 +14,10 @@ import Drawpad from "../components/Drawpad";
 import QuillLoading from "../components/QuillLoading";
 import { QuestionDifficultyStars } from "../components/DifficultyStars";
 import PadlockIcon from "../components/PadlockIcon";
+import {
+  ScratchpadIcon,
+  TextAnswerIcon,
+} from "../components/ResponseModeIcons";
 import { useStudentNavLinks } from "../useStudentNavLinks";
 import { formatTestTimer, formatWeightedTestScore } from "../testUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
@@ -36,15 +40,18 @@ export default function StudentTestTake() {
   const [timeExpired, setTimeExpired] = useState(false);
   const [accessLocked, setAccessLocked] = useState(false);
   const [attemptLocked, setAttemptLocked] = useState(false);
-  const [scratchpadsVisible, setScratchpadsVisible] = useState(true);
+  const [workMode, setWorkMode] = useState("text");
+  const [workText, setWorkText] = useState("");
   const [scratchpadData, setScratchpadData] = useState("");
 
   const submittedRef = useRef(false);
   const testActiveRef = useRef(false);
   const worksheetIdRef = useRef(id);
   const autoSubmitStarted = useRef(false);
-  const scratchpadSaveTimer = useRef(null);
+  const workSaveTimer = useRef(null);
+  const workTextRef = useRef("");
   const scratchpadDataRef = useRef("");
+  const workModeRef = useRef("text");
 
   useEffect(() => {
     submittedRef.current = Boolean(submitted);
@@ -136,38 +143,72 @@ export default function StudentTestTake() {
     if (!session?.slots) return;
     const slotData = session.slots.find((s) => s.slot === currentSlot);
     setSelected(slotData?.given || "");
+    const nextMode = slotData?.work_mode === "scratchpad" ? "scratchpad" : "text";
+    const nextText = slotData?.work_text || "";
     const nextScratchpad = slotData?.scratchpad || "";
+    setWorkMode(nextMode);
+    setWorkText(nextText);
     setScratchpadData(nextScratchpad);
+    workModeRef.current = nextMode;
+    workTextRef.current = nextText;
     scratchpadDataRef.current = nextScratchpad;
   }, [session, currentSlot]);
 
-  const flushScratchpadSave = useCallback(
-    async (slot = currentSlot, dataUrl = scratchpadDataRef.current) => {
+  const flushWorkSave = useCallback(
+    async (
+      slot = currentSlot,
+      {
+        scratchpad = scratchpadDataRef.current,
+        work_text = workTextRef.current,
+        work_mode = workModeRef.current,
+      } = {},
+    ) => {
       if (isAdminPreview || submitted || !session) return;
-      if (scratchpadSaveTimer.current) {
-        clearTimeout(scratchpadSaveTimer.current);
-        scratchpadSaveTimer.current = null;
+      if (workSaveTimer.current) {
+        clearTimeout(workSaveTimer.current);
+        workSaveTimer.current = null;
       }
       try {
-        const data = await saveTestScratchpad(id, { slot, scratchpad: dataUrl || "" });
+        const data = await saveTestScratchpad(id, {
+          slot,
+          scratchpad: scratchpad || "",
+          work_text,
+          work_mode,
+        });
         setSession(data);
       } catch (err) {
-        setSubmitError(err.message || "Could not save scratchpad work.");
+        setSubmitError(err.message || "Could not save your work.");
       }
     },
     [currentSlot, id, isAdminPreview, session, submitted],
   );
 
+  function scheduleWorkSave(overrides = {}) {
+    if (isAdminPreview || submitted) return;
+    if (workSaveTimer.current) {
+      clearTimeout(workSaveTimer.current);
+    }
+    workSaveTimer.current = setTimeout(() => {
+      flushWorkSave(currentSlot, overrides);
+    }, 800);
+  }
+
+  function handleWorkTextChange(value) {
+    setWorkText(value);
+    workTextRef.current = value;
+    scheduleWorkSave({ work_text: value });
+  }
+
   function handleScratchpadChange(dataUrl) {
     setScratchpadData(dataUrl);
     scratchpadDataRef.current = dataUrl;
-    if (isAdminPreview || submitted) return;
-    if (scratchpadSaveTimer.current) {
-      clearTimeout(scratchpadSaveTimer.current);
-    }
-    scratchpadSaveTimer.current = setTimeout(() => {
-      flushScratchpadSave(currentSlot, dataUrl);
-    }, 800);
+    scheduleWorkSave({ scratchpad: dataUrl });
+  }
+
+  async function handleWorkModeChange(mode) {
+    setWorkMode(mode);
+    workModeRef.current = mode;
+    await flushWorkSave(currentSlot, { work_mode: mode });
   }
 
   async function handleSubmit(fromTimer = false) {
@@ -175,7 +216,7 @@ export default function StudentTestTake() {
     setSubmitting(true);
     setSubmitError("");
     try {
-      await flushScratchpadSave(currentSlot);
+      await flushWorkSave(currentSlot);
       const result = await submitTest(id);
       testActiveRef.current = false;
       setSubmitted(result);
@@ -201,8 +242,8 @@ export default function StudentTestTake() {
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", onBeforeUnload);
-      if (scratchpadSaveTimer.current) {
-        clearTimeout(scratchpadSaveTimer.current);
+      if (workSaveTimer.current) {
+        clearTimeout(workSaveTimer.current);
       }
     };
   }, []);
@@ -211,7 +252,7 @@ export default function StudentTestTake() {
     if (!session || submitted) return;
     setSubmitError("");
     try {
-      await flushScratchpadSave(currentSlot);
+      await flushWorkSave(currentSlot);
       const data = await getTestSession(id, { slot, resume: true });
       setSession(data);
       setCurrentSlot(slot);
@@ -250,6 +291,42 @@ export default function StudentTestTake() {
   const answeredCount = slots.filter((s) => s.answered).length;
   const allAnswered = answeredCount >= sittingCount;
   const scratchpadAllowed = session?.scratchpad !== false;
+
+  function renderWorkModeToggle() {
+    const baseBtn =
+      "inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 transition disabled:opacity-40 disabled:pointer-events-none";
+    const active = "bg-indigo-100 text-indigo-900 border-indigo-300";
+    const idle =
+      "bg-white text-slate-600 border-slate-200 hover:border-indigo-200 hover:text-indigo-800";
+    const locked = submitting || timeExpired;
+
+    return (
+      <div className="flex gap-2" role="group" aria-label="Work mode">
+        <button
+          type="button"
+          disabled={locked}
+          onClick={() => handleWorkModeChange("text")}
+          title="Text notes"
+          aria-label="Text notes"
+          aria-pressed={workMode === "text"}
+          className={`${baseBtn} ${workMode === "text" ? active : idle}`}
+        >
+          <TextAnswerIcon />
+        </button>
+        <button
+          type="button"
+          disabled={locked}
+          onClick={() => handleWorkModeChange("scratchpad")}
+          title="Scratchpad"
+          aria-label="Scratchpad"
+          aria-pressed={workMode === "scratchpad"}
+          className={`${baseBtn} ${workMode === "scratchpad" ? active : idle}`}
+        >
+          <ScratchpadIcon />
+        </button>
+      </div>
+    );
+  }
 
   function navigatorClass(slot) {
     const base =
@@ -368,7 +445,7 @@ export default function StudentTestTake() {
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <AppHeader onBack={handleBack} onLogout={handleLogout} />
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {isAdminPreview ? (
           <p className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-900">
             Admin preview — answers won&apos;t lock the student&apos;s attempt when you leave.
@@ -420,72 +497,68 @@ export default function StudentTestTake() {
           </div>
         </div>
 
-        {scratchpadAllowed ? (
-          <div className="mb-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-medium text-slate-900">Scratch pad</p>
-                <p className="text-xs text-slate-600 mt-0.5">
-                  Jot work for the current question — draw or type.
-                </p>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={scratchpadsVisible}
-                onClick={() => setScratchpadsVisible((v) => !v)}
-                className={`relative h-9 w-14 shrink-0 rounded-full transition-colors ${
-                  scratchpadsVisible ? "bg-indigo-500" : "bg-slate-200"
-                }`}
-              >
-                <span
-                  className={`absolute top-1 left-1 block h-7 w-7 rounded-full bg-white shadow transition-transform ${
-                    scratchpadsVisible ? "translate-x-5" : "translate-x-0"
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-        ) : null}
-
         {question ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-start justify-between gap-3 mb-4">
-              <p className="text-slate-900 font-medium flex-1">{question.prompt}</p>
-              <QuestionDifficultyStars stars={slotData?.tier || question.stars} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <p className="text-slate-900 font-medium flex-1">{question.prompt}</p>
+                <QuestionDifficultyStars stars={slotData?.tier || question.stars} />
+              </div>
+              <div className="flex flex-col gap-2">
+                {(question.choices || []).map((choice) => {
+                  const isSelected = selected === choice;
+                  return (
+                    <button
+                      key={choice}
+                      type="button"
+                      disabled={submitting || timeExpired}
+                      onClick={() => handleSelectChoice(choice)}
+                      className={`border rounded-xl px-4 py-3 text-sm text-left transition ${
+                        isSelected
+                          ? "border-teal-500 bg-teal-50 text-slate-900"
+                          : "border-slate-200 text-slate-800 hover:border-teal-300"
+                      }`}
+                    >
+                      {choice}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            {scratchpadAllowed && scratchpadsVisible ? (
-              <Drawpad
-                key={`test-scratch-${id}-${currentSlot}`}
-                value={scratchpadData}
-                onChange={handleScratchpadChange}
-                disabled={submitting || timeExpired}
-                showHeading={false}
-                showTextTool
-                className="mb-4"
-                canvasHeight={280}
-              />
-            ) : null}
-            <div className="flex flex-col gap-2">
-              {(question.choices || []).map((choice) => {
-                const isSelected = selected === choice;
-                return (
-                  <button
-                    key={choice}
-                    type="button"
+
+            {scratchpadAllowed ? (
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm lg:sticky lg:top-6">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Your work</p>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Jot notes or sketch — not graded.
+                    </p>
+                  </div>
+                  {renderWorkModeToggle()}
+                </div>
+                {workMode === "text" ? (
+                  <textarea
+                    value={workText}
+                    onChange={(e) => handleWorkTextChange(e.target.value)}
                     disabled={submitting || timeExpired}
-                    onClick={() => handleSelectChoice(choice)}
-                    className={`border rounded-xl px-4 py-3 text-sm text-left transition ${
-                      isSelected
-                        ? "border-teal-500 bg-teal-50 text-slate-900"
-                        : "border-slate-200 text-slate-800 hover:border-teal-300"
-                    }`}
-                  >
-                    {choice}
-                  </button>
-                );
-              })}
-            </div>
+                    placeholder="Show your reasoning, calculations, or notes…"
+                    rows={12}
+                    className="w-full min-h-[280px] border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y"
+                  />
+                ) : (
+                  <Drawpad
+                    key={`test-scratch-${id}-${currentSlot}`}
+                    value={scratchpadData}
+                    onChange={handleScratchpadChange}
+                    disabled={submitting || timeExpired}
+                    showHeading={false}
+                    className="mt-0"
+                    canvasHeight={320}
+                  />
+                )}
+              </div>
+            ) : null}
           </div>
         ) : (
           <p className="text-slate-500">Loading question…</p>

@@ -315,6 +315,9 @@ def _attempt_row_to_session(
                 item["given"] = ans.get("given", "")
                 if row["completed_at"]:
                     item["correct"] = ans.get("correct")
+            mode = ans.get("work_mode")
+            item["work_mode"] = mode if mode in ("text", "scratchpad") else "text"
+            item["work_text"] = str(ans.get("work_text") or "")
             if ans.get("scratchpad"):
                 item["scratchpad"] = ans.get("scratchpad")
         slots_out.append(item)
@@ -584,6 +587,10 @@ def save_test_answer(
         tier = int(entry.get("tier") or q.get("stars") or START_TIER)
         prev = answers.get(str(slot))
         prev_scratchpad = prev.get("scratchpad", "") if isinstance(prev, dict) else ""
+        prev_work_text = prev.get("work_text", "") if isinstance(prev, dict) else ""
+        prev_work_mode = prev.get("work_mode", "text") if isinstance(prev, dict) else "text"
+        if prev_work_mode not in ("text", "scratchpad"):
+            prev_work_mode = "text"
 
         answers[str(slot)] = {
             "given": given_clean,
@@ -595,6 +602,8 @@ def save_test_answer(
             "choices": q.get("choices") or [],
             "area": q.get("area") or "",
             "scratchpad": prev_scratchpad,
+            "work_text": prev_work_text,
+            "work_mode": prev_work_mode,
         }
 
         _save_attempt_state(conn, row["id"], sequence, answers)
@@ -627,6 +636,8 @@ def save_test_scratchpad(
     *,
     slot: int,
     scratchpad: str,
+    work_text: str | None = None,
+    work_mode: str | None = None,
 ) -> dict:
     assert_worksheet_accessible(student_name, worksheet_id)
     ws = get_worksheet(worksheet_id)
@@ -667,6 +678,12 @@ def save_test_scratchpad(
         if not isinstance(prev, dict):
             prev = {}
         prev["scratchpad"] = str(scratchpad or "")
+        if work_text is not None:
+            prev["work_text"] = str(work_text or "")
+        if work_mode in ("text", "scratchpad"):
+            prev["work_mode"] = work_mode
+        elif "work_mode" not in prev:
+            prev["work_mode"] = "text"
         answers[str(slot)] = prev
 
         _save_attempt_state(conn, row["id"], sequence, answers)

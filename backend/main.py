@@ -373,6 +373,8 @@ class TestAnswerRequest(BaseModel):
 class TestScratchpadRequest(BaseModel):
     slot: int
     scratchpad: str = ""
+    work_text: str | None = None
+    work_mode: str | None = None
 
 
 class TestReviewNotesRequest(BaseModel):
@@ -1880,6 +1882,8 @@ def save_test_scratchpad_route(
             worksheet_id,
             slot=req.slot,
             scratchpad=req.scratchpad,
+            work_text=req.work_text,
+            work_mode=req.work_mode,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

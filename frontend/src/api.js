@@ -964,11 +964,17 @@ export async function saveTestAnswer(worksheetId, { slot, given }) {
   return res.json();
 }
 
-export async function saveTestScratchpad(worksheetId, { slot, scratchpad }) {
+export async function saveTestScratchpad(
+  worksheetId,
+  { slot, scratchpad, work_text, work_mode },
+) {
+  const body = { slot, scratchpad };
+  if (work_text !== undefined) body.work_text = work_text;
+  if (work_mode !== undefined) body.work_mode = work_mode;
   const res = await apiFetch(`${BASE_URL}/tests/${worksheetId}/scratchpad`, {
     method: "PATCH",
     headers: authHeaders(),
-    body: JSON.stringify({ slot, scratchpad }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
