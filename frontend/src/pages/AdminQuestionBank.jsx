@@ -366,10 +366,10 @@ export default function AdminQuestionBank() {
                           )}
                         </td>
                         <td className="px-4 py-3 align-top">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 whitespace-nowrap">
                             <QuestionDifficultyStars stars={item.stars} />
-                            <span className="text-xs text-slate-600">
-                              {tier?.shortLabel || `Tier ${item.stars}`}
+                            <span className="text-xs font-medium text-slate-700">
+                              {tier?.label || `Tier ${item.stars}`}
                             </span>
                           </div>
                         </td>
