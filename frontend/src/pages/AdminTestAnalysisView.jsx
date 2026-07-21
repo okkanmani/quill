@@ -20,7 +20,7 @@ function TierTrendChart({ trend }) {
 
   const width = 640;
   const height = 180;
-  const padLeft = 52;
+  const padLeft = 64;
   const padRight = 20;
   const padY = 24;
   const plotRight = width - padRight;
