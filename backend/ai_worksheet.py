@@ -378,6 +378,8 @@ def _normalize_draft(
 
 
 TOPUP_MAX_MISSING = 5
+TEST_TOPUP_MAX_BATCH = 20
+TEST_TOPUP_MAX_ROUNDS = 5
 
 
 def _openai_json_completion(
@@ -755,12 +757,15 @@ Generate exactly {total} multiple-choice questions in total:
 - exactly {per_tier} questions with "stars": 2 (medium)
 - exactly {per_tier} questions with "stars": 3 (hard)
 
+CRITICAL: The questions array must contain exactly {total} items with the tier counts above — count before responding.
+
 These feed an adaptive test where each student answers {sitting_count} questions per sitting and difficulty adjusts by tier after each response.
 """
     else:
         total = max(sitting_count + 4, int(sitting_count * 1.2))
         bank_rules = f"""
 Generate {total} multiple-choice questions with a mix of "stars" values 1, 2, and 3.
+CRITICAL: The questions array must contain at least {total} items — count before responding.
 The sitting uses {sitting_count} questions — include a small buffer so the teacher can review, edit, and reorder before publish.
 Extra questions beyond the sitting are trimmed automatically when the test is published.
 """
@@ -807,6 +812,325 @@ Return JSON matching this schema:
     return base
 
 
+def _parse_single_test_question(raw: dict, index: int) -> dict:
+    prefix = f"AI question {index + 1}"
+    if not isinstance(raw, dict):
+        raise ValueError(f"{prefix} is invalid.")
+    prompt = raw.get("prompt")
+    if not isinstance(prompt, str) or not prompt.strip():
+        raise ValueError(f"{prefix} is missing a prompt.")
+
+    area = raw.get("area")
+    if not isinstance(area, str) or not area.strip():
+        raise ValueError(f"{prefix} is missing a specific area label.")
+
+    stars = raw.get("stars")
+    if not isinstance(stars, (int, float)) or int(stars) not in (1, 2, 3):
+        raise ValueError(f"{prefix} must have stars 1, 2, or 3.")
+    stars = int(stars)
+
+    choices = raw.get("choices")
+    correct_index = raw.get("correct_index")
+    if not isinstance(choices, list) or len(choices) != 4:
+        raise ValueError(f"{prefix} must have 4 choices.")
+    trimmed = [str(c).strip() for c in choices]
+    if any(not c for c in trimmed):
+        raise ValueError(f"{prefix} has empty choices.")
+    if len(set(trimmed)) < 4:
+        raise ValueError(f"{prefix} has duplicate choices.")
+    if not isinstance(correct_index, int) or correct_index not in (0, 1, 2, 3):
+        raise ValueError(f"{prefix} has invalid correct_index.")
+
+    return {
+        "prompt": prompt.strip(),
+        "area": area.strip().lower(),
+        "stars": stars,
+        "choices": trimmed,
+        "correct_index": correct_index,
+    }
+
+
+def _build_test_tier_prompt(
+    *,
+    subject: str,
+    grade: int,
+    tier: int,
+    count: int,
+    custom_prompt: str = "",
+) -> str:
+    subject_text = _subject_label(subject)
+    difficulty = _difficulty_label(tier)
+    schema = """
+{
+  "title": "short test title (optional on later tiers)",
+  "questions": [
+    {
+      "prompt": "question text",
+      "area": "specific skill label",
+      "stars": 1,
+      "choices": ["choice A text", "choice B text", "choice C text", "choice D text"],
+      "correct_index": 0
+    }
+  ]
+}
+"""
+    base = f"""Generate a timed assessment question bank as JSON only.
+
+Audience: grade {grade} students in Canada/US curriculum style.
+Subject: {subject_text}
+Difficulty tier: {difficulty} (stars {tier} of 3)
+
+Generate exactly {count} multiple-choice questions.
+CRITICAL: Every question must have "stars": {tier}. The questions array must contain exactly {count} items — count before responding.
+
+Rules:
+- Each question must have exactly 4 distinct, non-empty choices.
+- correct_index is 0 for A, 1 for B, 2 for C, 3 for D.
+- Do not prefix choices with letters.
+- Each question must include area: a specific, narrow skill label in lowercase.
+- No duplicate or near-duplicate questions.
+- Accurate correct answers — double-check math and facts.
+
+Return JSON matching this schema:
+{schema}
+"""
+    extra = (custom_prompt or "").strip()
+    if extra:
+        if len(extra) > 2000:
+            extra = extra[:2000]
+        return base + f"\nAdditional instructions from the teacher:\n{extra}\n"
+    return base
+
+
+def _build_test_topup_prompt(
+    *,
+    missing: int,
+    subject: str,
+    grade: int,
+    sitting_count: int,
+    adaptive: bool,
+    tier: int | None,
+    existing_prompts: list[str],
+    custom_prompt: str = "",
+) -> str:
+    subject_text = _subject_label(subject)
+    existing_block = "\n".join(f"- {text}" for text in existing_prompts[:60])
+    tier_rule = (
+        f'Every question must have "stars": {tier} ({_difficulty_label(tier)}).'
+        if tier is not None
+        else "Use a mix of stars values 1, 2, and 3."
+    )
+    schema = """
+{
+  "questions": [
+    {
+      "prompt": "question text",
+      "area": "specific skill label",
+      "stars": 2,
+      "choices": ["choice A text", "choice B text", "choice C text", "choice D text"],
+      "correct_index": 0
+    }
+  ]
+}
+"""
+    base = f"""Generate exactly {missing} additional timed-assessment questions as JSON only.
+
+Audience: grade {grade} students in Canada/US curriculum style.
+Subject: {subject_text}
+Sitting size: {sitting_count} questions per attempt
+Mode: {"adaptive tier bank" if adaptive else "fixed-order bank with review buffer"}
+
+These questions continue an existing bank. Do NOT repeat or closely paraphrase any question below.
+
+Existing questions:
+{existing_block or "(none listed)"}
+
+{tier_rule}
+- Each question must have exactly 4 distinct, non-empty choices and correct_index 0-3.
+- Each question must include a specific lowercase area label.
+- No duplicate or near-duplicate questions.
+
+Return JSON matching this schema:
+{schema}
+"""
+    extra = (custom_prompt or "").strip()
+    if extra:
+        if len(extra) > 2000:
+            extra = extra[:2000]
+        return base + f"\nAdditional instructions from the teacher:\n{extra}\n"
+    return base
+
+
+def _topup_test_questions(
+    parsed: dict,
+    *,
+    missing: int,
+    api_key: str,
+    subject: str,
+    grade: int,
+    sitting_count: int,
+    adaptive: bool,
+    tier: int | None,
+    custom_prompt: str = "",
+) -> dict:
+    if missing <= 0:
+        return parsed
+    batch = min(missing, TEST_TOPUP_MAX_BATCH)
+    existing = parsed.get("questions")
+    if not isinstance(existing, list):
+        existing = []
+    topup = _openai_json_completion(
+        api_key=api_key,
+        system_role="test",
+        timeout=240.0,
+        messages=[
+            {
+                "role": "user",
+                "content": _build_test_topup_prompt(
+                    missing=batch,
+                    subject=subject,
+                    grade=grade,
+                    sitting_count=sitting_count,
+                    adaptive=adaptive,
+                    tier=tier,
+                    existing_prompts=_existing_question_prompts(existing),
+                    custom_prompt=custom_prompt,
+                ),
+            }
+        ],
+    )
+    extra_questions = topup.get("questions")
+    if not isinstance(extra_questions, list):
+        return parsed
+    return {**parsed, "questions": [*existing, *extra_questions]}
+
+
+def _finalize_test_tier_questions(
+    parsed: dict,
+    *,
+    tier: int,
+    sitting_count: int,
+    api_key: str,
+    subject: str,
+    grade: int,
+    custom_prompt: str = "",
+) -> list[dict]:
+    draft = parsed
+    parsed_questions: list[dict] = []
+    for _ in range(TEST_TOPUP_MAX_ROUNDS):
+        raw_questions = draft.get("questions")
+        if not isinstance(raw_questions, list):
+            raw_questions = []
+        parsed_questions = [
+            _parse_single_test_question(raw, i)
+            for i, raw in enumerate(raw_questions)
+            if isinstance(raw, dict) and int(raw.get("stars") or 0) == tier
+        ]
+        if len(parsed_questions) >= sitting_count:
+            return parsed_questions
+        missing = sitting_count - len(parsed_questions)
+        draft = _topup_test_questions(
+            draft,
+            missing=missing,
+            api_key=api_key,
+            subject=subject,
+            grade=grade,
+            sitting_count=sitting_count,
+            adaptive=True,
+            tier=tier,
+            custom_prompt=custom_prompt,
+        )
+    raise ValueError(
+        f"AI returned {len(parsed_questions)} tier-{tier} questions; "
+        f"expected at least {sitting_count}."
+    )
+
+
+def _generate_adaptive_test_draft(
+    *,
+    subject: str,
+    grade: int,
+    sitting_count: int,
+    custom_prompt: str,
+    api_key: str,
+) -> dict:
+    title = ""
+    all_questions: list[dict] = []
+    for tier in (1, 2, 3):
+        tier_prompt = _build_test_tier_prompt(
+            subject=subject,
+            grade=grade,
+            tier=tier,
+            count=sitting_count,
+            custom_prompt=custom_prompt,
+        )
+        parsed = _openai_json_completion(
+            api_key=api_key,
+            system_role="test",
+            timeout=240.0,
+            messages=[{"role": "user", "content": tier_prompt}],
+        )
+        if not title:
+            candidate = parsed.get("title")
+            if isinstance(candidate, str) and candidate.strip():
+                title = candidate.strip()
+        tier_questions = _finalize_test_tier_questions(
+            parsed,
+            tier=tier,
+            sitting_count=sitting_count,
+            api_key=api_key,
+            subject=subject,
+            grade=grade,
+            custom_prompt=custom_prompt,
+        )
+        all_questions.extend(tier_questions)
+
+    if not title:
+        title = f"{_subject_label(subject)} Adaptive Test"
+
+    return _normalize_test_draft(
+        {"title": title, "questions": all_questions},
+        sitting_count=sitting_count,
+        adaptive=True,
+    )
+
+
+def _finalize_fixed_test_draft(
+    parsed: dict,
+    *,
+    api_key: str,
+    subject: str,
+    grade: int,
+    sitting_count: int,
+    custom_prompt: str = "",
+) -> dict:
+    draft = parsed
+    min_count = sitting_count
+    for _ in range(TEST_TOPUP_MAX_ROUNDS):
+        raw_questions = draft.get("questions")
+        if not isinstance(raw_questions, list):
+            raw_questions = []
+        if len(raw_questions) >= min_count:
+            break
+        missing = min_count - len(raw_questions)
+        draft = _topup_test_questions(
+            draft,
+            missing=missing,
+            api_key=api_key,
+            subject=subject,
+            grade=grade,
+            sitting_count=sitting_count,
+            adaptive=False,
+            tier=None,
+            custom_prompt=custom_prompt,
+        )
+    return _normalize_test_draft(
+        draft,
+        sitting_count=sitting_count,
+        adaptive=False,
+    )
+
+
 def _normalize_test_draft(
     data: dict,
     *,
@@ -836,43 +1160,10 @@ def _normalize_test_draft(
     tier_counts = {1: 0, 2: 0, 3: 0}
     questions: list[dict] = []
     for i, raw in enumerate(raw_questions):
-        if not isinstance(raw, dict):
-            raise ValueError(f"AI question {i + 1} is invalid.")
-        prompt = raw.get("prompt")
-        if not isinstance(prompt, str) or not prompt.strip():
-            raise ValueError(f"AI question {i + 1} is missing a prompt.")
-
-        area = raw.get("area")
-        if not isinstance(area, str) or not area.strip():
-            raise ValueError(f"AI question {i + 1} is missing a specific area label.")
-
-        stars = raw.get("stars")
-        if not isinstance(stars, (int, float)) or int(stars) not in (1, 2, 3):
-            raise ValueError(f"AI question {i + 1} must have stars 1, 2, or 3.")
-        stars = int(stars)
+        question = _parse_single_test_question(raw, i)
+        stars = question["stars"]
         tier_counts[stars] += 1
-
-        choices = raw.get("choices")
-        correct_index = raw.get("correct_index")
-        if not isinstance(choices, list) or len(choices) != 4:
-            raise ValueError(f"AI question {i + 1} must have 4 choices.")
-        trimmed = [str(c).strip() for c in choices]
-        if any(not c for c in trimmed):
-            raise ValueError(f"AI question {i + 1} has empty choices.")
-        if len(set(trimmed)) < 4:
-            raise ValueError(f"AI question {i + 1} has duplicate choices.")
-        if not isinstance(correct_index, int) or correct_index not in (0, 1, 2, 3):
-            raise ValueError(f"AI question {i + 1} has invalid correct_index.")
-
-        questions.append(
-            {
-                "prompt": prompt.strip(),
-                "area": area.strip().lower(),
-                "stars": stars,
-                "choices": trimmed,
-                "correct_index": correct_index,
-            }
-        )
+        questions.append(question)
 
     if adaptive:
         per_tier: dict[int, list[dict]] = {1: [], 2: [], 3: []}
@@ -930,49 +1221,41 @@ def generate_test_draft(
         custom_prompt=custom_prompt,
     )
 
-    model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
+    if adaptive:
+        return _generate_adaptive_test_draft(
+            subject=subject,
+            grade=grade,
+            sitting_count=sitting_count,
+            custom_prompt=custom_prompt,
+            api_key=api_key,
+        )
 
-    try:
-        with httpx.Client(timeout=240.0) as client:
-            res = client.post(
-                OPENAI_CHAT_URL,
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": model,
-                    "response_format": {"type": "json_object"},
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": (
-                                "You are an expert K-12 assessment author. "
-                                "Return only valid JSON matching the requested schema."
-                            ),
-                        },
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "temperature": 0.7,
-                },
+    def _request_draft() -> dict:
+        return _openai_json_completion(
+            api_key=api_key,
+            system_role="test",
+            timeout=240.0,
+            messages=[{"role": "user", "content": user_prompt}],
+        )
+
+    last_error: ValueError | None = None
+    for attempt in range(2):
+        parsed = _request_draft()
+        try:
+            return _finalize_fixed_test_draft(
+                parsed,
+                api_key=api_key,
+                subject=subject,
+                grade=grade,
+                sitting_count=sitting_count,
+                custom_prompt=custom_prompt,
             )
-    except httpx.TimeoutException as exc:
-        raise ValueError("AI request timed out. Try again with a smaller sitting size.") from exc
-    except httpx.HTTPError as exc:
-        raise ValueError("Could not reach the AI service.") from exc
-
-    if res.status_code != 200:
-        raise ValueError(_openai_error_message(res.status_code, res.text))
-
-    payload = res.json()
-    try:
-        content = payload["choices"][0]["message"]["content"]
-    except (KeyError, IndexError, TypeError) as exc:
-        raise ValueError("Unexpected AI response format.") from exc
-
-    parsed = _parse_ai_json(content)
-    return _normalize_test_draft(
-        parsed,
-        sitting_count=sitting_count,
-        adaptive=adaptive,
-    )
+        except ValueError as exc:
+            message = str(exc)
+            if attempt == 0 and "questions; expected" in message:
+                last_error = exc
+                continue
+            raise
+    if last_error:
+        raise last_error
+    raise ValueError("Could not generate test draft.")
