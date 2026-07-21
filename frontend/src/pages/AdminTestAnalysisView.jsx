@@ -20,9 +20,11 @@ function TierTrendChart({ trend }) {
 
   const width = 640;
   const height = 180;
-  const padX = 24;
+  const padLeft = 52;
+  const padRight = 20;
   const padY = 24;
-  const innerW = width - padX * 2;
+  const plotRight = width - padRight;
+  const innerW = plotRight - padLeft;
   const innerH = height - padY * 2;
   const stepX = trend.length > 1 ? innerW / (trend.length - 1) : 0;
 
@@ -30,7 +32,7 @@ function TierTrendChart({ trend }) {
 
   const points = trend
     .map((point, index) => {
-      const x = padX + index * stepX;
+      const x = padLeft + index * stepX;
       const y = yForTier(point.tier);
       return `${x},${y}`;
     })
@@ -47,16 +49,17 @@ function TierTrendChart({ trend }) {
         {[1, 2, 3].map((tier) => (
           <g key={tier}>
             <line
-              x1={padX}
-              x2={width - padX}
+              x1={padLeft}
+              x2={plotRight}
               y1={yForTier(tier)}
               y2={yForTier(tier)}
               stroke="#e2e8f0"
               strokeDasharray="4 4"
             />
             <text
-              x={8}
+              x={10}
               y={yForTier(tier) + 4}
+              textAnchor="start"
               className="fill-slate-400 text-[10px]"
             >
               {TEST_TIER_LABELS[tier]}
@@ -70,7 +73,7 @@ function TierTrendChart({ trend }) {
           points={points}
         />
         {trend.map((point, index) => {
-          const x = padX + index * stepX;
+          const x = padLeft + index * stepX;
           const y = yForTier(point.tier);
           const fill = point.correct ? "#059669" : "#dc2626";
           return (
