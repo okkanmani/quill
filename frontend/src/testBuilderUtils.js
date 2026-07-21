@@ -208,7 +208,7 @@ export function buildTestBuilderPreview({
     test_sitting_count: Number(sittingCount),
     timed: true,
     time_limit_minutes: Number(timeLimitMinutes),
-    scratchpad: false,
+    scratchpad: true,
     content_badge: "Test",
     questions: questions.map((question, index) => ({
       id: question.id || `q${index + 1}`,

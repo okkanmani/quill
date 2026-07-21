@@ -80,6 +80,7 @@ from tests import (
     lock_test_attempt,
     save_test_answer,
     save_test_review_notes,
+    save_test_scratchpad,
     submit_test,
     unlock_test_attempt,
 )
@@ -367,6 +368,11 @@ class CompleteRevisionRequest(BaseModel):
 class TestAnswerRequest(BaseModel):
     slot: int
     given: str
+
+
+class TestScratchpadRequest(BaseModel):
+    slot: int
+    scratchpad: str = ""
 
 
 class TestReviewNotesRequest(BaseModel):
@@ -1855,6 +1861,25 @@ def save_test_answer_route(
             worksheet_id,
             slot=req.slot,
             given=req.given,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.patch("/tests/{worksheet_id}/scratchpad")
+def save_test_scratchpad_route(
+    worksheet_id: str,
+    req: TestScratchpadRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    who = _test_context_name(payload)
+    try:
+        return save_test_scratchpad(
+            who,
+            worksheet_id,
+            slot=req.slot,
+            scratchpad=req.scratchpad,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

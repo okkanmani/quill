@@ -5,10 +5,12 @@ import {
   lockTestAttempt,
   logout,
   saveTestAnswer,
+  saveTestScratchpad,
   submitTest,
 } from "../api";
 import AppHeader from "../components/AppHeader";
 import AdminStudentBanner from "../components/AdminStudentBanner";
+import Drawpad from "../components/Drawpad";
 import QuillLoading from "../components/QuillLoading";
 import { QuestionDifficultyStars } from "../components/DifficultyStars";
 import PadlockIcon from "../components/PadlockIcon";
@@ -34,11 +36,15 @@ export default function StudentTestTake() {
   const [timeExpired, setTimeExpired] = useState(false);
   const [accessLocked, setAccessLocked] = useState(false);
   const [attemptLocked, setAttemptLocked] = useState(false);
+  const [scratchpadsVisible, setScratchpadsVisible] = useState(true);
+  const [scratchpadData, setScratchpadData] = useState("");
 
   const submittedRef = useRef(false);
   const testActiveRef = useRef(false);
   const worksheetIdRef = useRef(id);
   const autoSubmitStarted = useRef(false);
+  const scratchpadSaveTimer = useRef(null);
+  const scratchpadDataRef = useRef("");
 
   useEffect(() => {
     submittedRef.current = Boolean(submitted);
@@ -130,13 +136,46 @@ export default function StudentTestTake() {
     if (!session?.slots) return;
     const slotData = session.slots.find((s) => s.slot === currentSlot);
     setSelected(slotData?.given || "");
+    const nextScratchpad = slotData?.scratchpad || "";
+    setScratchpadData(nextScratchpad);
+    scratchpadDataRef.current = nextScratchpad;
   }, [session, currentSlot]);
+
+  const flushScratchpadSave = useCallback(
+    async (slot = currentSlot, dataUrl = scratchpadDataRef.current) => {
+      if (isAdminPreview || submitted || !session) return;
+      if (scratchpadSaveTimer.current) {
+        clearTimeout(scratchpadSaveTimer.current);
+        scratchpadSaveTimer.current = null;
+      }
+      try {
+        const data = await saveTestScratchpad(id, { slot, scratchpad: dataUrl || "" });
+        setSession(data);
+      } catch (err) {
+        setSubmitError(err.message || "Could not save scratchpad work.");
+      }
+    },
+    [currentSlot, id, isAdminPreview, session, submitted],
+  );
+
+  function handleScratchpadChange(dataUrl) {
+    setScratchpadData(dataUrl);
+    scratchpadDataRef.current = dataUrl;
+    if (isAdminPreview || submitted) return;
+    if (scratchpadSaveTimer.current) {
+      clearTimeout(scratchpadSaveTimer.current);
+    }
+    scratchpadSaveTimer.current = setTimeout(() => {
+      flushScratchpadSave(currentSlot, dataUrl);
+    }, 800);
+  }
 
   async function handleSubmit(fromTimer = false) {
     if (submitted || submitting) return;
     setSubmitting(true);
     setSubmitError("");
     try {
+      await flushScratchpadSave(currentSlot);
       const result = await submitTest(id);
       testActiveRef.current = false;
       setSubmitted(result);
@@ -160,13 +199,19 @@ export default function StudentTestTake() {
   useEffect(() => {
     const onBeforeUnload = () => leaveWithoutSubmit();
     window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      if (scratchpadSaveTimer.current) {
+        clearTimeout(scratchpadSaveTimer.current);
+      }
+    };
   }, []);
 
   async function goToSlot(slot) {
     if (!session || submitted) return;
     setSubmitError("");
     try {
+      await flushScratchpadSave(currentSlot);
       const data = await getTestSession(id, { slot, resume: true });
       setSession(data);
       setCurrentSlot(slot);
@@ -204,6 +249,7 @@ export default function StudentTestTake() {
   const sittingCount = session?.sitting_count || 20;
   const answeredCount = slots.filter((s) => s.answered).length;
   const allAnswered = answeredCount >= sittingCount;
+  const scratchpadAllowed = session?.scratchpad !== false;
 
   function navigatorClass(slot) {
     const base =
@@ -374,12 +420,52 @@ export default function StudentTestTake() {
           </div>
         </div>
 
+        {scratchpadAllowed ? (
+          <div className="mb-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-slate-900">Scratch pad</p>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  Jot work for the current question — draw or type.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={scratchpadsVisible}
+                onClick={() => setScratchpadsVisible((v) => !v)}
+                className={`relative h-9 w-14 shrink-0 rounded-full transition-colors ${
+                  scratchpadsVisible ? "bg-indigo-500" : "bg-slate-200"
+                }`}
+              >
+                <span
+                  className={`absolute top-1 left-1 block h-7 w-7 rounded-full bg-white shadow transition-transform ${
+                    scratchpadsVisible ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         {question ? (
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3 mb-4">
               <p className="text-slate-900 font-medium flex-1">{question.prompt}</p>
               <QuestionDifficultyStars stars={slotData?.tier || question.stars} />
             </div>
+            {scratchpadAllowed && scratchpadsVisible ? (
+              <Drawpad
+                key={`test-scratch-${id}-${currentSlot}`}
+                value={scratchpadData}
+                onChange={handleScratchpadChange}
+                disabled={submitting || timeExpired}
+                showHeading={false}
+                showTextTool
+                className="mb-4"
+                canvasHeight={280}
+              />
+            ) : null}
             <div className="flex flex-col gap-2">
               {(question.choices || []).map((choice) => {
                 const isSelected = selected === choice;

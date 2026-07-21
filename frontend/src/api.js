@@ -964,6 +964,20 @@ export async function saveTestAnswer(worksheetId, { slot, given }) {
   return res.json();
 }
 
+export async function saveTestScratchpad(worksheetId, { slot, scratchpad }) {
+  const res = await apiFetch(`${BASE_URL}/tests/${worksheetId}/scratchpad`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify({ slot, scratchpad }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to save scratchpad");
+  }
+  return res.json();
+}
+
 export async function submitTest(worksheetId) {
   const res = await apiFetch(`${BASE_URL}/tests/${worksheetId}/submit`, {
     method: "POST",

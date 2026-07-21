@@ -310,10 +310,13 @@ def _attempt_row_to_session(
             if q:
                 item["tier"] = int(entry.get("tier") or q.get("stars") or START_TIER)
                 item["question"] = _strip_answer(q)
-        if isinstance(ans, dict) and ans.get("given") not in (None, ""):
-            item["given"] = ans.get("given", "")
-            if row["completed_at"]:
-                item["correct"] = ans.get("correct")
+        if isinstance(ans, dict):
+            if ans.get("given") not in (None, ""):
+                item["given"] = ans.get("given", "")
+                if row["completed_at"]:
+                    item["correct"] = ans.get("correct")
+            if ans.get("scratchpad"):
+                item["scratchpad"] = ans.get("scratchpad")
         slots_out.append(item)
 
     limit = int(worksheet.get("time_limit_minutes") or 0)
@@ -333,6 +336,7 @@ def _attempt_row_to_session(
         "worksheet_id": row["worksheet_id"],
         "title": worksheet.get("title") or row["worksheet_id"],
         "subject": worksheet.get("subject") or "general",
+        "scratchpad": True,
         "sitting_count": sitting_count,
         "slots": slots_out,
         "current_slot": target_slot or 1,
@@ -578,6 +582,8 @@ def save_test_answer(
         given_clean = str(given or "").strip()
         correct = given_clean == expected
         tier = int(entry.get("tier") or q.get("stars") or START_TIER)
+        prev = answers.get(str(slot))
+        prev_scratchpad = prev.get("scratchpad", "") if isinstance(prev, dict) else ""
 
         answers[str(slot)] = {
             "given": given_clean,
@@ -588,6 +594,7 @@ def save_test_answer(
             "expected": expected,
             "choices": q.get("choices") or [],
             "area": q.get("area") or "",
+            "scratchpad": prev_scratchpad,
         }
 
         _save_attempt_state(conn, row["id"], sequence, answers)
@@ -603,6 +610,78 @@ def save_test_answer(
             ws,
             sitting_count=sitting_count,
             target_slot=min(slot + 1, sitting_count),
+        )
+        session.pop("sequence", None)
+        session.pop("answers", None)
+        return session
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def save_test_scratchpad(
+    student_name: str,
+    worksheet_id: str,
+    *,
+    slot: int,
+    scratchpad: str,
+) -> dict:
+    assert_worksheet_accessible(student_name, worksheet_id)
+    ws = get_worksheet(worksheet_id)
+    if not ws or not _test_from_sheet_data(ws):
+        raise ValueError("Test not found.")
+
+    sitting_count = test_sitting_count_from_data(ws)
+    if slot < 1 or slot > sitting_count:
+        raise ValueError("Invalid question slot.")
+
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            """
+            SELECT * FROM test_attempts
+            WHERE student = ? AND worksheet_id = ?
+            """,
+            (student_name, worksheet_id),
+        ).fetchone()
+        if not row:
+            raise ValueError("Start the test before saving scratchpad work.")
+        if row["completed_at"]:
+            raise ValueError("Test already submitted.")
+        if int(row["locked"] or 0) == 1:
+            raise ValueError("This test sitting is locked.")
+
+        session = _attempt_row_to_session(
+            row, ws, sitting_count=sitting_count, target_slot=slot
+        )
+        sequence = session["sequence"]
+        answers = session["answers"]
+
+        entry = sequence[slot - 1] if slot - 1 < len(sequence) else None
+        if not isinstance(entry, dict):
+            raise ValueError("Question not available yet.")
+
+        prev = answers.get(str(slot))
+        if not isinstance(prev, dict):
+            prev = {}
+        prev["scratchpad"] = str(scratchpad or "")
+        answers[str(slot)] = prev
+
+        _save_attempt_state(conn, row["id"], sequence, answers)
+        conn.commit()
+
+        row = conn.execute(
+            "SELECT * FROM test_attempts WHERE id = ?",
+            (row["id"],),
+        ).fetchone()
+
+        session = _attempt_row_to_session(
+            row,
+            ws,
+            sitting_count=sitting_count,
+            target_slot=slot,
         )
         session.pop("sequence", None)
         session.pop("answers", None)

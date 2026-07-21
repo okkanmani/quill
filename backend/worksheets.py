@@ -1679,7 +1679,7 @@ def test_data_from_builder(body: dict) -> dict:
         "test_sitting_count": sitting,
         "timed": True,
         "time_limit_minutes": time_limit,
-        "scratchpad": False,
+        "scratchpad": body.get("scratchpad") is not False,
         "content_badge": (body.get("content_badge") or "Test").strip() or "Test",
         "questions": questions,
     }
