@@ -1,6 +1,7 @@
 /** Primary admin navigation — add entries here as new sections ship. */
 export const ADMIN_MAIN_NAV = [
-  { to: "/admin", label: "Results", end: true },
+  { to: "/admin", label: "Home", end: true },
+  { to: "/admin/results", label: "Results", end: true },
   { to: "/admin/analysis", label: "Analysis", end: true },
   { to: "/admin/worksheets", label: "Worksheets", end: false },
   { to: "/admin/question-bank", label: "Question bank", end: true },

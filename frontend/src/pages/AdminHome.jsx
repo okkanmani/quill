@@ -34,13 +34,13 @@ function ResultsViewTabs({ activeView }) {
   return (
     <div className="flex flex-wrap gap-2 mb-6">
       <Link
-        to="/admin"
+        to="/admin/results"
         className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${worksheetClass}`}
       >
         Worksheet results
       </Link>
       <Link
-        to="/admin?view=tests"
+        to="/admin/results?view=tests"
         className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${testClass}`}
       >
         Test results

@@ -19,7 +19,7 @@ from auth_users import (
     update_student_by_admin,
     update_admin_account,
 )
-from tenancy import resolve_admin_id
+from admin_home import build_admin_home
 from admin_secrets import (
     admin_openai_key_configured,
     clear_admin_openai_api_key,
@@ -2092,6 +2092,15 @@ def save_learn_page_highlights(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return saved
+
+
+@app.get("/admin/home")
+def admin_home_dashboard(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    selected = payload.get("student_name")
+    return build_admin_home(payload["admin_id"], selected_student=selected)
 
 
 @app.get("/admin/students")

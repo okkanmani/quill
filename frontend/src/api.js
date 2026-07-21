@@ -525,6 +525,14 @@ export async function analyzeResultForFocus(resultId) {
   return res.json();
 }
 
+export async function getAdminHome() {
+  const res = await apiFetch(`${BASE_URL}/admin/home`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to load admin home");
+  return res.json();
+}
+
 export async function listAdminStudents() {
   const res = await apiFetch(`${BASE_URL}/admin/students`, {
     headers: authHeaders(),

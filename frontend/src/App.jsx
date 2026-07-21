@@ -10,6 +10,7 @@ import StudentTestReview from "./pages/StudentTestReview";
 import StudentResults from "./pages/StudentResults";
 import StudentSettings from "./pages/StudentSettings";
 import StudentWriting from "./pages/StudentWriting";
+import AdminLanding from "./pages/AdminLanding";
 import AdminHome from "./pages/AdminHome";
 import AdminAnalysis from "./pages/AdminAnalysis";
 import AdminWorksheets from "./pages/AdminWorksheets";
@@ -154,6 +155,15 @@ export default function App() {
 
         <Route
           path="/admin"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminLanding />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/results"
           element={
             <ProtectedRoute role="admin">
               <AdminHome />

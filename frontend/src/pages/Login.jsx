@@ -44,9 +44,9 @@ async function navigateAfterAdminLogin(navigate) {
         localStorage.removeItem("studentGrade");
       }
     }
-    navigate("/admin/worksheets");
+    navigate("/admin");
   } catch {
-    navigate("/admin/worksheets");
+    navigate("/admin");
   }
 }
 
