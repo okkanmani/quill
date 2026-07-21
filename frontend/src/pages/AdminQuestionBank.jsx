@@ -33,12 +33,6 @@ function formatBankDate(iso) {
   });
 }
 
-function truncateText(text, max = 120) {
-  const value = String(text || "").trim();
-  if (value.length <= max) return value || "—";
-  return `${value.slice(0, max)}…`;
-}
-
 function matchesSearch(item, query) {
   const needle = query.trim().toLowerCase();
   if (!needle) return true;
@@ -316,10 +310,10 @@ export default function AdminQuestionBank() {
             </p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
+              <table className="w-full text-sm text-left table-fixed">
                 <thead className="bg-slate-50 text-slate-700 border-b border-slate-200">
                   <tr>
-                    <th scope="col" className="px-4 py-3 font-semibold min-w-[18rem]">
+                    <th scope="col" className="px-4 py-3 font-semibold w-[42%]">
                       Question
                     </th>
                     <th scope="col" className="px-4 py-3 font-semibold w-36">
@@ -348,11 +342,19 @@ export default function AdminQuestionBank() {
                         className="hover:bg-slate-50/80 transition cursor-pointer"
                         onClick={() => openEditEditor(item)}
                       >
-                        <td className="px-4 py-3 align-top">
-                          <p className="text-slate-900 leading-relaxed">
-                            {truncateText(item.prompt, 140)}
+                        <td className="px-4 py-3 align-middle max-w-0">
+                          <p
+                            className="text-slate-900 truncate"
+                            title={item.prompt?.trim() || undefined}
+                          >
+                            {item.prompt?.trim() || "—"}
                           </p>
-                          <p className="text-xs text-slate-400 mt-1 font-mono">{item.id}</p>
+                          <p
+                            className="text-xs text-slate-400 mt-1 font-mono truncate"
+                            title={item.id}
+                          >
+                            {item.id}
+                          </p>
                         </td>
                         <td className="px-4 py-3 align-top text-slate-700">
                           {item.area?.trim() ? (
