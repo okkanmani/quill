@@ -118,6 +118,7 @@ Audience: grade {grade} students in Canada/US curriculum style.
 Subject: {subject_text}
 Difficulty: {difficulty} (stars {stars} of 3)
 Number of questions: exactly {question_count}
+CRITICAL: The questions array must contain exactly {question_count} items — count before responding.
 
 {type_rules}
 
@@ -376,6 +377,229 @@ def _normalize_draft(
     return {"title": title.strip(), "questions": questions}
 
 
+TOPUP_MAX_MISSING = 5
+
+
+def _openai_json_completion(
+    *,
+    api_key: str,
+    messages: list[dict],
+    timeout: float = 180.0,
+    system_role: str = "worksheet",
+) -> dict:
+    model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
+    system_content = (
+        "You are an expert K-12 assessment author. "
+        "Return only valid JSON matching the requested schema."
+        if system_role == "test"
+        else "You are an expert K-12 worksheet author. "
+        "Return only valid JSON matching the requested schema."
+    )
+    try:
+        with httpx.Client(timeout=timeout) as client:
+            res = client.post(
+                OPENAI_CHAT_URL,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": model,
+                    "response_format": {"type": "json_object"},
+                    "messages": [
+                        {"role": "system", "content": system_content},
+                        *messages,
+                    ],
+                    "temperature": 0.7,
+                },
+            )
+    except httpx.TimeoutException as exc:
+        raise ValueError("AI request timed out. Try again with fewer questions.") from exc
+    except httpx.HTTPError as exc:
+        raise ValueError("Could not reach the AI service.") from exc
+
+    if res.status_code != 200:
+        raise ValueError(_openai_error_message(res.status_code, res.text))
+
+    payload = res.json()
+    try:
+        content = payload["choices"][0]["message"]["content"]
+    except (KeyError, IndexError, TypeError) as exc:
+        raise ValueError("Unexpected AI response format.") from exc
+
+    return _parse_ai_json(content)
+
+
+def _existing_question_prompts(questions: list) -> list[str]:
+    prompts: list[str] = []
+    for question in questions:
+        if not isinstance(question, dict):
+            continue
+        prompt = question.get("prompt")
+        if isinstance(prompt, str) and prompt.strip():
+            prompts.append(prompt.strip())
+    return prompts
+
+
+def _build_topup_prompt(
+    *,
+    missing: int,
+    subject: str,
+    grade: int,
+    stars: int,
+    fmt: str,
+    existing_prompts: list[str],
+    custom_prompt: str = "",
+) -> str:
+    difficulty = _difficulty_label(stars)
+    subject_text = _subject_label(subject)
+    existing_block = "\n".join(f"- {text}" for text in existing_prompts[:40])
+    if fmt == "multiple_choice":
+        schema = """
+{
+  "questions": [
+    {
+      "prompt": "question text",
+      "area": "specific skill label",
+      "choices": ["choice A text", "choice B text", "choice C text", "choice D text"],
+      "correct_index": 0
+    }
+  ]
+}
+"""
+        type_rules = (
+            "Each question must have exactly 4 distinct, non-empty choices and correct_index 0-3. "
+            "Do not prefix choices with letters."
+        )
+    elif _ai_generates_short_answer_reference(subject):
+        schema = """
+{
+  "questions": [
+    {
+      "prompt": "question text",
+      "area": "specific skill label",
+      "answer": "reference answer for grading"
+    }
+  ]
+}
+"""
+        type_rules = "Each question needs a concise reference answer."
+    else:
+        schema = """
+{
+  "questions": [
+    {
+      "prompt": "question text",
+      "area": "specific skill label"
+    }
+  ]
+}
+"""
+        type_rules = "Do not include reference answers."
+
+    base = f"""Generate exactly {missing} additional worksheet questions as JSON only.
+
+Audience: grade {grade} students in Canada/US curriculum style.
+Subject: {subject_text}
+Difficulty: {difficulty} (stars {stars} of 3)
+
+These questions continue an existing worksheet. Do NOT repeat or closely paraphrase any question below.
+
+Existing questions:
+{existing_block or "(none listed)"}
+
+{type_rules}
+- Each question must include a specific lowercase area label.
+- No duplicate or near-duplicate questions.
+
+Return JSON matching this schema:
+{schema}
+"""
+    extra = (custom_prompt or "").strip()
+    if extra:
+        if len(extra) > 2000:
+            extra = extra[:2000]
+        return base + f"\nAdditional instructions from the teacher:\n{extra}\n"
+    return base
+
+
+def _topup_worksheet_questions(
+    parsed: dict,
+    *,
+    missing: int,
+    api_key: str,
+    subject: str,
+    grade: int,
+    stars: int,
+    fmt: str,
+    custom_prompt: str = "",
+) -> dict:
+    if missing <= 0 or missing > TOPUP_MAX_MISSING:
+        return parsed
+    existing = parsed.get("questions")
+    if not isinstance(existing, list):
+        existing = []
+    topup = _openai_json_completion(
+        api_key=api_key,
+        messages=[
+            {
+                "role": "user",
+                "content": _build_topup_prompt(
+                    missing=missing,
+                    subject=subject,
+                    grade=grade,
+                    stars=stars,
+                    fmt=fmt,
+                    existing_prompts=_existing_question_prompts(existing),
+                    custom_prompt=custom_prompt,
+                ),
+            }
+        ],
+    )
+    extra_questions = topup.get("questions")
+    if not isinstance(extra_questions, list):
+        return parsed
+    merged = [*existing, *extra_questions]
+    return {**parsed, "questions": merged}
+
+
+def _finalize_worksheet_draft(
+    parsed: dict,
+    *,
+    api_key: str,
+    subject: str,
+    grade: int,
+    stars: int,
+    fmt: str,
+    question_count: int,
+    custom_prompt: str = "",
+) -> dict:
+    require_reference = fmt != "short_answer" or _ai_generates_short_answer_reference(
+        subject
+    )
+    draft = parsed
+    questions = draft.get("questions")
+    if isinstance(questions, list):
+        missing = question_count - len(questions)
+        if 0 < missing <= TOPUP_MAX_MISSING:
+            draft = _topup_worksheet_questions(
+                draft,
+                missing=missing,
+                api_key=api_key,
+                subject=subject,
+                grade=grade,
+                stars=stars,
+                fmt=fmt,
+                custom_prompt=custom_prompt,
+            )
+    return _normalize_draft(
+        draft,
+        fmt=fmt,
+        question_count=question_count,
+        require_short_answer_reference=require_reference,
+    )
+
+
 def _openai_error_message(status_code: int, body: str) -> str:
     """Turn OpenAI HTTP errors into short, actionable messages."""
     try:
@@ -477,59 +701,40 @@ def generate_worksheet_draft(
             custom_prompt=custom_prompt,
         )
 
-    model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
+    def _request_draft() -> dict:
+        return _openai_json_completion(
+            api_key=api_key,
+            messages=[{"role": "user", "content": user_prompt}],
+        )
 
-    try:
-        with httpx.Client(timeout=180.0) as client:
-            res = client.post(
-                OPENAI_CHAT_URL,
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": model,
-                    "response_format": {"type": "json_object"},
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": (
-                                "You are an expert K-12 worksheet author. "
-                                "Return only valid JSON matching the requested schema."
-                            ),
-                        },
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "temperature": 0.7,
-                },
-            )
-    except httpx.TimeoutException as exc:
-        raise ValueError("AI request timed out. Try again with fewer questions.") from exc
-    except httpx.HTTPError as exc:
-        raise ValueError("Could not reach the AI service.") from exc
-
-    if res.status_code != 200:
-        raise ValueError(_openai_error_message(res.status_code, res.text))
-
-    payload = res.json()
-    try:
-        content = payload["choices"][0]["message"]["content"]
-    except (KeyError, IndexError, TypeError) as exc:
-        raise ValueError("Unexpected AI response format.") from exc
-
-    parsed = _parse_ai_json(content)
     if is_rc:
+        parsed = _request_draft()
         return _normalize_rc_draft(parsed, passage_specs=normalized_specs)
 
     count = question_count if question_count is not None else STARS_DEFAULT_QUESTION_COUNTS[stars]
-    return _normalize_draft(
-        parsed,
-        fmt=fmt,
-        question_count=count,
-        require_short_answer_reference=(
-            fmt != "short_answer" or _ai_generates_short_answer_reference(subject)
-        ),
-    )
+    last_error: ValueError | None = None
+    for attempt in range(2):
+        parsed = _request_draft()
+        try:
+            return _finalize_worksheet_draft(
+                parsed,
+                api_key=api_key,
+                subject=subject,
+                grade=grade,
+                stars=stars,
+                fmt=fmt,
+                question_count=count,
+                custom_prompt=custom_prompt,
+            )
+        except ValueError as exc:
+            message = str(exc)
+            if attempt == 0 and "questions; expected" in message:
+                last_error = exc
+                continue
+            raise
+    if last_error:
+        raise last_error
+    raise ValueError("Could not generate worksheet draft.")
 
 
 def _build_test_prompt(
