@@ -369,7 +369,7 @@ export default function AdminQuestionBank() {
                           <div className="flex items-center gap-2 whitespace-nowrap">
                             <QuestionDifficultyStars stars={item.stars} />
                             <span className="text-xs font-medium text-slate-700">
-                              {tier?.label || `Tier ${item.stars}`}
+                              {tier?.difficultyLabel || `Tier ${item.stars}`}
                             </span>
                           </div>
                         </td>

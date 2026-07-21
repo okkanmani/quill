@@ -3,9 +3,9 @@ import { BUILDER_SUBJECTS, CHOICE_LABELS, GRADE_OPTIONS } from "./questionBuilde
 export { BUILDER_SUBJECTS, CHOICE_LABELS, GRADE_OPTIONS };
 
 export const TEST_TIERS = [
-  { value: 1, label: "Tier 1", shortLabel: "★ Easy", weight: "1×" },
-  { value: 2, label: "Tier 2", shortLabel: "★★ Medium", weight: "1.5×" },
-  { value: 3, label: "Tier 3", shortLabel: "★★★ Hard", weight: "2×" },
+  { value: 1, label: "Tier 1", shortLabel: "★ Easy", difficultyLabel: "Easy", weight: "1×" },
+  { value: 2, label: "Tier 2", shortLabel: "★★ Medium", difficultyLabel: "Medium", weight: "1.5×" },
+  { value: 3, label: "Tier 3", shortLabel: "★★★ Hard", difficultyLabel: "Hard", weight: "2×" },
 ];
 
 export const DEFAULT_SITTING_COUNT = 20;
