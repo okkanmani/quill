@@ -64,13 +64,17 @@ function LockedPadlockBadge({ state }) {
   );
 }
 
-function WorksheetRow({ ws, onOpenWorksheet, renderSideAction }) {
+function WorksheetRow({ ws, onOpenWorksheet, onOpenTest, renderSideAction }) {
   const lockState = worksheetLockState(ws);
   const accessLocked = Boolean(ws.access_locked) && !isWorksheetDone(ws);
   const timedBlocked = Boolean(ws.timed && ws.timed_locked && !isWorksheetDone(ws));
 
   function handleOpen() {
     if (accessLocked || timedBlocked) return;
+    if (ws.is_test && onOpenTest) {
+      onOpenTest(ws.id);
+      return;
+    }
     onOpenWorksheet(ws.id);
   }
 
@@ -190,6 +194,7 @@ function groupWorksheets(worksheets) {
 export default function WorksheetsBySubject({
   worksheets,
   onOpenWorksheet,
+  onOpenTest,
   renderSideAction,
   ungrouped = false,
 }) {
@@ -216,6 +221,7 @@ export default function WorksheetsBySubject({
             key={ws.id}
             ws={ws}
             onOpenWorksheet={onOpenWorksheet}
+            onOpenTest={onOpenTest}
             renderSideAction={renderSideAction}
           />
         ))}
@@ -297,6 +303,7 @@ export default function WorksheetsBySubject({
                     key={ws.id}
                     ws={ws}
                     onOpenWorksheet={onOpenWorksheet}
+                    onOpenTest={onOpenTest}
                     renderSideAction={renderSideAction}
                   />
                 ))}

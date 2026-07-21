@@ -1106,7 +1106,7 @@ export default function AdminAnalysis() {
       ) : null}
 
       {analysisView === "tests" ? (
-        <div className="max-w-6xl">
+        <div className="max-w-7xl">
           <AdminStudentBanner />
           <AdminStudentSwitcher />
           <h1 className="text-2xl font-bold text-slate-950 mb-2">Analysis</h1>

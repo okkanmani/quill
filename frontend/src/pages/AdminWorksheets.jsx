@@ -361,6 +361,7 @@ export default function AdminWorksheets() {
             <WorksheetsByMode
               worksheets={worksheets}
               onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
+              onOpenTest={(id) => navigate(`/student/tests/${id}`)}
               giftedTrackUnlockedThroughWeek={giftedTrackUnlockedThroughWeek}
               renderWeekAction={(week, _items, info) => (
                 <WorksheetLockButton

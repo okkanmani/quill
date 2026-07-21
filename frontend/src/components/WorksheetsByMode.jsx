@@ -24,10 +24,12 @@ function isSpecialTrack(ws) {
 export default function WorksheetsByMode({
   worksheets,
   onOpenWorksheet,
+  onOpenTest,
   renderSideAction,
   renderWeekAction,
   giftedTrackUnlockedThroughWeek,
 }) {
+  const openTest = onOpenTest || onOpenWorksheet;
   const practice = useMemo(
     () => worksheets.filter((ws) => !ws.timed && !isSpecialTrack(ws) && !ws.is_test),
     [worksheets],
@@ -153,6 +155,7 @@ export default function WorksheetsByMode({
                   <WorksheetsBySubject
                     worksheets={items}
                     onOpenWorksheet={onOpenWorksheet}
+                    onOpenTest={openTest}
                     renderSideAction={renderSideAction}
                     ungrouped={flatList}
                   />

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getAdminTestResults } from "../api";
 import QuillLoading from "../components/QuillLoading";
 import { QuestionDifficultyStars } from "../components/DifficultyStars";
+import { formatAreaLabel } from "../analysisUtils";
 import { formatSubjectLabel } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
 import { formatWeightedTestScore } from "../testUtils";
@@ -40,7 +41,7 @@ function TierTrendChart({ trend }) {
     <div className="overflow-x-auto">
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        className="w-full min-w-[320px] max-w-3xl"
+        className="w-full min-w-[320px]"
         role="img"
         aria-label="Tier progress across the test sitting"
       >
@@ -138,32 +139,106 @@ function AreaChipList({ areas, tone = "weak" }) {
   );
 }
 
-function MissExamples({ areas }) {
-  const examples = areas.flatMap((area) =>
-    area.misses.map((miss) => ({ ...miss, areaLabel: area.label })),
-  );
-  if (!examples.length) return null;
+function WrongQuestionsSection({ wrongSlots }) {
+  const [open, setOpen] = useState(false);
+
+  if (!wrongSlots.length) return null;
 
   return (
-    <div className="mt-4 flex flex-col gap-3">
-      {examples.slice(0, 4).map((miss, index) => (
-        <div
-          key={`${miss.question_id || miss.slot}-${index}`}
-          className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
-        >
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Miss · {miss.areaLabel}
-            </p>
-            <QuestionDifficultyStars stars={miss.tier} />
-          </div>
-          <p className="text-sm text-slate-900 mt-2 leading-relaxed">{miss.prompt}</p>
-          <p className="text-sm text-red-800 mt-2">
-            Student answered: {miss.given || "—"}
+    <div className="mt-6 rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-slate-50 transition"
+      >
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">Wrong questions</h3>
+          <p className="text-xs text-slate-600 mt-0.5">
+            {wrongSlots.length} miss{wrongSlots.length === 1 ? "" : "es"} — expand to
+            review prompts and student answers.
           </p>
         </div>
-      ))}
+        <span className="text-slate-500 text-sm font-bold shrink-0">
+          {open ? "▼" : "▶"}
+        </span>
+      </button>
+      {open ? (
+        <div className="border-t border-slate-100 px-4 py-4 flex flex-col gap-3 bg-slate-50/50">
+          {wrongSlots.map((slot) => {
+            const areaLabel = slot.area ? formatAreaLabel(slot.area) : null;
+            return (
+              <div
+                key={slot.slot}
+                className="rounded-xl border border-red-200 bg-red-50/50 px-4 py-3"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Q{slot.slot}
+                    {areaLabel ? ` · ${areaLabel}` : ""}
+                  </p>
+                  <QuestionDifficultyStars stars={slot.tier} />
+                </div>
+                <p className="text-sm text-slate-900 mt-2 leading-relaxed">
+                  {slot.prompt || "Question"}
+                </p>
+                <p className="text-sm text-red-800 mt-2">
+                  Student answered: {slot.given || "—"}
+                </p>
+                {slot.expected ? (
+                  <p className="text-sm text-emerald-800 mt-1">
+                    Correct: {slot.expected}
+                  </p>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+function TestAttemptTile({ attempt, selected, onSelect }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      className={`w-full text-left px-3 py-3 transition ${
+        selected ? "bg-indigo-50/80" : "hover:bg-slate-50"
+      }`}
+    >
+      <p className="font-semibold text-slate-900 text-sm leading-snug line-clamp-2">
+        {attempt.title}
+      </p>
+      <p className="text-[11px] text-teal-800 mt-1 capitalize">
+        {formatSubjectLabel(attempt.subject)}
+      </p>
+      {attempt.completed_at ? (
+        <p className="text-[11px] text-slate-500 mt-1">
+          {new Date(attempt.completed_at).toLocaleString(undefined, {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          })}
+        </p>
+      ) : null}
+      <p className="text-xs font-semibold text-teal-900 mt-2 tabular-nums">
+        {formatWeightedTestScore(attempt.weighted_score, attempt.max_weighted_score)}
+      </p>
+      {typeof attempt.correct_count === "number" ? (
+        <p className="text-[11px] text-slate-500 tabular-nums">
+          {attempt.correct_count}/{attempt.total_count} correct
+        </p>
+      ) : null}
+      {attempt.duration_seconds != null ? (
+        <p className="text-[11px] text-slate-500 tabular-nums">
+          {formatDurationSeconds(attempt.duration_seconds)}
+        </p>
+      ) : null}
+    </button>
   );
 }
 
@@ -171,29 +246,25 @@ function TestAnalysisDetail({ attempt, analysis }) {
   const { tierTrend, tierBands, weakAreas, strongAreas, timePressure, narrative } =
     analysis;
 
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-5">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-        {formatSubjectLabel(attempt.subject)} · Adaptive test
-      </p>
-      <h2 className="text-xl font-semibold text-slate-950 mt-1">{attempt.title}</h2>
-      <p className="text-sm text-slate-600 mt-2">
-        {attempt.completed_at
-          ? new Date(attempt.completed_at).toLocaleString()
-          : null}
-        {attempt.duration_seconds != null ? (
-          <span> · {formatDurationSeconds(attempt.duration_seconds)}</span>
-        ) : null}
-      </p>
-      <p className="text-sm font-semibold text-teal-900 mt-2 tabular-nums">
-        {formatWeightedTestScore(attempt.weighted_score, attempt.max_weighted_score)}
-        <span className="font-normal text-slate-600">
-          {" "}
-          · {attempt.correct_count}/{attempt.total_count} correct
-        </span>
-      </p>
+  const wrongSlots = useMemo(
+    () => (attempt.slots || []).filter((slot) => slot.correct !== true),
+    [attempt.slots],
+  );
 
-      <div className="mt-6">
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-5 min-w-0">
+      {narrative ? (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4">
+          <h3 className="text-sm font-semibold text-slate-900">Adaptive summary</h3>
+          <p className="text-sm text-slate-700 mt-2 leading-relaxed">{narrative}</p>
+          <p className="text-xs text-slate-500 mt-2">
+            Auto-generated from tier movement and misses — use alongside the question
+            details below, not as a substitute for reviewing work.
+          </p>
+        </div>
+      ) : null}
+
+      <div className={narrative ? "mt-6" : ""}>
         <h3 className="text-sm font-semibold text-slate-900">Tier progress</h3>
         <p className="text-xs text-slate-600 mt-1">
           How difficulty shifted question by question under adaptive rules.
@@ -287,17 +358,6 @@ function TestAnalysisDetail({ attempt, analysis }) {
         </div>
       ) : null}
 
-      {narrative ? (
-        <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-4">
-          <h3 className="text-sm font-semibold text-slate-900">Adaptive summary</h3>
-          <p className="text-sm text-slate-700 mt-2 leading-relaxed">{narrative}</p>
-          <p className="text-xs text-slate-500 mt-2">
-            Auto-generated from tier movement and misses — use alongside the question
-            details below, not as a substitute for reviewing work.
-          </p>
-        </div>
-      ) : null}
-
       <div className="mt-6">
         <h3 className="text-sm font-semibold text-rose-900">Weak areas</h3>
         <p className="text-xs text-slate-600 mt-1">
@@ -306,7 +366,6 @@ function TestAnalysisDetail({ attempt, analysis }) {
         <div className="mt-3">
           <AreaChipList areas={weakAreas} tone="weak" />
         </div>
-        <MissExamples areas={weakAreas} />
       </div>
 
       <div className="mt-6">
@@ -318,6 +377,8 @@ function TestAnalysisDetail({ attempt, analysis }) {
           <AreaChipList areas={strongAreas} tone="strong" />
         </div>
       </div>
+
+      <WrongQuestionsSection key={attempt.id} wrongSlots={wrongSlots} />
 
       {attempt.review_id ? (
         <p className="mt-6 text-sm text-slate-700">
@@ -381,43 +442,26 @@ export default function AdminTestAnalysisView({ initialAttemptId = null }) {
           page after a student submits an adaptive test.
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:items-start">
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div className="border-b border-slate-100 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Completed adaptive tests
+        <div className="flex flex-col lg:flex-row gap-5 lg:items-start">
+          <div className="w-full lg:w-44 xl:w-48 shrink-0 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div className="border-b border-slate-100 px-3 py-2.5">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                Tests
               </p>
             </div>
-            <div className="divide-y divide-slate-100">
-              {attempts.map((attempt) => {
-                const selected = attempt.id === selectedId;
-                return (
-                  <button
-                    key={attempt.id}
-                    type="button"
-                    onClick={() => setSelectedId(attempt.id)}
-                    aria-pressed={selected}
-                    className={`w-full text-left px-4 py-4 transition ${
-                      selected ? "bg-indigo-50/80" : "hover:bg-slate-50"
-                    }`}
-                  >
-                    <p className="font-semibold text-slate-900">{attempt.title}</p>
-                    <p className="text-xs text-teal-800 mt-1 capitalize">
-                      {formatSubjectLabel(attempt.subject)}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1 tabular-nums">
-                      {formatWeightedTestScore(
-                        attempt.weighted_score,
-                        attempt.max_weighted_score,
-                      )}
-                    </p>
-                  </button>
-                );
-              })}
+            <div className="divide-y divide-slate-100 max-h-[70vh] overflow-y-auto">
+              {attempts.map((attempt) => (
+                <TestAttemptTile
+                  key={attempt.id}
+                  attempt={attempt}
+                  selected={attempt.id === selectedId}
+                  onSelect={() => setSelectedId(attempt.id)}
+                />
+              ))}
             </div>
           </div>
 
-          <div className="lg:sticky lg:top-4">
+          <div className="flex-1 min-w-0 lg:sticky lg:top-4">
             {selectedAttempt && analysis ? (
               <TestAnalysisDetail attempt={selectedAttempt} analysis={analysis} />
             ) : (

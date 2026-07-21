@@ -141,6 +141,10 @@ export default function Worksheet() {
     async function load() {
       try {
         const data = await getWorksheet(id);
+        if (data.is_test) {
+          navigate(`/student/tests/${id}`, { replace: true });
+          return;
+        }
         const existing = !isAdminPreview
           ? await getWorksheetMyResult(id).catch(() => null)
           : null;
@@ -210,14 +214,21 @@ export default function Worksheet() {
         setResponseModes(initialModes);
         setScratchpadData(initialScratchpads);
       } catch (e) {
+        const msg = e.message || "";
+        if (
+          e.status === 403 &&
+          msg.toLowerCase().includes("test")
+        ) {
+          navigate(`/student/tests/${id}`, { replace: true });
+          return;
+        }
         if (e.status === 423 && !isAdminPreview) {
           setAccessLocked(true);
           setAccessLockMessage(
-            e.message ||
-              "This worksheet is locked. Ask your teacher to unlock it.",
+            msg || "This worksheet is locked. Ask your teacher to unlock it.",
           );
         } else {
-          setError("Could not load worksheet.");
+          setError(msg || "Could not load worksheet.");
         }
       } finally {
         setLoading(false);
@@ -225,7 +236,7 @@ export default function Worksheet() {
     }
 
     load();
-  }, [id, isAdminPreview]);
+  }, [id, isAdminPreview, navigate]);
 
   const handleSubmit = useCallback(
     async (autoFromTimer = false) => {

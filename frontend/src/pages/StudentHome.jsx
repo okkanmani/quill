@@ -38,6 +38,7 @@ export default function StudentHome() {
           <WorksheetsByMode
             worksheets={worksheets}
             onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
+            onOpenTest={(id) => navigate(`/student/tests/${id}`)}
           />
         )}
       </div>
