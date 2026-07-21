@@ -767,6 +767,14 @@ export async function getRevisionAnalysisRecords() {
   return res.json();
 }
 
+export async function getAnalysisPracticeResults() {
+  const res = await apiFetch(`${BASE_URL}/admin/analysis/practice-results`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch analysis practice results");
+  return res.json();
+}
+
 export async function getPracticeResults() {
   const res = await apiFetch(`${BASE_URL}/admin/practice-results`, {
     headers: authHeaders(),

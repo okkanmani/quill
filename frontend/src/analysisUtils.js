@@ -25,12 +25,12 @@ function analysisTimestamp(result, evaluation) {
   return "";
 }
 
-function needsReinforcingForArea(focusArea, subjectKey, discussedMap) {
-  const key = focusDiscussionKey(subjectKey, focusArea.area);
+function needsReinforcingForArea(subjectKey, area, discussedMap, lastReinforcedMap) {
+  const key = focusDiscussionKey(subjectKey, area);
   const discussedAt = discussedMap[key];
   if (!discussedAt) return false;
-  const latestAnalysisAt = focusArea.latestAnalysisAt || "";
-  return Boolean(latestAnalysisAt && latestAnalysisAt > discussedAt);
+  const lastReinforcedAt = lastReinforcedMap[key] || "";
+  return Boolean(lastReinforcedAt && lastReinforcedAt > discussedAt);
 }
 
 /**
@@ -42,6 +42,7 @@ export function splitFocusAreasByDiscussion(
   subjectKey,
   discussedMap,
   reinforcementMap = {},
+  lastReinforcedMap = {},
 ) {
   const needsAddressing = [];
   const needsReinforcing = [];
@@ -52,7 +53,14 @@ export function splitFocusAreasByDiscussion(
     const discussedAt = discussedMap[key];
     if (!discussedAt) {
       needsAddressing.push({ ...focus, discussionStatus: "needs_addressing" });
-    } else if (needsReinforcingForArea(focus, subjectKey, discussedMap)) {
+    } else if (
+      needsReinforcingForArea(
+        subjectKey,
+        focus.area,
+        discussedMap,
+        lastReinforcedMap,
+      )
+    ) {
       needsReinforcing.push({
         ...focus,
         discussionStatus: "needs_reinforcing",
@@ -77,7 +85,10 @@ export function filterFocusAreasForChipDisplay(
 ) {
   return (areas || []).filter((focus) => {
     if (!isValidFocusArea(focus)) return false;
-    if (chipCountMode === "reinforcement" || chipCountMode === "wrong") {
+    if (chipCountMode === "reinforcement") {
+      return true;
+    }
+    if (chipCountMode === "wrong") {
       return (focus.wrongCount || 0) > 0;
     }
     return true;
@@ -106,6 +117,29 @@ export function buildReinforcementCountMap(discussedRecords) {
   for (const row of discussedRecords || []) {
     const subjectKey = normalizeSubjectKey(row.subject);
     map[focusDiscussionKey(subjectKey, row.area)] = row.reinforcement_count || 0;
+  }
+  return map;
+}
+
+export function buildLastReinforcedMap(discussedRecords) {
+  const map = {};
+  for (const row of discussedRecords || []) {
+    const subjectKey = normalizeSubjectKey(row.subject);
+    if (row.last_reinforced_at) {
+      map[focusDiscussionKey(subjectKey, row.area)] = row.last_reinforced_at;
+    }
+  }
+  return map;
+}
+
+export function buildPracticeResultMap(practiceRecords) {
+  const map = {};
+  for (const row of practiceRecords || []) {
+    const subjectKey = normalizeSubjectKey(row.subject);
+    const key = focusDiscussionKey(subjectKey, row.focus_area);
+    if (!map[key] || String(row.completed_at || "") > String(map[key].completed_at || "")) {
+      map[key] = row;
+    }
   }
   return map;
 }
@@ -296,7 +330,11 @@ export function sortFocusAreasByUrgency(focusAreas) {
  * Per subject: focus areas from uploaded per-worksheet evaluations (`focus_evaluation`),
  * each with up to 3 sample incorrect questions when available.
  */
-export function focusAreasAnalysis(results, revisionRecords = []) {
+export function focusAreasAnalysis(
+  results,
+  revisionRecords = [],
+  practiceResultMap = {},
+) {
   /** subjectKey → Map(areaKey → focus area entry) */
   const bySubject = new Map();
 
@@ -328,6 +366,27 @@ export function focusAreasAnalysis(results, revisionRecords = []) {
     );
   }
 
+  for (const practiceResult of Object.values(practiceResultMap)) {
+    const subjectKey = normalizeSubjectKey(practiceResult.subject);
+    const area = typeof practiceResult.focus_area === "string"
+      ? practiceResult.focus_area.trim()
+      : "";
+    if (!area) continue;
+    if (!bySubject.has(subjectKey)) bySubject.set(subjectKey, new Map());
+    const areas = bySubject.get(subjectKey);
+    const key = areaKey(area);
+    if (!areas.has(key)) {
+      areas.set(key, {
+        area,
+        examples: [],
+        exampleKeys: new Set(),
+        wrongCountKeys: new Set(),
+        wrongCount: 0,
+        latestAnalysisAt: practiceResult.completed_at || "",
+      });
+    }
+  }
+
   return [...bySubject.entries()]
     .map(([subjectKey, areaMap]) => {
       const focusAreas = [...areaMap.values()]
@@ -336,8 +395,13 @@ export function focusAreasAnalysis(results, revisionRecords = []) {
           examples,
           latestAnalysisAt,
           wrongCount,
+          practiceResult: practiceResultMap[focusDiscussionKey(subjectKey, area)] || null,
         }))
-        .filter((focus) => isValidFocusArea(focus) && (focus.wrongCount || 0) > 0)
+        .filter(
+          (focus) =>
+            isValidFocusArea(focus) &&
+            ((focus.wrongCount || 0) > 0 || focus.practiceResult),
+        )
         .sort(
           (a, b) =>
             (b.wrongCount || 0) - (a.wrongCount || 0) ||
@@ -365,15 +429,19 @@ export function focusAreasAnalysisWithDiscussion(
   results,
   discussedRecords,
   revisionRecords = [],
+  practiceRecords = [],
 ) {
   const discussedMap = buildDiscussedMap(discussedRecords);
   const reinforcementMap = buildReinforcementCountMap(discussedRecords);
-  return focusAreasAnalysis(results, revisionRecords).map((subject) => {
+  const lastReinforcedMap = buildLastReinforcedMap(discussedRecords);
+  const practiceResultMap = buildPracticeResultMap(practiceRecords);
+  return focusAreasAnalysis(results, revisionRecords, practiceResultMap).map((subject) => {
     const buckets = splitFocusAreasByDiscussion(
       subject.focusAreas,
       subject.subjectKey,
       discussedMap,
       reinforcementMap,
+      lastReinforcedMap,
     );
     const { needsAddressing, needsReinforcing, discussed } =
       sortDiscussionBuckets(buckets);

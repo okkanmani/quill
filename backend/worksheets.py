@@ -2606,18 +2606,21 @@ def save_focus_evaluation(result_id: int, student_name: str, data: dict) -> dict
         result["focus_evaluation"] = stored
 
         from focus_discussion import record_reinforcement_if_needed
+        from focus_reinforcement import should_trigger_reinforcement
 
-        wrong_areas: set[str] = set()
+        questions_by_area: dict[str, list[dict]] = {}
         for q in stored.get("questions") or []:
-            if not isinstance(q, dict) or q.get("correct") is not False:
+            if not isinstance(q, dict):
                 continue
             area = _normalize_focus_area(q.get("area"))
-            if area:
-                wrong_areas.add(area)
+            if not area:
+                continue
+            questions_by_area.setdefault(area, []).append(q)
         subject = (stored.get("subject") or result.get("subject") or "").strip().lower()
         event_at = stored.get("uploaded_at")
-        for area in wrong_areas:
-            record_reinforcement_if_needed(student_name, subject, area, event_at)
+        for area, area_questions in questions_by_area.items():
+            if should_trigger_reinforcement(area_questions):
+                record_reinforcement_if_needed(student_name, subject, area, event_at)
         return result
     except Exception:
         conn.rollback()

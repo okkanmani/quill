@@ -193,6 +193,7 @@ export default function FocusPracticeWorksheet({
         correct,
         choices: question.choices || [],
         area: question.area || worksheet.focus_area || "",
+        stars: question.stars ?? 2,
       });
     }
 

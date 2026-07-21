@@ -33,6 +33,7 @@ def list_focus_areas_discussed(student_name: str) -> list[dict]:
                 "area": row["area"],
                 "discussed_at": row["discussed_at"],
                 "reinforcement_count": int(row["reinforcement_count"] or 0),
+                "last_reinforced_at": row["last_reinforced_at"],
             }
             for row in rows
         ]

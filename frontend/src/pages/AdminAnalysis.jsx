@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   generateFocusPracticeWorksheet,
   getAdminSettings,
+  getAnalysisPracticeResults,
   getFocusAreasDiscussed,
   getResults,
   getRevisionAnalysisRecords,
@@ -20,6 +21,8 @@ import QuillLoading from "../components/QuillLoading";
 import FocusAreaExplainPanel from "../components/FocusAreaExplainPanel";
 import FocusPracticeBuilder from "../components/FocusPracticeBuilder";
 import FocusPracticeWorksheet from "../components/FocusPracticeWorksheet";
+import { QuestionDifficultyStars } from "../components/DifficultyStars";
+import { formatWeightedTestScore } from "../testUtils";
 import {
   buildFocusAreaUrgencyMap,
   filterFocusAreasForChipDisplay,
@@ -297,6 +300,76 @@ function FocusAreaChips({
   );
 }
 
+function FocusPracticeQuestionCard({ question, index, total }) {
+  const [revealed, setRevealed] = useState(false);
+  const choices = formatFocusExampleChoices(question.choices);
+  const studentAnswer = formatFocusExampleAnswer(question.answer);
+  const missingAnswer = isMissingFocusExampleAnswer(question.answer);
+  const isCorrect = question.correct === true;
+
+  return (
+    <div
+      className={`rounded-xl border px-4 py-3 ${
+        isCorrect
+          ? "border-emerald-100 bg-emerald-50/70"
+          : "border-slate-100 bg-slate-50"
+      }`}
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Question{total > 1 ? ` ${index + 1}` : ""}
+        </p>
+        <QuestionDifficultyStars stars={question.stars || 2} />
+        <span
+          className={`text-[11px] font-semibold uppercase tracking-wide ${
+            isCorrect ? "text-emerald-700" : "text-red-700"
+          }`}
+        >
+          {isCorrect ? "Correct" : "Incorrect"}
+        </span>
+      </div>
+      <p className="text-sm text-slate-900 mt-2 leading-relaxed whitespace-pre-wrap">
+        {question.question}
+      </p>
+      {choices ? (
+        <p className="text-sm text-slate-700 mt-2 leading-relaxed">
+          <span className="font-medium text-slate-600">Options: </span>
+          {choices}
+        </p>
+      ) : null}
+      <p className={`text-sm mt-2 ${isCorrect ? "text-emerald-900" : "text-red-800"}`}>
+        <span className="font-medium">Student answered: </span>
+        <span className={missingAnswer ? "text-slate-500 italic" : undefined}>
+          {studentAnswer}
+        </span>
+      </p>
+      {!isCorrect && question.expected ? (
+        <div className="text-sm text-emerald-800 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="font-medium">Correct answer:</span>
+          {revealed ? (
+            <span>{question.expected}</span>
+          ) : (
+            <span
+              className="inline-block rounded px-2 py-0.5 bg-emerald-100/80 text-emerald-900/40 select-none tracking-widest font-mono text-xs"
+              aria-hidden="true"
+            >
+              {"•".repeat(Math.min(Math.max(question.expected.length, 6), 16))}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => setRevealed((v) => !v)}
+            className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 underline underline-offset-2"
+            aria-pressed={revealed}
+          >
+            {revealed ? "Hide" : "Show"}
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function FocusExampleCard({ example, index, total }) {
   const [revealed, setRevealed] = useState(false);
   const choices = formatFocusExampleChoices(example.choices);
@@ -459,7 +532,17 @@ function FocusAreaDetailPanel({
   apiKeyConfigured,
 }) {
   const { subject, focus } = selection;
+  const practiceResult = focus.practiceResult;
+  const practiceQuestions = practiceResult?.questions || [];
   const examples = focus.examples || [];
+  const displayItems = practiceQuestions.length > 0 ? practiceQuestions : examples;
+  const usingPractice = practiceQuestions.length > 0;
+  const weightedLabel = practiceResult
+    ? formatWeightedTestScore(
+        practiceResult.weighted_score,
+        practiceResult.max_weighted_score,
+      )
+    : null;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-5">
@@ -476,10 +559,10 @@ function FocusAreaDetailPanel({
       ) : focus.discussionStatus === "needs_reinforcing" ? (
         <p className="text-xs font-semibold uppercase tracking-wide text-violet-800 mt-2">
           Needs reinforcing
-          {(focus.wrongCount || 0) > 0 ? (
+          {(focus.reinforcementCount || 0) > 0 ? (
             <span className="normal-case font-medium text-slate-600">
               {" "}
-              · {focus.wrongCount} wrong answer{focus.wrongCount === 1 ? "" : "s"} since discussion
+              · reinforcement visit {(focus.reinforcementCount || 0)}
             </span>
           ) : null}
         </p>
@@ -494,20 +577,48 @@ function FocusAreaDetailPanel({
           ) : null}
         </p>
       )}
-      {examples.length > 0 ? (
+      {usingPractice ? (
+        <div className="mt-4 rounded-xl border border-indigo-100 bg-indigo-50/50 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-800">
+            Latest practice result
+          </p>
+          <p className="text-sm text-slate-800 mt-1">
+            {practiceResult.title || "Focus practice"}
+            {practiceResult.score != null && practiceResult.total != null ? (
+              <span className="text-slate-600">
+                {" "}
+                · {practiceResult.score}/{practiceResult.total} correct
+              </span>
+            ) : null}
+            {weightedLabel && weightedLabel !== "—" ? (
+              <span className="text-slate-600"> · {weightedLabel} weighted</span>
+            ) : null}
+          </p>
+        </div>
+      ) : null}
+      {displayItems.length > 0 ? (
         <div className="mt-4 flex flex-col gap-3">
-          {examples.map((example, index) => (
-            <FocusExampleCard
-              key={`${focus.area}-${example.question_id || index}`}
-              example={example}
-              index={index}
-              total={examples.length}
-            />
-          ))}
+          {displayItems.map((item, index) =>
+            usingPractice ? (
+              <FocusPracticeQuestionCard
+                key={`${focus.area}-practice-${item.question_id || index}`}
+                question={item}
+                index={index}
+                total={displayItems.length}
+              />
+            ) : (
+              <FocusExampleCard
+                key={`${focus.area}-${item.question_id || index}`}
+                example={item}
+                index={index}
+                total={displayItems.length}
+              />
+            ),
+          )}
         </div>
       ) : (
         <p className="text-sm text-slate-600 mt-4 leading-relaxed">
-          No sample wrong answers recorded for this area yet.
+          No sample wrong answers or practice results recorded for this area yet.
         </p>
       )}
       <FocusAreaExplainPanel
@@ -515,7 +626,7 @@ function FocusAreaDetailPanel({
         areaLabel={formatAreaLabel(focus.area)}
         area={focus.area}
         subjectKey={subject.subjectKey}
-        examples={examples}
+        examples={usingPractice ? practiceQuestions.filter((q) => q.correct === false) : examples}
         grade={grade}
         aiEnabled={aiEnabled}
         apiKeyConfigured={apiKeyConfigured}
@@ -626,6 +737,7 @@ export default function AdminAnalysis() {
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const [revisionRecords, setRevisionRecords] = useState([]);
+  const [practiceRecords, setPracticeRecords] = useState([]);
   const [discussed, setDiscussed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -661,20 +773,28 @@ export default function AdminAnalysis() {
       getResults(),
       getFocusAreasDiscussed(),
       getRevisionAnalysisRecords().catch(() => []),
+      getAnalysisPracticeResults().catch(() => []),
     ])
-      .then(([resultData, discussedData, revisionData]) => {
+      .then(([resultData, discussedData, revisionData, practiceData]) => {
         setError("");
         setResults(resultData);
         setDiscussed(discussedData);
         setRevisionRecords(Array.isArray(revisionData) ? revisionData : []);
+        setPracticeRecords(Array.isArray(practiceData) ? practiceData : []);
       })
       .catch(() => setError("Could not load analysis data."))
       .finally(() => setLoading(false));
   }, []);
 
   const bySubject = useMemo(
-    () => focusAreasAnalysisWithDiscussion(results, discussed, revisionRecords),
-    [results, discussed, revisionRecords],
+    () =>
+      focusAreasAnalysisWithDiscussion(
+        results,
+        discussed,
+        revisionRecords,
+        practiceRecords,
+      ),
+    [results, discussed, revisionRecords, practiceRecords],
   );
   const uploadedCount = results.filter((r) => r.focus_evaluation).length;
   const selection = useMemo(
