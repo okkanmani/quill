@@ -520,24 +520,26 @@ export default function StudentTestTake() {
           </div>
         </div>
 
-        <div className="mb-3 shrink-0 flex flex-col items-end gap-2">
-          <div className="flex flex-wrap gap-2 items-center justify-end">
-            <button
-              type="button"
-              disabled={currentSlot <= 1}
-              onClick={() => goToSlot(currentSlot - 1)}
-              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
-            >
-              ← Previous
-            </button>
-            <button
-              type="button"
-              disabled={currentSlot >= sittingCount}
-              onClick={() => goToSlot(currentSlot + 1)}
-              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
-            >
-              Next →
-            </button>
+        <div className="mb-3 shrink-0 flex flex-col gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-2 items-center">
+              <button
+                type="button"
+                disabled={currentSlot <= 1}
+                onClick={() => goToSlot(currentSlot - 1)}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+              >
+                ← Previous
+              </button>
+              <button
+                type="button"
+                disabled={currentSlot >= sittingCount}
+                onClick={() => goToSlot(currentSlot + 1)}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+              >
+                Next →
+              </button>
+            </div>
             <button
               type="button"
               disabled={!allAnswered || submitting || timedOut}
