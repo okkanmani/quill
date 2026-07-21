@@ -496,7 +496,7 @@ export default function StudentTestTake() {
           ) : null}
         </div>
 
-        <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm shrink-0">
+        <div className="mb-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm shrink-0">
           <p className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">
             Question navigator
           </p>
@@ -518,6 +518,41 @@ export default function StudentTestTake() {
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="mb-3 shrink-0 flex flex-col items-end gap-2">
+          <div className="flex flex-wrap gap-2 items-center justify-end">
+            <button
+              type="button"
+              disabled={currentSlot <= 1}
+              onClick={() => goToSlot(currentSlot - 1)}
+              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+            >
+              ← Previous
+            </button>
+            <button
+              type="button"
+              disabled={currentSlot >= sittingCount}
+              onClick={() => goToSlot(currentSlot + 1)}
+              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+            >
+              Next →
+            </button>
+            <button
+              type="button"
+              disabled={!allAnswered || submitting || timedOut}
+              onClick={() => handleSubmit(false)}
+              className="rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-teal-700 disabled:opacity-40 transition"
+            >
+              {submitting ? "Submitting…" : "Submit test"}
+            </button>
+          </div>
+          {submitError ? <p className="text-red-600 text-sm">{submitError}</p> : null}
+          {!allAnswered ? (
+            <p className="text-slate-500 text-xs">
+              Answer all {sittingCount} questions to submit.
+            </p>
+          ) : null}
         </div>
 
         {question ? (
@@ -587,40 +622,6 @@ export default function StudentTestTake() {
         ) : (
           <p className="text-slate-500">Loading question…</p>
         )}
-
-        <div className="shrink-0 flex flex-wrap gap-3 items-center">
-          <button
-            type="button"
-            disabled={currentSlot <= 1}
-            onClick={() => goToSlot(currentSlot - 1)}
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
-          >
-            ← Previous
-          </button>
-          <button
-            type="button"
-            disabled={currentSlot >= sittingCount}
-            onClick={() => goToSlot(currentSlot + 1)}
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
-          >
-            Next →
-          </button>
-          <button
-            type="button"
-            disabled={!allAnswered || submitting || timedOut}
-            onClick={() => handleSubmit(false)}
-            className="ml-auto rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-teal-700 disabled:opacity-40 transition"
-          >
-            {submitting ? "Submitting…" : "Submit test"}
-          </button>
-        </div>
-
-        {submitError ? <p className="text-red-600 text-sm mt-3">{submitError}</p> : null}
-        {!allAnswered ? (
-          <p className="text-slate-500 text-xs mt-2">
-            Answer all {sittingCount} questions to submit.
-          </p>
-        ) : null}
       </div>
     </div>
   );
