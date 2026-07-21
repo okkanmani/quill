@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getAdminTestResults } from "../api";
+import { getAdminTestResults, markTestAttemptAnalyzed } from "../api";
 import QuillLoading from "../components/QuillLoading";
 import { QuestionDifficultyStars } from "../components/DifficultyStars";
 import { formatSubjectLabel } from "../subjectUtils";
@@ -455,6 +455,21 @@ export default function AdminTestAnalysisView({ initialAttemptId = null }) {
       setSelectedId(Number(initialAttemptId));
     }
   }, [initialAttemptId]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    const attempt = attempts.find((item) => item.id === selectedId);
+    if (!attempt || attempt.analyzed_at) return;
+    markTestAttemptAnalyzed(selectedId)
+      .then(({ analyzed_at: analyzedAt }) => {
+        setAttempts((prev) =>
+          prev.map((item) =>
+            item.id === selectedId ? { ...item, analyzed_at: analyzedAt } : item,
+          ),
+        );
+      })
+      .catch(() => {});
+  }, [selectedId, attempts]);
 
   const selectedAttempt = useMemo(
     () => attempts.find((attempt) => attempt.id === selectedId) || null,

@@ -75,6 +75,7 @@ from tests import (
     list_test_results,
     list_test_reviews,
     list_tests,
+    mark_test_attempt_analyzed,
     lock_test_attempt,
     save_test_answer,
     save_test_review_notes,
@@ -1735,6 +1736,20 @@ def get_admin_test_results(authorization: str = Header(...)):
         raise HTTPException(status_code=403, detail="Admin only")
     who = _student_context_name(payload)
     return list_test_results(who)
+
+
+@app.post("/admin/test-results/{attempt_id}/mark-analyzed")
+def mark_admin_test_result_analyzed(
+    attempt_id: int, authorization: str = Header(...)
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    result = mark_test_attempt_analyzed(attempt_id, who)
+    if not result:
+        raise HTTPException(status_code=404, detail="Test result not found")
+    return result
 
 
 @app.get("/tests/reviews")

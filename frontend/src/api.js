@@ -840,6 +840,18 @@ export async function getAdminTestResults() {
   return res.json();
 }
 
+export async function markTestAttemptAnalyzed(attemptId) {
+  const res = await apiFetch(
+    `${BASE_URL}/admin/test-results/${attemptId}/mark-analyzed`,
+    {
+      method: "POST",
+      headers: authHeaders(),
+    },
+  );
+  if (!res.ok) throw new Error("Failed to mark test as analyzed");
+  return res.json();
+}
+
 export async function getTestReviews() {
   const res = await apiFetch(`${BASE_URL}/tests/reviews`, {
     headers: authHeaders(),

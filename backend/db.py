@@ -294,6 +294,11 @@ def init_schema() -> None:
                 "ALTER TABLE learn_sections ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0"
             )
             conn.execute("UPDATE learn_sections SET sort_order = id")
+        test_attempt_cols = {
+            row[1] for row in conn.execute("PRAGMA table_info(test_attempts)")
+        }
+        if test_attempt_cols and "analyzed_at" not in test_attempt_cols:
+            conn.execute("ALTER TABLE test_attempts ADD COLUMN analyzed_at TEXT")
         conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS learn_hub_order (

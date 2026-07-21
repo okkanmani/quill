@@ -10,6 +10,34 @@ import {
   sortPracticeItems,
 } from "../sectionSortUtils";
 
+function TestAnalyseAction({ attemptId, analyzed, compact = false }) {
+  const className = compact
+    ? "inline-flex rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-900 transition"
+    : "inline-flex rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-900 transition";
+
+  if (analyzed) {
+    return (
+      <span
+        className={`${className} opacity-40 cursor-not-allowed`}
+        title="Already analyzed"
+        aria-disabled="true"
+      >
+        Analyse
+      </span>
+    );
+  }
+
+  return (
+    <Link
+      to={`/admin/analysis?view=tests&attempt=${attemptId}`}
+      className={`${className} hover:bg-indigo-100`}
+      onClick={(event) => event.stopPropagation()}
+    >
+      {compact ? "Analyse" : "Analyse test"}
+    </Link>
+  );
+}
+
 /**
  * Completed adaptive test results for admin Results → Tests.
  */
@@ -44,6 +72,7 @@ export default function TestResultsSection({
       </div>
       {sortedItems.map((item) => {
         const expanded = openIds.has(item.id);
+        const analyzed = Boolean(item.analyzed_at);
         return (
           <div
             key={item.id}
@@ -65,6 +94,9 @@ export default function TestResultsSection({
                     {new Date(item.completed_at).toLocaleString()}
                   </p>
                 ) : null}
+                {analyzed ? (
+                  <p className="text-emerald-700 text-xs mt-1 font-medium">Analyzed</p>
+                ) : null}
               </div>
               <div className="shrink-0 text-right flex flex-col items-end gap-2">
                 <span className="inline-flex rounded-full bg-teal-100 text-teal-900 border border-teal-200 px-3 py-1 text-sm font-bold tabular-nums">
@@ -81,13 +113,11 @@ export default function TestResultsSection({
                   </p>
                 ) : null}
                 {item.test_adaptive !== false ? (
-                  <Link
-                    to={`/admin/analysis?view=tests&attempt=${item.id}`}
-                    className="inline-flex rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-900 hover:bg-indigo-100 transition"
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    Analyse
-                  </Link>
+                  <TestAnalyseAction
+                    attemptId={item.id}
+                    analyzed={analyzed}
+                    compact
+                  />
                 ) : null}
               </div>
             </button>
@@ -123,12 +153,7 @@ export default function TestResultsSection({
                   </p>
                 ) : null}
                 {item.test_adaptive !== false ? (
-                  <Link
-                    to={`/admin/analysis?view=tests&attempt=${item.id}`}
-                    className="inline-flex rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-100 transition"
-                  >
-                    Analyse test
-                  </Link>
+                  <TestAnalyseAction attemptId={item.id} analyzed={analyzed} />
                 ) : null}
               </div>
             ) : null}

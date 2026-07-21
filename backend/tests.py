@@ -810,9 +810,9 @@ def list_test_results(student_name: str) -> list[dict]:
     try:
         rows = conn.execute(
             """
-            SELECT ta.id, ta.worksheet_id, ta.completed_at, ta.weighted_score,
-                   ta.max_weighted_score, ta.duration_seconds, ta.answers,
-                   ta.sequence, ta.sitting_count,
+            SELECT ta.id, ta.worksheet_id, ta.completed_at, ta.analyzed_at,
+                   ta.weighted_score, ta.max_weighted_score, ta.duration_seconds,
+                   ta.answers, ta.sequence, ta.sitting_count,
                    w.title, w.subject, w.test_adaptive, w.time_limit_minutes,
                    w.test_sitting_count,
                    tr.id AS review_id, tr.completed_at AS review_completed_at
@@ -849,6 +849,7 @@ def list_test_results(student_name: str) -> list[dict]:
                     "title": row["title"] or row["worksheet_id"],
                     "subject": row["subject"] or "general",
                     "completed_at": row["completed_at"],
+                    "analyzed_at": row["analyzed_at"],
                     "weighted_score": float(row["weighted_score"] or 0),
                     "max_weighted_score": float(row["max_weighted_score"] or 0),
                     "duration_seconds": row["duration_seconds"],
@@ -865,6 +866,34 @@ def list_test_results(student_name: str) -> list[dict]:
                 }
             )
         return records
+    finally:
+        conn.close()
+
+
+def mark_test_attempt_analyzed(attempt_id: int, student_name: str) -> dict | None:
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            """
+            SELECT id, analyzed_at FROM test_attempts
+            WHERE id = ? AND student = ? AND completed_at IS NOT NULL
+            """,
+            (attempt_id, student_name),
+        ).fetchone()
+        if not row:
+            return None
+        if row["analyzed_at"]:
+            return {"id": attempt_id, "analyzed_at": row["analyzed_at"]}
+        analyzed_at = datetime.now(timezone.utc).isoformat()
+        conn.execute(
+            "UPDATE test_attempts SET analyzed_at = ? WHERE id = ?",
+            (analyzed_at, attempt_id),
+        )
+        conn.commit()
+        return {"id": attempt_id, "analyzed_at": analyzed_at}
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
 
