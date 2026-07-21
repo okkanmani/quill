@@ -89,9 +89,7 @@ export function buildAreaBreakdown(slots) {
       if (Number(slot.tier) === 3) entry.tier3Correct += 1;
     } else {
       if (Number(slot.tier) === 1) entry.tier1Wrong += 1;
-      if (entry.misses.length < 2) {
-        entry.misses.push(slot);
-      }
+      entry.misses.push(slot);
     }
   }
 

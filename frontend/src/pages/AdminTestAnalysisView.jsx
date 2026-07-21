@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { getAdminTestResults } from "../api";
 import QuillLoading from "../components/QuillLoading";
 import { QuestionDifficultyStars } from "../components/DifficultyStars";
-import { formatAreaLabel } from "../analysisUtils";
 import { formatSubjectLabel } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
 import { formatWeightedTestScore } from "../testUtils";
@@ -103,21 +102,117 @@ function TierTrendChart({ trend }) {
   );
 }
 
-function AreaChipList({ areas, tone = "weak" }) {
+function AreaMissCard({ miss }) {
+  return (
+    <div className="rounded-xl border border-red-200 bg-red-50/50 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Q{miss.slot}
+        </p>
+        <QuestionDifficultyStars stars={miss.tier} />
+      </div>
+      <p className="text-sm text-slate-900 mt-2 leading-relaxed">
+        {miss.prompt || "Question"}
+      </p>
+      <p className="text-sm text-red-800 mt-2">Student answered: {miss.given || "—"}</p>
+      {miss.expected ? (
+        <p className="text-sm text-emerald-800 mt-1">Correct: {miss.expected}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function WeakAreaChipList({ areas, resetKey }) {
+  const [expandedArea, setExpandedArea] = useState(null);
+
+  useEffect(() => {
+    setExpandedArea(null);
+  }, [resetKey]);
+
+  if (!areas.length) {
+    return (
+      <p className="text-sm text-slate-600">No clear weak areas on this sitting.</p>
+    );
+  }
+
+  const expanded = areas.find((area) => area.area === expandedArea) || null;
+  const sortedMisses = expanded
+    ? [...(expanded.misses || [])].sort((a, b) => a.slot - b.slot)
+    : [];
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2">
+        {areas.map((area) => {
+          const selected = expandedArea === area.area;
+          const missCount = area.misses?.length || 0;
+          return (
+            <button
+              key={area.area}
+              type="button"
+              title="Click to view wrong questions for this topic"
+              aria-expanded={selected}
+              onClick={() =>
+                setExpandedArea((current) => (current === area.area ? null : area.area))
+              }
+              className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                selected
+                  ? "border-rose-400 bg-rose-100 text-rose-950 ring-2 ring-rose-200"
+                  : "border-rose-200 bg-rose-50 text-rose-950 hover:border-rose-300 hover:bg-rose-100/80"
+              }`}
+            >
+              {area.label}
+              <span className="mx-1.5 opacity-60">·</span>
+              <span className="tabular-nums">
+                {area.correctCount}/{area.count}
+              </span>
+              <span className="mx-1.5 opacity-60">·</span>
+              <span className="tabular-nums">{area.weightedPct}%</span>
+              {missCount > 0 ? (
+                <>
+                  <span className="mx-1.5 opacity-60">·</span>
+                  <span className="tabular-nums">
+                    {missCount} miss{missCount === 1 ? "" : "es"}
+                  </span>
+                </>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+
+      {expanded ? (
+        <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50/30 px-4 py-4">
+          <p className="text-xs font-semibold text-rose-900">
+            Wrong questions · {expanded.label}
+          </p>
+          {sortedMisses.length > 0 ? (
+            <div className="mt-3 flex flex-col gap-3">
+              {sortedMisses.map((miss) => (
+                <AreaMissCard key={miss.slot} miss={miss} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-600 mt-2">
+              No wrong questions recorded for this topic.
+            </p>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function AreaChipList({ areas }) {
   if (!areas.length) {
     return (
       <p className="text-sm text-slate-600">
-        {tone === "weak"
-          ? "No clear weak areas on this sitting."
-          : "No fully strong areas yet — misses were spread across topics."}
+        No fully strong areas yet — misses were spread across topics.
       </p>
     );
   }
 
-  const chipClass =
-    tone === "weak"
-      ? "border-rose-200 bg-rose-50 text-rose-950"
-      : "border-emerald-200 bg-emerald-50 text-emerald-950";
+  const chipClass = "border-emerald-200 bg-emerald-50 text-emerald-950";
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -135,66 +230,6 @@ function AreaChipList({ areas, tone = "weak" }) {
           <span className="tabular-nums">{area.weightedPct}%</span>
         </span>
       ))}
-    </div>
-  );
-}
-
-function WrongQuestionsSection({ wrongSlots }) {
-  const [open, setOpen] = useState(false);
-
-  if (!wrongSlots.length) return null;
-
-  return (
-    <div className="mt-6 rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        aria-expanded={open}
-        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-slate-50 transition"
-      >
-        <div>
-          <h3 className="text-sm font-semibold text-slate-900">Wrong questions</h3>
-          <p className="text-xs text-slate-600 mt-0.5">
-            {wrongSlots.length} miss{wrongSlots.length === 1 ? "" : "es"} — expand to
-            review prompts and student answers.
-          </p>
-        </div>
-        <span className="text-slate-500 text-sm font-bold shrink-0">
-          {open ? "▼" : "▶"}
-        </span>
-      </button>
-      {open ? (
-        <div className="border-t border-slate-100 px-4 py-4 flex flex-col gap-3 bg-slate-50/50">
-          {wrongSlots.map((slot) => {
-            const areaLabel = slot.area ? formatAreaLabel(slot.area) : null;
-            return (
-              <div
-                key={slot.slot}
-                className="rounded-xl border border-red-200 bg-red-50/50 px-4 py-3"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Q{slot.slot}
-                    {areaLabel ? ` · ${areaLabel}` : ""}
-                  </p>
-                  <QuestionDifficultyStars stars={slot.tier} />
-                </div>
-                <p className="text-sm text-slate-900 mt-2 leading-relaxed">
-                  {slot.prompt || "Question"}
-                </p>
-                <p className="text-sm text-red-800 mt-2">
-                  Student answered: {slot.given || "—"}
-                </p>
-                {slot.expected ? (
-                  <p className="text-sm text-emerald-800 mt-1">
-                    Correct: {slot.expected}
-                  </p>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -245,11 +280,6 @@ function TestAttemptTile({ attempt, selected, onSelect }) {
 function TestAnalysisDetail({ attempt, analysis }) {
   const { tierTrend, tierBands, weakAreas, strongAreas, timePressure, narrative } =
     analysis;
-
-  const wrongSlots = useMemo(
-    () => (attempt.slots || []).filter((slot) => slot.correct !== true),
-    [attempt.slots],
-  );
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-5 min-w-0">
@@ -359,12 +389,22 @@ function TestAnalysisDetail({ attempt, analysis }) {
       ) : null}
 
       <div className="mt-6">
-        <h3 className="text-sm font-semibold text-rose-900">Weak areas</h3>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-sm font-semibold text-rose-900">Weak areas</h3>
+          <span
+            className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-200 bg-white text-[11px] font-bold text-slate-500 cursor-help"
+            title="Click a topic chip to view wrong questions for that area."
+            aria-label="Click a topic chip to view wrong questions for that area."
+          >
+            ?
+          </span>
+        </div>
         <p className="text-xs text-slate-600 mt-1">
-          Below 75% weighted accuracy or any easy-tier miss in that topic.
+          Below 75% weighted accuracy or any easy-tier miss in that topic. Click a chip
+          to review wrong answers.
         </p>
         <div className="mt-3">
-          <AreaChipList areas={weakAreas} tone="weak" />
+          <WeakAreaChipList areas={weakAreas} resetKey={attempt.id} />
         </div>
       </div>
 
@@ -374,11 +414,9 @@ function TestAnalysisDetail({ attempt, analysis }) {
           All questions correct in that topic for this sitting.
         </p>
         <div className="mt-3">
-          <AreaChipList areas={strongAreas} tone="strong" />
+          <AreaChipList areas={strongAreas} />
         </div>
       </div>
-
-      <WrongQuestionsSection key={attempt.id} wrongSlots={wrongSlots} />
 
       {attempt.review_id ? (
         <p className="mt-6 text-sm text-slate-700">
