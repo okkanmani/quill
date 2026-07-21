@@ -306,7 +306,7 @@ export default function StudentTestTake() {
     if (!el || !scratchpadAllowed) return undefined;
 
     const updateHeight = () => {
-      setWorkAreaHeight(Math.max(240, Math.floor(el.clientHeight)));
+      setWorkAreaHeight(Math.max(480, Math.floor(el.clientHeight)));
     };
 
     updateHeight();
@@ -466,9 +466,9 @@ export default function StudentTestTake() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 flex flex-col">
+    <div className="min-h-screen bg-slate-50 px-2 py-3 sm:px-3 flex flex-col">
       <AppHeader onBack={handleBack} onLogout={handleLogout} />
-      <div className="max-w-6xl mx-auto w-full flex flex-col flex-1 min-h-0">
+      <div className="w-full flex flex-col flex-1 min-h-0">
           {isAdminPreview ? (
           <p className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-900 shrink-0">
             Admin preview — timer off; answers won&apos;t lock the student&apos;s attempt when you leave.
@@ -521,8 +521,8 @@ export default function StudentTestTake() {
         </div>
 
         {question ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0 items-stretch mb-4">
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm overflow-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 flex-1 min-h-[calc(100dvh-12rem)] items-stretch mb-3">
+            <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm overflow-auto">
               <div className="flex items-start justify-between gap-3 mb-4">
                 <p className="text-slate-900 font-medium flex-1">{question.prompt}</p>
                 <QuestionDifficultyStars stars={slotData?.tier || question.stars} />
@@ -550,7 +550,7 @@ export default function StudentTestTake() {
             </div>
 
             {scratchpadAllowed ? (
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col min-h-[320px] lg:min-h-0 h-full">
+              <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col min-h-[480px] lg:min-h-0 h-full">
                 <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
                   <div>
                     <p className="text-sm font-medium text-slate-900">Your work</p>
@@ -560,7 +560,7 @@ export default function StudentTestTake() {
                   </div>
                   {renderWorkModeToggle()}
                 </div>
-                <div ref={workAreaRef} className="flex-1 min-h-0 flex flex-col">
+                <div ref={workAreaRef} className="flex-1 min-h-[480px] flex flex-col">
                   {workMode === "text" ? (
                     <textarea
                       value={workText}
