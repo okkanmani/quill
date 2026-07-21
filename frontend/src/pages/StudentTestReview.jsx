@@ -117,7 +117,7 @@ export default function StudentTestReview() {
   const readOnly = Boolean(review?.done);
 
   return (
-    <AppShell navLinks={navLinks} trailing={`Hi, ${name}!`} onLogout={handleLogout}>
+    <AppShell navLinks={navLinks} onLogout={handleLogout}>
       <div className="max-w-3xl">
         <Link
           to="/student/tests"

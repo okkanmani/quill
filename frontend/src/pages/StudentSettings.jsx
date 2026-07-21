@@ -16,7 +16,7 @@ export default function StudentSettings() {
   }
 
   return (
-    <AppShell navLinks={navLinks} trailing={`Hi, ${name}!`} onLogout={handleLogout}>
+    <AppShell navLinks={navLinks} onLogout={handleLogout}>
       <div className="max-w-2xl">
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Settings</h1>
         <p className="text-slate-600 text-sm mb-6 leading-relaxed">

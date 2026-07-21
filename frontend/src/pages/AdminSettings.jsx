@@ -6,7 +6,6 @@ import {
   logout,
   saveAdminOpenAiKey,
 } from "../api";
-import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import AccountSettings from "../components/AccountSettings";
@@ -79,7 +78,6 @@ export default function AdminSettings() {
   return (
     <AppShell
       navLinks={ADMIN_MAIN_NAV}
-      trailing={`Admin · ${formatAdminHeaderTrail()}`}
       onLogout={handleLogout}
     >
       <div className="max-w-2xl">
@@ -126,7 +124,7 @@ export default function AdminSettings() {
                 </p>
               ) : (
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Once saved, use Create → Question builder or Learning resource to
+                  Once saved, use Create → Worksheet builder or Learning resource to
                   generate worksheets and learning content with AI.
                 </p>
               )}

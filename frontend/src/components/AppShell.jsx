@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink, matchPath, useLocation } from "react-router-dom";
+import { getShellFooterLines } from "../adminSession";
 import ShellLayoutContext from "./ShellLayoutContext";
 import {
   getStoredSidebarCollapsed,
@@ -66,7 +67,6 @@ function SidebarNav({ navLinks, collapsed }) {
 export default function AppShell({
   navLinks = [],
   onBack,
-  trailing,
   onLogout,
   mainClassName = "",
   children,
@@ -74,6 +74,7 @@ export default function AppShell({
   const [sidebarCollapsed, setSidebarCollapsedState] = useState(
     getStoredSidebarCollapsed,
   );
+  const footerLines = getShellFooterLines();
 
   function setSidebarCollapsed(next) {
     setSidebarCollapsedState(setStoredSidebarCollapsed(next));
@@ -118,9 +119,14 @@ export default function AppShell({
                 </div>
 
                 <div className="shrink-0 px-4 py-4 border-t border-slate-100 space-y-2">
-                  {trailing ? (
+                  {footerLines.line1 ? (
                     <div className="text-xs font-medium text-slate-600 leading-snug">
-                      {trailing}
+                      {footerLines.line1}
+                    </div>
+                  ) : null}
+                  {footerLines.line2 ? (
+                    <div className="text-xs font-semibold text-slate-800 leading-snug">
+                      {footerLines.line2}
                     </div>
                   ) : null}
                   {onLogout ? (

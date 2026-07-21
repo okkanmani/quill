@@ -1,11 +1,10 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../api";
-import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 
 const CREATE_TABS = [
-  { to: "/admin/create/worksheet", label: "Question builder" },
+  { to: "/admin/create/worksheet", label: "Worksheet builder" },
   { to: "/admin/create/test", label: "Test builder" },
   { to: "/admin/create/upload", label: "Upload JSON" },
   { to: "/admin/create/learn", label: "Learning resource" },
@@ -24,7 +23,6 @@ export default function AdminCreate() {
   return (
     <AppShell
       navLinks={ADMIN_MAIN_NAV}
-      trailing={`Admin · ${formatAdminHeaderTrail()}`}
       onLogout={handleLogout}
       mainClassName="pb-28"
     >

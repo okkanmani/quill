@@ -7,7 +7,6 @@ import {
   logout,
   updateQuestionBankItem,
 } from "../api";
-import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
@@ -185,7 +184,6 @@ export default function AdminQuestionBank() {
   return (
     <AppShell
       navLinks={ADMIN_MAIN_NAV}
-      trailing={`Admin · ${formatAdminHeaderTrail()}`}
       onLogout={handleLogout}
       mainClassName="pb-28"
     >

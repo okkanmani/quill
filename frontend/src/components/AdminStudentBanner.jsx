@@ -78,11 +78,12 @@ export default function AdminStudentBanner() {
   }
 
   return (
-    <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-4 shadow-sm">
-      <p className="text-amber-950 font-semibold">Choose a student to continue</p>
-      <p className="text-amber-900 text-sm mt-1 leading-relaxed">
-        Pick who you are viewing so worksheets, results, and analysis show the right
-        data.
+    <div className="mb-6 rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50/80 px-5 py-5 shadow-sm">
+      <p className="text-amber-950 font-semibold text-lg">Welcome back!</p>
+      <p className="text-amber-900 text-sm mt-1.5 leading-relaxed">
+        {students.length > 1
+          ? "Select a student below to view their worksheets, results, and analysis."
+          : "Pick who you are viewing so worksheets, results, and analysis show the right data."}
       </p>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <label htmlFor="admin-student-banner" className="sr-only">

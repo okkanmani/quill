@@ -49,7 +49,6 @@ export default function StudentRevisionWorksheet() {
   return (
     <AppShell
       navLinks={navLinks}
-      trailing={`Hi, ${name}!`}
       onLogout={handleLogout}
     >
       <div className="max-w-6xl">

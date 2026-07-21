@@ -34,8 +34,17 @@ async function apiFetch(url, options = {}) {
   }
 
   const res = await fetch(urlStr, { ...options, headers });
-  if (res.status === 401 && token && !urlStr.includes("/auth/login") && !urlStr.includes("/auth/signup")) {
-    await handleSessionExpired("expired");
+  if (
+    res.status === 401 &&
+    token &&
+    !urlStr.includes("/auth/login") &&
+    !urlStr.includes("/auth/signup")
+  ) {
+    const errBody = await res.clone().json().catch(() => ({}));
+    const detail = typeof errBody.detail === "string" ? errBody.detail : "";
+    if (!detail || detail.toLowerCase().includes("not authenticated")) {
+      await handleSessionExpired("expired");
+    }
   }
   return res;
 }

@@ -8,6 +8,7 @@ import {
   submitTest,
 } from "../api";
 import AppHeader from "../components/AppHeader";
+import AdminStudentBanner from "../components/AdminStudentBanner";
 import QuillLoading from "../components/QuillLoading";
 import { QuestionDifficultyStars } from "../components/DifficultyStars";
 import PadlockIcon from "../components/PadlockIcon";
@@ -18,7 +19,7 @@ import { formatDurationSeconds } from "../worksheetUtils";
 export default function StudentTestTake() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const name = localStorage.getItem("name");
+  const isAdminPreview = localStorage.getItem("role") === "admin";
   const { navLinks } = useStudentNavLinks();
 
   const [session, setSession] = useState(null);
@@ -52,6 +53,7 @@ export default function StudentTestTake() {
   }, [id]);
 
   function leaveWithoutSubmit() {
+    if (isAdminPreview) return;
     if (testActiveRef.current && !submittedRef.current) {
       lockTestAttempt(worksheetIdRef.current);
     }
@@ -97,6 +99,8 @@ export default function StudentTestTake() {
           setError(msg);
         } else if (err.message?.includes("already submitted")) {
           setSubmitted({ already: true });
+        } else if (isAdminPreview && err.status === 400) {
+          setError(err.message || "Choose a student first.");
         } else {
           setError(err.message || "Could not load test.");
         }
@@ -185,7 +189,7 @@ export default function StudentTestTake() {
 
   function handleBack() {
     leaveWithoutSubmit();
-    navigate("/student/tests");
+    navigate(isAdminPreview ? "/admin/worksheets" : "/student/tests");
   }
 
   async function handleLogout() {
@@ -227,7 +231,7 @@ export default function StudentTestTake() {
   if ((accessLocked || attemptLocked) && error) {
     return (
       <div className="min-h-screen bg-slate-50 p-6">
-        <AppHeader onBack={handleBack} trailing={`Hi, ${name}!`} onLogout={handleLogout} />
+        <AppHeader onBack={handleBack} onLogout={handleLogout} />
         <div className="max-w-lg mx-auto mt-8 rounded-2xl border border-violet-200 bg-violet-50 p-8 text-center">
           <PadlockIcon className="w-10 h-10 mx-auto text-violet-600 mb-3" />
           <h2 className="text-xl font-semibold text-violet-950">Test locked</h2>
@@ -247,16 +251,19 @@ export default function StudentTestTake() {
   if (error && !session) {
     return (
       <div className="min-h-screen bg-slate-50 p-6">
-        <AppHeader onBack={handleBack} trailing={`Hi, ${name}!`} onLogout={handleLogout} />
-        <div className="max-w-lg mx-auto mt-8 rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
-          <p className="text-red-800 font-medium">{error}</p>
-          <button
-            type="button"
-            onClick={handleBack}
-            className="mt-4 text-sm font-semibold text-indigo-700 hover:text-indigo-900"
-          >
-            ← Back to Tests
-          </button>
+        <AppHeader onBack={handleBack} onLogout={handleLogout} />
+        <div className="max-w-lg mx-auto mt-4">
+          {isAdminPreview ? <AdminStudentBanner /> : null}
+          <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
+            <p className="text-red-800 font-medium">{error}</p>
+            <button
+              type="button"
+              onClick={handleBack}
+              className="mt-4 text-sm font-semibold text-indigo-700 hover:text-indigo-900"
+            >
+              ← {isAdminPreview ? "Back to Worksheets" : "Back to Tests"}
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -265,7 +272,7 @@ export default function StudentTestTake() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-slate-50 p-6">
-        <AppHeader onBack={handleBack} trailing={`Hi, ${name}!`} onLogout={handleLogout} />
+        <AppHeader onBack={handleBack} onLogout={handleLogout} />
         <div className="max-w-3xl mx-auto mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-6">
           <h2 className="text-xl font-bold text-emerald-950 mb-2">
             {submitted.already ? "Test already submitted" : "Test submitted"}
@@ -306,7 +313,7 @@ export default function StudentTestTake() {
   if (!session) {
     return (
       <div className="min-h-screen bg-slate-50 p-6">
-        <AppHeader onBack={handleBack} trailing={`Hi, ${name}!`} onLogout={handleLogout} />
+        <AppHeader onBack={handleBack} onLogout={handleLogout} />
         <p className="text-slate-600 mt-8">Could not start this test.</p>
       </div>
     );
@@ -314,8 +321,13 @@ export default function StudentTestTake() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
-      <AppHeader onBack={handleBack} trailing={`Hi, ${name}!`} onLogout={handleLogout} />
+      <AppHeader onBack={handleBack} onLogout={handleLogout} />
       <div className="max-w-3xl mx-auto">
+        {isAdminPreview ? (
+          <p className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-900">
+            Admin preview — answers won&apos;t lock the student&apos;s attempt when you leave.
+          </p>
+        ) : null}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
             <h1 className="text-xl font-bold text-slate-950">{session.title}</h1>

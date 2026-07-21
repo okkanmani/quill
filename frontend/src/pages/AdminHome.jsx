@@ -10,7 +10,6 @@ import {
   gradeWritingSubmission,
   logout,
 } from "../api";
-import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
@@ -212,7 +211,6 @@ export default function AdminHome() {
   return (
     <AppShell
       navLinks={ADMIN_MAIN_NAV}
-      trailing={`Admin · ${formatAdminHeaderTrail()}`}
       onLogout={handleLogout}
     >
       <div className="max-w-3xl">

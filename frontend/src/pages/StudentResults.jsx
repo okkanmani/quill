@@ -67,7 +67,6 @@ export default function StudentResults() {
   return (
     <AppShell
       navLinks={navLinks}
-      trailing={`Hi, ${name}!`}
       onLogout={handleLogout}
     >
       <div className="max-w-3xl">

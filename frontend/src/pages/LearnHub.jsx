@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   deleteLearnSection,
   getAdminLearnSections,
@@ -344,6 +344,7 @@ async function discoverSubjectSections(entries, { dbOnly = false } = {}) {
 }
 
 export default function LearnHub() {
+  const navigate = useNavigate();
   const [entries, setEntries] = useState([]);
   const [publishedSections, setPublishedSections] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -396,6 +397,13 @@ export default function LearnHub() {
   useEffect(() => {
     loadHub();
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (loading || error || !isAdmin) return;
+    if (entries.length === 0 && publishedSections.length === 0) {
+      navigate("/admin/create/learn", { replace: true });
+    }
+  }, [loading, error, isAdmin, entries.length, publishedSections.length, navigate]);
 
   const publishedBySubjectKey = useMemo(() => {
     const map = new Map();

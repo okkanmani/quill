@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { deleteWorksheet, getWorksheets, logout, unlockTestAttempt, unlockTimedWorksheet, unlockGiftedTrackWeek, lockGiftedTrackWeek, setWorksheetAccessLock, clearWorksheetAccessLock } from "../api";
-import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
@@ -292,7 +291,6 @@ export default function AdminWorksheets() {
   return (
     <AppShell
       navLinks={ADMIN_MAIN_NAV}
-      trailing={`Admin · ${formatAdminHeaderTrail()}`}
       onLogout={handleLogout}
     >
       <div className="max-w-3xl">

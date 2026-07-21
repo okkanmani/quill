@@ -12,7 +12,6 @@ import {
   saveManualFocusPracticeWorksheet,
   uploadFocusEvaluation,
 } from "../api";
-import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
@@ -1067,7 +1066,6 @@ export default function AdminAnalysis() {
   return (
     <AppShell
       navLinks={ADMIN_MAIN_NAV}
-      trailing={`Admin · ${formatAdminHeaderTrail()}`}
       onLogout={handleLogout}
     >
       {analysisView === "worksheets" &&

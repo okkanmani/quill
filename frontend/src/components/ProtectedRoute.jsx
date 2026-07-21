@@ -30,6 +30,13 @@ export default function ProtectedRoute({ role, children }) {
   if (status === "checking") {
     return <QuillLoading fullscreen label="Loading…" />;
   }
-  if (status === "denied") return <Navigate to="/" />;
+  if (status === "denied") {
+    const token = localStorage.getItem("token");
+    const storedRole = localStorage.getItem("role");
+    if (token && storedRole === "admin" && role === "student") {
+      return <Navigate to="/admin/worksheets" replace />;
+    }
+    return <Navigate to="/" replace />;
+  }
   return children;
 }

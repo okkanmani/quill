@@ -65,7 +65,7 @@ export default function App() {
         <Route
           path="/student/tests"
           element={
-            <ProtectedRoute role="student">
+            <ProtectedRoute role={["student", "admin"]}>
               <StudentTests />
             </ProtectedRoute>
           }
@@ -74,7 +74,7 @@ export default function App() {
         <Route
           path="/student/tests/review/:id"
           element={
-            <ProtectedRoute role="student">
+            <ProtectedRoute role={["student", "admin"]}>
               <StudentTestReview />
             </ProtectedRoute>
           }
@@ -83,7 +83,7 @@ export default function App() {
         <Route
           path="/student/tests/:id"
           element={
-            <ProtectedRoute role="student">
+            <ProtectedRoute role={["student", "admin"]}>
               <StudentTestTake />
             </ProtectedRoute>
           }

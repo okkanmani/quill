@@ -25,7 +25,6 @@ export default function StudentRevision() {
   return (
     <AppShell
       navLinks={navLinks}
-      trailing={`Hi, ${name}!`}
       onLogout={handleLogout}
     >
       <div className="max-w-3xl">

@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { logout } from "../api";
-import { formatAdminHeaderTrail } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import LearnResourceEditor from "../components/LearnResourceEditor";
@@ -17,7 +16,6 @@ export default function AdminLearnEdit() {
   return (
     <AppShell
       navLinks={ADMIN_MAIN_NAV}
-      trailing={`Admin · ${formatAdminHeaderTrail()}`}
       onLogout={handleLogout}
       mainClassName="pb-10"
     >
