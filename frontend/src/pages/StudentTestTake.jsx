@@ -52,6 +52,10 @@ export default function StudentTestTake() {
   const workTextRef = useRef("");
   const scratchpadDataRef = useRef("");
   const workModeRef = useRef("text");
+  const workAreaRef = useRef(null);
+  const [workAreaHeight, setWorkAreaHeight] = useState(400);
+
+  const timedOut = !isAdminPreview && timeExpired;
 
   useEffect(() => {
     submittedRef.current = Boolean(submitted);
@@ -76,15 +80,20 @@ export default function StudentTestTake() {
     async (slot) => {
       const data = await getTestSession(id, { slot, resume: true });
       setSession(data);
-      setRemainingSeconds(data.remaining_seconds);
-      setTimeExpired(Boolean(data.expired));
+      if (isAdminPreview) {
+        setRemainingSeconds(null);
+        setTimeExpired(false);
+      } else {
+        setRemainingSeconds(data.remaining_seconds);
+        setTimeExpired(Boolean(data.expired));
+      }
       if (data.completed) {
         setSubmitted({ already: true });
       }
       testActiveRef.current = !data.completed && !data.locked;
       return data;
     },
-    [id],
+    [id, isAdminPreview],
   );
 
   useEffect(() => {
@@ -122,7 +131,7 @@ export default function StudentTestTake() {
   }, [id, loadSession]);
 
   useEffect(() => {
-    if (remainingSeconds == null || submitted) return undefined;
+    if (isAdminPreview || remainingSeconds == null || submitted) return undefined;
     if (remainingSeconds <= 0) {
       setTimeExpired(true);
       return undefined;
@@ -137,7 +146,7 @@ export default function StudentTestTake() {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [remainingSeconds, submitted]);
+  }, [remainingSeconds, submitted, isAdminPreview]);
 
   useEffect(() => {
     if (!session?.slots) return;
@@ -232,10 +241,10 @@ export default function StudentTestTake() {
   }
 
   useEffect(() => {
-    if (!timeExpired || submitted || autoSubmitStarted.current || !session) return;
+    if (isAdminPreview || !timeExpired || submitted || autoSubmitStarted.current || !session) return;
     autoSubmitStarted.current = true;
     handleSubmit(true);
-  }, [timeExpired, submitted, session]);
+  }, [timeExpired, submitted, session, isAdminPreview]);
 
   useEffect(() => {
     const onBeforeUnload = () => leaveWithoutSubmit();
@@ -262,7 +271,7 @@ export default function StudentTestTake() {
   }
 
   async function handleSelectChoice(choice) {
-    if (submitted || submitting || timeExpired) return;
+    if (submitted || submitting || timedOut) return;
     setSelected(choice);
     setSubmitError("");
     try {
@@ -292,13 +301,27 @@ export default function StudentTestTake() {
   const allAnswered = answeredCount >= sittingCount;
   const scratchpadAllowed = session?.scratchpad !== false;
 
+  useEffect(() => {
+    const el = workAreaRef.current;
+    if (!el || !scratchpadAllowed) return undefined;
+
+    const updateHeight = () => {
+      setWorkAreaHeight(Math.max(240, Math.floor(el.clientHeight)));
+    };
+
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [scratchpadAllowed, workMode, question, currentSlot]);
+
   function renderWorkModeToggle() {
     const baseBtn =
       "inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 transition disabled:opacity-40 disabled:pointer-events-none";
     const active = "bg-indigo-100 text-indigo-900 border-indigo-300";
     const idle =
       "bg-white text-slate-600 border-slate-200 hover:border-indigo-200 hover:text-indigo-800";
-    const locked = submitting || timeExpired;
+    const locked = submitting || timedOut;
 
     return (
       <div className="flex gap-2" role="group" aria-label="Work mode">
@@ -443,15 +466,15 @@ export default function StudentTestTake() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-slate-50 p-6 flex flex-col">
       <AppHeader onBack={handleBack} onLogout={handleLogout} />
-      <div className="max-w-6xl mx-auto">
-        {isAdminPreview ? (
-          <p className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-900">
-            Admin preview — answers won&apos;t lock the student&apos;s attempt when you leave.
+      <div className="max-w-6xl mx-auto w-full flex flex-col flex-1 min-h-0">
+          {isAdminPreview ? (
+          <p className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-900 shrink-0">
+            Admin preview — timer off; answers won&apos;t lock the student&apos;s attempt when you leave.
           </p>
         ) : null}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 shrink-0">
           <div>
             <h1 className="text-xl font-bold text-slate-950">{session.title}</h1>
             <p className="text-sm text-slate-600 mt-0.5">
@@ -460,7 +483,7 @@ export default function StudentTestTake() {
               {answeredCount}/{sittingCount} answered
             </p>
           </div>
-          {remainingSeconds != null ? (
+          {!isAdminPreview && remainingSeconds != null ? (
             <div
               className={`text-lg font-bold tabular-nums px-3 py-1 rounded-xl border ${
                 remainingSeconds <= 60
@@ -473,7 +496,7 @@ export default function StudentTestTake() {
           ) : null}
         </div>
 
-        <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm shrink-0">
           <p className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">
             Question navigator
           </p>
@@ -498,8 +521,8 @@ export default function StudentTestTake() {
         </div>
 
         {question ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0 items-stretch mb-4">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm overflow-auto">
               <div className="flex items-start justify-between gap-3 mb-4">
                 <p className="text-slate-900 font-medium flex-1">{question.prompt}</p>
                 <QuestionDifficultyStars stars={slotData?.tier || question.stars} />
@@ -511,7 +534,7 @@ export default function StudentTestTake() {
                     <button
                       key={choice}
                       type="button"
-                      disabled={submitting || timeExpired}
+                      disabled={submitting || timedOut}
                       onClick={() => handleSelectChoice(choice)}
                       className={`border rounded-xl px-4 py-3 text-sm text-left transition ${
                         isSelected
@@ -527,8 +550,8 @@ export default function StudentTestTake() {
             </div>
 
             {scratchpadAllowed ? (
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm lg:sticky lg:top-6">
-                <div className="flex items-center justify-between gap-3 mb-3">
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col min-h-[320px] lg:min-h-0 h-full">
+                <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
                   <div>
                     <p className="text-sm font-medium text-slate-900">Your work</p>
                     <p className="text-xs text-slate-600 mt-0.5">
@@ -537,26 +560,27 @@ export default function StudentTestTake() {
                   </div>
                   {renderWorkModeToggle()}
                 </div>
-                {workMode === "text" ? (
-                  <textarea
-                    value={workText}
-                    onChange={(e) => handleWorkTextChange(e.target.value)}
-                    disabled={submitting || timeExpired}
-                    placeholder="Show your reasoning, calculations, or notes…"
-                    rows={12}
-                    className="w-full min-h-[280px] border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y"
-                  />
-                ) : (
-                  <Drawpad
-                    key={`test-scratch-${id}-${currentSlot}`}
-                    value={scratchpadData}
-                    onChange={handleScratchpadChange}
-                    disabled={submitting || timeExpired}
-                    showHeading={false}
-                    className="mt-0"
-                    canvasHeight={320}
-                  />
-                )}
+                <div ref={workAreaRef} className="flex-1 min-h-0 flex flex-col">
+                  {workMode === "text" ? (
+                    <textarea
+                      value={workText}
+                      onChange={(e) => handleWorkTextChange(e.target.value)}
+                      disabled={submitting || timedOut}
+                      placeholder="Show your reasoning, calculations, or notes…"
+                      className="w-full h-full min-h-0 flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-none"
+                    />
+                  ) : (
+                    <Drawpad
+                      key={`test-scratch-${id}-${currentSlot}`}
+                      value={scratchpadData}
+                      onChange={handleScratchpadChange}
+                      disabled={submitting || timedOut}
+                      showHeading={false}
+                      className="mt-0 flex-1 min-h-0"
+                      canvasHeight={workAreaHeight}
+                    />
+                  )}
+                </div>
               </div>
             ) : null}
           </div>
@@ -564,7 +588,7 @@ export default function StudentTestTake() {
           <p className="text-slate-500">Loading question…</p>
         )}
 
-        <div className="mt-6 flex flex-wrap gap-3 items-center">
+        <div className="shrink-0 flex flex-wrap gap-3 items-center">
           <button
             type="button"
             disabled={currentSlot <= 1}
@@ -583,7 +607,7 @@ export default function StudentTestTake() {
           </button>
           <button
             type="button"
-            disabled={!allAnswered || submitting || timeExpired}
+            disabled={!allAnswered || submitting || timedOut}
             onClick={() => handleSubmit(false)}
             className="ml-auto rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-teal-700 disabled:opacity-40 transition"
           >
