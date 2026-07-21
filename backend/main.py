@@ -20,6 +20,7 @@ from auth_users import (
     update_admin_account,
 )
 from admin_home import build_admin_home
+from tenancy import resolve_admin_id
 from admin_secrets import (
     admin_openai_key_configured,
     clear_admin_openai_api_key,
