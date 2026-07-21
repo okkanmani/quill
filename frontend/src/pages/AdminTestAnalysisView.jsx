@@ -1,0 +1,433 @@
+import { useEffect, useMemo, useState } from "react";
+import { getAdminTestResults } from "../api";
+import QuillLoading from "../components/QuillLoading";
+import { QuestionDifficultyStars } from "../components/DifficultyStars";
+import { formatSubjectLabel } from "../subjectUtils";
+import { formatDurationSeconds } from "../worksheetUtils";
+import { formatWeightedTestScore } from "../testUtils";
+import {
+  analyzeTestAttempt,
+  filterAdaptiveTestAttempts,
+  TEST_TIER_LABELS,
+} from "../testAnalysisUtils";
+
+function TierTrendChart({ trend }) {
+  if (!trend?.length) {
+    return (
+      <p className="text-sm text-slate-600">No slot data available for this attempt.</p>
+    );
+  }
+
+  const width = 640;
+  const height = 180;
+  const padX = 24;
+  const padY = 24;
+  const innerW = width - padX * 2;
+  const innerH = height - padY * 2;
+  const stepX = trend.length > 1 ? innerW / (trend.length - 1) : 0;
+
+  const yForTier = (tier) => padY + innerH - ((tier - 1) / 2) * innerH;
+
+  const points = trend
+    .map((point, index) => {
+      const x = padX + index * stepX;
+      const y = yForTier(point.tier);
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  return (
+    <div className="overflow-x-auto">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        className="w-full min-w-[320px] max-w-3xl"
+        role="img"
+        aria-label="Tier progress across the test sitting"
+      >
+        {[1, 2, 3].map((tier) => (
+          <g key={tier}>
+            <line
+              x1={padX}
+              x2={width - padX}
+              y1={yForTier(tier)}
+              y2={yForTier(tier)}
+              stroke="#e2e8f0"
+              strokeDasharray="4 4"
+            />
+            <text
+              x={8}
+              y={yForTier(tier) + 4}
+              className="fill-slate-400 text-[10px]"
+            >
+              {TEST_TIER_LABELS[tier]}
+            </text>
+          </g>
+        ))}
+        <polyline
+          fill="none"
+          stroke="#6366f1"
+          strokeWidth="2.5"
+          points={points}
+        />
+        {trend.map((point, index) => {
+          const x = padX + index * stepX;
+          const y = yForTier(point.tier);
+          const fill = point.correct ? "#059669" : "#dc2626";
+          return (
+            <g key={point.slot}>
+              <circle cx={x} cy={y} r="7" fill={fill} stroke="#fff" strokeWidth="2" />
+              <text
+                x={x}
+                y={height - 6}
+                textAnchor="middle"
+                className="fill-slate-500 text-[10px]"
+              >
+                {point.slot}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+      <div className="flex flex-wrap gap-4 mt-2 text-xs text-slate-600">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-600" />
+          Correct
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-600" />
+          Incorrect
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function AreaChipList({ areas, tone = "weak" }) {
+  if (!areas.length) {
+    return (
+      <p className="text-sm text-slate-600">
+        {tone === "weak"
+          ? "No clear weak areas on this sitting."
+          : "No fully strong areas yet — misses were spread across topics."}
+      </p>
+    );
+  }
+
+  const chipClass =
+    tone === "weak"
+      ? "border-rose-200 bg-rose-50 text-rose-950"
+      : "border-emerald-200 bg-emerald-50 text-emerald-950";
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {areas.map((area) => (
+        <span
+          key={area.area}
+          className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold ${chipClass}`}
+        >
+          {area.label}
+          <span className="mx-1.5 opacity-60">·</span>
+          <span className="tabular-nums">
+            {area.correctCount}/{area.count}
+          </span>
+          <span className="mx-1.5 opacity-60">·</span>
+          <span className="tabular-nums">{area.weightedPct}%</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function MissExamples({ areas }) {
+  const examples = areas.flatMap((area) =>
+    area.misses.map((miss) => ({ ...miss, areaLabel: area.label })),
+  );
+  if (!examples.length) return null;
+
+  return (
+    <div className="mt-4 flex flex-col gap-3">
+      {examples.slice(0, 4).map((miss, index) => (
+        <div
+          key={`${miss.question_id || miss.slot}-${index}`}
+          className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Miss · {miss.areaLabel}
+            </p>
+            <QuestionDifficultyStars stars={miss.tier} />
+          </div>
+          <p className="text-sm text-slate-900 mt-2 leading-relaxed">{miss.prompt}</p>
+          <p className="text-sm text-red-800 mt-2">
+            Student answered: {miss.given || "—"}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TestAnalysisDetail({ attempt, analysis }) {
+  const { tierTrend, tierBands, weakAreas, strongAreas, timePressure, narrative } =
+    analysis;
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-5">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {formatSubjectLabel(attempt.subject)} · Adaptive test
+      </p>
+      <h2 className="text-xl font-semibold text-slate-950 mt-1">{attempt.title}</h2>
+      <p className="text-sm text-slate-600 mt-2">
+        {attempt.completed_at
+          ? new Date(attempt.completed_at).toLocaleString()
+          : null}
+        {attempt.duration_seconds != null ? (
+          <span> · {formatDurationSeconds(attempt.duration_seconds)}</span>
+        ) : null}
+      </p>
+      <p className="text-sm font-semibold text-teal-900 mt-2 tabular-nums">
+        {formatWeightedTestScore(attempt.weighted_score, attempt.max_weighted_score)}
+        <span className="font-normal text-slate-600">
+          {" "}
+          · {attempt.correct_count}/{attempt.total_count} correct
+        </span>
+      </p>
+
+      <div className="mt-6">
+        <h3 className="text-sm font-semibold text-slate-900">Tier progress</h3>
+        <p className="text-xs text-slate-600 mt-1">
+          How difficulty shifted question by question under adaptive rules.
+        </p>
+        <div className="mt-3">
+          <TierTrendChart trend={tierTrend} />
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <h3 className="text-sm font-semibold text-slate-900">Accuracy by tier</h3>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          {tierBands.map((band) => (
+            <div
+              key={band.tier}
+              className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
+            >
+              <div className="flex items-center gap-2">
+                <QuestionDifficultyStars stars={band.tier} />
+                <span className="text-sm font-semibold text-slate-900">
+                  {band.label}
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-slate-950 mt-2 tabular-nums">
+                {band.accuracyPct}%
+              </p>
+              <p className="text-xs text-slate-600 mt-1 tabular-nums">
+                {band.correctCount}/{band.count} correct · {band.weightedPct}% weighted
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {timePressure ? (
+        <div className="mt-6 rounded-xl border border-amber-100 bg-amber-50/60 px-4 py-4">
+          <h3 className="text-sm font-semibold text-amber-950">Time under pressure</h3>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2 text-sm text-slate-800">
+            {timePressure.timeLimitMinutes ? (
+              <p>
+                Time used:{" "}
+                <span className="font-semibold tabular-nums">
+                  {formatDurationSeconds(timePressure.durationSeconds)}
+                </span>{" "}
+                of {timePressure.timeLimitMinutes} min
+                {timePressure.timeUsedPct != null ? (
+                  <span className="text-slate-600"> ({timePressure.timeUsedPct}%)</span>
+                ) : null}
+              </p>
+            ) : (
+              <p>
+                Duration:{" "}
+                <span className="font-semibold tabular-nums">
+                  {formatDurationSeconds(timePressure.durationSeconds)}
+                </span>
+              </p>
+            )}
+            {timePressure.secondsPerQuestion != null ? (
+              <p>
+                Pace:{" "}
+                <span className="font-semibold tabular-nums">
+                  {timePressure.secondsPerQuestion}s
+                </span>{" "}
+                per question
+              </p>
+            ) : null}
+            {timePressure.firstHalfAccuracy != null ? (
+              <p>
+                First half:{" "}
+                <span className="font-semibold tabular-nums">
+                  {timePressure.firstHalfAccuracy}%
+                </span>{" "}
+                correct
+              </p>
+            ) : null}
+            {timePressure.secondHalfAccuracy != null ? (
+              <p>
+                Second half:{" "}
+                <span className="font-semibold tabular-nums">
+                  {timePressure.secondHalfAccuracy}%
+                </span>{" "}
+                correct
+              </p>
+            ) : null}
+          </div>
+          {timePressure.rushedFinish ? (
+            <p className="text-xs text-amber-900 mt-2">
+              Used most of the available time — accuracy in the final stretch matters.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {narrative ? (
+        <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-4">
+          <h3 className="text-sm font-semibold text-slate-900">Adaptive summary</h3>
+          <p className="text-sm text-slate-700 mt-2 leading-relaxed">{narrative}</p>
+          <p className="text-xs text-slate-500 mt-2">
+            Auto-generated from tier movement and misses — use alongside the question
+            details below, not as a substitute for reviewing work.
+          </p>
+        </div>
+      ) : null}
+
+      <div className="mt-6">
+        <h3 className="text-sm font-semibold text-rose-900">Weak areas</h3>
+        <p className="text-xs text-slate-600 mt-1">
+          Below 75% weighted accuracy or any easy-tier miss in that topic.
+        </p>
+        <div className="mt-3">
+          <AreaChipList areas={weakAreas} tone="weak" />
+        </div>
+        <MissExamples areas={weakAreas} />
+      </div>
+
+      <div className="mt-6">
+        <h3 className="text-sm font-semibold text-emerald-900">Strong areas</h3>
+        <p className="text-xs text-slate-600 mt-1">
+          All questions correct in that topic for this sitting.
+        </p>
+        <div className="mt-3">
+          <AreaChipList areas={strongAreas} tone="strong" />
+        </div>
+      </div>
+
+      {attempt.review_id ? (
+        <p className="mt-6 text-sm text-slate-700">
+          Missed questions were saved to review session #{attempt.review_id}
+          {attempt.review_completed ? " (completed)." : " (pending)."}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export default function AdminTestAnalysisView({ initialAttemptId = null }) {
+  const [attempts, setAttempts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [selectedId, setSelectedId] = useState(
+    initialAttemptId ? Number(initialAttemptId) : null,
+  );
+
+  useEffect(() => {
+    setLoading(true);
+    getAdminTestResults()
+      .then((data) => {
+        setError("");
+        setAttempts(filterAdaptiveTestAttempts(data));
+      })
+      .catch(() => setError("Could not load test results."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (initialAttemptId) {
+      setSelectedId(Number(initialAttemptId));
+    }
+  }, [initialAttemptId]);
+
+  const selectedAttempt = useMemo(
+    () => attempts.find((attempt) => attempt.id === selectedId) || null,
+    [attempts, selectedId],
+  );
+
+  const analysis = useMemo(
+    () => (selectedAttempt ? analyzeTestAttempt(selectedAttempt) : null),
+    [selectedAttempt],
+  );
+
+  if (loading) return <QuillLoading label="Loading test analysis…" />;
+
+  return (
+    <div>
+      <p className="text-slate-700 text-sm leading-relaxed mb-6">
+        Adaptive test performance under timed conditions — tier movement, accuracy by
+        difficulty, and topic strengths/weaknesses for one sitting at a time.
+      </p>
+
+      {error ? <p className="text-red-600 text-sm mb-4">{error}</p> : null}
+
+      {attempts.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-sm text-slate-600">
+          No completed adaptive tests yet. Use <strong>Analyse</strong> on the Results
+          page after a student submits an adaptive test.
+        </div>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:items-start">
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div className="border-b border-slate-100 px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Completed adaptive tests
+              </p>
+            </div>
+            <div className="divide-y divide-slate-100">
+              {attempts.map((attempt) => {
+                const selected = attempt.id === selectedId;
+                return (
+                  <button
+                    key={attempt.id}
+                    type="button"
+                    onClick={() => setSelectedId(attempt.id)}
+                    aria-pressed={selected}
+                    className={`w-full text-left px-4 py-4 transition ${
+                      selected ? "bg-indigo-50/80" : "hover:bg-slate-50"
+                    }`}
+                  >
+                    <p className="font-semibold text-slate-900">{attempt.title}</p>
+                    <p className="text-xs text-teal-800 mt-1 capitalize">
+                      {formatSubjectLabel(attempt.subject)}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1 tabular-nums">
+                      {formatWeightedTestScore(
+                        attempt.weighted_score,
+                        attempt.max_weighted_score,
+                      )}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="lg:sticky lg:top-4">
+            {selectedAttempt && analysis ? (
+              <TestAnalysisDetail attempt={selectedAttempt} analysis={analysis} />
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-5 py-8 min-h-[20rem] flex items-center justify-center text-sm text-slate-500">
+                Select a test to view analysis.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

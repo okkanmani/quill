@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   generateFocusPracticeWorksheet,
   getAdminSettings,
@@ -42,8 +42,37 @@ import {
   readJsonFile,
   resolveResultForEvaluationUpload,
 } from "../resultExportUtils";
+import AdminTestAnalysisView from "./AdminTestAnalysisView";
 
 const NEEDS_DISCUSSION_VISIBLE_COUNT = 6;
+
+function AnalysisViewTabs({ activeView }) {
+  const worksheetClass =
+    activeView === "worksheets"
+      ? "bg-slate-900 text-white border-slate-900"
+      : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50";
+  const testClass =
+    activeView === "tests"
+      ? "bg-slate-900 text-white border-slate-900"
+      : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50";
+
+  return (
+    <div className="flex flex-wrap gap-2 mb-6">
+      <Link
+        to="/admin/analysis"
+        className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${worksheetClass}`}
+      >
+        Worksheet analysis
+      </Link>
+      <Link
+        to="/admin/analysis?view=tests"
+        className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${testClass}`}
+      >
+        Test analysis
+      </Link>
+    </div>
+  );
+}
 
 function focusSelectionKey(subjectKey, area) {
   return `${subjectKey}::${area}`;
@@ -735,6 +764,9 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
 
 export default function AdminAnalysis() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const analysisView = searchParams.get("view") === "tests" ? "tests" : "worksheets";
+  const initialAttemptId = searchParams.get("attempt");
   const [results, setResults] = useState([]);
   const [revisionRecords, setRevisionRecords] = useState([]);
   const [practiceRecords, setPracticeRecords] = useState([]);
@@ -1038,7 +1070,8 @@ export default function AdminAnalysis() {
       trailing={`Admin · ${formatAdminHeaderTrail()}`}
       onLogout={handleLogout}
     >
-      {practiceWorksheet || practicePanelMode === "builder" ? (
+      {analysisView === "worksheets" &&
+      (practiceWorksheet || practicePanelMode === "builder") ? (
         <div className="sticky top-0 z-30 -mx-6 mb-2 flex flex-wrap items-center gap-2 bg-slate-50 px-6 pb-3 pt-3">
           <button
             type="button"
@@ -1072,6 +1105,15 @@ export default function AdminAnalysis() {
         </div>
       ) : null}
 
+      {analysisView === "tests" ? (
+        <div className="max-w-6xl">
+          <AdminStudentBanner />
+          <AdminStudentSwitcher />
+          <h1 className="text-2xl font-bold text-slate-950 mb-2">Analysis</h1>
+          <AnalysisViewTabs activeView={analysisView} />
+          <AdminTestAnalysisView initialAttemptId={initialAttemptId} />
+        </div>
+      ) : (
       <div
         ref={practiceScrollerRef}
         className="overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4"
@@ -1083,6 +1125,7 @@ export default function AdminAnalysis() {
           <AdminStudentSwitcher />
 
           <h1 className="text-2xl font-bold text-slate-950 mb-2">Analysis</h1>
+          <AnalysisViewTabs activeView={analysisView} />
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
             <p className="text-slate-700 text-sm leading-relaxed">
               {studentName
@@ -1233,6 +1276,7 @@ export default function AdminAnalysis() {
           </section>
         </div>
       </div>
+      )}
     </AppShell>
   );
 }

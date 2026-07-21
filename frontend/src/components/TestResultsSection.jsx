@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import SectionSortSelect from "./SectionSortSelect";
 import { formatSubjectLabel } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
@@ -65,12 +66,12 @@ export default function TestResultsSection({
                   </p>
                 ) : null}
               </div>
-              <div className="shrink-0 text-right">
+              <div className="shrink-0 text-right flex flex-col items-end gap-2">
                 <span className="inline-flex rounded-full bg-teal-100 text-teal-900 border border-teal-200 px-3 py-1 text-sm font-bold tabular-nums">
                   {formatWeightedTestScore(item.weighted_score, item.max_weighted_score)}
                 </span>
                 {typeof item.correct_count === "number" ? (
-                  <p className="text-xs text-slate-500 mt-1 tabular-nums">
+                  <p className="text-xs text-slate-500 tabular-nums">
                     {item.correct_count}/{item.total_count} correct
                   </p>
                 ) : null}
@@ -78,6 +79,15 @@ export default function TestResultsSection({
                   <p className="text-xs text-slate-500 tabular-nums">
                     {formatDurationSeconds(item.duration_seconds)}
                   </p>
+                ) : null}
+                {item.test_adaptive !== false ? (
+                  <Link
+                    to={`/admin/analysis?view=tests&attempt=${item.id}`}
+                    className="inline-flex rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-900 hover:bg-indigo-100 transition"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    Analyse
+                  </Link>
                 ) : null}
               </div>
             </button>
@@ -111,6 +121,14 @@ export default function TestResultsSection({
                     Review session #{item.review_id}
                     {item.review_completed ? " — completed" : " — pending"}
                   </p>
+                ) : null}
+                {item.test_adaptive !== false ? (
+                  <Link
+                    to={`/admin/analysis?view=tests&attempt=${item.id}`}
+                    className="inline-flex rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-100 transition"
+                  >
+                    Analyse test
+                  </Link>
                 ) : null}
               </div>
             ) : null}

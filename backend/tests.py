@@ -127,6 +127,47 @@ def _parse_json(raw, default):
         return default
 
 
+def build_ordered_test_slots(
+    sequence: list | None,
+    answers: dict | None,
+    *,
+    sitting_count: int,
+) -> list[dict]:
+    """Merge sequence + answers into slot-ordered rows for test analysis."""
+    sequence = sequence if isinstance(sequence, list) else []
+    answers = answers if isinstance(answers, dict) else {}
+    sitting_count = max(1, int(sitting_count or 1))
+    slots: list[dict] = []
+
+    for slot in range(1, sitting_count + 1):
+        key = str(slot)
+        answer = answers.get(key)
+        if not isinstance(answer, dict):
+            continue
+        seq_entry = sequence[slot - 1] if slot - 1 < len(sequence) else None
+        tier = answer.get("tier")
+        if not isinstance(tier, (int, float)):
+            if isinstance(seq_entry, dict):
+                tier = seq_entry.get("tier")
+        tier = int(tier) if isinstance(tier, (int, float)) else START_TIER
+        tier = max(1, min(3, tier))
+
+        slots.append(
+            {
+                "slot": slot,
+                "tier": tier,
+                "area": str(answer.get("area") or "").strip(),
+                "correct": answer.get("correct") is True,
+                "question_id": answer.get("question_id"),
+                "prompt": answer.get("prompt") or "",
+                "given": answer.get("given") or "",
+                "expected": answer.get("expected") or "",
+                "choices": answer.get("choices") or [],
+            }
+        )
+    return slots
+
+
 def _next_tier(current: int, *, correct: bool) -> int:
     if correct:
         return min(current + 1, 3)
@@ -771,7 +812,9 @@ def list_test_results(student_name: str) -> list[dict]:
             """
             SELECT ta.id, ta.worksheet_id, ta.completed_at, ta.weighted_score,
                    ta.max_weighted_score, ta.duration_seconds, ta.answers,
-                   w.title, w.subject,
+                   ta.sequence, ta.sitting_count,
+                   w.title, w.subject, w.test_adaptive, w.time_limit_minutes,
+                   w.test_sitting_count,
                    tr.id AS review_id, tr.completed_at AS review_completed_at
             FROM test_attempts ta
             JOIN worksheets w ON w.id = ta.worksheet_id
@@ -784,10 +827,20 @@ def list_test_results(student_name: str) -> list[dict]:
         records = []
         for row in rows:
             answers = _parse_json(row["answers"], {})
+            sequence = _parse_json(row["sequence"], [])
+            sitting_count = int(row["sitting_count"] or row["test_sitting_count"] or 20)
             correct_count = sum(
                 1
                 for a in answers.values()
                 if isinstance(a, dict) and a.get("correct")
+            )
+            adaptive = int(row["test_adaptive"] or 0) != 0
+            slots = (
+                build_ordered_test_slots(
+                    sequence, answers, sitting_count=sitting_count
+                )
+                if adaptive
+                else []
             )
             records.append(
                 {
@@ -801,9 +854,13 @@ def list_test_results(student_name: str) -> list[dict]:
                     "duration_seconds": row["duration_seconds"],
                     "correct_count": correct_count,
                     "total_count": len(answers),
+                    "sitting_count": sitting_count,
+                    "time_limit_minutes": row["time_limit_minutes"],
+                    "test_adaptive": adaptive,
                     "content_badge": "Test",
                     "review_id": row["review_id"],
                     "review_completed": bool(row["review_completed_at"]),
+                    "slots": slots,
                     "answers": list(answers.values()) if answers else [],
                 }
             )
