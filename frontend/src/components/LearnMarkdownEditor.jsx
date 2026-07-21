@@ -14,31 +14,40 @@ export default function LearnMarkdownEditor({
   publishing = false,
   headerActions = null,
   error = "",
+  hideTitle = false,
+  embedded = false,
+  borderless = false,
 }) {
   const textareaRef = useRef(null);
   const [mobilePane, setMobilePane] = useState("edit");
 
-  return (
-    <div className="flex flex-col min-h-[calc(100vh-10rem)]">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <label className="block text-sm font-semibold text-slate-800">
-            {titleLabel}
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => onTitleChange(e.target.value)}
-              className="mt-1 w-full max-w-xl rounded-xl border border-slate-300 px-3 py-2 text-lg font-bold text-slate-950 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-            />
-            <span className="mt-1 block text-xs font-normal text-slate-500">
-              {titleHint}
-            </span>
-          </label>
-        </div>
-        {headerActions}
-      </div>
+  const editorShellClass = borderless
+    ? "flex-1 grid lg:grid-cols-2 gap-0 overflow-hidden min-h-[28rem]"
+    : "flex-1 grid lg:grid-cols-2 gap-0 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden min-h-[28rem]";
 
-      {error ? (
+  return (
+    <div className={embedded ? "min-w-0" : "flex flex-col min-h-[calc(100vh-10rem)]"}>
+      {!hideTitle ? (
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <label className="block text-sm font-semibold text-slate-800">
+              {titleLabel}
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => onTitleChange(e.target.value)}
+                className="mt-1 w-full max-w-xl rounded-xl border border-slate-300 px-3 py-2 text-lg font-bold text-slate-950 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              />
+              <span className="mt-1 block text-xs font-normal text-slate-500">
+                {titleHint}
+              </span>
+            </label>
+          </div>
+          {headerActions}
+        </div>
+      ) : null}
+
+      {!hideTitle && error ? (
         <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
           {error}
         </div>
@@ -69,7 +78,7 @@ export default function LearnMarkdownEditor({
         </button>
       </div>
 
-      <div className="flex-1 grid lg:grid-cols-2 gap-0 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden min-h-[28rem]">
+      <div className={editorShellClass}>
         <div
           className={`flex flex-col border-slate-200 lg:border-r ${
             mobilePane === "edit" ? "flex" : "hidden lg:flex"

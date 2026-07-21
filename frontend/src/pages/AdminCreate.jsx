@@ -13,7 +13,7 @@ const CREATE_TABS = [
 export default function AdminCreate() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isWideBuilder = /\/admin\/create\/(worksheet|test)/.test(location.pathname);
+  const isWideBuilder = /\/admin\/create\/(worksheet|test|learn)/.test(location.pathname);
 
   async function handleLogout() {
     await logout();
