@@ -14,6 +14,8 @@ export default function AreaCombobox({
   const debounceRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [nearMatches, setNearMatches] = useState([]);
+  const [caseVariant, setCaseVariant] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
 
@@ -27,11 +29,17 @@ export default function AreaCombobox({
     debounceRef.current = setTimeout(() => {
       setLoading(true);
       listQuestionBankAreas({ subject, q: value })
-        .then((areas) => {
+        .then(({ areas, nearMatches: near, caseVariant: variant }) => {
           setSuggestions(areas);
+          setNearMatches(near);
+          setCaseVariant(variant);
           setActiveIndex(areas.length ? 0 : -1);
         })
-        .catch(() => setSuggestions([]))
+        .catch(() => {
+          setSuggestions([]);
+          setNearMatches([]);
+          setCaseVariant(null);
+        })
         .finally(() => setLoading(false));
     }, 200);
 
@@ -56,6 +64,8 @@ export default function AreaCombobox({
     onChange(area);
     setOpen(false);
     setActiveIndex(-1);
+    setNearMatches([]);
+    setCaseVariant(null);
   }
 
   function handleKeyDown(event) {
@@ -75,7 +85,13 @@ export default function AreaCombobox({
     }
   }
 
+  const trimmed = value.trim();
   const showList = open && subject && (loading || suggestions.length > 0);
+  const showCaseVariant = Boolean(trimmed && caseVariant && caseVariant !== trimmed);
+  const filteredNearMatches = nearMatches.filter(
+    (area) => area.toLowerCase() !== trimmed.toLowerCase(),
+  );
+  const showNearMatches = trimmed && filteredNearMatches.length > 0;
 
   return (
     <div ref={rootRef} className={`relative ${className}`}>
@@ -126,7 +142,38 @@ export default function AreaCombobox({
       ) : null}
       {!subject ? (
         <p className="mt-1 text-xs text-slate-500">Choose a subject first.</p>
-      ) : open && !loading && subject && value.trim() && suggestions.length === 0 ? (
+      ) : null}
+      {showCaseVariant ? (
+        <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+          <span className="font-medium">{caseVariant}</span> already exists with different
+          capitalization.{" "}
+          <button
+            type="button"
+            onClick={() => selectSuggestion(caseVariant)}
+            className="font-semibold text-amber-900 underline hover:text-amber-950"
+          >
+            Use existing
+          </button>
+        </div>
+      ) : null}
+      {showNearMatches ? (
+        <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+          <p className="font-medium mb-1.5">Similar areas already in the bank:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {filteredNearMatches.map((area) => (
+              <button
+                key={area}
+                type="button"
+                onClick={() => selectSuggestion(area)}
+                className="rounded-lg border border-amber-300 bg-white px-2 py-1 text-xs font-semibold text-amber-950 hover:bg-amber-100 transition"
+              >
+                {area}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {subject && open && !loading && trimmed && !suggestions.length && !showNearMatches && !showCaseVariant ? (
         <p className="mt-1 text-xs text-slate-500">
           No matching areas — type a new topic name.
         </p>

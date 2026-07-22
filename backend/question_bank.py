@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import difflib
 import json
+import re
 import secrets
 import string
 from datetime import datetime, timezone
@@ -192,6 +194,58 @@ def list_question_bank_areas(
         return [str(row["area"]).strip() for row in rows if row["area"]]
     finally:
         conn.close()
+
+
+def normalize_area_key(area: str) -> str:
+    return re.sub(r"\s+", " ", str(area or "").strip().lower())
+
+
+def lookup_question_bank_areas(
+    *,
+    admin_id: int,
+    subject: str,
+    query: str | None = None,
+) -> dict:
+    """Substring matches for the dropdown plus fuzzy near-match hints."""
+    query = str(query or "").strip()
+    areas = list_question_bank_areas(
+        admin_id=admin_id,
+        subject=subject,
+        query=query or None,
+    )
+    if not query:
+        return {"areas": areas, "near_matches": [], "case_variant": None}
+
+    all_areas = list_question_bank_areas(
+        admin_id=admin_id,
+        subject=subject,
+        query=None,
+        limit=200,
+    )
+    query_key = normalize_area_key(query)
+    case_variant = next(
+        (
+            area
+            for area in all_areas
+            if normalize_area_key(area) == query_key and area != query
+        ),
+        None,
+    )
+
+    shown_keys = {normalize_area_key(area) for area in areas}
+    candidates = [
+        area
+        for area in all_areas
+        if normalize_area_key(area) != query_key
+        and normalize_area_key(area) not in shown_keys
+    ]
+    near_matches = difflib.get_close_matches(query, candidates, n=3, cutoff=0.72)
+
+    return {
+        "areas": areas,
+        "near_matches": near_matches,
+        "case_variant": case_variant,
+    }
 
 
 def find_question_bank_item_by_prompt_key(

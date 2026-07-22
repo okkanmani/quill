@@ -688,7 +688,11 @@ export async function listQuestionBankAreas({ subject, q } = {}) {
     throw new Error(formatApiDetail(err.detail, "Could not load topic areas."));
   }
   const data = await res.json();
-  return data.areas || [];
+  return {
+    areas: data.areas || [],
+    nearMatches: data.near_matches || [],
+    caseVariant: data.case_variant || null,
+  };
 }
 
 export async function createQuestionBankItem(payload) {

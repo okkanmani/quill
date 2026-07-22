@@ -91,6 +91,7 @@ from question_bank import (
     get_question_bank_item,
     list_question_bank_items,
     list_question_bank_areas,
+    lookup_question_bank_areas,
     update_question_bank_item,
 )
 from writing import (
@@ -932,14 +933,13 @@ def admin_list_question_bank_areas(
     if payload.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
     try:
-        areas = list_question_bank_areas(
+        return lookup_question_bank_areas(
             admin_id=_admin_id(payload),
             subject=subject,
             query=q,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
-    return {"areas": areas}
 
 
 @app.post("/admin/question-bank")
