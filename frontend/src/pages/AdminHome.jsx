@@ -53,6 +53,8 @@ export default function AdminHome() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const resultsView = searchParams.get("view") === "tests" ? "tests" : "worksheets";
+  const deepLinkResultId = searchParams.get("result");
+  const deepLinkAttemptId = searchParams.get("attempt");
   const [results, setResults] = useState([]);
   const [practiceResults, setPracticeResults] = useState([]);
   const [testResults, setTestResults] = useState([]);
@@ -80,6 +82,22 @@ export default function AdminHome() {
       .catch(() => setError("Could not load results."))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!deepLinkResultId || results.length === 0) return;
+    const targetId = Number(deepLinkResultId);
+    if (!Number.isFinite(targetId)) return;
+    if (!results.some((result) => result.id === targetId)) return;
+    setOpenIds(new Set([targetId]));
+  }, [deepLinkResultId, results]);
+
+  useEffect(() => {
+    if (!deepLinkAttemptId || testResults.length === 0) return;
+    const targetId = Number(deepLinkAttemptId);
+    if (!Number.isFinite(targetId)) return;
+    if (!testResults.some((result) => result.id === targetId)) return;
+    setOpenTestIds(new Set([targetId]));
+  }, [deepLinkAttemptId, testResults]);
 
   function toggleAnswers(id) {
     setOpenIds((prev) => {

@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAdminHome, logout, switchAdminStudent } from "../api";
 import { ADMIN_MAIN_NAV } from "../adminNav";
+import {
+  activityDestination,
+  activityKindBadgeClass,
+  activityKindLabel,
+  activityTitle,
+} from "../adminHomeUtils";
 import AppShell from "../components/AppShell";
 import AdminStudentBanner from "../components/AdminStudentBanner";
 import AdminStudentRoster from "../components/AdminStudentRoster";
@@ -21,32 +27,50 @@ function formatRelativeTime(iso) {
   return then.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-function activityLabel(item) {
-  const name = item.student_name;
-  if (item.kind === "worksheet_completed") {
+function ActivityKindBadge({ item }) {
+  return (
+    <span
+      className={`inline-flex shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${activityKindBadgeClass(item)}`}
+    >
+      {activityKindLabel(item)}
+    </span>
+  );
+}
+
+function ActivityRow({ item, onNavigate, switchingStudent }) {
+  const destination = activityDestination(item);
+  const content = (
+    <>
+      <div className="min-w-0 flex items-center gap-2 flex-wrap">
+        <ActivityKindBadge item={item} />
+        <span className="text-sm text-slate-800 truncate">
+          <span className="font-medium text-slate-900">{item.student_name}</span>
+          <span className="text-slate-500"> · </span>
+          <span>{activityTitle(item)}</span>
+        </span>
+      </div>
+      <span className="text-xs text-slate-500 shrink-0">{formatRelativeTime(item.at)}</span>
+    </>
+  );
+
+  if (!destination) {
     return (
-      <>
-        {name} completed <strong>{item.title}</strong>
-      </>
+      <div className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2">
+        {content}
+      </div>
     );
   }
-  if (item.kind === "test_completed") {
-    return (
-      <>
-        {name} completed <strong>{item.title}</strong>
-      </>
-    );
-  }
-  if (item.kind === "reinforcement_flagged") {
-    const count = item.topic_count || 1;
-    return (
-      <>
-        {name} flagged <strong>{count} topic{count === 1 ? "" : "s"}</strong> for
-        reinforcement
-      </>
-    );
-  }
-  return `${name} had activity`;
+
+  return (
+    <button
+      type="button"
+      disabled={Boolean(switchingStudent)}
+      onClick={() => onNavigate(item.student_name, destination)}
+      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-left hover:bg-slate-50 hover:border-slate-300 transition disabled:opacity-60"
+    >
+      {content}
+    </button>
+  );
 }
 
 function SectionLabel({ children }) {
@@ -98,6 +122,34 @@ export default function AdminLanding() {
     }
   }
 
+  async function handleNavigateForStudent(studentName, path) {
+    setError("");
+    const current = localStorage.getItem("studentName") || "";
+    try {
+      if (studentName && studentName !== current) {
+        setSwitchingStudent(studentName);
+        await handleSelectStudentWithoutReload(studentName);
+        setSwitchingStudent("");
+      }
+      navigate(path);
+    } catch {
+      setError("Could not open that item.");
+      setSwitchingStudent("");
+    }
+  }
+
+  async function handleSelectStudentWithoutReload(name) {
+    const switched = await switchAdminStudent(name);
+    localStorage.setItem("token", switched.token);
+    localStorage.setItem("studentName", switched.student_name);
+    if (switched.admin_name) localStorage.setItem("adminName", switched.admin_name);
+    if (switched.grade != null) {
+      localStorage.setItem("studentGrade", String(switched.grade));
+    } else {
+      localStorage.removeItem("studentGrade");
+    }
+  }
+
   const students = data?.students || [];
   const recentActivity = data?.recent_activity || [];
   const pending = data?.pending || [];
@@ -140,6 +192,7 @@ export default function AdminLanding() {
                 students={students}
                 selectedName={localStorage.getItem("studentName") || ""}
                 onSelectStudent={handleSelectStudent}
+                onNavigateForStudent={handleNavigateForStudent}
                 switchingStudent={switchingStudent}
               />
             </section>
@@ -154,15 +207,12 @@ export default function AdminLanding() {
                 ) : (
                   <div className="flex flex-col gap-2">
                     {recentActivity.map((item, index) => (
-                      <div
+                      <ActivityRow
                         key={`${item.kind}-${item.student_name}-${item.at}-${index}`}
-                        className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2"
-                      >
-                        <span className="text-sm text-slate-800">{activityLabel(item)}</span>
-                        <span className="text-xs text-slate-500 shrink-0">
-                          {formatRelativeTime(item.at)}
-                        </span>
-                      </div>
+                        item={item}
+                        onNavigate={handleNavigateForStudent}
+                        switchingStudent={switchingStudent}
+                      />
                     ))}
                   </div>
                 )}
@@ -202,16 +252,22 @@ export default function AdminLanding() {
                   ) : (
                     <div className="flex flex-col gap-2">
                       {pending.map((item) => (
-                        <Link
+                        <button
                           key={`${item.student_name}-${item.worksheet_id}`}
-                          to="/admin/worksheets"
-                          className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-3.5 py-2.5 hover:bg-slate-50 transition"
+                          type="button"
+                          onClick={() => handleNavigateForStudent(item.student_name, "/admin/worksheets")}
+                          className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-3.5 py-2.5 hover:bg-slate-50 transition text-left"
                         >
-                          <p className="text-sm font-medium text-slate-900">{item.title}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="inline-flex shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide bg-violet-100 text-violet-900 border-violet-200">
+                              Test
+                            </span>
+                            <p className="text-sm font-medium text-slate-900">{item.title}</p>
+                          </div>
                           <p className="text-xs text-slate-500 mt-0.5">
                             Locked · {item.student_name} · awaiting unlock
                           </p>
-                        </Link>
+                        </button>
                       ))}
                     </div>
                   )}

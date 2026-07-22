@@ -766,6 +766,7 @@ export default function AdminAnalysis() {
   const [searchParams] = useSearchParams();
   const analysisView = searchParams.get("view") === "tests" ? "tests" : "worksheets";
   const initialAttemptId = searchParams.get("attempt");
+  const initialFocusKey = searchParams.get("focus");
   const [results, setResults] = useState([]);
   const [revisionRecords, setRevisionRecords] = useState([]);
   const [practiceRecords, setPracticeRecords] = useState([]);
@@ -787,6 +788,7 @@ export default function AdminAnalysis() {
   const [savingManualPractice, setSavingManualPractice] = useState(false);
   const uploadInputRef = useRef(null);
   const practiceScrollerRef = useRef(null);
+  const appliedFocusFromUrl = useRef(false);
   const studentGrade = Number(localStorage.getItem("studentGrade")) || null;
 
   useEffect(() => {
@@ -838,10 +840,19 @@ export default function AdminAnalysis() {
       setSelectedKey("");
       return;
     }
+    if (
+      !appliedFocusFromUrl.current &&
+      initialFocusKey &&
+      findSelectedFocus(bySubject, initialFocusKey)
+    ) {
+      setSelectedKey(initialFocusKey);
+      appliedFocusFromUrl.current = true;
+      return;
+    }
     if (selectedKey && !findSelectedFocus(bySubject, selectedKey)) {
       setSelectedKey("");
     }
-  }, [bySubject, selectedKey]);
+  }, [bySubject, initialFocusKey, selectedKey]);
 
   function handleSelectArea(key) {
     setSelectedKey((current) => (current === key ? "" : key));

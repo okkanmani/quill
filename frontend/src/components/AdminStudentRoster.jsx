@@ -1,4 +1,10 @@
 import { useMemo, useState } from "react";
+import { formatAreaLabel } from "../analysisUtils";
+import {
+  attentionItemDestination,
+  attentionKindBadgeClass,
+  attentionKindLabel,
+} from "../adminHomeUtils";
 
 const ROSTER_COLLAPSED_LIMIT = 4;
 
@@ -27,31 +33,43 @@ function statusDotClass(student) {
   return "bg-emerald-500";
 }
 
-function StudentStatusBadge({ student }) {
-  const needs = student.needs_addressing_count || 0;
-  const reinf = student.reinforcement_count || 0;
+function StudentAttentionChips({ student, onNavigateForStudent, switchingStudent }) {
+  const items = student.attention_items || [];
+  if (items.length === 0) {
+    return <span className="text-xs text-slate-500 shrink-0">All caught up</span>;
+  }
 
-  if (needs > 0) {
-    return (
-      <span className="inline-flex shrink-0 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-900 border border-rose-200">
-        {needs} needs addressing
-      </span>
-    );
-  }
-  if (reinf > 0) {
-    return (
-      <span className="inline-flex shrink-0 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900 border border-amber-200">
-        {reinf} reinforcement
-      </span>
-    );
-  }
-  return <span className="text-xs text-slate-500 shrink-0">All caught up</span>;
+  return (
+    <div
+      className="flex flex-wrap gap-1.5 justify-end max-w-[16rem]"
+      onClick={(event) => event.stopPropagation()}
+    >
+      {items.map((item) => (
+        <button
+          key={`${item.kind}-${item.subject}-${item.area}`}
+          type="button"
+          disabled={Boolean(switchingStudent)}
+          onClick={() =>
+            onNavigateForStudent?.(student.name, attentionItemDestination(item))
+          }
+          className={`inline-flex shrink-0 rounded-full border px-2.5 py-1 text-xs font-semibold transition disabled:opacity-60 ${attentionKindBadgeClass(item)}`}
+          title={`Open ${attentionKindLabel(item).toLowerCase()} for ${formatAreaLabel(item.area)}`}
+        >
+          <span className="uppercase tracking-wide text-[10px] mr-1.5 opacity-80">
+            {attentionKindLabel(item)}
+          </span>
+          {formatAreaLabel(item.area)}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export default function AdminStudentRoster({
   students,
   selectedName,
   onSelectStudent,
+  onNavigateForStudent,
   switchingStudent = "",
 }) {
   const [search, setSearch] = useState("");
@@ -172,7 +190,11 @@ export default function AdminStudentRoster({
                     <span className="text-sm text-slate-500 shrink-0">Gr. {student.grade}</span>
                   ) : null}
                 </div>
-                <StudentStatusBadge student={student} />
+                <StudentAttentionChips
+                  student={student}
+                  onNavigateForStudent={onNavigateForStudent}
+                  switchingStudent={switchingStudent}
+                />
               </button>
             );
           })}

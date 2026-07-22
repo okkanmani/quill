@@ -47,16 +47,12 @@ def _discussed_key(subject: str, area: str) -> tuple[str, str]:
     return (str(subject or "").strip().lower(), str(area or "").strip().lower())
 
 
-def _focus_health_counts(student_name: str) -> tuple[int, int]:
-    """Return (needs_addressing_count, reinforcement_count) for a student."""
-    results = list_results(student_name)
-    discussed_rows = list_focus_areas_discussed(student_name)
-    discussed_keys = {
-        _discussed_key(row["subject"], row["area"]) for row in discussed_rows
-    }
-
+def _collect_focus_area_keys(student_name: str) -> tuple[set[tuple[str, str]], dict[tuple[str, str], str]]:
+    """Return (area_keys, key_to_subject) from focus evaluations and revision records."""
     area_keys: set[tuple[str, str]] = set()
-    for result in results:
+    key_subject: dict[tuple[str, str], str] = {}
+
+    for result in list_results(student_name):
         evaluation = result.get("focus_evaluation")
         if not isinstance(evaluation, dict):
             continue
@@ -67,8 +63,11 @@ def _focus_health_counts(student_name: str) -> tuple[int, int]:
             if not isinstance(question, dict):
                 continue
             area = str(question.get("area") or "").strip().lower()
-            if area:
-                area_keys.add((subject, area))
+            if not area:
+                continue
+            key = (subject, area)
+            area_keys.add(key)
+            key_subject[key] = subject
 
     for revision in list_revision_analysis_records(student_name):
         subject = str(revision.get("subject") or "general").strip().lower()
@@ -76,8 +75,67 @@ def _focus_health_counts(student_name: str) -> tuple[int, int]:
             if not isinstance(question, dict):
                 continue
             area = str(question.get("area") or "").strip().lower()
-            if area:
-                area_keys.add((subject, area))
+            if not area:
+                continue
+            key = (subject, area)
+            area_keys.add(key)
+            key_subject[key] = subject
+
+    return area_keys, key_subject
+
+
+def _attention_items_for_student(student_name: str, *, limit: int = 4) -> list[dict]:
+    discussed_rows = list_focus_areas_discussed(student_name)
+    discussed_keys = {
+        _discussed_key(row["subject"], row["area"]) for row in discussed_rows
+    }
+    area_keys, key_subject = _collect_focus_area_keys(student_name)
+
+    items: list[dict] = []
+    for subject, area in sorted(area_keys):
+        key = (subject, area)
+        if key in discussed_keys:
+            continue
+        items.append(
+            {
+                "kind": "needs_addressing",
+                "subject": key_subject.get(key, subject),
+                "area": area,
+            }
+        )
+
+    for row in discussed_rows:
+        reinforced_at = row.get("last_reinforced_at")
+        discussed_at = row.get("discussed_at")
+        if not (
+            reinforced_at
+            and discussed_at
+            and reinforced_at > discussed_at
+        ):
+            continue
+        subject = str(row.get("subject") or "general").strip().lower()
+        area = str(row.get("area") or "").strip().lower()
+        if not area:
+            continue
+        items.append(
+            {
+                "kind": "reinforcement",
+                "subject": subject,
+                "area": area,
+                "count": int(row.get("reinforcement_count") or 1),
+            }
+        )
+
+    return items[:limit]
+
+
+def _focus_health_counts(student_name: str) -> tuple[int, int]:
+    """Return (needs_addressing_count, reinforcement_count) for a student."""
+    discussed_rows = list_focus_areas_discussed(student_name)
+    discussed_keys = {
+        _discussed_key(row["subject"], row["area"]) for row in discussed_rows
+    }
+    area_keys, _ = _collect_focus_area_keys(student_name)
 
     needs_addressing = sum(1 for key in area_keys if key not in discussed_keys)
     reinforcement = sum(
@@ -95,9 +153,13 @@ def _recent_activity_for_student(conn, student_name: str, *, limit: int = 8) -> 
 
     rows = conn.execute(
         """
-        SELECT title, submitted_at FROM results
-        WHERE student = ? AND submitted_at IS NOT NULL
-        ORDER BY submitted_at DESC
+        SELECT r.id, r.worksheet_id, r.title, r.submitted_at
+        FROM results r
+        JOIN worksheets w ON w.id = r.worksheet_id
+        WHERE r.student = ?
+          AND r.submitted_at IS NOT NULL
+          AND COALESCE(w.is_test, 0) = 0
+        ORDER BY r.submitted_at DESC
         LIMIT ?
         """,
         (student_name, limit),
@@ -108,13 +170,15 @@ def _recent_activity_for_student(conn, student_name: str, *, limit: int = 8) -> 
                 "student_name": student_name,
                 "kind": "worksheet_completed",
                 "title": row["title"] or "Worksheet",
+                "worksheet_id": row["worksheet_id"],
+                "result_id": row["id"],
                 "at": row["submitted_at"],
             }
         )
 
     test_rows = conn.execute(
         """
-        SELECT w.title, ta.completed_at
+        SELECT w.id AS worksheet_id, w.title, ta.id AS attempt_id, ta.completed_at
         FROM test_attempts ta
         JOIN worksheets w ON w.id = ta.worksheet_id
         WHERE ta.student = ? AND ta.completed_at IS NOT NULL
@@ -129,6 +193,8 @@ def _recent_activity_for_student(conn, student_name: str, *, limit: int = 8) -> 
                 "student_name": student_name,
                 "kind": "test_completed",
                 "title": row["title"] or "Test",
+                "worksheet_id": row["worksheet_id"],
+                "attempt_id": row["attempt_id"],
                 "at": row["completed_at"],
             }
         )
@@ -136,18 +202,21 @@ def _recent_activity_for_student(conn, student_name: str, *, limit: int = 8) -> 
     for row in list_focus_areas_discussed(student_name):
         reinforced_at = row.get("last_reinforced_at")
         discussed_at = row.get("discussed_at")
-        count = int(row.get("reinforcement_count") or 0)
         if (
-            count > 0
-            and reinforced_at
+            reinforced_at
             and discussed_at
             and reinforced_at > discussed_at
         ):
+            subject = str(row.get("subject") or "general").strip().lower()
+            area = str(row.get("area") or "").strip().lower()
+            if not area:
+                continue
             events.append(
                 {
                     "student_name": student_name,
                     "kind": "reinforcement_flagged",
-                    "topic_count": count,
+                    "subject": subject,
+                    "area": area,
                     "at": reinforced_at,
                 }
             )
@@ -198,6 +267,7 @@ def build_admin_home(admin_id: int, selected_student: str | None = None) -> dict
                     "last_activity_at": last_at,
                     "needs_addressing_count": needs_addressing,
                     "reinforcement_count": reinforcement,
+                    "attention_items": _attention_items_for_student(name),
                     "is_selected": bool(selected_student and name == selected_student),
                 }
             )
