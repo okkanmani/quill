@@ -860,6 +860,35 @@ def _resolve_learn_metadata(
     return meta
 
 
+def _sanitize_passage_chart(chart):
+    """Drop empty optional chart fields so validation accepts AI/builder output."""
+    if chart is None:
+        return None
+    if not isinstance(chart, dict):
+        return chart
+    out = dict(chart)
+    ctype = out.get("type")
+    if isinstance(ctype, str):
+        cleaned = ctype.strip().lower()
+        if cleaned:
+            out["type"] = cleaned
+        else:
+            out.pop("type", None)
+    for key in ("title", "xLabel", "yLabel"):
+        val = out.get(key)
+        if val is None:
+            continue
+        if isinstance(val, str):
+            stripped = val.strip()
+            if stripped:
+                out[key] = stripped
+            else:
+                out.pop(key, None)
+        else:
+            out.pop(key, None)
+    return out
+
+
 def _validate_passage_table(prefix: str, table, errors: list[str]) -> None:
     if table is None:
         return
@@ -1539,7 +1568,7 @@ def worksheet_data_from_builder(body: dict, *, existing: dict | None = None) -> 
                 passage_id = f"p{i + 1}"
             ptitle = raw.get("title")
             pbody = raw.get("body") or raw.get("text") or ""
-            chart = raw.get("chart")
+            chart = _sanitize_passage_chart(raw.get("chart"))
             table = raw.get("table")
             if not isinstance(ptitle, str) or not ptitle.strip():
                 errors.append(f"{prefix}.title is required.")
@@ -1769,7 +1798,7 @@ def validate_worksheet_data(data: dict) -> list[str]:
                 prefix = f"passages[{i}]"
                 body = p.get("text") or p.get("body")
                 has_body = isinstance(body, str) and body.strip()
-                chart = p.get("chart")
+                chart = _sanitize_passage_chart(p.get("chart"))
                 table = p.get("table")
                 has_chart = chart is not None
                 has_table = table is not None

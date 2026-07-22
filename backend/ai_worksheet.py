@@ -10,6 +10,7 @@ import httpx
 from worksheets import (
     STARS_DEFAULT_QUESTION_COUNTS,
     VALID_SUBJECTS,
+    _sanitize_passage_chart,
     _validate_passage_chart,
     _validate_passage_table,
 )
@@ -270,7 +271,7 @@ def _normalize_data_draft(data: dict, *, passage_specs: list[dict]) -> dict:
         if not isinstance(body, str):
             raise ValueError(f"{prefix}.body must be a string when provided.")
 
-        chart = raw.get("chart")
+        chart = _sanitize_passage_chart(raw.get("chart"))
         table = raw.get("table")
         chart_errors: list[str] = []
         table_errors: list[str] = []
@@ -410,6 +411,7 @@ Data set requirements:
 Rules:
 - Each data set MUST include a chart and/or table with consistent numeric data students can read.
 - chart.type must be bar, line, or pie. labels and values must be the same length; values are non-negative numbers.
+- xLabel and yLabel are optional; omit them entirely if unused — never use empty strings.
 - table.headers is a non-empty string array; each row matches header length.
 - body is one short sentence (optional if chart/table titles are clear).
 - Vary chart types across data sets when possible (bar, line, pie).
