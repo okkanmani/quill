@@ -34,7 +34,7 @@ function PassageTable({ table }) {
   );
 }
 
-export default function WorksheetPassageContent({ passage }) {
+export default function WorksheetPassageContent({ passage, headerAction = null }) {
   const body = passage.body ?? passage.text ?? "";
   const hasChart = passage.chart?.type && passage.chart?.labels?.length;
   const hasTable = passage.table?.headers?.length;
@@ -42,9 +42,12 @@ export default function WorksheetPassageContent({ passage }) {
 
   return (
     <div className="sticky top-4 z-10 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-      <p className="text-slate-800 font-semibold text-base mb-3">
-        {icon} {passage.title}
-      </p>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <p className="text-slate-800 font-semibold text-base min-w-0">
+          {icon} {passage.title}
+        </p>
+        {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
+      </div>
       {body.trim() ? (
         <p className="text-slate-900 text-sm leading-relaxed whitespace-pre-line">
           {body}

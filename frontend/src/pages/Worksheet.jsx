@@ -920,31 +920,33 @@ export default function Worksheet() {
               const bankReady =
                 isWorksheetPassageBankReady(passage) &&
                 passageQuestions.some((q) => isMcqBankReady(q));
+              const saveToBankButton = isAdminPreview ? (
+                <button
+                  type="button"
+                  onClick={() => handleSaveContextToBank(passage, passageQuestions)}
+                  disabled={!bankReady || savingToBankPassageId === passage.id}
+                  title={
+                    bankReady
+                      ? "Save this passage and all its questions to the question bank"
+                      : "Complete the passage/data set and its MCQ questions before saving"
+                  }
+                  aria-label="Save passage to question bank"
+                  className={`w-9 h-9 rounded-lg border text-sm font-bold transition ${
+                    bankReady && savingToBankPassageId !== passage.id
+                      ? "border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100"
+                      : "border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed"
+                  }`}
+                >
+                  {savingToBankPassageId === passage.id ? "…" : "+"}
+                </button>
+              ) : null;
+
               return (
                 <div key={passage.id} className="flex flex-col gap-4">
-                  <div className="relative">
-                    <WorksheetPassageContent passage={passage} />
-                    {isAdminPreview ? (
-                      <button
-                        type="button"
-                        onClick={() => handleSaveContextToBank(passage, passageQuestions)}
-                        disabled={!bankReady || savingToBankPassageId === passage.id}
-                        title={
-                          bankReady
-                            ? "Save this passage and all its questions to the question bank"
-                            : "Complete the passage/data set and its MCQ questions before saving"
-                        }
-                        aria-label="Save passage to question bank"
-                        className={`absolute top-4 right-4 w-9 h-9 rounded-lg border text-sm font-bold transition ${
-                          bankReady && savingToBankPassageId !== passage.id
-                            ? "border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100"
-                            : "border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed"
-                        }`}
-                      >
-                        {savingToBankPassageId === passage.id ? "…" : "+"}
-                      </button>
-                    ) : null}
-                  </div>
+                  <WorksheetPassageContent
+                    passage={passage}
+                    headerAction={saveToBankButton}
+                  />
                   <div className="flex flex-col gap-4">
                     {passageQuestions.map((q) => {
                       const index = worksheet.questions.indexOf(q);
