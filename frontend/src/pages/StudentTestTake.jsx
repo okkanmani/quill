@@ -26,6 +26,7 @@ export default function StudentTestTake() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isAdminPreview = localStorage.getItem("role") === "admin";
+  const selectedStudent = localStorage.getItem("studentName") || "";
   const { navLinks } = useStudentNavLinks();
 
   const [session, setSession] = useState(null);
@@ -97,6 +98,10 @@ export default function StudentTestTake() {
   );
 
   useEffect(() => {
+    if (isAdminPreview && !selectedStudent) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError("");
     setSubmitted(null);
@@ -128,7 +133,7 @@ export default function StudentTestTake() {
         }
       })
       .finally(() => setLoading(false));
-  }, [id, loadSession]);
+  }, [id, loadSession, isAdminPreview, selectedStudent]);
 
   useEffect(() => {
     if (isAdminPreview || remainingSeconds == null || submitted) return undefined;
@@ -366,6 +371,23 @@ export default function StudentTestTake() {
     return `${base} bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed`;
   }
 
+  if (isAdminPreview && !selectedStudent) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col">
+        <AppHeader
+          onBack={() => navigate("/admin/worksheets")}
+          onLogout={async () => {
+            await logout();
+            navigate("/");
+          }}
+        />
+        <div className="flex flex-1 items-center justify-center px-4 py-10">
+          <AdminStudentBanner context="test" centered />
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 p-6">
@@ -399,7 +421,6 @@ export default function StudentTestTake() {
       <div className="min-h-screen bg-slate-50 p-6">
         <AppHeader onBack={handleBack} onLogout={handleLogout} />
         <div className="max-w-lg mx-auto mt-4">
-          {isAdminPreview ? <AdminStudentBanner /> : null}
           <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
             <p className="text-red-800 font-medium">{error}</p>
             <button

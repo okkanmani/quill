@@ -13,7 +13,7 @@ import {
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
-import AdminStudentBanner from "../components/AdminStudentBanner";
+import AdminStudentGate from "../components/AdminStudentGate";
 import QuillLoading from "../components/QuillLoading";
 import ResultsBySubject from "../components/ResultsBySubject";
 import ResultsPageCategory from "../components/ResultsPageCategory";
@@ -70,8 +70,13 @@ export default function AdminHome() {
   const [gradingWritingId, setGradingWritingId] = useState(null);
   const [savingWritingFeedbackId, setSavingWritingFeedbackId] = useState(null);
   const [message, setMessage] = useState("");
+  const selectedStudent = localStorage.getItem("studentName") || "";
 
   useEffect(() => {
+    if (!selectedStudent) {
+      setLoading(false);
+      return;
+    }
     Promise.all([getResults(), getPracticeResults(), getAdminTestResults(), getWritingSubmissions()])
       .then(([resultData, practiceData, testData, writingData]) => {
         setResults(resultData);
@@ -81,7 +86,7 @@ export default function AdminHome() {
       })
       .catch(() => setError("Could not load results."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [selectedStudent]);
 
   useEffect(() => {
     if (!deepLinkResultId || results.length === 0) return;
@@ -231,8 +236,8 @@ export default function AdminHome() {
       navLinks={ADMIN_MAIN_NAV}
       onLogout={handleLogout}
     >
+      <AdminStudentGate context="results">
       <div className="max-w-3xl">
-        <AdminStudentBanner />
         <AdminStudentSwitcher />
 
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Results</h1>
@@ -312,6 +317,7 @@ export default function AdminHome() {
           />
         ) : null}
       </div>
+      </AdminStudentGate>
     </AppShell>
   );
 }

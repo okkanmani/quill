@@ -15,7 +15,7 @@ import {
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
-import AdminStudentBanner from "../components/AdminStudentBanner";
+import AdminStudentGate from "../components/AdminStudentGate";
 import QuillLoading from "../components/QuillLoading";
 import FocusAreaExplainPanel from "../components/FocusAreaExplainPanel";
 import FocusPracticeBuilder from "../components/FocusPracticeBuilder";
@@ -790,6 +790,7 @@ export default function AdminAnalysis() {
   const practiceScrollerRef = useRef(null);
   const appliedFocusFromUrl = useRef(false);
   const studentGrade = Number(localStorage.getItem("studentGrade")) || null;
+  const selectedStudent = localStorage.getItem("studentName") || "";
 
   useEffect(() => {
     getAdminSettings()
@@ -801,6 +802,10 @@ export default function AdminAnalysis() {
   }, []);
 
   useEffect(() => {
+    if (!selectedStudent) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     Promise.all([
       getResults(),
@@ -817,7 +822,7 @@ export default function AdminAnalysis() {
       })
       .catch(() => setError("Could not load analysis data."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [selectedStudent]);
 
   const bySubject = useMemo(
     () =>
@@ -1079,6 +1084,8 @@ export default function AdminAnalysis() {
       navLinks={ADMIN_MAIN_NAV}
       onLogout={handleLogout}
     >
+      <AdminStudentGate context="analysis">
+      <AdminStudentSwitcher />
       {analysisView === "worksheets" &&
       (practiceWorksheet || practicePanelMode === "builder") ? (
         <div className="sticky top-0 z-30 -mx-6 mb-2 flex flex-wrap items-center gap-2 bg-slate-50 px-6 pb-3 pt-3">
@@ -1116,8 +1123,6 @@ export default function AdminAnalysis() {
 
       {analysisView === "tests" ? (
         <div className="max-w-7xl">
-          <AdminStudentBanner />
-          <AdminStudentSwitcher />
           <h1 className="text-2xl font-bold text-slate-950 mb-2">Analysis</h1>
           <AnalysisViewTabs activeView={analysisView} />
           <AdminTestAnalysisView initialAttemptId={initialAttemptId} />
@@ -1130,9 +1135,6 @@ export default function AdminAnalysis() {
         <div className="flex w-[200%] min-w-[200%]">
           <section className="w-1/2 shrink-0 snap-start pr-4 sm:pr-6">
       <div className="max-w-6xl">
-          <AdminStudentBanner />
-          <AdminStudentSwitcher />
-
           <h1 className="text-2xl font-bold text-slate-950 mb-2">Analysis</h1>
           <AnalysisViewTabs activeView={analysisView} />
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
@@ -1286,6 +1288,7 @@ export default function AdminAnalysis() {
         </div>
       </div>
       )}
+      </AdminStudentGate>
     </AppShell>
   );
 }

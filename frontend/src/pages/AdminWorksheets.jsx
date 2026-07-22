@@ -4,7 +4,7 @@ import { deleteWorksheet, getWorksheets, logout, unlockTestAttempt, unlockTimedW
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
-import AdminStudentBanner from "../components/AdminStudentBanner";
+import AdminStudentGate from "../components/AdminStudentGate";
 import QuillLoading from "../components/QuillLoading";
 import EditActionButton from "../components/EditActionButton";
 import RecycleBinButton from "../components/RecycleBinButton";
@@ -43,6 +43,7 @@ export default function AdminWorksheets() {
   const [statusMessage, setStatusMessage] = useState("");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [deleting, setDeleting] = useState(false);
+  const selectedStudent = localStorage.getItem("studentName") || "";
 
   function loadWorksheets({ preserveError = false } = {}) {
     setLoading(true);
@@ -56,8 +57,12 @@ export default function AdminWorksheets() {
   }
 
   useEffect(() => {
+    if (!selectedStudent) {
+      setLoading(false);
+      return;
+    }
     loadWorksheets();
-  }, [location.key]);
+  }, [location.key, selectedStudent]);
 
   function toggleSelected(id) {
     setSelectedIds((prev) => {
@@ -293,8 +298,8 @@ export default function AdminWorksheets() {
       navLinks={ADMIN_MAIN_NAV}
       onLogout={handleLogout}
     >
+      <AdminStudentGate context="worksheets">
       <div className="max-w-3xl">
-        <AdminStudentBanner />
         <AdminStudentSwitcher />
 
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Worksheets</h1>
@@ -378,6 +383,7 @@ export default function AdminWorksheets() {
           </>
         )}
       </div>
+      </AdminStudentGate>
     </AppShell>
   );
 }

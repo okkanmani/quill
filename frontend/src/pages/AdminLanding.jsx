@@ -9,7 +9,6 @@ import {
   activityTitle,
 } from "../adminHomeUtils";
 import AppShell from "../components/AppShell";
-import AdminStudentBanner from "../components/AdminStudentBanner";
 import AdminStudentRoster from "../components/AdminStudentRoster";
 import QuillLoading from "../components/QuillLoading";
 
@@ -184,8 +183,6 @@ export default function AdminLanding() {
   return (
     <AppShell navLinks={ADMIN_MAIN_NAV} onLogout={handleLogout}>
       <div className="max-w-5xl">
-        <AdminStudentBanner />
-
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Home</h1>
         <p className="text-slate-600 text-sm mb-6 leading-relaxed">
           {scopedToStudent
