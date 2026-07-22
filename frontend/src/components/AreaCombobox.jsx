@@ -16,7 +16,7 @@ function buildDropdownItems(areas, nearMatches, caseVariant, trimmed) {
     const key = caseVariant.toLowerCase();
     if (!seen.has(key)) {
       seen.add(key);
-      items.push({ area: caseVariant, badge: "existing" });
+      items.push({ area: caseVariant, badge: "similar" });
     }
   }
 
@@ -32,10 +32,9 @@ function buildDropdownItems(areas, nearMatches, caseVariant, trimmed) {
 
 function AreaBadge({ badge }) {
   if (!badge) return null;
-  const label = badge === "similar" ? "Similar" : "Existing";
   return (
     <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
-      {label}
+      Similar
     </span>
   );
 }
