@@ -155,6 +155,45 @@ def list_question_bank_items(
         conn.close()
 
 
+def list_question_bank_areas(
+    *,
+    admin_id: int,
+    subject: str,
+    query: str | None = None,
+    limit: int = 25,
+) -> list[str]:
+    """Distinct topic areas for autocomplete, scoped to admin + subject."""
+    subject = _normalize_subject(subject)
+    limit = max(1, min(int(limit), 50))
+    clauses = [
+        "admin_id = ?",
+        "subject = ?",
+        "TRIM(COALESCE(area, '')) != ''",
+    ]
+    params: list = [admin_id, subject]
+    needle = str(query or "").strip().lower()
+    if needle:
+        clauses.append("LOWER(area) LIKE ?")
+        params.append(f"%{needle}%")
+    where = " AND ".join(clauses)
+    conn = db.connect()
+    try:
+        rows = conn.execute(
+            f"""
+            SELECT MIN(area) AS area
+            FROM question_bank_items
+            WHERE {where}
+            GROUP BY LOWER(TRIM(area))
+            ORDER BY LOWER(TRIM(area)) ASC
+            LIMIT ?
+            """,
+            (*params, limit),
+        ).fetchall()
+        return [str(row["area"]).strip() for row in rows if row["area"]]
+    finally:
+        conn.close()
+
+
 def find_question_bank_item_by_prompt_key(
     *,
     admin_id: int,

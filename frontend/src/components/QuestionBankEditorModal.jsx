@@ -5,6 +5,7 @@ export default function QuestionBankEditorModal({
   open,
   title,
   subtitle = "",
+  subject = "",
   question,
   onChange,
   onClose,
@@ -53,6 +54,8 @@ export default function QuestionBankEditorModal({
             onChange={onChange}
             onRemove={onDelete}
             removeLabel={deleting ? "Deleting…" : "Delete from bank"}
+            subject={subject}
+            areaSuggestions
           />
         </div>
 

@@ -1,4 +1,5 @@
 import { QuestionDifficultyStars } from "./DifficultyStars";
+import AreaCombobox from "./AreaCombobox";
 import {
   CHOICE_LABELS,
   TEST_TIERS,
@@ -13,6 +14,8 @@ export default function TestQuestionCard({
   onChange,
   onRemove,
   removeLabel = "Remove question",
+  subject = "",
+  areaSuggestions = false,
 }) {
   const complete = isTestQuestionComplete(question);
 
@@ -67,13 +70,22 @@ export default function TestQuestionCard({
 
             <label className="block text-sm font-semibold text-slate-800">
               Topic area <span className="font-normal text-slate-500">(optional)</span>
-              <input
-                type="text"
-                value={question.area}
-                onChange={(e) => onChange({ area: e.target.value })}
-                placeholder="e.g. fractions, algebra"
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-              />
+              {areaSuggestions ? (
+                <AreaCombobox
+                  subject={subject}
+                  value={question.area}
+                  onChange={(area) => onChange({ area })}
+                  placeholder="e.g. fractions, algebra"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={question.area}
+                  onChange={(e) => onChange({ area: e.target.value })}
+                  placeholder="e.g. fractions, algebra"
+                  className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                />
+              )}
             </label>
           </div>
 

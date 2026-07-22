@@ -90,6 +90,7 @@ from question_bank import (
     delete_question_bank_item,
     get_question_bank_item,
     list_question_bank_items,
+    list_question_bank_areas,
     update_question_bank_item,
 )
 from writing import (
@@ -919,6 +920,26 @@ def admin_list_question_bank(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return {"items": items}
+
+
+@app.get("/admin/question-bank/areas")
+def admin_list_question_bank_areas(
+    authorization: str = Header(...),
+    subject: str = Query(...),
+    q: str | None = Query(default=None),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        areas = list_question_bank_areas(
+            admin_id=_admin_id(payload),
+            subject=subject,
+            query=q,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"areas": areas}
 
 
 @app.post("/admin/question-bank")

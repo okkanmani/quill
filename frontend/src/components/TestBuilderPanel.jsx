@@ -681,6 +681,8 @@ export default function TestBuilderPanel() {
                   onToggle={() => toggleExpanded(question.id)}
                   onChange={(patch) => updateQuestion(question.id, patch)}
                   onRemove={() => removeQuestion(question.id)}
+                  subject={subject}
+                  areaSuggestions
                 />
               );
             })
@@ -701,6 +703,8 @@ export default function TestBuilderPanel() {
                 onToggle={() => toggleExpanded(question.id)}
                 onChange={(patch) => updateQuestion(question.id, patch)}
                 onRemove={() => removeQuestion(question.id)}
+                subject={subject}
+                areaSuggestions
               />
             ))}
           </div>

@@ -402,6 +402,7 @@ export default function AdminQuestionBank() {
       <QuestionBankEditorModal
         open={Boolean(editorMode && editorDraft)}
         title={editorMode === "create" ? "Add question" : "Edit question"}
+        subject={subject}
         subtitle={
           editorMode === "create"
             ? `${subjectLabel} · new record`

@@ -676,6 +676,21 @@ export async function listQuestionBank({ subject, stars, area } = {}) {
   return data.items || [];
 }
 
+export async function listQuestionBankAreas({ subject, q } = {}) {
+  const params = new URLSearchParams({ subject });
+  if (q?.trim()) params.set("q", q.trim());
+  const res = await apiFetch(
+    `${BASE_URL}/admin/question-bank/areas?${params.toString()}`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiDetail(err.detail, "Could not load topic areas."));
+  }
+  const data = await res.json();
+  return data.areas || [];
+}
+
 export async function createQuestionBankItem(payload) {
   const res = await apiFetch(`${BASE_URL}/admin/question-bank`, {
     method: "POST",
