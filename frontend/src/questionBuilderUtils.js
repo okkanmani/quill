@@ -1,3 +1,9 @@
+import {
+  criticalReasoningDisplayQuestions,
+  isCriticalReasoningWorksheetLayout,
+  mergeCrStimulusAndPrompt,
+} from "./worksheetUtils";
+
 export const BUILDER_SUBJECTS = [
   { value: "math", label: "Math" },
   { value: "english", label: "English" },
@@ -23,6 +29,26 @@ export const ENGLISH_TYPES = [
 ];
 
 export const CHOICE_LABELS = ["A", "B", "C", "D"];
+
+export { mergeCrStimulusAndPrompt };
+
+function builderStateAsWorksheet({ subject, passages, questions, format }) {
+  return {
+    subject,
+    passages: (passages || []).map((p) => ({
+      id: p.id,
+      title: p.title || "",
+      body: p.body || "",
+    })),
+    questions: questions.map((q) => ({
+      prompt: q.prompt,
+      passage_id: q.passageId || "",
+      choices: q.choices,
+      answer: format === "multiple_choice" ? q.choices?.[q.correctIndex] : q.answer,
+      type: format === "multiple_choice" ? "multiple_choice" : "short_answer",
+    })),
+  };
+}
 
 export function defaultQuestionCount(stars) {
   return STARS_OPTIONS.find((o) => o.value === stars)?.count ?? 20;
@@ -232,16 +258,6 @@ export function isBuilderQuestionComplete(question, format) {
     );
   }
   return Boolean(question.answer.trim());
-}
-
-export function mergeCrStimulusAndPrompt(passage, question) {
-  const title = String(passage?.title || "").trim();
-  const stimulus = String(passage?.body || passage?.text || "").trim();
-  const prompt = String(question?.prompt || "").trim();
-  const stimulusBlock = [title, stimulus].filter(Boolean).join("\n");
-  if (!stimulusBlock) return prompt;
-  if (!prompt) return stimulusBlock;
-  return `${stimulusBlock}\n\n${prompt}`;
 }
 
 /** Flatten AI critical-reasoning draft into standalone questions (no linked passages). */
@@ -625,17 +641,37 @@ export function builderPayload({
   learnSection,
   lockOnCreate,
 }) {
+  let builderQuestions = questions;
+  const worksheetShape = builderStateAsWorksheet({
+    subject,
+    passages,
+    questions,
+    format,
+  });
+  if (
+    subject === "english" &&
+    englishType === "critical_reasoning" &&
+    isCriticalReasoningWorksheetLayout(worksheetShape)
+  ) {
+    const merged = criticalReasoningDisplayQuestions(worksheetShape);
+    builderQuestions = merged.map((mq, index) => ({
+      ...questions[index],
+      prompt: mq.prompt,
+      passageId: "",
+    }));
+  }
+
   const payload = {
     title: title.trim(),
     subject,
     stars,
     format,
-    question_count: questionCount,
+    question_count: builderQuestions.length,
     timed,
     time_limit_minutes: timed ? Number(timeLimitMinutes) : null,
     lock_on_create: Boolean(lockOnCreate),
     scratchpad: Boolean(scratchpad),
-    questions: questions.map((q) => {
+    questions: builderQuestions.map((q) => {
       const base = { prompt: q.prompt.trim() };
       if (q.area?.trim()) base.area = q.area.trim().toLowerCase();
       if (q.passageId) base.passage_id = q.passageId;

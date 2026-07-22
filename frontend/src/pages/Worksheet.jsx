@@ -26,6 +26,8 @@ import {
 } from "../components/ResponseModeIcons";
 import { normalizeSubjectKey } from "../subjectUtils";
 import {
+  criticalReasoningDisplayQuestions,
+  isCriticalReasoningWorksheetLayout,
   isWorksheetPassageBankReady,
   worksheetPassageToBankPayload,
   worksheetPublishedQuestionToBankPayload,
@@ -773,7 +775,8 @@ export default function Worksheet() {
   }
 
   const passages = Array.isArray(worksheet.passages) ? worksheet.passages : [];
-  const hasReadingPassages = passages.length > 0;
+  const crMergedLayout = isCriticalReasoningWorksheetLayout(worksheet);
+  const hasReadingPassages = passages.length > 0 && !crMergedLayout;
   const scratchpadAllowed = worksheet?.scratchpad !== false;
   const manual = isManualEvaluation(worksheet);
   const isTimed = Boolean(worksheet?.timed);
@@ -911,7 +914,12 @@ export default function Worksheet() {
       ) : null}
 
       <div className="flex flex-col gap-8">
-        {hasReadingPassages ? (
+        {crMergedLayout ? (
+          criticalReasoningDisplayQuestions(worksheet).map((q) => {
+            const index = worksheet.questions.findIndex((item) => item.id === q.id);
+            return renderQuestion(q, index >= 0 ? index : 0);
+          })
+        ) : hasReadingPassages ? (
           <>
             {passages.map((passage) => {
               const passageQuestions = worksheet.questions.filter(

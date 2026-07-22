@@ -1,6 +1,10 @@
 import { useEffect, useRef } from "react";
 import { DifficultyStars, QuestionDifficultyStars } from "./DifficultyStars";
 import WorksheetPassageContent from "./WorksheetPassageContent";
+import {
+  criticalReasoningDisplayQuestions,
+  isCriticalReasoningWorksheetLayout,
+} from "../worksheetUtils";
 
 function scrollWithinContainer(container, element, offset = 12) {
   if (!container || !element) return;
@@ -106,7 +110,8 @@ export default function WorksheetBuilderPreview({
 
   const manual = model.evaluation === "manual";
   const passages = Array.isArray(model.passages) ? model.passages : [];
-  const hasReadingPassages = passages.length > 0;
+  const crMergedLayout = isCriticalReasoningWorksheetLayout(model);
+  const hasReadingPassages = passages.length > 0 && !crMergedLayout;
   const scratchpadAllowed = model.scratchpad !== false;
 
   function setQuestionRef(index) {
@@ -163,7 +168,22 @@ export default function WorksheetBuilderPreview({
 
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-5 pt-4">
         <div className="flex flex-col gap-6">
-          {hasReadingPassages ? (
+          {crMergedLayout ? (
+            criticalReasoningDisplayQuestions(model).map((question) => {
+              const index = model.questions.findIndex((item) => item.id === question.id);
+              return (
+                <PreviewQuestionCard
+                  key={question.id}
+                  question={question}
+                  index={index >= 0 ? index : 0}
+                  manual={manual}
+                  scratchpadAllowed={scratchpadAllowed}
+                  innerRef={setQuestionRef(index >= 0 ? index : 0)}
+                  isFocused={focusQuestionIndex === (index >= 0 ? index : 0)}
+                />
+              );
+            })
+          ) : hasReadingPassages ? (
             <>
               {passages.map((passage) => {
                 const passageQuestions = model.questions.filter(

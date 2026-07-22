@@ -89,6 +89,70 @@ export function worksheetPublishedQuestionToBankPayload(question) {
   };
 }
 
+/** Max words in a CR stimulus passage (reading passages are usually longer). */
+export const CR_STIMULUS_MAX_WORDS = 150;
+
+function passageBodyWordCount(passage) {
+  const body = String(passage?.body || passage?.text || "").trim();
+  if (!body) return 0;
+  return body.split(/\s+/).filter(Boolean).length;
+}
+
+/** Merge a short CR stimulus with its question into one standalone prompt. */
+export function mergeCrStimulusAndPrompt(passage, question) {
+  const stimulus = String(passage?.body || passage?.text || "").trim();
+  const prompt =
+    typeof question === "string"
+      ? question.trim()
+      : String(question?.prompt || "").trim();
+  if (!stimulus) return prompt;
+  if (!prompt) return stimulus;
+  return `${stimulus} ${prompt}`;
+}
+
+/**
+ * English worksheets with one short stimulus passage per question (critical reasoning),
+ * not reading comprehension (multi-question long passages) or data sets.
+ */
+export function isCriticalReasoningWorksheetLayout(worksheet) {
+  const passages = worksheet?.passages || [];
+  const questions = worksheet?.questions || [];
+  if (normalizeSubjectKey(worksheet?.subject) !== "english" || passages.length === 0) {
+    return false;
+  }
+  if (questions.length === 0 || questions.length !== passages.length) {
+    return false;
+  }
+  if (questions.some((q) => !q.passage_id)) {
+    return false;
+  }
+
+  return passages.every((passage, index) => {
+    const passageId = passage.id || `p${index + 1}`;
+    const linked = questions.filter((q) => q.passage_id === passageId);
+    if (linked.length !== 1) return false;
+    if (passage.chart?.type || passage.table?.headers?.length) return false;
+    return passageBodyWordCount(passage) <= CR_STIMULUS_MAX_WORDS;
+  });
+}
+
+/** Questions with stimulus merged into the prompt for CR worksheet display. */
+export function criticalReasoningDisplayQuestions(worksheet) {
+  const passages = worksheet.passages || [];
+  const questions = worksheet.questions || [];
+  return passages
+    .map((passage, index) => {
+      const passageId = passage.id || `p${index + 1}`;
+      const question = questions.find((q) => q.passage_id === passageId);
+      if (!question) return null;
+      return {
+        ...question,
+        prompt: mergeCrStimulusAndPrompt(passage, question),
+      };
+    })
+    .filter(Boolean);
+}
+
 export function isWorksheetPassageBankReady(passage) {
   const title = String(passage?.title || "").trim();
   const body = String(passage?.body || passage?.text || "").trim();
