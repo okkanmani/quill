@@ -105,7 +105,7 @@ def _validate_question_payload(data: dict) -> list[str]:
 
 def _row_to_item(row) -> dict:
     choices = json.loads(row["choices"] or "[]")
-    return {
+    out = {
         "id": row["id"],
         "subject": row["subject"],
         "stars": int(row["stars"]),
@@ -117,6 +117,10 @@ def _row_to_item(row) -> dict:
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
     }
+    passage_id = row["passage_id"] if "passage_id" in row.keys() else None
+    if passage_id:
+        out["passage_id"] = passage_id
+    return out
 
 
 def list_question_bank_items(
@@ -125,6 +129,8 @@ def list_question_bank_items(
     subject: str | None = None,
     stars: int | None = None,
     area: str | None = None,
+    passage_id: str | None = None,
+    standalone_only: bool = False,
 ) -> list[dict]:
     clauses = ["admin_id = ?"]
     params: list = [admin_id]
@@ -139,13 +145,18 @@ def list_question_bank_items(
     if area and area.strip():
         clauses.append("LOWER(area) LIKE ?")
         params.append(f"%{area.strip().lower()}%")
+    if passage_id:
+        clauses.append("passage_id = ?")
+        params.append(passage_id.strip())
+    elif standalone_only:
+        clauses.append("(passage_id IS NULL OR passage_id = '')")
     where = " AND ".join(clauses)
     conn = db.connect()
     try:
         rows = conn.execute(
             f"""
             SELECT id, subject, stars, area, prompt, choices, answer, source,
-                   created_at, updated_at
+                   created_at, updated_at, passage_id
             FROM question_bank_items
             WHERE {where}
             ORDER BY subject ASC, stars ASC, updated_at DESC, id ASC
@@ -254,6 +265,7 @@ def find_question_bank_item_by_prompt_key(
     subject: str,
     prompt: str,
     exclude_id: str | None = None,
+    passage_id: str | None = None,
 ) -> dict | None:
     prompt_key = normalize_prompt_key(prompt)
     if not prompt_key:
@@ -261,6 +273,11 @@ def find_question_bank_item_by_prompt_key(
     subject = _normalize_subject(subject)
     clauses = ["admin_id = ?", "subject = ?", "prompt_key = ?"]
     params: list = [admin_id, subject, prompt_key]
+    if passage_id:
+        clauses.append("passage_id = ?")
+        params.append(passage_id)
+    else:
+        clauses.append("(passage_id IS NULL OR passage_id = '')")
     if exclude_id:
         clauses.append("id != ?")
         params.append(exclude_id)
@@ -269,7 +286,7 @@ def find_question_bank_item_by_prompt_key(
         row = conn.execute(
             f"""
             SELECT id, subject, stars, area, prompt, choices, answer, source,
-                   created_at, updated_at
+                   created_at, updated_at, passage_id
             FROM question_bank_items
             WHERE {" AND ".join(clauses)}
             LIMIT 1
@@ -287,7 +304,7 @@ def get_question_bank_item(item_id: str, *, admin_id: int) -> dict | None:
         row = conn.execute(
             """
             SELECT id, subject, stars, area, prompt, choices, answer, source,
-                   created_at, updated_at
+                   created_at, updated_at, passage_id
             FROM question_bank_items
             WHERE id = ? AND admin_id = ?
             """,
@@ -310,11 +327,17 @@ def create_question_bank_item(
         raise ValueError(errors)
     prompt = str(data["prompt"]).strip()
     prompt_key = normalize_prompt_key(prompt)
+    passage_id = str(data.get("passage_id") or "").strip() or None
+    if passage_id:
+        from question_bank_passages import assert_passage_owned
+
+        assert_passage_owned(passage_id, admin_id=admin_id)
     if skip_duplicates:
         existing = find_question_bank_item_by_prompt_key(
             admin_id=admin_id,
             subject=subject,
             prompt=prompt,
+            passage_id=passage_id,
         )
         if existing:
             return {**existing, "duplicate": True}
@@ -331,8 +354,8 @@ def create_question_bank_item(
             """
             INSERT INTO question_bank_items (
                 id, admin_id, subject, stars, area, prompt, prompt_key, choices,
-                answer, source, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                answer, source, created_at, updated_at, passage_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 item_id,
@@ -347,6 +370,7 @@ def create_question_bank_item(
                 source,
                 now,
                 now,
+                passage_id,
             ),
         )
         conn.commit()
@@ -372,6 +396,7 @@ def update_question_bank_item(item_id: str, *, admin_id: int, data: dict) -> dic
         "choices": data.get("choices", existing["choices"]),
         "answer": data.get("answer", existing["answer"]),
         "area": data.get("area", existing["area"]),
+        "passage_id": data.get("passage_id", existing.get("passage_id")),
     }
     errors = _validate_question_payload(merged)
     if errors:
@@ -379,11 +404,17 @@ def update_question_bank_item(item_id: str, *, admin_id: int, data: dict) -> dic
     subject = _normalize_subject(merged["subject"])
     prompt = str(merged["prompt"]).strip()
     prompt_key = normalize_prompt_key(prompt)
+    passage_id = str(merged.get("passage_id") or "").strip() or None
+    if passage_id:
+        from question_bank_passages import assert_passage_owned
+
+        assert_passage_owned(passage_id, admin_id=admin_id)
     duplicate = find_question_bank_item_by_prompt_key(
         admin_id=admin_id,
         subject=subject,
         prompt=prompt,
         exclude_id=item_id,
+        passage_id=passage_id,
     )
     if duplicate:
         raise ValueError(["A question with this prompt already exists in the bank."])
@@ -396,7 +427,7 @@ def update_question_bank_item(item_id: str, *, admin_id: int, data: dict) -> dic
             """
             UPDATE question_bank_items
             SET subject = ?, stars = ?, area = ?, prompt = ?, prompt_key = ?,
-                choices = ?, answer = ?, updated_at = ?
+                choices = ?, answer = ?, updated_at = ?, passage_id = ?
             WHERE id = ? AND admin_id = ?
             """,
             (
@@ -408,6 +439,7 @@ def update_question_bank_item(item_id: str, *, admin_id: int, data: dict) -> dic
                 choices_json,
                 str(merged["answer"]).strip(),
                 now,
+                passage_id,
                 item_id,
                 admin_id,
             ),
@@ -516,4 +548,5 @@ def question_dict_from_builder(raw: dict, *, subject: str) -> dict:
         "prompt": str(raw.get("prompt") or "").strip(),
         "choices": choices,
         "answer": str(answer or "").strip(),
+        "passage_id": str(raw.get("passage_id") or raw.get("passageId") or "").strip() or None,
     }

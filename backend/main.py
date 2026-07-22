@@ -85,6 +85,13 @@ from tests import (
     submit_test,
     unlock_test_attempt,
 )
+from question_bank_passages import (
+    create_question_bank_passage,
+    delete_question_bank_passage,
+    get_question_bank_passage,
+    list_question_bank_passages,
+    update_question_bank_passage,
+)
 from question_bank import (
     bulk_create_question_bank_items,
     create_question_bank_item,
@@ -302,6 +309,16 @@ class QuestionBankItemRequest(BaseModel):
     choices: list[str]
     answer: str
     area: str | None = ""
+    source: str | None = "manual"
+    passage_id: str | None = None
+
+
+class QuestionBankPassageRequest(BaseModel):
+    subject: str = "english"
+    title: str
+    body: str
+    chart: dict | None = None
+    table: dict | None = None
     source: str | None = "manual"
 
 
@@ -908,6 +925,8 @@ def admin_list_question_bank(
     subject: str | None = None,
     stars: int | None = None,
     area: str | None = None,
+    passage_id: str | None = None,
+    standalone_only: bool = False,
 ):
     payload = _payload(authorization)
     if payload.get("role") != "admin":
@@ -918,10 +937,101 @@ def admin_list_question_bank(
             subject=subject,
             stars=stars,
             area=area,
+            passage_id=passage_id,
+            standalone_only=standalone_only,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return {"items": items}
+
+
+@app.get("/admin/question-bank/passages")
+def admin_list_question_bank_passages(
+    authorization: str = Header(...),
+    subject: str = Query(default="english"),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        passages = list_question_bank_passages(
+            admin_id=_admin_id(payload),
+            subject=subject,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"passages": passages}
+
+
+@app.post("/admin/question-bank/passages")
+def admin_create_question_bank_passage(
+    req: QuestionBankPassageRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return create_question_bank_passage(
+            admin_id=_admin_id(payload),
+            data=req.model_dump(),
+        )
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid passage."]
+        detail = errors if isinstance(errors, list) else [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
+
+
+@app.get("/admin/question-bank/passages/{passage_id}")
+def admin_get_question_bank_passage(
+    passage_id: str,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    passage = get_question_bank_passage(passage_id, admin_id=_admin_id(payload))
+    if not passage:
+        raise HTTPException(status_code=404, detail="Passage not found")
+    items = list_question_bank_items(
+        admin_id=_admin_id(payload),
+        passage_id=passage_id,
+    )
+    return {"passage": passage, "items": items}
+
+
+@app.put("/admin/question-bank/passages/{passage_id}")
+def admin_update_question_bank_passage(
+    passage_id: str,
+    req: QuestionBankPassageRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return update_question_bank_passage(
+            passage_id,
+            admin_id=_admin_id(payload),
+            data=req.model_dump(),
+        )
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid passage."]
+        detail = errors if isinstance(errors, list) else [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
+
+
+@app.delete("/admin/question-bank/passages/{passage_id}")
+def admin_delete_question_bank_passage(
+    passage_id: str,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    if not delete_question_bank_passage(passage_id, admin_id=_admin_id(payload)):
+        raise HTTPException(status_code=404, detail="Passage not found")
+    return {"message": "Deleted"}
 
 
 @app.get("/admin/question-bank/areas")

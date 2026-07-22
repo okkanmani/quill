@@ -456,8 +456,10 @@ def init_schema() -> None:
         )
 
         from question_bank import ensure_question_bank_schema
+        from question_bank_passages import ensure_question_bank_passage_schema
 
         ensure_question_bank_schema(conn)
+        ensure_question_bank_passage_schema(conn)
 
         conn.commit()
     finally:

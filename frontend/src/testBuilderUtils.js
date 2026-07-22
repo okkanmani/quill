@@ -170,10 +170,10 @@ export function bankItemToTestQuestion(item) {
   };
 }
 
-export function testQuestionToBankPayload(question, subject) {
+export function testQuestionToBankPayload(question, subject, passageId = null) {
   const choices = question.choices.map((c) => String(c || "").trim());
   const idx = Number(question.correctIndex);
-  return {
+  const payload = {
     subject,
     stars: Number(question.tier),
     prompt: question.prompt.trim(),
@@ -181,15 +181,17 @@ export function testQuestionToBankPayload(question, subject) {
     answer: choices[idx] || "",
     area: question.area?.trim() || "",
   };
+  if (passageId) payload.passage_id = passageId;
+  return payload;
 }
 
 export function bankItemToEditorQuestion(item) {
   const q = bankItemToTestQuestion(item);
-  return { ...q, bankId: item.id };
+  return { ...q, bankId: item.id, passageId: item.passage_id || null };
 }
 
-export function editorQuestionToBankPayload(question, subject) {
-  return testQuestionToBankPayload(question, subject);
+export function editorQuestionToBankPayload(question, subject, passageId = null) {
+  return testQuestionToBankPayload(question, subject, passageId ?? question.passageId);
 }
 
 export function buildTestBuilderPreview({

@@ -666,11 +666,13 @@ function formatApiDetail(d, fallback) {
   return fallback;
 }
 
-export async function listQuestionBank({ subject, stars, area } = {}) {
+export async function listQuestionBank({ subject, stars, area, passageId, standaloneOnly } = {}) {
   const params = new URLSearchParams();
   if (subject) params.set("subject", subject);
   if (stars != null) params.set("stars", String(stars));
   if (area) params.set("area", area);
+  if (passageId) params.set("passage_id", passageId);
+  if (standaloneOnly) params.set("standalone_only", "true");
   const qs = params.toString();
   const res = await apiFetch(
     `${BASE_URL}/admin/question-bank${qs ? `?${qs}` : ""}`,
@@ -750,6 +752,76 @@ export async function deleteQuestionBankItem(itemId) {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(formatApiDetail(err.detail, "Could not delete question."));
+  }
+  return res.json();
+}
+
+export async function listQuestionBankPassages({ subject = "english" } = {}) {
+  const params = new URLSearchParams({ subject });
+  const res = await apiFetch(
+    `${BASE_URL}/admin/question-bank/passages?${params.toString()}`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiDetail(err.detail, "Could not load passages."));
+  }
+  const data = await res.json();
+  return data.passages || [];
+}
+
+export async function getQuestionBankPassage(passageId) {
+  const res = await apiFetch(
+    `${BASE_URL}/admin/question-bank/passages/${encodeURIComponent(passageId)}`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiDetail(err.detail, "Could not load passage."));
+  }
+  return res.json();
+}
+
+export async function createQuestionBankPassage(payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/question-bank/passages`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiDetail(err.detail, "Could not create passage."));
+  }
+  return res.json();
+}
+
+export async function updateQuestionBankPassage(passageId, payload) {
+  const res = await apiFetch(
+    `${BASE_URL}/admin/question-bank/passages/${encodeURIComponent(passageId)}`,
+    {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiDetail(err.detail, "Could not save passage."));
+  }
+  return res.json();
+}
+
+export async function deleteQuestionBankPassage(passageId) {
+  const res = await apiFetch(
+    `${BASE_URL}/admin/question-bank/passages/${encodeURIComponent(passageId)}`,
+    {
+      method: "DELETE",
+      headers: authHeaders(),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiDetail(err.detail, "Could not delete passage."));
   }
   return res.json();
 }

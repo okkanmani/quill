@@ -11,6 +11,7 @@ import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
 import QuestionBankEditorModal from "../components/QuestionBankEditorModal";
+import EnglishQuestionBankPanel from "../components/EnglishQuestionBankPanel";
 import { QuestionDifficultyStars } from "../components/DifficultyStars";
 import {
   BUILDER_SUBJECTS,
@@ -232,6 +233,21 @@ export default function AdminQuestionBank() {
         </nav>
 
         <section className="rounded-2xl border border-slate-200 bg-white shadow-sm mb-6 overflow-hidden">
+          {subject === "english" ? (
+            <div className="p-5">
+              <div className="mb-4">
+                <h2 className="font-bold text-slate-900">{subjectLabel}</h2>
+                <p className="text-sm text-slate-600 mt-0.5">
+                  Reading comprehension passages with linked questions, plus standalone items.
+                </p>
+              </div>
+              <EnglishQuestionBankPanel
+                onNotice={setNotice}
+                onError={setError}
+              />
+            </div>
+          ) : (
+            <>
           <div className="p-5 border-b border-slate-100 space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -396,9 +412,12 @@ export default function AdminQuestionBank() {
               </table>
             </div>
           )}
+            </>
+          )}
         </section>
       </div>
 
+      {subject !== "english" ? (
       <QuestionBankEditorModal
         open={Boolean(editorMode && editorDraft)}
         title={editorMode === "create" ? "Add question" : "Edit question"}
@@ -417,6 +436,7 @@ export default function AdminQuestionBank() {
         deleting={deleting}
         saveLabel={editorMode === "create" ? "Save to bank" : "Save changes"}
       />
+      ) : null}
     </AppShell>
   );
 }
