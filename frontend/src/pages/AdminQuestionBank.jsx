@@ -11,7 +11,7 @@ import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
 import QuestionBankEditorModal from "../components/QuestionBankEditorModal";
-import EnglishQuestionBankPanel from "../components/EnglishQuestionBankPanel";
+import PassageQuestionBankPanel from "../components/PassageQuestionBankPanel";
 import { QuestionDifficultyStars } from "../components/DifficultyStars";
 import {
   BUILDER_SUBJECTS,
@@ -21,6 +21,10 @@ import {
   emptyTestQuestion,
   isTestQuestionComplete,
 } from "../testBuilderUtils";
+
+function isPassageBankSubject(subject) {
+  return subject === "english" || subject === "data";
+}
 
 function formatBankDate(iso) {
   if (!iso) return "—";
@@ -233,15 +237,19 @@ export default function AdminQuestionBank() {
         </nav>
 
         <section className="rounded-2xl border border-slate-200 bg-white shadow-sm mb-6 overflow-hidden">
-          {subject === "english" ? (
+          {isPassageBankSubject(subject) ? (
             <div className="p-5">
               <div className="mb-4">
                 <h2 className="font-bold text-slate-900">{subjectLabel}</h2>
                 <p className="text-sm text-slate-600 mt-0.5">
-                  Reading comprehension passages with linked questions, plus standalone items.
+                  {subject === "english"
+                    ? "Reading comprehension passages with linked questions, plus standalone items."
+                    : "Charts, tables, and context with linked questions."}
                 </p>
               </div>
-              <EnglishQuestionBankPanel
+              <PassageQuestionBankPanel
+                subject={subject}
+                showStandalone={subject === "english"}
                 onNotice={setNotice}
                 onError={setError}
               />
@@ -417,7 +425,7 @@ export default function AdminQuestionBank() {
         </section>
       </div>
 
-      {subject !== "english" ? (
+      {isPassageBankSubject(subject) ? null : (
       <QuestionBankEditorModal
         open={Boolean(editorMode && editorDraft)}
         title={editorMode === "create" ? "Add question" : "Edit question"}
@@ -436,7 +444,7 @@ export default function AdminQuestionBank() {
         deleting={deleting}
         saveLabel={editorMode === "create" ? "Save to bank" : "Save changes"}
       />
-      ) : null}
+      )}
     </AppShell>
   );
 }

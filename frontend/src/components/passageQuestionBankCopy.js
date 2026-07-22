@@ -1,0 +1,45 @@
+export const PASSAGE_BANK_COPY = {
+  english: {
+    passageSingular: "passage",
+    passagePlural: "passages",
+    listDescription: "Reading comprehension passages with linked questions.",
+    searchPlaceholder: "Search passages…",
+    addLabel: "+ Add passage",
+    emptyList: "No passages yet. Add one to start building RC questions.",
+    addModalTitle: "Add passage",
+    editModalTitle: "Edit passage",
+    titleField: "Passage title",
+    titlePlaceholder: "e.g. Life in the Arctic",
+    bodyField: "Passage text",
+    bodyPlaceholder: "Paste or type the reading passage.",
+    deleteLabel: "Delete passage",
+    saveNewLabel: "Save passage",
+    saveExistingLabel: "Save changes",
+    saveBeforeQuestions: "Save the passage first, then add questions linked to it.",
+    questionSubtitle: "passage question",
+    standaloneQuestionSubtitle: "Standalone English question",
+  },
+  data: {
+    passageSingular: "data set",
+    passagePlural: "data sets",
+    listDescription: "Charts, tables, and context with linked questions.",
+    searchPlaceholder: "Search data sets…",
+    addLabel: "+ Add data set",
+    emptyList: "No data sets yet. Add one to start building questions.",
+    addModalTitle: "Add data set",
+    editModalTitle: "Edit data set",
+    titleField: "Data set title",
+    titlePlaceholder: "e.g. Basketball free throws",
+    bodyField: "Context",
+    bodyPlaceholder: "Describe the chart or table shown to students.",
+    deleteLabel: "Delete data set",
+    saveNewLabel: "Save data set",
+    saveExistingLabel: "Save changes",
+    saveBeforeQuestions: "Save the data set first, then add questions linked to it.",
+    questionSubtitle: "data set question",
+  },
+};
+
+export function passageBankCopy(subject) {
+  return PASSAGE_BANK_COPY[subject] || PASSAGE_BANK_COPY.english;
+}

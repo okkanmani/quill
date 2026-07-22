@@ -13,6 +13,7 @@ import {
 import QuillLoading from "./QuillLoading";
 import QuestionBankEditorModal from "./QuestionBankEditorModal";
 import QuestionBankPassageEditorModal from "./QuestionBankPassageEditorModal";
+import { passageBankCopy } from "./passageQuestionBankCopy";
 import { QuestionDifficultyStars } from "./DifficultyStars";
 import {
   TEST_TIERS,
@@ -46,11 +47,14 @@ function matchesPassageSearch(passage, query) {
   return haystack.includes(needle);
 }
 
-export default function EnglishQuestionBankPanel({
+export default function PassageQuestionBankPanel({
+  subject,
+  showStandalone = false,
   onNotice,
   onError,
 }) {
-  const [englishMode, setEnglishMode] = useState("passages");
+  const copy = passageBankCopy(subject);
+  const [viewMode, setViewMode] = useState("passages");
   const [passages, setPassages] = useState([]);
   const [passageSearchQuery, setPassageSearchQuery] = useState("");
   const [passageEditorMode, setPassageEditorMode] = useState(null);
@@ -69,19 +73,22 @@ export default function EnglishQuestionBankPanel({
 
   const loadPassages = useCallback(() => {
     setLoadingPassages(true);
-    listQuestionBankPassages({ subject: "english" })
+    listQuestionBankPassages({ subject })
       .then(setPassages)
-      .catch((err) => onError(err.message || "Could not load passages."))
+      .catch((err) =>
+        onError(err.message || `Could not load ${copy.passagePlural}.`),
+      )
       .finally(() => setLoadingPassages(false));
-  }, [onError]);
+  }, [copy.passagePlural, onError, subject]);
 
   const loadStandalone = useCallback(() => {
+    if (!showStandalone) return;
     setLoadingStandalone(true);
-    listQuestionBank({ subject: "english", standaloneOnly: true })
+    listQuestionBank({ subject, standaloneOnly: true })
       .then(setStandaloneItems)
       .catch((err) => onError(err.message || "Could not load standalone questions."))
       .finally(() => setLoadingStandalone(false));
-  }, [onError]);
+  }, [onError, showStandalone, subject]);
 
   useEffect(() => {
     loadPassages();
@@ -147,7 +154,7 @@ export default function EnglishQuestionBankPanel({
     const title = passageDraft.title.trim();
     const body = passageDraft.body.trim();
     if (!title || !body) {
-      onError("Passage title and text are required.");
+      onError(`${copy.titleField} and ${copy.bodyField.toLowerCase()} are required.`);
       return;
     }
     setSavingPassage(true);
@@ -155,23 +162,23 @@ export default function EnglishQuestionBankPanel({
     try {
       if (passageEditorMode === "create") {
         const created = await createQuestionBankPassage({
-          subject: "english",
+          subject,
           title,
           body,
         });
         setPassages((prev) => [created, ...prev]);
         setPassageEditorMode(created.id);
-        onNotice("Passage created.");
+        onNotice(`${copy.passageSingular[0].toUpperCase()}${copy.passageSingular.slice(1)} created.`);
       } else if (passageEditorMode) {
         const saved = await updateQuestionBankPassage(passageEditorMode, {
-          subject: "english",
+          subject,
           title,
           body,
         });
         setPassages((prev) =>
           prev.map((p) => (p.id === saved.id ? { ...p, ...saved } : p)),
         );
-        onNotice("Passage saved.");
+        onNotice(`${copy.passageSingular[0].toUpperCase()}${copy.passageSingular.slice(1)} saved.`);
       }
     } catch (err) {
       onError(err.message || "Could not save passage.");
@@ -184,7 +191,7 @@ export default function EnglishQuestionBankPanel({
     if (!passageEditorMode || passageEditorMode === "create") return;
     const label = passageDraft.title.trim() || passageEditorMode;
     const ok = window.confirm(
-      `Delete passage “${label}” and all of its questions? This cannot be undone.`,
+      `Delete ${copy.passageSingular} “${label}” and all of its questions? This cannot be undone.`,
     );
     if (!ok) return;
     setDeletingPassage(true);
@@ -193,7 +200,7 @@ export default function EnglishQuestionBankPanel({
       await deleteQuestionBankPassage(passageEditorMode);
       setPassages((prev) => prev.filter((p) => p.id !== passageEditorMode));
       closePassageEditor();
-      onNotice("Passage deleted.");
+      onNotice(`${copy.passageSingular[0].toUpperCase()}${copy.passageSingular.slice(1)} deleted.`);
     } catch (err) {
       onError(err.message || "Could not delete passage.");
     } finally {
@@ -203,7 +210,7 @@ export default function EnglishQuestionBankPanel({
 
   function openCreateQuestion() {
     if (!passageEditorMode || passageEditorMode === "create") {
-      onError("Save the passage before adding questions.");
+      onError(`Save the ${copy.passageSingular} before adding questions.`);
       return;
     }
     setEditorMode("create");
@@ -226,7 +233,7 @@ export default function EnglishQuestionBankPanel({
       return;
     }
     const passageId =
-      englishMode === "passages" && passageEditorMode && passageEditorMode !== "create"
+      viewMode === "passages" && passageEditorMode && passageEditorMode !== "create"
         ? passageEditorMode
         : null;
     setSavingQuestion(true);
@@ -234,7 +241,7 @@ export default function EnglishQuestionBankPanel({
     try {
       if (editorMode === "create") {
         const created = await createQuestionBankItem(
-          editorQuestionToBankPayload(editorDraft, "english", passageId),
+          editorQuestionToBankPayload(editorDraft, subject, passageId),
         );
         if (!created.duplicate) {
           if (passageId) {
@@ -254,7 +261,7 @@ export default function EnglishQuestionBankPanel({
       } else {
         const saved = await updateQuestionBankItem(
           editorMode,
-          editorQuestionToBankPayload(editorDraft, "english", passageId),
+          editorQuestionToBankPayload(editorDraft, subject, passageId),
         );
         if (passageId) {
           setPassageItems((prev) =>
@@ -316,11 +323,11 @@ export default function EnglishQuestionBankPanel({
     <QuestionBankEditorModal
       open={Boolean(editorMode && editorDraft)}
       title={editorMode === "create" ? "Add question" : "Edit question"}
-      subject="english"
+      subject={subject}
       subtitle={
-        englishMode === "passages" && editingPassage
-          ? `${editingPassage.title} · passage question`
-          : "Standalone English question"
+        viewMode === "passages" && editingPassage
+          ? `${editingPassage.title} · ${copy.questionSubtitle}`
+          : copy.standaloneQuestionSubtitle || "Standalone question"
       }
       question={editorDraft}
       onChange={(patch) => setEditorDraft((prev) => ({ ...prev, ...patch }))}
@@ -333,52 +340,56 @@ export default function EnglishQuestionBankPanel({
     />
   );
 
+  const activePassageView = !showStandalone || viewMode === "passages";
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            setEnglishMode("passages");
-            closePassageEditor();
-          }}
-          className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-            englishMode === "passages"
-              ? "bg-sky-600 text-white"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-          }`}
-        >
-          Reading comprehension
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setEnglishMode("standalone");
-            closePassageEditor();
-          }}
-          className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-            englishMode === "standalone"
-              ? "bg-sky-600 text-white"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-          }`}
-        >
-          Standalone
-        </button>
-      </div>
+      {showStandalone ? (
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setViewMode("passages");
+              closePassageEditor();
+            }}
+            className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+              viewMode === "passages"
+                ? "bg-sky-600 text-white"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+            }`}
+          >
+            Reading comprehension
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setViewMode("standalone");
+              closePassageEditor();
+            }}
+            className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+              viewMode === "standalone"
+                ? "bg-sky-600 text-white"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+            }`}
+          >
+            Standalone
+          </button>
+        </div>
+      ) : null}
 
-      {englishMode === "passages" ? (
+      {activePassageView ? (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-slate-600">
-              {filteredPassages.length} of {passages.length} passage
-              {passages.length === 1 ? "" : "s"}
+              {filteredPassages.length} of {passages.length}{" "}
+              {passages.length === 1 ? copy.passageSingular : copy.passagePlural}
             </p>
             <button
               type="button"
               onClick={openCreatePassage}
               className="rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 text-sm font-semibold transition"
             >
-              + Add passage
+              {copy.addLabel}
             </button>
           </div>
 
@@ -386,17 +397,15 @@ export default function EnglishQuestionBankPanel({
             type="search"
             value={passageSearchQuery}
             onChange={(e) => setPassageSearchQuery(e.target.value)}
-            placeholder="Search passages…"
+            placeholder={copy.searchPlaceholder}
             className="w-full max-w-md rounded-xl border border-slate-300 px-3 py-2 text-sm"
           />
 
           {loadingPassages ? (
-            <QuillLoading label="Loading passages…" />
+            <QuillLoading label={`Loading ${copy.passagePlural}…`} />
           ) : filteredPassages.length === 0 ? (
             <p className="text-sm text-slate-500 py-12 text-center border border-dashed border-slate-200 rounded-xl">
-              {passages.length === 0
-                ? "No passages yet. Add one to start building RC questions."
-                : "No passages match your search."}
+              {passages.length === 0 ? copy.emptyList : `No ${copy.passagePlural} match your search.`}
             </p>
           ) : (
             <div className="overflow-x-auto rounded-xl border border-slate-200">
@@ -404,7 +413,8 @@ export default function EnglishQuestionBankPanel({
                 <thead className="bg-slate-50 text-slate-700 border-b border-slate-200">
                   <tr>
                     <th scope="col" className="px-4 py-3 font-semibold w-[46%]">
-                      Passage
+                      {copy.passageSingular[0].toUpperCase()}
+                      {copy.passageSingular.slice(1)}
                     </th>
                     <th scope="col" className="px-4 py-3 font-semibold w-28">
                       Questions
@@ -429,7 +439,7 @@ export default function EnglishQuestionBankPanel({
                           className="text-slate-900 truncate font-medium"
                           title={passage.title?.trim() || undefined}
                         >
-                          {passage.title?.trim() || "Untitled passage"}
+                          {passage.title?.trim() || `Untitled ${copy.passageSingular}`}
                         </p>
                         <p
                           className="text-xs text-slate-400 mt-1 font-mono truncate"
@@ -465,10 +475,13 @@ export default function EnglishQuestionBankPanel({
 
           <QuestionBankPassageEditorModal
             open={Boolean(passageEditorMode)}
-            title={passageEditorMode === "create" ? "Add passage" : "Edit passage"}
+            copy={copy}
+            title={
+              passageEditorMode === "create" ? copy.addModalTitle : copy.editModalTitle
+            }
             subtitle={
               passageEditorMode === "create"
-                ? "English · new passage"
+                ? `${subject} · new ${copy.passageSingular}`
                 : `${editingPassage?.id || ""}`
             }
             passageDraft={passageDraft}

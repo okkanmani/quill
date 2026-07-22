@@ -7,6 +7,7 @@ export default function QuestionBankPassageEditorModal({
   open,
   title,
   subtitle = "",
+  copy,
   passageDraft,
   onPassageChange,
   passageItems = [],
@@ -21,7 +22,7 @@ export default function QuestionBankPassageEditorModal({
   onEditQuestion,
   questionEditor,
 }) {
-  if (!open) return null;
+  if (!open || !copy) return null;
 
   return (
     <>
@@ -53,23 +54,23 @@ export default function QuestionBankPassageEditorModal({
           <div className="flex-1 overflow-y-auto p-5 space-y-5">
             <div className="space-y-4">
               <label className="block text-sm font-semibold text-slate-800">
-                Passage title
+                {copy.titleField}
                 <input
                   type="text"
                   value={passageDraft.title}
                   onChange={(e) => onPassageChange({ title: e.target.value })}
                   className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-                  placeholder="e.g. Life in the Arctic"
+                  placeholder={copy.titlePlaceholder}
                 />
               </label>
               <label className="block text-sm font-semibold text-slate-800">
-                Passage text
+                {copy.bodyField}
                 <textarea
                   value={passageDraft.body}
                   onChange={(e) => onPassageChange({ body: e.target.value })}
                   rows={10}
                   className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y min-h-[12rem]"
-                  placeholder="Paste or type the reading passage."
+                  placeholder={copy.bodyPlaceholder}
                 />
               </label>
             </div>
@@ -167,7 +168,7 @@ export default function QuestionBankPassageEditorModal({
               </div>
             ) : (
               <p className="text-sm text-slate-500 rounded-xl border border-dashed border-slate-200 px-4 py-3">
-                Save the passage first, then add questions linked to it.
+                {copy.saveBeforeQuestions}
               </p>
             )}
           </div>
@@ -181,7 +182,7 @@ export default function QuestionBankPassageEditorModal({
                   disabled={deletingPassage}
                   className="rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
                 >
-                  {deletingPassage ? "Deleting…" : "Delete passage"}
+                  {deletingPassage ? "Deleting…" : copy.deleteLabel}
                 </button>
               ) : null}
             </div>
@@ -199,7 +200,11 @@ export default function QuestionBankPassageEditorModal({
                 disabled={savingPassage}
                 className="rounded-xl bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-sm font-bold px-5 py-2.5 transition"
               >
-                {savingPassage ? "Saving…" : isNew ? "Save passage" : "Save changes"}
+                {savingPassage
+                  ? "Saving…"
+                  : isNew
+                    ? copy.saveNewLabel
+                    : copy.saveExistingLabel}
               </button>
             </div>
           </div>
