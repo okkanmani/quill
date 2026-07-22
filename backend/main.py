@@ -101,6 +101,7 @@ from question_bank import (
     list_question_bank_areas,
     lookup_question_bank_areas,
     save_worksheet_question_to_bank,
+    save_worksheet_context_to_bank,
     update_question_bank_item,
 )
 from writing import (
@@ -338,7 +339,7 @@ class WorksheetQuestionBankQuestionRequest(BaseModel):
 
 class WorksheetQuestionBankPassageRequest(BaseModel):
     title: str
-    body: str
+    body: str | None = ""
     chart: dict | None = None
     table: dict | None = None
 
@@ -349,6 +350,14 @@ class WorksheetQuestionBankSaveRequest(BaseModel):
     source: str | None = "imported"
     question: WorksheetQuestionBankQuestionRequest
     passage: WorksheetQuestionBankPassageRequest | None = None
+
+
+class WorksheetContextBankSaveRequest(BaseModel):
+    subject: str
+    stars: int
+    source: str | None = "imported"
+    passage: WorksheetQuestionBankPassageRequest
+    questions: list[WorksheetQuestionBankQuestionRequest]
 
 
 class AdminOpenAiKeyRequest(BaseModel):
@@ -1139,6 +1148,28 @@ def admin_save_worksheet_question_to_bank(
         )
     except ValueError as exc:
         errors = exc.args[0] if exc.args else ["Invalid question."]
+        if isinstance(errors, list):
+            detail = errors
+        else:
+            detail = [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
+
+
+@app.post("/admin/question-bank/from-worksheet-context")
+def admin_save_worksheet_context_to_bank(
+    req: WorksheetContextBankSaveRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return save_worksheet_context_to_bank(
+            admin_id=_admin_id(payload),
+            data=req.model_dump(),
+        )
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid context."]
         if isinstance(errors, list):
             detail = errors
         else:

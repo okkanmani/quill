@@ -7,7 +7,12 @@ import os
 
 import httpx
 
-from worksheets import STARS_DEFAULT_QUESTION_COUNTS, VALID_SUBJECTS
+from worksheets import (
+    STARS_DEFAULT_QUESTION_COUNTS,
+    VALID_SUBJECTS,
+    _validate_passage_chart,
+    _validate_passage_table,
+)
 
 OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions"
 
@@ -234,6 +239,196 @@ def _normalize_rc_draft(data: dict, *, passage_specs: list[dict]) -> dict:
         )
 
     return {"title": title.strip(), "passages": passages}
+
+
+def _normalize_data_draft(data: dict, *, passage_specs: list[dict]) -> dict:
+    title = data.get("title")
+    if not isinstance(title, str) or not title.strip():
+        raise ValueError("AI draft is missing a title.")
+
+    raw_passages = data.get("passages")
+    if not isinstance(raw_passages, list) or not raw_passages:
+        raise ValueError("AI draft has no passages.")
+
+    if len(raw_passages) < len(passage_specs):
+        raise ValueError(
+            f"AI returned {len(raw_passages)} passages; expected {len(passage_specs)}."
+        )
+    if len(raw_passages) > len(passage_specs):
+        raw_passages = raw_passages[: len(passage_specs)]
+
+    passages: list[dict] = []
+    for i, (raw, spec) in enumerate(zip(raw_passages, passage_specs)):
+        prefix = f"passages[{i}]"
+        if not isinstance(raw, dict):
+            raise ValueError(f"{prefix} is invalid.")
+        pid = spec.get("id") or f"p{i + 1}"
+        ptitle = raw.get("title")
+        body = raw.get("body") or raw.get("text") or ""
+        if not isinstance(ptitle, str) or not ptitle.strip():
+            raise ValueError(f"{prefix}.title is required.")
+        if not isinstance(body, str):
+            raise ValueError(f"{prefix}.body must be a string when provided.")
+
+        chart = raw.get("chart")
+        table = raw.get("table")
+        chart_errors: list[str] = []
+        table_errors: list[str] = []
+        _validate_passage_chart(prefix, chart, chart_errors)
+        _validate_passage_table(prefix, table, table_errors)
+        if chart_errors:
+            raise ValueError(chart_errors[0])
+        if table_errors:
+            raise ValueError(table_errors[0])
+        has_body = bool(body.strip())
+        has_chart = isinstance(chart, dict) and chart.get("type")
+        has_table = isinstance(table, dict) and table.get("headers")
+        if not has_body and not has_chart and not has_table:
+            raise ValueError(
+                f"{prefix} must include a short body, chart, and/or table for students to read."
+            )
+        if not has_chart and not has_table:
+            raise ValueError(f"{prefix} must include a chart or table with numeric data.")
+
+        expected_q = int(spec.get("question_count") or 0)
+        raw_questions = raw.get("questions")
+        if not isinstance(raw_questions, list) or not raw_questions:
+            raise ValueError(f"{prefix} has no questions.")
+        if len(raw_questions) < expected_q:
+            raise ValueError(
+                f"{prefix} returned {len(raw_questions)} questions; expected {expected_q}."
+            )
+        if len(raw_questions) > expected_q:
+            raw_questions = raw_questions[:expected_q]
+
+        questions: list[dict] = []
+        for j, rq in enumerate(raw_questions):
+            qprefix = f"{prefix}.questions[{j}]"
+            if not isinstance(rq, dict):
+                raise ValueError(f"{qprefix} is invalid.")
+            prompt = rq.get("prompt")
+            if not isinstance(prompt, str) or not prompt.strip():
+                raise ValueError(f"{qprefix}.prompt is required.")
+            area = rq.get("area")
+            if not isinstance(area, str) or not area.strip():
+                raise ValueError(f"{qprefix}.area is required.")
+            choices = rq.get("choices")
+            correct_index = rq.get("correct_index")
+            if not isinstance(choices, list) or len(choices) != 4:
+                raise ValueError(f"{qprefix} must have 4 choices.")
+            trimmed = [str(c).strip() for c in choices]
+            if any(not c for c in trimmed):
+                raise ValueError(f"{qprefix} has empty choices.")
+            if len(set(trimmed)) < 4:
+                raise ValueError(f"{qprefix} has duplicate choices.")
+            if not isinstance(correct_index, int) or correct_index not in (0, 1, 2, 3):
+                raise ValueError(f"{qprefix} has invalid correct_index.")
+            questions.append(
+                {
+                    "prompt": prompt.strip(),
+                    "area": area.strip().lower(),
+                    "choices": trimmed,
+                    "correct_index": correct_index,
+                }
+            )
+
+        passage_obj: dict = {
+            "id": pid,
+            "title": ptitle.strip(),
+            "body": body.strip(),
+            "questions": questions,
+        }
+        if isinstance(chart, dict):
+            passage_obj["chart"] = chart
+        if isinstance(table, dict):
+            passage_obj["table"] = table
+        passages.append(passage_obj)
+
+    return {"title": title.strip(), "passages": passages}
+
+
+def _build_data_prompt(
+    *,
+    grade: int,
+    stars: int,
+    passage_specs: list[dict],
+    custom_prompt: str = "",
+) -> str:
+    difficulty = _difficulty_label(stars)
+    specs_text = "\n".join(
+        f"- Data set {i + 1} (id {spec.get('id', f'p{i + 1}')}): "
+        f"exactly {spec.get('question_count')} multiple-choice questions; "
+        "include one chart (bar, line, or pie) and/or a table with realistic numeric data"
+        + (
+            f"; topic/focus: {spec.get('prompt', '').strip()}"
+            if spec.get("prompt", "").strip()
+            else ""
+        )
+        for i, spec in enumerate(passage_specs)
+    )
+    schema = """
+{
+  "title": "short worksheet title",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "data set title",
+      "body": "one short sentence introducing the chart or table",
+      "chart": {
+        "type": "bar",
+        "title": "chart title",
+        "labels": ["Label A", "Label B"],
+        "values": [10, 20],
+        "xLabel": "category axis label",
+        "yLabel": "value axis label"
+      },
+      "table": {
+        "headers": ["Column A", "Column B"],
+        "rows": [["Row1A", "Row1B"], ["Row2A", "Row2B"]]
+      },
+      "questions": [
+        {
+          "prompt": "question text",
+          "area": "specific skill label",
+          "choices": ["choice A text", "choice B text", "choice C text", "choice D text"],
+          "correct_index": 0
+        }
+      ]
+    }
+  ]
+}
+"""
+    base = f"""Generate a data-analysis worksheet as JSON only.
+
+Audience: grade {grade} students in Canada/US curriculum style.
+Subject: data analysis (reading charts, tables, and numeric reasoning)
+Difficulty: {difficulty} (stars {stars} of 3)
+
+Data set requirements:
+{specs_text}
+
+Rules:
+- Each data set MUST include a chart and/or table with consistent numeric data students can read.
+- chart.type must be bar, line, or pie. labels and values must be the same length; values are non-negative numbers.
+- table.headers is a non-empty string array; each row matches header length.
+- body is one short sentence (optional if chart/table titles are clear).
+- Vary chart types across data sets when possible (bar, line, pie).
+- Each question must have exactly 4 distinct choices and a correct_index (0-3).
+- Each question must include a specific lowercase area label (e.g. read bar chart, mean from table, percent change).
+- Questions must be answerable from that data set's chart/table only — do not hide needed numbers in the question text alone.
+- Do not prefix choices with letters.
+- Title under 80 characters.
+- Use realistic grade-appropriate contexts (sports, school, weather, sales, science measurements).
+
+Return JSON matching this schema:
+{schema}
+"""
+    extra = (custom_prompt or "").strip()
+    if extra:
+        if len(extra) > 2000:
+            extra = extra[:2000]
+        return base + f"\nAdditional instructions from the teacher:\n{extra}\n"
+    return base
 
 
 def _build_rc_prompt(
@@ -658,8 +853,9 @@ def generate_worksheet_draft(
     english_type = (english_type or "").strip().lower()
     specs = passage_specs or []
     is_rc = subject == "english" and english_type == "reading_comprehension" and specs
+    is_data = subject == "data" and fmt == "multiple_choice" and specs
 
-    if is_rc:
+    if is_rc or is_data:
         normalized_specs = []
         for i, spec in enumerate(specs):
             if not isinstance(spec, dict):
@@ -669,27 +865,35 @@ def generate_worksheet_draft(
                 raise ValueError(
                     f"passage_specs[{i}].question_count must be between 1 and 15."
                 )
-            min_w = spec.get("min_words")
-            if not isinstance(min_w, int):
-                min_w = min_words if isinstance(min_words, int) else 200
-            if min_w < 50 or min_w > 2000:
-                raise ValueError(
-                    f"passage_specs[{i}].min_words must be between 50 and 2000."
-                )
-            normalized_specs.append(
-                {
-                    "id": (spec.get("id") or f"p{i + 1}").strip(),
-                    "question_count": qcount,
-                    "prompt": (spec.get("prompt") or "").strip(),
-                    "min_words": min_w,
-                }
+            entry = {
+                "id": (spec.get("id") or f"p{i + 1}").strip(),
+                "question_count": qcount,
+                "prompt": (spec.get("prompt") or "").strip(),
+            }
+            if is_rc:
+                min_w = spec.get("min_words")
+                if not isinstance(min_w, int):
+                    min_w = min_words if isinstance(min_words, int) else 200
+                if min_w < 50 or min_w > 2000:
+                    raise ValueError(
+                        f"passage_specs[{i}].min_words must be between 50 and 2000."
+                    )
+                entry["min_words"] = min_w
+            normalized_specs.append(entry)
+        if is_rc:
+            user_prompt = _build_rc_prompt(
+                grade=grade,
+                stars=stars,
+                passage_specs=normalized_specs,
+                custom_prompt=custom_prompt,
             )
-        user_prompt = _build_rc_prompt(
-            grade=grade,
-            stars=stars,
-            passage_specs=normalized_specs,
-            custom_prompt=custom_prompt,
-        )
+        else:
+            user_prompt = _build_data_prompt(
+                grade=grade,
+                stars=stars,
+                passage_specs=normalized_specs,
+                custom_prompt=custom_prompt,
+            )
     else:
         count = question_count if question_count is not None else STARS_DEFAULT_QUESTION_COUNTS[stars]
         if not isinstance(count, int) or count < 1 or count > 50:
@@ -712,6 +916,9 @@ def generate_worksheet_draft(
     if is_rc:
         parsed = _request_draft()
         return _normalize_rc_draft(parsed, passage_specs=normalized_specs)
+    if is_data:
+        parsed = _request_draft()
+        return _normalize_data_draft(parsed, passage_specs=normalized_specs)
 
     count = question_count if question_count is not None else STARS_DEFAULT_QUESTION_COUNTS[stars]
     last_error: ValueError | None = None

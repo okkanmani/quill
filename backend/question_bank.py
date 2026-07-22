@@ -596,3 +596,74 @@ def save_worksheet_question_to_bank(*, admin_id: int, data: dict) -> dict:
         "created_passage": created_passage,
         "passage": passage,
     }
+
+
+def save_worksheet_context_to_bank(*, admin_id: int, data: dict) -> dict:
+    """Save a worksheet passage/data set and all its MCQs to the bank."""
+    subject = _normalize_subject(data.get("subject", "general"))
+    stars = data.get("stars")
+    if not isinstance(stars, int) or stars not in VALID_STARS:
+        raise ValueError(["stars must be 1, 2, or 3."])
+    passage_data = data.get("passage")
+    raw_questions = data.get("questions") or []
+    source = str(data.get("source") or "imported").strip().lower()
+    if source not in VALID_SOURCES:
+        source = "imported"
+    if not isinstance(passage_data, dict):
+        raise ValueError(["passage is required."])
+    if not isinstance(raw_questions, list) or not raw_questions:
+        raise ValueError(["At least one question is required."])
+
+    from question_bank_passages import find_or_create_question_bank_passage
+
+    passage, created_passage = find_or_create_question_bank_passage(
+        admin_id=admin_id,
+        data={**passage_data, "subject": subject, "source": source},
+    )
+
+    created: list[dict] = []
+    skipped_duplicate_count = 0
+    errors: list[str] = []
+    seen_prompt_keys: set[str] = set()
+
+    for index, raw in enumerate(raw_questions):
+        payload = {
+            "subject": subject,
+            "stars": int(raw.get("stars") or stars),
+            "prompt": raw.get("prompt"),
+            "choices": raw.get("choices"),
+            "answer": raw.get("answer"),
+            "area": raw.get("area") or "",
+            "source": source,
+            "passage_id": passage["id"],
+        }
+        item_errors = _validate_question_payload(payload)
+        if item_errors:
+            errors.extend(f"Question {index + 1}: {msg}" for msg in item_errors)
+            continue
+        prompt_key = normalize_prompt_key(payload.get("prompt", ""))
+        if prompt_key in seen_prompt_keys:
+            skipped_duplicate_count += 1
+            continue
+        item = create_question_bank_item(
+            admin_id=admin_id,
+            data=payload,
+            skip_duplicates=True,
+        )
+        if item.get("duplicate"):
+            skipped_duplicate_count += 1
+            continue
+        seen_prompt_keys.add(prompt_key)
+        created.append(item)
+
+    if errors and not created and skipped_duplicate_count == 0:
+        raise ValueError(errors)
+
+    return {
+        "passage": passage,
+        "created_passage": created_passage,
+        "created_count": len(created),
+        "skipped_duplicate_count": skipped_duplicate_count,
+        "items": created,
+        "errors": errors,
+    }

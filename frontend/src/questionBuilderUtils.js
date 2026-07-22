@@ -79,6 +79,24 @@ export function buildDefaultRcPassages() {
   );
 }
 
+export function buildDefaultDataPassages() {
+  return buildPassageList(
+    DEFAULT_RC_PASSAGE_COUNT,
+    DEFAULT_RC_QUESTIONS_PER_PASSAGE,
+  );
+}
+
+export function isDataPassageSubject(subject, format = "multiple_choice") {
+  return subject === "data" && format === "multiple_choice";
+}
+
+export function isPassageWorksheetSubject(subject, englishType, format = "multiple_choice") {
+  return (
+    (subject === "english" && englishType === "reading_comprehension") ||
+    isDataPassageSubject(subject, format)
+  );
+}
+
 export function reindexPassages(passages) {
   return passages.map((passage, index) => ({
     ...passage,
@@ -319,6 +337,34 @@ export function validateBuilderForm({
     }
   }
 
+  if (isDataPassageSubject(subject, format)) {
+    if (!passages?.length) {
+      errors.push("Add at least one data set for data analysis.");
+    }
+    passages?.forEach((passage, i) => {
+      if (!passage.title?.trim()) {
+        errors.push(`Data set ${i + 1}: title is required.`);
+      }
+      const count = Math.max(1, Number(passage.questionCount) || 1);
+      if (count < 1 || count > 15) {
+        errors.push(`Data set ${i + 1}: question count must be between 1 and 15.`);
+      }
+      const hasContext =
+        passage.body?.trim() || passage.chart?.type || passage.table?.headers?.length;
+      if (!hasContext) {
+        errors.push(
+          `Data set ${i + 1}: needs a caption, chart, or table (regenerate with AI if missing).`,
+        );
+      }
+    });
+    const expectedTotal = totalRcQuestionCount(passages || []);
+    if (questions.length !== expectedTotal) {
+      errors.push(
+        `Expected ${expectedTotal} questions from data set counts but found ${questions.length}.`,
+      );
+    }
+  }
+
   questions.forEach((q, i) => {
     const n = i + 1;
     if (!q.prompt.trim()) {
@@ -342,9 +388,10 @@ export function validateBuilderForm({
       );
     }
     if (
-      subject === "english" &&
-      englishType === "reading_comprehension" &&
-      !q.passageId
+      (subject === "english" &&
+        englishType === "reading_comprehension" &&
+        !q.passageId) ||
+      (isDataPassageSubject(subject, format) && !q.passageId)
     ) {
       errors.push(`Question ${n}: missing linked passage.`);
     }
@@ -392,6 +439,18 @@ export function validateBuilderParamsForAi({
     });
     return errors;
   }
+  if (isDataPassageSubject(subject, format)) {
+    if (!passages?.length) {
+      errors.push("Add at least one data set for data analysis.");
+    }
+    passages?.forEach((passage, i) => {
+      const count = Math.max(1, Number(passage.questionCount) || 1);
+      if (count < 1 || count > 15) {
+        errors.push(`Data set ${i + 1}: question count must be between 1 and 15.`);
+      }
+    });
+    return errors;
+  }
   if (!questionCount || questionCount < 1 || questionCount > 50) {
     errors.push("Question count must be between 1 and 50.");
   }
@@ -413,6 +472,36 @@ export function draftToBuilderQuestions(draft, format) {
       answer: q.answer || "",
     };
   });
+}
+
+export function draftDataToBuilderState(draft) {
+  const passages = (draft.passages || []).map((passage, index) => ({
+    id: passage.id || `p${index + 1}`,
+    title: passage.title || "",
+    body: passage.body || "",
+    chart: passage.chart ?? null,
+    table: passage.table ?? null,
+    questionCount: (passage.questions || []).length || DEFAULT_RC_QUESTIONS_PER_PASSAGE,
+    aiPrompt: "",
+    minWords: DEFAULT_RC_MIN_WORDS,
+  }));
+  const questions = [];
+  (draft.passages || []).forEach((passage) => {
+    (passage.questions || []).forEach((question) => {
+      questions.push({
+        prompt: question.prompt,
+        area: question.area || "",
+        choices: question.choices,
+        correctIndex: question.correct_index,
+        passageId: passage.id,
+      });
+    });
+  });
+  return {
+    title: draft.title || "",
+    passages,
+    questions,
+  };
 }
 
 export function worksheetToBuilderState(worksheet) {
@@ -537,6 +626,18 @@ export function builderPayload({
       body: passage.body.trim(),
     }));
   }
+  if (isDataPassageSubject(subject, format) && passages?.length) {
+    payload.passages = passages.map((passage) => {
+      const entry = {
+        id: passage.id,
+        title: passage.title.trim(),
+        body: (passage.body || "").trim(),
+      };
+      if (passage.chart) entry.chart = passage.chart;
+      if (passage.table) entry.table = passage.table;
+      return entry;
+    });
+  }
 
   if (learnSubject) {
     payload.learn_subject = learnSubject;
@@ -600,40 +701,60 @@ export function buildWorksheetPreviewFromBuilder({
 }) {
   const isReadingComprehension =
     subject === "english" && englishType === "reading_comprehension";
+  const isDataPassageWorksheet = isDataPassageSubject(subject, format);
+  const isPassageWorksheet = isReadingComprehension || isDataPassageWorksheet;
   const manual = format === "short_answer";
   let previewPassages = [];
   let previewQuestions = [];
 
-  if (isReadingComprehension) {
+  if (isPassageWorksheet) {
     previewPassages = passages.map((passage, index) => {
       const passageTitle =
         passage.title?.trim() ||
-        (buildUsingAi ? `Passage ${index + 1} (AI)` : "Untitled passage");
+        (buildUsingAi
+          ? isDataPassageWorksheet
+            ? `Data set ${index + 1} (AI)`
+            : `Passage ${index + 1} (AI)`
+          : isDataPassageWorksheet
+            ? "Untitled data set"
+            : "Untitled passage");
       let body = passage.body?.trim() || "";
       let bodyPlaceholder = false;
 
       if (buildUsingAi) {
         bodyPlaceholder = true;
-        const minWords = Math.max(
-          50,
-          Number(passage.minWords) || DEFAULT_RC_MIN_WORDS,
-        );
-        const prompt = (passage.aiPrompt || "").trim();
-        body = prompt
-          ? `AI will generate a passage of at least ${minWords} words.\n\nPrompt: ${prompt}`
-          : `AI will generate a passage of at least ${minWords} words.`;
-      } else if (!body) {
+        if (isDataPassageWorksheet) {
+          const prompt = (passage.aiPrompt || "").trim();
+          body = prompt
+            ? `AI will generate a chart or table with numeric data.\n\nPrompt: ${prompt}`
+            : "AI will generate a chart or table with numeric data.";
+        } else {
+          const minWords = Math.max(
+            50,
+            Number(passage.minWords) || DEFAULT_RC_MIN_WORDS,
+          );
+          const prompt = (passage.aiPrompt || "").trim();
+          body = prompt
+            ? `AI will generate a passage of at least ${minWords} words.\n\nPrompt: ${prompt}`
+            : `AI will generate a passage of at least ${minWords} words.`;
+        }
+      } else if (!body && !passage.chart && !passage.table) {
         bodyPlaceholder = true;
-        body = "Passage text not entered yet.";
+        body = isDataPassageWorksheet
+          ? "Data context not entered yet."
+          : "Passage text not entered yet.";
       }
 
-      return {
+      const previewPassage = {
         id: passage.id,
         title: passageTitle,
         body,
         bodyPlaceholder,
         aiPlaceholder: buildUsingAi,
       };
+      if (passage.chart) previewPassage.chart = passage.chart;
+      if (passage.table) previewPassage.table = passage.table;
+      return previewPassage;
     });
 
     if (buildUsingAi) {

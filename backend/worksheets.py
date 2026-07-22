@@ -1538,29 +1538,53 @@ def worksheet_data_from_builder(body: dict, *, existing: dict | None = None) -> 
             else:
                 passage_id = f"p{i + 1}"
             ptitle = raw.get("title")
-            pbody = raw.get("body") or raw.get("text")
+            pbody = raw.get("body") or raw.get("text") or ""
+            chart = raw.get("chart")
+            table = raw.get("table")
             if not isinstance(ptitle, str) or not ptitle.strip():
                 errors.append(f"{prefix}.title is required.")
                 continue
-            if not isinstance(pbody, str) or not pbody.strip():
+            if not isinstance(pbody, str):
+                errors.append(f"{prefix}.body must be a string when provided.")
+                continue
+            has_body = bool(pbody.strip())
+            has_chart = isinstance(chart, dict) and chart.get("type")
+            has_table = isinstance(table, dict) and table.get("headers")
+            if subject == "data":
+                if not has_body and not has_chart and not has_table:
+                    errors.append(
+                        f"{prefix} needs text/body, chart, and/or table content."
+                    )
+                    continue
+                _validate_passage_chart(prefix, chart, errors)
+                _validate_passage_table(prefix, table, errors)
+            elif not has_body:
                 errors.append(f"{prefix}.body is required.")
                 continue
-            built_passages.append(
-                {
-                    "id": passage_id,
-                    "title": ptitle.strip(),
-                    "body": pbody.strip(),
-                }
-            )
+            built_entry: dict = {
+                "id": passage_id,
+                "title": ptitle.strip(),
+                "body": pbody.strip(),
+            }
+            if has_chart:
+                built_entry["chart"] = chart
+            if has_table:
+                built_entry["table"] = table
+            built_passages.append(built_entry)
         if errors:
             raise ValueError(errors)
         passage_ids = {p["id"] for p in built_passages}
-        if english_type == "reading_comprehension":
+        if english_type == "reading_comprehension" or subject == "data":
             for i, q_obj in enumerate(built_questions):
                 pid = q_obj.get("passage_id")
                 if not pid or pid not in passage_ids:
+                    label = (
+                        "reading comprehension"
+                        if english_type == "reading_comprehension"
+                        else "data analysis"
+                    )
                     errors.append(
-                        f"questions[{i}] must reference a passage for reading comprehension."
+                        f"questions[{i}] must reference a passage for {label}."
                     )
         if errors:
             raise ValueError(errors)

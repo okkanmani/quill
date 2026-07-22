@@ -7,6 +7,7 @@ import {
   getTimedSession,
   lockTimedWorksheet,
   saveWorksheetDraft,
+  saveWorksheetContextToBank,
   saveWorksheetQuestionToBank,
   submitResult,
   logout,
@@ -24,7 +25,11 @@ import {
   TextAnswerIcon,
 } from "../components/ResponseModeIcons";
 import { normalizeSubjectKey } from "../subjectUtils";
-import { worksheetPublishedQuestionToBankPayload } from "../worksheetUtils";
+import {
+  isWorksheetPassageBankReady,
+  worksheetPassageToBankPayload,
+  worksheetPublishedQuestionToBankPayload,
+} from "../worksheetUtils";
 
 function scratchpadsVisibleByDefault(worksheet) {
   if (worksheet?.scratchpad === false) return false;
@@ -105,6 +110,7 @@ export default function Worksheet() {
   const [accessLocked, setAccessLocked] = useState(false);
   const [accessLockMessage, setAccessLockMessage] = useState("");
   const [savingToBankQuestionId, setSavingToBankQuestionId] = useState(null);
+  const [savingToBankPassageId, setSavingToBankPassageId] = useState(null);
   const [bankNotice, setBankNotice] = useState("");
   const autoSubmitStarted = useRef(false);
   const submittedRef = useRef(false);
@@ -569,6 +575,40 @@ export default function Worksheet() {
     return Boolean(String(question.prompt || "").trim() && String(question.answer || "").trim());
   }
 
+  async function handleSaveContextToBank(passage, passageQuestions) {
+    if (!worksheet || !isWorksheetPassageBankReady(passage)) return;
+    const mcqQuestions = passageQuestions.filter((q) => isMcqBankReady(q));
+    if (mcqQuestions.length === 0) return;
+
+    setSavingToBankPassageId(passage.id);
+    setBankNotice("");
+
+    try {
+      const result = await saveWorksheetContextToBank({
+        subject: worksheet.subject,
+        stars: Number(mcqQuestions[0]?.stars) || Number(worksheet.difficulty_min) || 2,
+        source: "imported",
+        passage: worksheetPassageToBankPayload(passage),
+        questions: mcqQuestions.map(worksheetPublishedQuestionToBankPayload),
+      });
+
+      const created = result.created_count || 0;
+      const skipped = result.skipped_duplicate_count || 0;
+      const passageNote = result.created_passage ? " Data set added to the bank." : "";
+      if (created === 0 && skipped > 0) {
+        setBankNotice(`All ${skipped} question${skipped === 1 ? "" : "s"} from this context are already in the question bank.`);
+      } else {
+        setBankNotice(
+          `Saved ${created} question${created === 1 ? "" : "s"} to the question bank.${skipped ? ` ${skipped} duplicate${skipped === 1 ? "" : "s"} skipped.` : ""}${passageNote}`,
+        );
+      }
+    } catch (err) {
+      setBankNotice(err.message || "Could not save to the question bank.");
+    } finally {
+      setSavingToBankPassageId(null);
+    }
+  }
+
   async function handleSaveQuestionToBank(question) {
     if (!worksheet || !isMcqBankReady(question)) return;
 
@@ -576,25 +616,12 @@ export default function Worksheet() {
     setBankNotice("");
 
     try {
-      let passagePayload = null;
-      if (question.passage_id) {
-        const passage = (worksheet.passages || []).find((p) => p.id === question.passage_id);
-        const title = String(passage?.title || "").trim();
-        const body = String(passage?.body || passage?.text || "").trim();
-        if (!title || !body) {
-          throw new Error("This question's passage is missing title or text in the worksheet.");
-        }
-        passagePayload = { title, body };
-        if (passage?.chart) passagePayload.chart = passage.chart;
-        if (passage?.table) passagePayload.table = passage.table;
-      }
-
       const result = await saveWorksheetQuestionToBank({
         subject: worksheet.subject,
         stars: Number(question.stars) || Number(worksheet.difficulty_min) || 2,
         source: "imported",
         question: worksheetPublishedQuestionToBankPayload(question),
-        passage: passagePayload,
+        passage: null,
       });
 
       if (result.duplicate) {
@@ -628,7 +655,7 @@ export default function Worksheet() {
             {index + 1}. {q.prompt}
           </p>
           <div className="shrink-0 flex items-center gap-2">
-            {isAdminPreview && q.type === "multiple_choice" ? (
+            {isAdminPreview && !hasReadingPassages && q.type === "multiple_choice" ? (
               <button
                 type="button"
                 onClick={() => handleSaveQuestionToBank(q)}
@@ -772,7 +799,7 @@ export default function Worksheet() {
             </span>
           ) : null}
           <span className="block mt-1 text-slate-700">
-            Use <span className="font-semibold">+</span> on a multiple-choice question to save it to the question bank.
+            Use <span className="font-semibold">+</span> on a {hasReadingPassages ? "passage or data set" : "multiple-choice question"} to save it to the question bank.
           </span>
         </div>
       )}
@@ -890,9 +917,34 @@ export default function Worksheet() {
               const passageQuestions = worksheet.questions.filter(
                 (q) => q.passage_id === passage.id,
               );
+              const bankReady =
+                isWorksheetPassageBankReady(passage) &&
+                passageQuestions.some((q) => isMcqBankReady(q));
               return (
                 <div key={passage.id} className="flex flex-col gap-4">
-                  <WorksheetPassageContent passage={passage} />
+                  <div className="relative">
+                    <WorksheetPassageContent passage={passage} />
+                    {isAdminPreview ? (
+                      <button
+                        type="button"
+                        onClick={() => handleSaveContextToBank(passage, passageQuestions)}
+                        disabled={!bankReady || savingToBankPassageId === passage.id}
+                        title={
+                          bankReady
+                            ? "Save this passage and all its questions to the question bank"
+                            : "Complete the passage/data set and its MCQ questions before saving"
+                        }
+                        aria-label="Save passage to question bank"
+                        className={`absolute top-4 right-4 w-9 h-9 rounded-lg border text-sm font-bold transition ${
+                          bankReady && savingToBankPassageId !== passage.id
+                            ? "border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100"
+                            : "border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed"
+                        }`}
+                      >
+                        {savingToBankPassageId === passage.id ? "…" : "+"}
+                      </button>
+                    ) : null}
+                  </div>
                   <div className="flex flex-col gap-4">
                     {passageQuestions.map((q) => {
                       const index = worksheet.questions.indexOf(q);

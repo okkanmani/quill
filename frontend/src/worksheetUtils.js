@@ -89,6 +89,24 @@ export function worksheetPublishedQuestionToBankPayload(question) {
   };
 }
 
+export function isWorksheetPassageBankReady(passage) {
+  const title = String(passage?.title || "").trim();
+  const body = String(passage?.body || passage?.text || "").trim();
+  const hasChart = passage?.chart?.type && passage?.chart?.labels?.length;
+  const hasTable = passage?.table?.headers?.length;
+  return Boolean(title && (body || hasChart || hasTable));
+}
+
+export function worksheetPassageToBankPayload(passage) {
+  const payload = {
+    title: String(passage?.title || "").trim(),
+    body: String(passage?.body || passage?.text || "").trim(),
+  };
+  if (passage?.chart) payload.chart = passage.chart;
+  if (passage?.table) payload.table = passage.table;
+  return payload;
+}
+
 /** Format seconds as M:SS or H:MM:SS for timed completion badges. */
 export function formatDurationSeconds(totalSeconds) {
   if (totalSeconds == null || Number.isNaN(totalSeconds) || totalSeconds < 0) {

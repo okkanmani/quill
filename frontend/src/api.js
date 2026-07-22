@@ -744,6 +744,19 @@ export async function saveWorksheetQuestionToBank(payload) {
   return res.json();
 }
 
+export async function saveWorksheetContextToBank(payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/question-bank/from-worksheet-context`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiDetail(err.detail, "Could not save to question bank."));
+  }
+  return res.json();
+}
+
 export async function updateQuestionBankItem(itemId, payload) {
   const res = await apiFetch(`${BASE_URL}/admin/question-bank/${encodeURIComponent(itemId)}`, {
     method: "PUT",

@@ -20,6 +20,7 @@ import {
   STARS_OPTIONS,
   builderPayload,
   buildDefaultRcPassages,
+  buildDefaultDataPassages,
   buildQuestionList,
   buildQuestionsFromPassages,
   buildWorksheetPreviewFromBuilder,
@@ -29,9 +30,11 @@ import {
   DEFAULT_RC_MIN_WORDS,
   defaultScratchpadForSubject,
   draftRcToBuilderState,
+  draftDataToBuilderState,
   draftToBuilderQuestions,
   groupQuestionsByPassage,
   isBuilderQuestionComplete,
+  isDataPassageSubject,
   aiGeneratesReferenceAnswers,
   totalRcQuestionCount,
   resizeQuestions,
@@ -98,16 +101,23 @@ function PassageCard({
   onFocusQuestion,
   registerPassage,
   registerQuestion,
+  passageMode = "rc",
 }) {
-  const summary = passage.title.trim() || `Passage ${index + 1}`;
+  const isDataMode = passageMode === "data";
+  const summary = passage.title.trim() || (isDataMode ? `Data set ${index + 1}` : `Passage ${index + 1}`);
   const questionsComplete =
     buildUsingAi ||
     passageQuestions.every(({ question }) =>
       isBuilderQuestionComplete(question, format),
     );
   const complete = buildUsingAi
-    ? Number(passage.questionCount) > 0 && Number(passage.minWords) >= 50
-    : passage.title.trim() && passage.body.trim() && questionsComplete;
+    ? Number(passage.questionCount) > 0 &&
+      (isDataMode || Number(passage.minWords) >= 50)
+    : passage.title.trim() &&
+      (isDataMode
+        ? Boolean(passage.body.trim() || passage.chart || passage.table)
+        : passage.body.trim()) &&
+      questionsComplete;
   const showQuestions = !buildUsingAi && passageQuestions.length > 0;
 
   return (
@@ -122,7 +132,9 @@ function PassageCard({
         className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left bg-sky-50 hover:bg-sky-100 transition"
       >
         <span className="min-w-0">
-          <span className="font-semibold text-slate-900">Passage {index + 1}</span>
+          <span className="font-semibold text-slate-900">
+            {isDataMode ? "Data set" : "Passage"} {index + 1}
+          </span>
           <span className="block text-sm text-slate-600 truncate mt-0.5">
             {summary}
             {passage.questionCount
@@ -151,17 +163,17 @@ function PassageCard({
             }`}
           >
             <label className="block text-sm font-semibold text-slate-800">
-              Passage title
+              {isDataMode ? "Data set title" : "Passage title"}
               <input
                 type="text"
                 value={passage.title}
                 onChange={(e) => onChange(index, { title: e.target.value })}
                 className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-                placeholder="e.g. Life in the Arctic"
+                placeholder={isDataMode ? "e.g. Fruit sales at the market" : "e.g. Life in the Arctic"}
               />
             </label>
             <label className="block text-sm font-semibold text-slate-800">
-              Questions for this passage
+              Questions for this {isDataMode ? "data set" : "passage"}
               <input
                 type="number"
                 min={1}
@@ -175,7 +187,7 @@ function PassageCard({
                 className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
               />
             </label>
-            {buildUsingAi ? (
+            {buildUsingAi && !isDataMode ? (
               <label className="block text-sm font-semibold text-slate-800">
                 Minimum words
                 <input
@@ -198,7 +210,7 @@ function PassageCard({
           </div>
           {buildUsingAi ? (
             <label className="block text-sm font-semibold text-slate-800">
-              Passage prompt{" "}
+              {isDataMode ? "Data set prompt" : "Passage prompt"}{" "}
               <span className="font-normal text-slate-500">(optional)</span>
               <textarea
                 value={passage.aiPrompt || ""}
@@ -206,7 +218,23 @@ function PassageCard({
                 rows={3}
                 maxLength={1000}
                 className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y"
-                placeholder="e.g. Focus on climate change in the Arctic, include vocabulary about ecosystems…"
+                placeholder={
+                  isDataMode
+                    ? "e.g. Bar chart of weekly rainfall, line graph of plant growth…"
+                    : "e.g. Focus on climate change in the Arctic, include vocabulary about ecosystems…"
+                }
+              />
+            </label>
+          ) : isDataMode ? (
+            <label className="block text-sm font-semibold text-slate-800">
+              Caption{" "}
+              <span className="font-normal text-slate-500">(optional)</span>
+              <textarea
+                value={passage.body}
+                onChange={(e) => onChange(index, { body: e.target.value })}
+                rows={3}
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y"
+                placeholder="Short intro shown above the chart or table."
               />
             </label>
           ) : (
@@ -481,17 +509,18 @@ export default function QuestionBuilderPanel() {
   const countMismatch = questionCount !== recommendedCount;
   const isReadingComprehension =
     subject === "english" && englishType === "reading_comprehension";
+  const isDataPassageWorksheet = isDataPassageSubject(subject, format);
+  const isPassageWorksheet = isReadingComprehension || isDataPassageWorksheet;
   const isShortAnswer = format === "short_answer";
   const aiDraftNeedsReferenceAnswers =
     buildUsingAi && isShortAnswer && !aiGeneratesReferenceAnswers(subject);
   const rcQuestionTotal = useMemo(
-    () => (isReadingComprehension ? totalRcQuestionCount(passages) : questionCount),
-    [isReadingComprehension, passages, questionCount],
+    () => (isPassageWorksheet ? totalRcQuestionCount(passages) : questionCount),
+    [isPassageWorksheet, passages, questionCount],
   );
   const rcPassageQuestionGroups = useMemo(
-    () =>
-      isReadingComprehension ? groupQuestionsByPassage(passages, questions) : [],
-    [isReadingComprehension, passages, questions],
+    () => (isPassageWorksheet ? groupQuestionsByPassage(passages, questions) : []),
+    [isPassageWorksheet, passages, questions],
   );
   const previewModel = useMemo(
     () =>
@@ -503,7 +532,7 @@ export default function QuestionBuilderPanel() {
         englishType,
         passages,
         questions,
-        questionCount: isReadingComprehension ? rcQuestionTotal : questionCount,
+        questionCount: isPassageWorksheet ? rcQuestionTotal : questionCount,
         timed,
         timeLimitMinutes,
         scratchpad,
@@ -517,7 +546,7 @@ export default function QuestionBuilderPanel() {
       englishType,
       passages,
       questions,
-      isReadingComprehension,
+      isPassageWorksheet,
       rcQuestionTotal,
       questionCount,
       timed,
@@ -553,14 +582,14 @@ export default function QuestionBuilderPanel() {
     });
 
   useEffect(() => {
-    if (!isReadingComprehension) return;
+    if (!isPassageWorksheet) return;
     setQuestionCount(rcQuestionTotal);
-  }, [isReadingComprehension, rcQuestionTotal]);
+  }, [isPassageWorksheet, rcQuestionTotal]);
 
   useEffect(() => {
-    if (!isReadingComprehension) return;
+    if (!isPassageWorksheet) return;
     setQuestions((prev) => buildQuestionsFromPassages(passages, prev));
-  }, [passages, isReadingComprehension]);
+  }, [passages, isPassageWorksheet]);
 
   function updatePassage(index, patch) {
     setPassages((prev) =>
@@ -576,7 +605,7 @@ export default function QuestionBuilderPanel() {
 
   function handleStarsChange(nextStars) {
     setStars(nextStars);
-    if (isReadingComprehension) return;
+    if (isPassageWorksheet) return;
     const nextCount = defaultQuestionCount(nextStars);
     setQuestionCount(nextCount);
     setQuestions((prev) => resizeQuestions(prev, nextCount, format));
@@ -596,7 +625,14 @@ export default function QuestionBuilderPanel() {
       }
     } else {
       setEnglishType("");
-      setPassages([]);
+      if (nextSubject === "data" && format === "multiple_choice") {
+        const nextPassages = buildDefaultDataPassages();
+        setPassages(nextPassages);
+        setQuestions(buildQuestionsFromPassages(nextPassages));
+        setExpandedPassages(new Set([0]));
+      } else {
+        setPassages([]);
+      }
     }
     setScratchpad(defaultScratchpadForSubject(nextSubject));
   }
@@ -638,6 +674,9 @@ export default function QuestionBuilderPanel() {
         setEnglishType("critical_reasoning");
         setPassages([]);
       }
+      if (subject === "data") {
+        setPassages([]);
+      }
       setScratchpad(defaultScratchpadForSubject(subject));
     }
     setQuestions(buildQuestionList(questionCount, nextFormat));
@@ -645,7 +684,7 @@ export default function QuestionBuilderPanel() {
   }
 
   function handleQuestionCountChange(raw) {
-    if (isReadingComprehension) return;
+    if (isPassageWorksheet) return;
     const n = Math.max(1, Math.min(50, Number(raw) || 1));
     setQuestionCount(n);
     setQuestions((prev) => resizeQuestions(prev, n, format));
@@ -729,7 +768,7 @@ export default function QuestionBuilderPanel() {
         passages,
         timed,
         timeLimitMinutes,
-        questionCount: isReadingComprehension ? rcQuestionTotal : questionCount,
+        questionCount: isPassageWorksheet ? rcQuestionTotal : questionCount,
         apiKeyConfigured,
         aiEnabled,
       });
@@ -782,6 +821,23 @@ export default function QuestionBuilderPanel() {
           publishTitle = publishTitle || rc.title;
           publishQuestions = rc.questions;
           publishPassages = rc.passages;
+        } else if (isDataPassageWorksheet) {
+          const draft = await generateWorksheetDraft({
+            subject,
+            grade,
+            stars,
+            format,
+            passage_specs: passages.map((passage) => ({
+              id: passage.id,
+              question_count: Math.max(1, Number(passage.questionCount) || 1),
+              prompt: (passage.aiPrompt || "").trim(),
+            })),
+            custom_prompt: aiCustomPrompt.trim(),
+          });
+          const dataDraft = draftDataToBuilderState(draft);
+          publishTitle = publishTitle || dataDraft.title;
+          publishQuestions = dataDraft.questions;
+          publishPassages = dataDraft.passages;
         } else {
           const draft = await generateWorksheetDraft({
             subject,
@@ -798,7 +854,7 @@ export default function QuestionBuilderPanel() {
         revealGeneratedWorksheet({
           generatedTitle: publishTitle,
           generatedQuestions: publishQuestions,
-          generatedPassages: isReadingComprehension ? publishPassages : null,
+          generatedPassages: isPassageWorksheet ? publishPassages : null,
         });
         return;
       }
@@ -811,7 +867,7 @@ export default function QuestionBuilderPanel() {
         format,
         englishType,
         passages: publishPassages,
-        questionCount: isReadingComprehension ? publishQuestions.length : questionCount,
+        questionCount: isPassageWorksheet ? publishQuestions.length : questionCount,
         timed,
         timeLimitMinutes,
         scratchpad,
@@ -1148,7 +1204,7 @@ export default function QuestionBuilderPanel() {
                 name="format"
                 checked={format === "short_answer"}
                 onChange={() => handleFormatChange("short_answer")}
-                disabled={isReadingComprehension}
+                disabled={isPassageWorksheet}
                 className="mt-1"
               />
               <span>
@@ -1157,7 +1213,7 @@ export default function QuestionBuilderPanel() {
                 </span>
                 <span className="block text-xs text-slate-600">
                   Manual grading · you mark each response
-                  {isReadingComprehension ? " · not available for reading comprehension yet" : ""}
+                  {isPassageWorksheet ? " · not available for passage-based worksheets yet" : ""}
                 </span>
               </span>
             </label>
@@ -1166,21 +1222,23 @@ export default function QuestionBuilderPanel() {
 
         <div className="grid sm:grid-cols-2 gap-4 items-end">
           <label className="block text-sm font-semibold text-slate-800">
-            {isReadingComprehension ? "Total questions" : "Number of questions"}
+            {isPassageWorksheet ? "Total questions" : "Number of questions"}
             <input
               type="number"
               min={1}
               max={50}
-              value={isReadingComprehension ? rcQuestionTotal : questionCount}
+              value={isPassageWorksheet ? rcQuestionTotal : questionCount}
               onChange={(e) => handleQuestionCountChange(e.target.value)}
-              readOnly={isReadingComprehension}
+              readOnly={isPassageWorksheet}
               className={`mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm ${
-                isReadingComprehension ? "bg-slate-50 text-slate-600" : ""
+                isPassageWorksheet ? "bg-slate-50 text-slate-600" : ""
               }`}
             />
-            {isReadingComprehension ? (
+            {isPassageWorksheet ? (
               <span className="block text-xs text-slate-500 mt-1">
-                Sum of question counts across all passages.
+                {isDataPassageWorksheet
+                  ? "Sum of question counts across all data sets."
+                  : "Sum of question counts across all passages."}
               </span>
             ) : countMismatch ? (
               <span className="block text-xs text-amber-800 mt-1">
@@ -1249,11 +1307,11 @@ export default function QuestionBuilderPanel() {
         </div>
       </section>
 
-      {isReadingComprehension ? (
+      {isPassageWorksheet ? (
         <section className={`space-y-3 ${!buildUsingAi ? "mb-24" : "mb-6"}`}>
           <div className="flex flex-wrap items-center justify-between gap-3 px-1">
             <h2 className="font-bold text-slate-900">
-              Passages ({passages.length})
+              {isDataPassageWorksheet ? "Data sets" : "Passages"} ({passages.length})
             </h2>
             <div className="flex items-center gap-2">
               <button
@@ -1292,6 +1350,7 @@ export default function QuestionBuilderPanel() {
               onFocusQuestion={focusPreviewQuestion}
               registerPassage={registerPassage}
               registerQuestion={registerQuestion}
+              passageMode={isDataPassageWorksheet ? "data" : "rc"}
             />
           ))}
         </section>
@@ -1301,8 +1360,10 @@ export default function QuestionBuilderPanel() {
         <section className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 mb-6">
           <h2 className="font-bold text-indigo-950 mb-2">AI generation</h2>
           <p className="text-sm text-indigo-900 leading-relaxed">
-            {isReadingComprehension
-              ? "Passages and questions will be generated from the specs above when you press Generate worksheet. Review them side-by-side with preview, then publish."
+            {isPassageWorksheet
+              ? isDataPassageWorksheet
+                ? "Data sets with charts/tables and questions will be generated from the specs above when you press Generate worksheet. Review them side-by-side with preview, then publish."
+                : "Passages and questions will be generated from the specs above when you press Generate worksheet. Review them side-by-side with preview, then publish."
               : isShortAnswer && !aiGeneratesReferenceAnswers(subject)
                 ? "AI will generate question prompts — you add reference answers, review in preview, then publish."
                 : "Questions will be generated from the worksheet details above when you press Generate worksheet. Review them in the builder and preview, then publish."}{" "}
@@ -1317,9 +1378,11 @@ export default function QuestionBuilderPanel() {
               rows={4}
               maxLength={2000}
               placeholder={
-                isReadingComprehension
-                  ? "e.g. Use Canadian spelling, grade-appropriate vocabulary, mix inference and vocabulary questions…"
-                  : "e.g. Focus on word problems about money, use Canadian spelling, avoid decimals…"
+                isDataPassageWorksheet
+                  ? "e.g. Mix bar charts and tables, school survey contexts, grade-appropriate percentages…"
+                  : isReadingComprehension
+                    ? "e.g. Use Canadian spelling, grade-appropriate vocabulary, mix inference and vocabulary questions…"
+                    : "e.g. Focus on word problems about money, use Canadian spelling, avoid decimals…"
               }
               className="mt-1 w-full rounded-xl border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-y min-h-[6rem]"
             />
@@ -1328,7 +1391,7 @@ export default function QuestionBuilderPanel() {
             These notes are sent to the AI along with subject, grade, and difficulty.
           </p>
         </section>
-      ) : !buildUsingAi && !isReadingComprehension ? (
+      ) : !buildUsingAi && !isPassageWorksheet ? (
         <section className="space-y-3 mb-24">
           <h2 className="font-bold text-slate-900 px-1">
             Questions ({questions.length})
@@ -1379,14 +1442,20 @@ export default function QuestionBuilderPanel() {
           {buildUsingAi ? (
             <p className="text-sm text-slate-600">
               {aiDraftNeedsReferenceAnswers
-                ? `Generate ${isReadingComprehension ? rcQuestionTotal : questionCount} short-answer question${
-                    (isReadingComprehension ? rcQuestionTotal : questionCount) === 1 ? "" : "s"
+                ? `Generate ${isPassageWorksheet ? rcQuestionTotal : questionCount} short-answer question${
+                    (isPassageWorksheet ? rcQuestionTotal : questionCount) === 1 ? "" : "s"
                   } with AI — then add reference answers and publish`
-                : `Generate ${isReadingComprehension ? rcQuestionTotal : questionCount} ${
+                : `Generate ${isPassageWorksheet ? rcQuestionTotal : questionCount} ${
                     format === "multiple_choice" ? "multiple-choice" : "short-answer"
                   } question${
-                    (isReadingComprehension ? rcQuestionTotal : questionCount) === 1 ? "" : "s"
-                  } with AI${isReadingComprehension ? ` across ${passages.length} passages` : ""} — review, then publish`}
+                    (isPassageWorksheet ? rcQuestionTotal : questionCount) === 1 ? "" : "s"
+                  } with AI${
+                    isPassageWorksheet
+                      ? isDataPassageWorksheet
+                        ? ` across ${passages.length} data sets`
+                        : ` across ${passages.length} passages`
+                      : ""
+                  } — review, then publish`}
             </p>
           ) : (
             <p className="text-sm text-slate-600">

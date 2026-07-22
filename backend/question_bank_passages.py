@@ -161,17 +161,15 @@ def create_question_bank_passage(*, admin_id: int, data: dict) -> dict:
     body = str(data.get("body") or "").strip()
     if not title:
         raise ValueError(["Passage title is required."])
-    if not body:
-        raise ValueError(["Passage text is required."])
+    chart = data.get("chart")
+    table = data.get("table")
+    if not body and chart is None and table is None:
+        raise ValueError(["Passage needs body text, a chart, or a table."])
     source = str(data.get("source") or "manual").strip().lower()
     if source not in {"manual", "ai", "imported"}:
         source = "manual"
-    chart_json = None
-    table_json = None
-    if data.get("chart") is not None:
-        chart_json = json.dumps(data["chart"])
-    if data.get("table") is not None:
-        table_json = json.dumps(data["table"])
+    chart_json = json.dumps(chart) if chart is not None else None
+    table_json = json.dumps(table) if table is not None else None
     passage_id = generate_passage_id(subject)
     now = _now_iso()
     conn = db.connect()
@@ -215,10 +213,10 @@ def update_question_bank_passage(
     body = str(data.get("body", existing["body"]) or "").strip()
     if not title:
         raise ValueError(["Passage title is required."])
-    if not body:
-        raise ValueError(["Passage text is required."])
     chart = data.get("chart", existing.get("chart"))
     table = data.get("table", existing.get("table"))
+    if not body and not chart and not table:
+        raise ValueError(["Passage needs body text, a chart, or a table."])
     chart_json = json.dumps(chart) if chart is not None else None
     table_json = json.dumps(table) if table is not None else None
     now = _now_iso()
