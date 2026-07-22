@@ -33,7 +33,7 @@ function PreviewQuestionCard({
       }`}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
-        <p className={`font-medium flex-1 ${promptClass}`}>
+        <p className={`font-medium flex-1 whitespace-pre-line ${promptClass}`}>
           {index + 1}. {question.prompt}
         </p>
         <QuestionDifficultyStars stars={question.stars} />

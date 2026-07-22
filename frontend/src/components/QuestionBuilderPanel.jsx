@@ -30,11 +30,11 @@ import {
   DEFAULT_RC_MIN_WORDS,
   defaultScratchpadForSubject,
   draftRcToBuilderState,
+  draftCrToStandaloneQuestions,
   draftDataToBuilderState,
   draftToBuilderQuestions,
   groupQuestionsByPassage,
   isBuilderQuestionComplete,
-  isCriticalReasoningPassageWorksheet,
   isDataPassageSubject,
   aiGeneratesReferenceAnswers,
   totalRcQuestionCount,
@@ -511,13 +511,7 @@ export default function QuestionBuilderPanel() {
   const isReadingComprehension =
     subject === "english" && englishType === "reading_comprehension";
   const isDataPassageWorksheet = isDataPassageSubject(subject, format);
-  const isCriticalReasoningPassages = isCriticalReasoningPassageWorksheet(
-    subject,
-    englishType,
-    passages,
-  );
   const isPassageWorksheet = isReadingComprehension || isDataPassageWorksheet;
-  const publishUsesPassages = isPassageWorksheet || isCriticalReasoningPassages;
   const isShortAnswer = format === "short_answer";
   const aiDraftNeedsReferenceAnswers =
     buildUsingAi && isShortAnswer && !aiGeneratesReferenceAnswers(subject);
@@ -746,6 +740,9 @@ export default function QuestionBuilderPanel() {
       setPassages(generatedPassages);
       setQuestionCount(generatedQuestions.length);
       setExpandedPassages(new Set([0]));
+    } else {
+      setPassages([]);
+      setQuestionCount(generatedQuestions.length);
     }
     setBuildUsingAi(false);
     setExpanded(new Set([0]));
@@ -859,10 +856,10 @@ export default function QuestionBuilderPanel() {
             question_count: questionCount,
             custom_prompt: aiCustomPrompt.trim(),
           });
-          const cr = draftRcToBuilderState(draft);
+          const cr = draftCrToStandaloneQuestions(draft);
           publishTitle = publishTitle || cr.title;
           publishQuestions = cr.questions;
-          publishPassages = cr.passages;
+          publishPassages = [];
         } else {
           const draft = await generateWorksheetDraft({
             subject,

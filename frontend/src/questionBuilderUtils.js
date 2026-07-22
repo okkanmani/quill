@@ -90,15 +90,6 @@ export function isDataPassageSubject(subject, format = "multiple_choice") {
   return subject === "data" && format === "multiple_choice";
 }
 
-export function isCriticalReasoningPassageWorksheet(subject, englishType, passages) {
-  return (
-    subject === "english" &&
-    englishType === "critical_reasoning" &&
-    Array.isArray(passages) &&
-    passages.length > 0
-  );
-}
-
 export function inferEnglishTypeFromWorksheet(worksheet) {
   if (worksheet?.subject !== "english") return "";
   const passages = worksheet.passages || [];
@@ -241,6 +232,36 @@ export function isBuilderQuestionComplete(question, format) {
     );
   }
   return Boolean(question.answer.trim());
+}
+
+export function mergeCrStimulusAndPrompt(passage, question) {
+  const title = String(passage?.title || "").trim();
+  const stimulus = String(passage?.body || passage?.text || "").trim();
+  const prompt = String(question?.prompt || "").trim();
+  const stimulusBlock = [title, stimulus].filter(Boolean).join("\n");
+  if (!stimulusBlock) return prompt;
+  if (!prompt) return stimulusBlock;
+  return `${stimulusBlock}\n\n${prompt}`;
+}
+
+/** Flatten AI critical-reasoning draft into standalone questions (no linked passages). */
+export function draftCrToStandaloneQuestions(draft) {
+  const questions = [];
+  (draft.passages || []).forEach((passage) => {
+    (passage.questions || []).forEach((question) => {
+      questions.push({
+        prompt: mergeCrStimulusAndPrompt(passage, question),
+        area: question.area || "",
+        choices: question.choices,
+        correctIndex: question.correct_index,
+        passageId: "",
+      });
+    });
+  });
+  return {
+    title: draft.title || "",
+    questions,
+  };
 }
 
 export function draftRcToBuilderState(draft) {
@@ -393,26 +414,6 @@ export function validateBuilderForm({
     }
   }
 
-  if (isCriticalReasoningPassageWorksheet(subject, englishType, passages)) {
-    passages.forEach((passage, i) => {
-      if (!passage.title?.trim()) {
-        errors.push(`Stimulus ${i + 1}: title is required.`);
-      }
-      if (!passage.body?.trim()) {
-        errors.push(`Stimulus ${i + 1}: passage text is required.`);
-      }
-      const count = Math.max(1, Number(passage.questionCount) || 1);
-      if (count !== 1) {
-        errors.push(`Stimulus ${i + 1}: critical reasoning uses one question per passage.`);
-      }
-    });
-    if (questions.length !== passages.length) {
-      errors.push(
-        `Expected ${passages.length} questions (one per stimulus) but found ${questions.length}.`,
-      );
-    }
-  }
-
   questions.forEach((q, i) => {
     const n = i + 1;
     if (!q.prompt.trim()) {
@@ -439,9 +440,7 @@ export function validateBuilderForm({
       (subject === "english" &&
         englishType === "reading_comprehension" &&
         !q.passageId) ||
-      (isDataPassageSubject(subject, format) && !q.passageId) ||
-      (isCriticalReasoningPassageWorksheet(subject, englishType, passages) &&
-        !q.passageId)
+      (isDataPassageSubject(subject, format) && !q.passageId)
     ) {
       errors.push(`Question ${n}: missing linked passage.`);
     }
@@ -668,17 +667,6 @@ export function builderPayload({
       body: passage.body.trim(),
     }));
   }
-  if (
-    subject === "english" &&
-    englishType === "critical_reasoning" &&
-    passages?.length
-  ) {
-    payload.passages = passages.map((passage) => ({
-      id: passage.id,
-      title: passage.title.trim(),
-      body: passage.body.trim(),
-    }));
-  }
   if (isDataPassageSubject(subject, format) && passages?.length) {
     payload.passages = passages.map((passage) => {
       const entry = {
@@ -755,13 +743,7 @@ export function buildWorksheetPreviewFromBuilder({
   const isReadingComprehension =
     subject === "english" && englishType === "reading_comprehension";
   const isDataPassageWorksheet = isDataPassageSubject(subject, format);
-  const isCriticalReasoningPassages = isCriticalReasoningPassageWorksheet(
-    subject,
-    englishType,
-    passages,
-  );
-  const isPassageWorksheet =
-    isReadingComprehension || isDataPassageWorksheet || isCriticalReasoningPassages;
+  const isPassageWorksheet = isReadingComprehension || isDataPassageWorksheet;
   const manual = format === "short_answer";
   let previewPassages = [];
   let previewQuestions = [];
@@ -773,14 +755,10 @@ export function buildWorksheetPreviewFromBuilder({
         (buildUsingAi
           ? isDataPassageWorksheet
             ? `Data set ${index + 1} (AI)`
-            : isCriticalReasoningPassages
-              ? `Stimulus ${index + 1} (AI)`
-              : `Passage ${index + 1} (AI)`
+            : `Passage ${index + 1} (AI)`
           : isDataPassageWorksheet
             ? "Untitled data set"
-            : isCriticalReasoningPassages
-              ? "Untitled stimulus"
-              : "Untitled passage");
+            : "Untitled passage");
       let body = passage.body?.trim() || "";
       let bodyPlaceholder = false;
 
@@ -791,11 +769,6 @@ export function buildWorksheetPreviewFromBuilder({
           body = prompt
             ? `AI will generate a chart or table with numeric data.\n\nPrompt: ${prompt}`
             : "AI will generate a chart or table with numeric data.";
-        } else if (isCriticalReasoningPassages) {
-          const prompt = (passage.aiPrompt || "").trim();
-          body = prompt
-            ? `AI will generate a short critical-reasoning stimulus.\n\nPrompt: ${prompt}`
-            : "AI will generate a short critical-reasoning stimulus (1–4 sentences).";
         } else {
           const minWords = Math.max(
             50,
@@ -810,9 +783,7 @@ export function buildWorksheetPreviewFromBuilder({
         bodyPlaceholder = true;
         body = isDataPassageWorksheet
           ? "Data context not entered yet."
-          : isCriticalReasoningPassages
-            ? "Stimulus text not entered yet."
-            : "Passage text not entered yet.";
+          : "Passage text not entered yet.";
       }
 
       const previewPassage = {

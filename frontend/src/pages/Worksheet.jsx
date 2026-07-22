@@ -651,7 +651,7 @@ export default function Worksheet() {
         className={`bg-white border rounded-2xl p-5 shadow-sm ${questionBorderClass(q)}`}
       >
         <div className="flex items-start justify-between gap-3 mb-3">
-          <p className="text-slate-900 font-medium flex-1">
+          <p className="text-slate-900 font-medium flex-1 whitespace-pre-line">
             {index + 1}. {q.prompt}
           </p>
           <div className="shrink-0 flex items-center gap-2">
