@@ -1,5 +1,44 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { listQuestionBankAreas } from "../api";
+
+function buildDropdownItems(areas, nearMatches, caseVariant, trimmed) {
+  const seen = new Set();
+  const items = [];
+
+  for (const area of areas) {
+    const key = area.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    items.push({ area, badge: null });
+  }
+
+  if (caseVariant && caseVariant !== trimmed) {
+    const key = caseVariant.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      items.push({ area: caseVariant, badge: "existing" });
+    }
+  }
+
+  for (const area of nearMatches) {
+    const key = area.toLowerCase();
+    if (key === trimmed.toLowerCase() || seen.has(key)) continue;
+    seen.add(key);
+    items.push({ area, badge: "similar" });
+  }
+
+  return items;
+}
+
+function AreaBadge({ badge }) {
+  if (!badge) return null;
+  const label = badge === "similar" ? "Similar" : "Existing";
+  return (
+    <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
+      {label}
+    </span>
+  );
+}
 
 export default function AreaCombobox({
   subject,
@@ -19,6 +58,12 @@ export default function AreaCombobox({
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
 
+  const trimmed = value.trim();
+  const dropdownItems = useMemo(
+    () => buildDropdownItems(suggestions, nearMatches, caseVariant, trimmed),
+    [suggestions, nearMatches, caseVariant, trimmed],
+  );
+
   useEffect(() => {
     if (!subject || !open) return undefined;
 
@@ -33,12 +78,14 @@ export default function AreaCombobox({
           setSuggestions(areas);
           setNearMatches(near);
           setCaseVariant(variant);
-          setActiveIndex(areas.length ? 0 : -1);
+          const items = buildDropdownItems(areas, near, variant, value.trim());
+          setActiveIndex(items.length ? 0 : -1);
         })
         .catch(() => {
           setSuggestions([]);
           setNearMatches([]);
           setCaseVariant(null);
+          setActiveIndex(-1);
         })
         .finally(() => setLoading(false));
     }, 200);
@@ -69,29 +116,23 @@ export default function AreaCombobox({
   }
 
   function handleKeyDown(event) {
-    if (!open || !suggestions.length) return;
+    if (!open || !dropdownItems.length) return;
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      setActiveIndex((prev) => (prev + 1) % suggestions.length);
+      setActiveIndex((prev) => (prev + 1) % dropdownItems.length);
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      setActiveIndex((prev) => (prev <= 0 ? suggestions.length - 1 : prev - 1));
+      setActiveIndex((prev) => (prev <= 0 ? dropdownItems.length - 1 : prev - 1));
     } else if (event.key === "Enter" && activeIndex >= 0) {
       event.preventDefault();
-      selectSuggestion(suggestions[activeIndex]);
+      selectSuggestion(dropdownItems[activeIndex].area);
     } else if (event.key === "Escape") {
       setOpen(false);
       setActiveIndex(-1);
     }
   }
 
-  const trimmed = value.trim();
-  const showList = open && subject && (loading || suggestions.length > 0);
-  const showCaseVariant = Boolean(trimmed && caseVariant && caseVariant !== trimmed);
-  const filteredNearMatches = nearMatches.filter(
-    (area) => area.toLowerCase() !== trimmed.toLowerCase(),
-  );
-  const showNearMatches = trimmed && filteredNearMatches.length > 0;
+  const showList = open && subject && (loading || dropdownItems.length > 0);
 
   return (
     <div ref={rootRef} className={`relative ${className}`}>
@@ -121,19 +162,24 @@ export default function AreaCombobox({
           {loading ? (
             <li className="px-3 py-2 text-sm text-slate-500">Looking up areas…</li>
           ) : (
-            suggestions.map((area, index) => (
-              <li key={area} role="option" aria-selected={index === activeIndex}>
+            dropdownItems.map((item, index) => (
+              <li
+                key={`${item.badge || "match"}-${item.area}`}
+                role="option"
+                aria-selected={index === activeIndex}
+              >
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => selectSuggestion(area)}
-                  className={`w-full px-3 py-2 text-left text-sm transition ${
+                  onClick={() => selectSuggestion(item.area)}
+                  className={`w-full px-3 py-2 text-left text-sm transition flex items-center justify-between gap-2 ${
                     index === activeIndex
                       ? "bg-indigo-50 text-indigo-900"
                       : "text-slate-800 hover:bg-slate-50"
                   }`}
                 >
-                  {area}
+                  <span className="min-w-0 truncate">{item.area}</span>
+                  <AreaBadge badge={item.badge} />
                 </button>
               </li>
             ))
@@ -143,37 +189,7 @@ export default function AreaCombobox({
       {!subject ? (
         <p className="mt-1 text-xs text-slate-500">Choose a subject first.</p>
       ) : null}
-      {showCaseVariant ? (
-        <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
-          <span className="font-medium">{caseVariant}</span> already exists with different
-          capitalization.{" "}
-          <button
-            type="button"
-            onClick={() => selectSuggestion(caseVariant)}
-            className="font-semibold text-amber-900 underline hover:text-amber-950"
-          >
-            Use existing
-          </button>
-        </div>
-      ) : null}
-      {showNearMatches ? (
-        <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
-          <p className="font-medium mb-1.5">Similar areas already in the bank:</p>
-          <div className="flex flex-wrap gap-1.5">
-            {filteredNearMatches.map((area) => (
-              <button
-                key={area}
-                type="button"
-                onClick={() => selectSuggestion(area)}
-                className="rounded-lg border border-amber-300 bg-white px-2 py-1 text-xs font-semibold text-amber-950 hover:bg-amber-100 transition"
-              >
-                {area}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
-      {subject && open && !loading && trimmed && !suggestions.length && !showNearMatches && !showCaseVariant ? (
+      {subject && open && !loading && trimmed && !dropdownItems.length ? (
         <p className="mt-1 text-xs text-slate-500">
           No matching areas — type a new topic name.
         </p>
