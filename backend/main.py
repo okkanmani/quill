@@ -192,6 +192,8 @@ class WorksheetBuilderPassageRequest(BaseModel):
     id: str | None = None
     title: str
     body: str
+    chart: dict | None = None
+    table: dict | None = None
 
 
 class WorksheetBuilderQuestionRequest(BaseModel):
