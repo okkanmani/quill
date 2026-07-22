@@ -879,12 +879,13 @@ export default function QuestionBuilderPanel() {
         revealGeneratedWorksheet({
           generatedTitle: publishTitle,
           generatedQuestions: publishQuestions,
-          generatedPassages: publishUsesPassages ? publishPassages : null,
+          generatedPassages: publishPassages?.length ? publishPassages : null,
         });
         return;
       }
 
       setPublishPhase(editId ? "Saving…" : "Publishing…");
+      const payloadUsesPassages = Boolean(publishPassages?.length);
       const payload = builderPayload({
         title: publishTitle,
         subject,
@@ -892,7 +893,7 @@ export default function QuestionBuilderPanel() {
         format,
         englishType,
         passages: publishPassages,
-        questionCount: publishUsesPassages ? publishQuestions.length : questionCount,
+        questionCount: payloadUsesPassages ? publishQuestions.length : questionCount,
         timed,
         timeLimitMinutes,
         scratchpad,
