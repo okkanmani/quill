@@ -433,6 +433,140 @@ Return JSON matching this schema:
     return base
 
 
+def _build_cr_prompt(
+    *,
+    grade: int,
+    stars: int,
+    question_count: int,
+    custom_prompt: str = "",
+) -> str:
+    difficulty = _difficulty_label(stars)
+    schema = """
+{
+  "title": "short worksheet title",
+  "passages": [
+    {
+      "id": "p1",
+      "title": "short stimulus label",
+      "body": "One to four sentences: scenario, argument, policy, or statement for the student to analyze.",
+      "questions": [
+        {
+          "prompt": "the reasoning question only — do not repeat the stimulus text here",
+          "area": "specific skill label",
+          "choices": ["choice A text", "choice B text", "choice C text", "choice D text"],
+          "correct_index": 0
+        }
+      ]
+    }
+  ]
+}
+"""
+    base = f"""Generate a critical-reasoning worksheet as JSON only.
+
+Audience: grade {grade} students in Canada/US curriculum style.
+Subject: English critical reasoning (logic, argument analysis, inference)
+Difficulty: {difficulty} (stars {stars} of 3)
+Number of items: exactly {question_count}
+CRITICAL: The passages array must contain exactly {question_count} items — count before responding.
+
+Each item is ONE short stimulus plus ONE multiple-choice question:
+- Put the full stimulus (1–4 sentences) in passage body — e.g. a mini-argument, policy rule, advertisement claim, or logical setup.
+- Each passage must have exactly 1 question in its questions array.
+- The question prompt must ask about the stimulus without repeating it verbatim.
+- Mix skills when possible: weaken/strengthen, assumption, inference, flaw in reasoning, policy evaluation.
+- Each question must have exactly 4 distinct choices and a correct_index (0-3).
+- Each question must include a specific lowercase area label (e.g. inference, assumption, flaw).
+- Do not prefix choices with letters.
+- Title under 80 characters.
+
+Return JSON matching this schema:
+{schema}
+"""
+    extra = (custom_prompt or "").strip()
+    if extra:
+        if len(extra) > 2000:
+            extra = extra[:2000]
+        return base + f"\nAdditional instructions from the teacher:\n{extra}\n"
+    return base
+
+
+def _normalize_cr_draft(data: dict, *, question_count: int) -> dict:
+    title = data.get("title")
+    if not isinstance(title, str) or not title.strip():
+        raise ValueError("AI draft is missing a title.")
+
+    raw_passages = data.get("passages")
+    if not isinstance(raw_passages, list) or not raw_passages:
+        raise ValueError("AI draft has no passages.")
+
+    if len(raw_passages) < question_count:
+        raise ValueError(
+            f"AI returned {len(raw_passages)} passages; expected {question_count}."
+        )
+    if len(raw_passages) > question_count:
+        raw_passages = raw_passages[:question_count]
+
+    passages: list[dict] = []
+    for i, raw in enumerate(raw_passages):
+        prefix = f"passages[{i}]"
+        if not isinstance(raw, dict):
+            raise ValueError(f"{prefix} is invalid.")
+        pid = raw.get("id")
+        passage_id = pid.strip() if isinstance(pid, str) and pid.strip() else f"p{i + 1}"
+        ptitle = raw.get("title")
+        body = raw.get("body") or raw.get("text")
+        if not isinstance(ptitle, str) or not ptitle.strip():
+            raise ValueError(f"{prefix}.title is required.")
+        if not isinstance(body, str) or not body.strip():
+            raise ValueError(f"{prefix}.body is required.")
+
+        raw_questions = raw.get("questions")
+        if not isinstance(raw_questions, list) or not raw_questions:
+            raise ValueError(f"{prefix} has no questions.")
+        if len(raw_questions) > 1:
+            raw_questions = raw_questions[:1]
+
+        rq = raw_questions[0]
+        qprefix = f"{prefix}.questions[0]"
+        if not isinstance(rq, dict):
+            raise ValueError(f"{qprefix} is invalid.")
+        prompt = rq.get("prompt")
+        if not isinstance(prompt, str) or not prompt.strip():
+            raise ValueError(f"{qprefix}.prompt is required.")
+        area = rq.get("area")
+        if not isinstance(area, str) or not area.strip():
+            raise ValueError(f"{qprefix}.area is required.")
+        choices = rq.get("choices")
+        correct_index = rq.get("correct_index")
+        if not isinstance(choices, list) or len(choices) != 4:
+            raise ValueError(f"{qprefix} must have 4 choices.")
+        trimmed = [str(c).strip() for c in choices]
+        if any(not c for c in trimmed):
+            raise ValueError(f"{qprefix} has empty choices.")
+        if len(set(trimmed)) < 4:
+            raise ValueError(f"{qprefix} has duplicate choices.")
+        if not isinstance(correct_index, int) or correct_index not in (0, 1, 2, 3):
+            raise ValueError(f"{qprefix} has invalid correct_index.")
+
+        passages.append(
+            {
+                "id": passage_id,
+                "title": ptitle.strip(),
+                "body": body.strip(),
+                "questions": [
+                    {
+                        "prompt": prompt.strip(),
+                        "area": area.strip().lower(),
+                        "choices": trimmed,
+                        "correct_index": correct_index,
+                    }
+                ],
+            }
+        )
+
+    return {"title": title.strip(), "passages": passages}
+
+
 def _build_rc_prompt(
     *,
     grade: int,
@@ -856,6 +990,31 @@ def generate_worksheet_draft(
     specs = passage_specs or []
     is_rc = subject == "english" and english_type == "reading_comprehension" and specs
     is_data = subject == "data" and fmt == "multiple_choice" and specs
+    is_cr = (
+        subject == "english"
+        and english_type == "critical_reasoning"
+        and fmt == "multiple_choice"
+    )
+
+    if is_cr:
+        count = (
+            question_count
+            if question_count is not None
+            else STARS_DEFAULT_QUESTION_COUNTS[stars]
+        )
+        if not isinstance(count, int) or count < 1 or count > 50:
+            raise ValueError("question_count must be between 1 and 50.")
+        user_prompt = _build_cr_prompt(
+            grade=grade,
+            stars=stars,
+            question_count=count,
+            custom_prompt=custom_prompt,
+        )
+        parsed = _openai_json_completion(
+            api_key=api_key,
+            messages=[{"role": "user", "content": user_prompt}],
+        )
+        return _normalize_cr_draft(parsed, question_count=count)
 
     if is_rc or is_data:
         normalized_specs = []

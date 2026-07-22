@@ -34,6 +34,7 @@ import {
   draftToBuilderQuestions,
   groupQuestionsByPassage,
   isBuilderQuestionComplete,
+  isCriticalReasoningPassageWorksheet,
   isDataPassageSubject,
   aiGeneratesReferenceAnswers,
   totalRcQuestionCount,
@@ -510,7 +511,13 @@ export default function QuestionBuilderPanel() {
   const isReadingComprehension =
     subject === "english" && englishType === "reading_comprehension";
   const isDataPassageWorksheet = isDataPassageSubject(subject, format);
+  const isCriticalReasoningPassages = isCriticalReasoningPassageWorksheet(
+    subject,
+    englishType,
+    passages,
+  );
   const isPassageWorksheet = isReadingComprehension || isDataPassageWorksheet;
+  const publishUsesPassages = isPassageWorksheet || isCriticalReasoningPassages;
   const isShortAnswer = format === "short_answer";
   const aiDraftNeedsReferenceAnswers =
     buildUsingAi && isShortAnswer && !aiGeneratesReferenceAnswers(subject);
@@ -838,6 +845,24 @@ export default function QuestionBuilderPanel() {
           publishTitle = publishTitle || dataDraft.title;
           publishQuestions = dataDraft.questions;
           publishPassages = dataDraft.passages;
+        } else if (
+          subject === "english" &&
+          englishType === "critical_reasoning" &&
+          format === "multiple_choice"
+        ) {
+          const draft = await generateWorksheetDraft({
+            subject,
+            grade,
+            stars,
+            format,
+            english_type: "critical_reasoning",
+            question_count: questionCount,
+            custom_prompt: aiCustomPrompt.trim(),
+          });
+          const cr = draftRcToBuilderState(draft);
+          publishTitle = publishTitle || cr.title;
+          publishQuestions = cr.questions;
+          publishPassages = cr.passages;
         } else {
           const draft = await generateWorksheetDraft({
             subject,
@@ -854,7 +879,7 @@ export default function QuestionBuilderPanel() {
         revealGeneratedWorksheet({
           generatedTitle: publishTitle,
           generatedQuestions: publishQuestions,
-          generatedPassages: isPassageWorksheet ? publishPassages : null,
+          generatedPassages: publishUsesPassages ? publishPassages : null,
         });
         return;
       }
@@ -867,7 +892,7 @@ export default function QuestionBuilderPanel() {
         format,
         englishType,
         passages: publishPassages,
-        questionCount: isPassageWorksheet ? publishQuestions.length : questionCount,
+        questionCount: publishUsesPassages ? publishQuestions.length : questionCount,
         timed,
         timeLimitMinutes,
         scratchpad,
