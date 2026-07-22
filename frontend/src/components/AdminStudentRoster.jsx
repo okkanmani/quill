@@ -192,6 +192,11 @@ export default function AdminStudentRoster({
                   {student.grade != null ? (
                     <span className="text-sm text-slate-500 shrink-0">Gr. {student.grade}</span>
                   ) : null}
+                  {selected ? (
+                    <span className="inline-flex shrink-0 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-900">
+                      Selected
+                    </span>
+                  ) : null}
                 </div>
                 <StudentAttentionChips
                   student={student}
