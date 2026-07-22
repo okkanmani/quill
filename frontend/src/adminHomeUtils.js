@@ -23,10 +23,6 @@ export function activityKindBadgeClass(item) {
   return "bg-sky-100 text-sky-900 border-sky-200";
 }
 
-export function attentionKindLabel(item) {
-  return item.kind === "reinforcement" ? "Reinforcement" : "Needs addressing";
-}
-
 export function attentionKindBadgeClass(item) {
   if (item.kind === "reinforcement") {
     return "bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100";
@@ -55,11 +51,6 @@ export function activityDestination(item) {
     return "/admin/worksheets";
   }
   return null;
-}
-
-export function attentionItemDestination(item) {
-  if (!item?.subject || !item?.area) return "/admin/analysis";
-  return `/admin/analysis?focus=${encodeURIComponent(focusSelectionKey(item.subject, item.area))}`;
 }
 
 export async function navigateForStudent(

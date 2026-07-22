@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getAdminHome, logout, switchAdminStudent } from "../api";
+import { getAdminHome, logout, switchAdminStudent, clearAdminStudentContext } from "../api";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import {
   activityDestination,
@@ -37,15 +37,19 @@ function ActivityKindBadge({ item }) {
   );
 }
 
-function ActivityRow({ item, onNavigate, switchingStudent }) {
+function ActivityRow({ item, onNavigate, switchingStudent, showStudentName = true }) {
   const destination = activityDestination(item);
   const content = (
     <>
       <div className="min-w-0 flex items-center gap-2 flex-wrap">
         <ActivityKindBadge item={item} />
         <span className="text-sm text-slate-800 truncate">
-          <span className="font-medium text-slate-900">{item.student_name}</span>
-          <span className="text-slate-500"> · </span>
+          {showStudentName ? (
+            <>
+              <span className="font-medium text-slate-900">{item.student_name}</span>
+              <span className="text-slate-500"> · </span>
+            </>
+          ) : null}
           <span>{activityTitle(item)}</span>
         </span>
       </div>
@@ -102,7 +106,22 @@ export default function AdminLanding() {
 
   async function handleSelectStudent(name) {
     const current = localStorage.getItem("studentName") || "";
-    if (!name || name === current) return;
+    if (!name) return;
+    if (name === current) {
+      setSwitchingStudent(name);
+      setError("");
+      try {
+        const cleared = await clearAdminStudentContext();
+        localStorage.setItem("token", cleared.token);
+        localStorage.removeItem("studentName");
+        localStorage.removeItem("studentGrade");
+        window.location.reload();
+      } catch {
+        setError("Could not clear student selection.");
+        setSwitchingStudent("");
+      }
+      return;
+    }
     setSwitchingStudent(name);
     setError("");
     try {
@@ -153,6 +172,14 @@ export default function AdminLanding() {
   const students = data?.students || [];
   const recentActivity = data?.recent_activity || [];
   const pending = data?.pending || [];
+  const selectedStudent = data?.selected_student || localStorage.getItem("studentName") || "";
+  const scopedToStudent = Boolean(selectedStudent);
+  const activitySectionLabel = scopedToStudent
+    ? `Recent activity · ${selectedStudent}`
+    : "Recent activity · all students";
+  const pendingSectionLabel = scopedToStudent
+    ? `Pending · ${selectedStudent}`
+    : "Pending";
 
   return (
     <AppShell navLinks={ADMIN_MAIN_NAV} onLogout={handleLogout}>
@@ -161,7 +188,9 @@ export default function AdminLanding() {
 
         <h1 className="text-2xl font-bold text-slate-950 mb-1">Home</h1>
         <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-          Overview of your students, recent activity, and items that need attention.
+          {scopedToStudent
+            ? `Overview for ${selectedStudent}. Click their name again to view all students.`
+            : "Overview of your students, recent activity, and items that need attention."}
         </p>
 
         {error ? (
@@ -190,7 +219,7 @@ export default function AdminLanding() {
               <SectionLabel>Students</SectionLabel>
               <AdminStudentRoster
                 students={students}
-                selectedName={localStorage.getItem("studentName") || ""}
+                selectedName={selectedStudent}
                 onSelectStudent={handleSelectStudent}
                 onNavigateForStudent={handleNavigateForStudent}
                 switchingStudent={switchingStudent}
@@ -199,10 +228,12 @@ export default function AdminLanding() {
 
             <div className="grid lg:grid-cols-[1.4fr_1fr] gap-5 items-start">
               <section>
-                <SectionLabel>Recent activity</SectionLabel>
+                <SectionLabel>{activitySectionLabel}</SectionLabel>
                 {recentActivity.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-                    No recent activity yet.
+                    {scopedToStudent
+                      ? `No recent activity for ${selectedStudent} yet.`
+                      : "No recent activity yet."}
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
@@ -212,6 +243,7 @@ export default function AdminLanding() {
                         item={item}
                         onNavigate={handleNavigateForStudent}
                         switchingStudent={switchingStudent}
+                        showStudentName={!scopedToStudent}
                       />
                     ))}
                   </div>
@@ -244,10 +276,12 @@ export default function AdminLanding() {
                 </section>
 
                 <section>
-                  <SectionLabel>Pending</SectionLabel>
+                  <SectionLabel>{pendingSectionLabel}</SectionLabel>
                   {pending.length === 0 ? (
                     <div className="rounded-xl border border-dashed border-slate-200 px-3.5 py-4 text-sm text-slate-500">
-                      Nothing waiting for unlock.
+                      {scopedToStudent
+                        ? `Nothing waiting for unlock for ${selectedStudent}.`
+                        : "Nothing waiting for unlock."}
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2">
@@ -264,9 +298,13 @@ export default function AdminLanding() {
                             </span>
                             <p className="text-sm font-medium text-slate-900">{item.title}</p>
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            Locked · {item.student_name} · awaiting unlock
-                          </p>
+                          {!scopedToStudent ? (
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              Locked · {item.student_name} · awaiting unlock
+                            </p>
+                          ) : (
+                            <p className="text-xs text-slate-500 mt-0.5">Locked · awaiting unlock</p>
+                          )}
                         </button>
                       ))}
                     </div>

@@ -84,51 +84,6 @@ def _collect_focus_area_keys(student_name: str) -> tuple[set[tuple[str, str]], d
     return area_keys, key_subject
 
 
-def _attention_items_for_student(student_name: str, *, limit: int = 4) -> list[dict]:
-    discussed_rows = list_focus_areas_discussed(student_name)
-    discussed_keys = {
-        _discussed_key(row["subject"], row["area"]) for row in discussed_rows
-    }
-    area_keys, key_subject = _collect_focus_area_keys(student_name)
-
-    items: list[dict] = []
-    for subject, area in sorted(area_keys):
-        key = (subject, area)
-        if key in discussed_keys:
-            continue
-        items.append(
-            {
-                "kind": "needs_addressing",
-                "subject": key_subject.get(key, subject),
-                "area": area,
-            }
-        )
-
-    for row in discussed_rows:
-        reinforced_at = row.get("last_reinforced_at")
-        discussed_at = row.get("discussed_at")
-        if not (
-            reinforced_at
-            and discussed_at
-            and reinforced_at > discussed_at
-        ):
-            continue
-        subject = str(row.get("subject") or "general").strip().lower()
-        area = str(row.get("area") or "").strip().lower()
-        if not area:
-            continue
-        items.append(
-            {
-                "kind": "reinforcement",
-                "subject": subject,
-                "area": area,
-                "count": int(row.get("reinforcement_count") or 1),
-            }
-        )
-
-    return items[:limit]
-
-
 def _focus_health_counts(student_name: str) -> tuple[int, int]:
     """Return (needs_addressing_count, reinforcement_count) for a student."""
     discussed_rows = list_focus_areas_discussed(student_name)
@@ -254,6 +209,7 @@ def build_admin_home(admin_id: int, selected_student: str | None = None) -> dict
         student_cards = []
         all_activity: list[dict] = []
         all_pending: list[dict] = []
+        activity_limit = 12 if selected_student else 8
 
         for student in students_raw:
             name = student["name"]
@@ -267,16 +223,20 @@ def build_admin_home(admin_id: int, selected_student: str | None = None) -> dict
                     "last_activity_at": last_at,
                     "needs_addressing_count": needs_addressing,
                     "reinforcement_count": reinforcement,
-                    "attention_items": _attention_items_for_student(name),
                     "is_selected": bool(selected_student and name == selected_student),
                 }
             )
-            all_activity.extend(_recent_activity_for_student(conn, name))
+            if selected_student and name != selected_student:
+                continue
+            all_activity.extend(
+                _recent_activity_for_student(conn, name, limit=activity_limit)
+            )
             all_pending.extend(_pending_locked_for_student(name, admin_id=admin_id))
 
         all_activity.sort(key=lambda item: item.get("at") or "", reverse=True)
         return {
             "students": student_cards,
+            "selected_student": selected_student,
             "recent_activity": all_activity[:12],
             "pending": all_pending[:8],
         }

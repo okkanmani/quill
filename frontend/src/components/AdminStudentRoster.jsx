@@ -1,10 +1,5 @@
 import { useMemo, useState } from "react";
-import { formatAreaLabel } from "../analysisUtils";
-import {
-  attentionItemDestination,
-  attentionKindBadgeClass,
-  attentionKindLabel,
-} from "../adminHomeUtils";
+import { attentionKindBadgeClass } from "../adminHomeUtils";
 
 const ROSTER_COLLAPSED_LIMIT = 4;
 
@@ -33,32 +28,39 @@ function statusDotClass(student) {
   return "bg-emerald-500";
 }
 
+const ATTENTION_CHIP_KINDS = [
+  {
+    key: "needs_addressing",
+    countKey: "needs_addressing_count",
+    label: "Needs addressing",
+  },
+  {
+    key: "reinforcement",
+    countKey: "reinforcement_count",
+    label: "Reinforcement",
+  },
+];
+
 function StudentAttentionChips({ student, onNavigateForStudent, switchingStudent }) {
-  const items = student.attention_items || [];
-  if (items.length === 0) {
+  const chips = ATTENTION_CHIP_KINDS.filter((chip) => (student[chip.countKey] || 0) > 0);
+  if (chips.length === 0) {
     return <span className="text-xs text-slate-500 shrink-0">All caught up</span>;
   }
 
   return (
     <div
-      className="flex flex-wrap gap-1.5 justify-end max-w-[16rem]"
+      className="flex flex-wrap gap-1.5 justify-end"
       onClick={(event) => event.stopPropagation()}
     >
-      {items.map((item) => (
+      {chips.map((chip) => (
         <button
-          key={`${item.kind}-${item.subject}-${item.area}`}
+          key={chip.key}
           type="button"
           disabled={Boolean(switchingStudent)}
-          onClick={() =>
-            onNavigateForStudent?.(student.name, attentionItemDestination(item))
-          }
-          className={`inline-flex shrink-0 rounded-full border px-2.5 py-1 text-xs font-semibold transition disabled:opacity-60 ${attentionKindBadgeClass(item)}`}
-          title={`Open ${attentionKindLabel(item).toLowerCase()} for ${formatAreaLabel(item.area)}`}
+          onClick={() => onNavigateForStudent?.(student.name, "/admin/analysis")}
+          className={`inline-flex shrink-0 rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-wide transition disabled:opacity-60 ${attentionKindBadgeClass({ kind: chip.key })}`}
         >
-          <span className="uppercase tracking-wide text-[10px] mr-1.5 opacity-80">
-            {attentionKindLabel(item)}
-          </span>
-          {formatAreaLabel(item.area)}
+          {chip.label}
         </button>
       ))}
     </div>
@@ -172,6 +174,7 @@ export default function AdminStudentRoster({
                 type="button"
                 onClick={() => onSelectStudent(student.name)}
                 disabled={Boolean(switchingStudent)}
+                title={selected ? "Click again to view all students" : undefined}
                 className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left transition disabled:opacity-60 ${
                   index > 0 ? "border-t border-slate-200" : ""
                 } ${

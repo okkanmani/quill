@@ -2474,6 +2474,22 @@ def admin_switch_student_context(
     }
 
 
+@app.delete("/admin/session/student")
+def admin_clear_student_context(authorization: str = Header(...)):
+    """Re-issue admin JWT without an active student context."""
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    an = payload.get("admin_name") or get_admin_name(payload["admin_id"])
+    token = create_admin_token(payload["admin_id"], None, None, admin_name=an)
+    return {
+        "token": token,
+        "student_name": None,
+        "admin_name": an,
+        "needs_student": True,
+    }
+
+
 @app.post("/cron/merge-worksheets")
 def cron_merge_worksheets(
     x_quill_cron_key: str | None = Header(None, alias="X-Quill-Cron-Key"),

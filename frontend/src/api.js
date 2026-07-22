@@ -1218,6 +1218,15 @@ export async function switchAdminStudent(studentName) {
   return res.json();
 }
 
+export async function clearAdminStudentContext() {
+  const res = await apiFetch(`${BASE_URL}/admin/session/student`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to clear student selection");
+  return res.json();
+}
+
 // --- Learning material (Markdown) ---
 
 export async function getLearnSubjects() {
