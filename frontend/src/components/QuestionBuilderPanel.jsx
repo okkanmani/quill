@@ -263,12 +263,7 @@ function QuestionCard({
   const summary =
     question.prompt.trim() ||
     (format === "multiple_choice" ? "Empty multiple choice" : "Empty short answer");
-  const complete =
-    question.prompt.trim() &&
-    (format === "multiple_choice"
-      ? question.choices.every((c) => c.trim()) &&
-        new Set(question.choices.map((c) => c.trim())).size === 4
-      : question.answer.trim());
+  const complete = isBuilderQuestionComplete(question, format);
 
   return (
     <div

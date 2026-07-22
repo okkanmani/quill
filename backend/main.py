@@ -100,6 +100,7 @@ from question_bank import (
     list_question_bank_items,
     list_question_bank_areas,
     lookup_question_bank_areas,
+    save_worksheet_question_to_bank,
     update_question_bank_item,
 )
 from writing import (
@@ -326,6 +327,28 @@ class QuestionBankBulkRequest(BaseModel):
     subject: str
     source: str | None = "manual"
     questions: list[TestBuilderQuestionRequest]
+
+
+class WorksheetQuestionBankQuestionRequest(BaseModel):
+    prompt: str
+    choices: list[str]
+    answer: str
+    area: str | None = ""
+
+
+class WorksheetQuestionBankPassageRequest(BaseModel):
+    title: str
+    body: str
+    chart: dict | None = None
+    table: dict | None = None
+
+
+class WorksheetQuestionBankSaveRequest(BaseModel):
+    subject: str
+    stars: int
+    source: str | None = "imported"
+    question: WorksheetQuestionBankQuestionRequest
+    passage: WorksheetQuestionBankPassageRequest | None = None
 
 
 class AdminOpenAiKeyRequest(BaseModel):
@@ -1099,6 +1122,28 @@ def admin_bulk_create_question_bank(
             detail = [str(errors)]
         raise HTTPException(status_code=400, detail=detail)
     return result
+
+
+@app.post("/admin/question-bank/from-worksheet")
+def admin_save_worksheet_question_to_bank(
+    req: WorksheetQuestionBankSaveRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return save_worksheet_question_to_bank(
+            admin_id=_admin_id(payload),
+            data=req.model_dump(),
+        )
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid question."]
+        if isinstance(errors, list):
+            detail = errors
+        else:
+            detail = [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
 
 
 @app.put("/admin/question-bank/{item_id}")

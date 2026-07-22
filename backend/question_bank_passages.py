@@ -263,6 +263,43 @@ def delete_question_bank_passage(passage_id: str, *, admin_id: int) -> bool:
         conn.close()
 
 
+def _json_content_key(value) -> str:
+    if value is None:
+        return ""
+    return json.dumps(value, sort_keys=True, separators=(",", ":"))
+
+
+def find_or_create_question_bank_passage(
+    *, admin_id: int, data: dict
+) -> tuple[dict, bool]:
+    """Return an existing passage with the same content or create a new one."""
+    subject = _normalize_subject(data.get("subject", "english"))
+    title = str(data.get("title") or "").strip()
+    body = str(data.get("body") or "").strip()
+    if not title:
+        raise ValueError(["Passage title is required."])
+    if not body:
+        raise ValueError(["Passage text is required."])
+    chart = data.get("chart")
+    table = data.get("table")
+    title_key = title.lower()
+    body_key = body
+    chart_key = _json_content_key(chart)
+    table_key = _json_content_key(table)
+
+    for passage in list_question_bank_passages(admin_id=admin_id, subject=subject):
+        if (
+            passage["title"].strip().lower() == title_key
+            and passage["body"].strip() == body_key
+            and _json_content_key(passage.get("chart")) == chart_key
+            and _json_content_key(passage.get("table")) == table_key
+        ):
+            return passage, False
+
+    created = create_question_bank_passage(admin_id=admin_id, data=data)
+    return created, True  # type: ignore[return-value]
+
+
 def assert_passage_owned(passage_id: str, *, admin_id: int) -> None:
     if not get_question_bank_passage(passage_id, admin_id=admin_id):
         raise ValueError(["Passage not found."])

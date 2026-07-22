@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   getWorksheet,
   getWorksheetDraft,
@@ -7,6 +7,7 @@ import {
   getTimedSession,
   lockTimedWorksheet,
   saveWorksheetDraft,
+  saveWorksheetQuestionToBank,
   submitResult,
   logout,
 } from "../api";
@@ -23,6 +24,7 @@ import {
   TextAnswerIcon,
 } from "../components/ResponseModeIcons";
 import { normalizeSubjectKey } from "../subjectUtils";
+import { worksheetPublishedQuestionToBankPayload } from "../worksheetUtils";
 
 function scratchpadsVisibleByDefault(worksheet) {
   if (worksheet?.scratchpad === false) return false;
@@ -102,6 +104,8 @@ export default function Worksheet() {
   const [timedLocked, setTimedLocked] = useState(false);
   const [accessLocked, setAccessLocked] = useState(false);
   const [accessLockMessage, setAccessLockMessage] = useState("");
+  const [savingToBankQuestionId, setSavingToBankQuestionId] = useState(null);
+  const [bankNotice, setBankNotice] = useState("");
   const autoSubmitStarted = useRef(false);
   const submittedRef = useRef(false);
   const timedActiveRef = useRef(false);
@@ -557,6 +561,55 @@ export default function Worksheet() {
     );
   }
 
+  function isMcqBankReady(question) {
+    if (question.type !== "multiple_choice") return false;
+    const choices = (question.choices || []).map((c) => String(c || "").trim());
+    if (choices.length !== 4 || !choices.every(Boolean)) return false;
+    if (new Set(choices).size !== 4) return false;
+    return Boolean(String(question.prompt || "").trim() && String(question.answer || "").trim());
+  }
+
+  async function handleSaveQuestionToBank(question) {
+    if (!worksheet || !isMcqBankReady(question)) return;
+
+    setSavingToBankQuestionId(question.id);
+    setBankNotice("");
+
+    try {
+      let passagePayload = null;
+      if (question.passage_id) {
+        const passage = (worksheet.passages || []).find((p) => p.id === question.passage_id);
+        const title = String(passage?.title || "").trim();
+        const body = String(passage?.body || passage?.text || "").trim();
+        if (!title || !body) {
+          throw new Error("This question's passage is missing title or text in the worksheet.");
+        }
+        passagePayload = { title, body };
+        if (passage?.chart) passagePayload.chart = passage.chart;
+        if (passage?.table) passagePayload.table = passage.table;
+      }
+
+      const result = await saveWorksheetQuestionToBank({
+        subject: worksheet.subject,
+        stars: Number(question.stars) || Number(worksheet.difficulty_min) || 2,
+        source: "imported",
+        question: worksheetPublishedQuestionToBankPayload(question),
+        passage: passagePayload,
+      });
+
+      if (result.duplicate) {
+        setBankNotice("That question is already in the question bank.");
+      } else {
+        const passageNote = result.created_passage ? " Passage added to the bank." : "";
+        setBankNotice(`Question saved to the question bank.${passageNote}`);
+      }
+    } catch (err) {
+      setBankNotice(err.message || "Could not save question to the bank.");
+    } finally {
+      setSavingToBankQuestionId(null);
+    }
+  }
+
   const renderQuestion = (q, index) => {
     const row = savedRow(q.id);
     const showEvalFeedback =
@@ -574,7 +627,29 @@ export default function Worksheet() {
           <p className="text-slate-900 font-medium flex-1">
             {index + 1}. {q.prompt}
           </p>
-          <QuestionDifficultyStars stars={q.stars} />
+          <div className="shrink-0 flex items-center gap-2">
+            {isAdminPreview && q.type === "multiple_choice" ? (
+              <button
+                type="button"
+                onClick={() => handleSaveQuestionToBank(q)}
+                disabled={!isMcqBankReady(q) || savingToBankQuestionId === q.id}
+                title={
+                  isMcqBankReady(q)
+                    ? "Save to question bank"
+                    : "This question is not ready to save to the bank"
+                }
+                aria-label="Save question to question bank"
+                className={`w-8 h-8 rounded-lg border text-sm font-bold transition ${
+                  isMcqBankReady(q) && savingToBankQuestionId !== q.id
+                    ? "border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100"
+                    : "border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed"
+                }`}
+              >
+                {savingToBankQuestionId === q.id ? "…" : "+"}
+              </button>
+            ) : null}
+            <QuestionDifficultyStars stars={q.stars} />
+          </div>
         </div>
         {isAdminPreview && q.type === "short_answer" && q.answer ? (
           <p className="text-xs text-slate-500 mb-2">
@@ -696,8 +771,20 @@ export default function Worksheet() {
               Timed worksheet — students cannot save progress.
             </span>
           ) : null}
+          <span className="block mt-1 text-slate-700">
+            Use <span className="font-semibold">+</span> on a multiple-choice question to save it to the question bank.
+          </span>
         </div>
       )}
+
+      {isAdminPreview && bankNotice ? (
+        <div className="mb-6 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-950">
+          {bankNotice}{" "}
+          <Link to="/admin/question-bank" className="font-semibold underline">
+            Open question bank
+          </Link>
+        </div>
+      ) : null}
 
       {isTimed && !submitted && remainingSeconds !== null && !isAdminPreview ? (
         <div

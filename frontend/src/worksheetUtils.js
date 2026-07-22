@@ -79,6 +79,16 @@ export function groupGiftedTrackByWeek(worksheets) {
     .map(([week, items]) => [week, sortGiftedTrackWorksheets(items)]);
 }
 
+export function worksheetPublishedQuestionToBankPayload(question) {
+  const choices = (question.choices || []).map((c) => String(c || "").trim());
+  return {
+    prompt: String(question.prompt || "").trim(),
+    choices,
+    answer: String(question.answer || "").trim(),
+    area: String(question.area || "").trim(),
+  };
+}
+
 /** Format seconds as M:SS or H:MM:SS for timed completion badges. */
 export function formatDurationSeconds(totalSeconds) {
   if (totalSeconds == null || Number.isNaN(totalSeconds) || totalSeconds < 0) {

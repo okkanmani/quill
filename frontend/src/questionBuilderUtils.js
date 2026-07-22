@@ -430,6 +430,8 @@ export function worksheetToBuilderState(worksheet) {
       id: passageId,
       title: passage.title || "",
       body: passage.body || passage.text || "",
+      chart: passage.chart ?? null,
+      table: passage.table ?? null,
       questionCount: linkedCount || DEFAULT_RC_QUESTIONS_PER_PASSAGE,
       aiPrompt: "",
       minWords: DEFAULT_RC_MIN_WORDS,

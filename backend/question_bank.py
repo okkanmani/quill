@@ -550,3 +550,49 @@ def question_dict_from_builder(raw: dict, *, subject: str) -> dict:
         "answer": str(answer or "").strip(),
         "passage_id": str(raw.get("passage_id") or raw.get("passageId") or "").strip() or None,
     }
+
+
+def save_worksheet_question_to_bank(*, admin_id: int, data: dict) -> dict:
+    """Save one worksheet MCQ to the bank, creating a passage when needed."""
+    subject = _normalize_subject(data.get("subject", "general"))
+    stars = data.get("stars")
+    if not isinstance(stars, int) or stars not in VALID_STARS:
+        raise ValueError(["stars must be 1, 2, or 3."])
+    question = data.get("question") or {}
+    passage_data = data.get("passage")
+    source = str(data.get("source") or "imported").strip().lower()
+    if source not in VALID_SOURCES:
+        source = "imported"
+
+    item_data = {
+        "subject": subject,
+        "stars": stars,
+        "prompt": question.get("prompt"),
+        "choices": question.get("choices"),
+        "answer": question.get("answer"),
+        "area": question.get("area") or "",
+        "source": source,
+    }
+
+    created_passage = False
+    passage = None
+    if passage_data:
+        from question_bank_passages import find_or_create_question_bank_passage
+
+        passage, created_passage = find_or_create_question_bank_passage(
+            admin_id=admin_id,
+            data={**passage_data, "subject": subject, "source": source},
+        )
+        item_data["passage_id"] = passage["id"]
+
+    item = create_question_bank_item(
+        admin_id=admin_id,
+        data=item_data,
+        skip_duplicates=True,
+    )
+    return {
+        "item": item,
+        "duplicate": bool(item.get("duplicate")),
+        "created_passage": created_passage,
+        "passage": passage,
+    }
