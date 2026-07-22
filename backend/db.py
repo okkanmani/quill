@@ -183,6 +183,8 @@ def init_schema() -> None:
             conn.execute(
                 "ALTER TABLE students ADD COLUMN gifted_track_unlocked_through_week INTEGER NOT NULL DEFAULT 1"
             )
+        if "home_last_seen_at" not in student_cols:
+            conn.execute("ALTER TABLE students ADD COLUMN home_last_seen_at TEXT")
         conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS student_worksheet_locks (

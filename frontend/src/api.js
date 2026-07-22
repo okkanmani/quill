@@ -533,6 +533,14 @@ export async function getAdminHome() {
   return res.json();
 }
 
+export async function getStudentHome() {
+  const res = await apiFetch(`${BASE_URL}/student/home`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to load student home");
+  return res.json();
+}
+
 export async function listAdminStudents() {
   const res = await apiFetch(`${BASE_URL}/admin/students`, {
     headers: authHeaders(),

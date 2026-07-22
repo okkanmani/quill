@@ -20,6 +20,7 @@ from auth_users import (
     update_admin_account,
 )
 from admin_home import build_admin_home
+from student_home import build_student_home
 from tenancy import resolve_admin_id
 from admin_secrets import (
     admin_openai_key_configured,
@@ -2152,6 +2153,23 @@ def admin_home_dashboard(authorization: str = Header(...)):
         raise HTTPException(status_code=403, detail="Admin only")
     selected = payload.get("student_name")
     return build_admin_home(payload["admin_id"], selected_student=selected)
+
+
+@app.get("/student/home")
+def student_home_dashboard(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") not in ("student", "admin"):
+        raise HTTPException(status_code=403, detail="Student only")
+    if payload.get("role") == "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Student home is for student accounts.",
+        )
+    student_name = payload["name"]
+    admin_id = get_student_admin_id(payload.get("student_id"))
+    if admin_id is None:
+        raise HTTPException(status_code=400, detail="Student account not found")
+    return build_student_home(student_name, admin_id=admin_id)
 
 
 @app.get("/admin/students")

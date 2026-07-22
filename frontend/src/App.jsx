@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import StudentHome from "./pages/StudentHome";
+import StudentWorksheets from "./pages/StudentWorksheets";
 import StudentLatest from "./pages/StudentLatest";
 import StudentRevision from "./pages/StudentRevision";
 import StudentRevisionWorksheet from "./pages/StudentRevisionWorksheet";
@@ -41,6 +42,15 @@ export default function App() {
           element={
             <ProtectedRoute role="student">
               <StudentHome />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/worksheets"
+          element={
+            <ProtectedRoute role="student">
+              <StudentWorksheets />
             </ProtectedRoute>
           }
         />

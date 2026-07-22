@@ -13,7 +13,8 @@ export const ADMIN_MAIN_NAV = [
 
 /** Student home + learn shell — same visual group as admin nav in AppHeader. */
 export const STUDENT_MAIN_NAV = [
-  { to: "/student", label: "Your Worksheets", end: true },
+  { to: "/student", label: "Home", end: true },
+  { to: "/student/worksheets", label: "Your Worksheets", end: true },
   { to: "/student/writing", label: "Writing", end: true },
   { to: "/student/results", label: "Your Results", end: true },
   { to: "/student/learn", label: "Learning Resources", end: false },
@@ -23,7 +24,8 @@ export const STUDENT_MAIN_NAV = [
 /** Student nav with Latest, Revision, and Tests tabs (disabled when empty). */
 export function buildStudentNavLinks(hasLatest, hasRevision = false, hasTests = false) {
   return [
-    { to: "/student", label: "Your Worksheets", end: true },
+    { to: "/student", label: "Home", end: true },
+    { to: "/student/worksheets", label: "Your Worksheets", end: true },
     { to: "/student/writing", label: "Writing", end: true },
     { to: "/student/results", label: "Your Results", end: true },
     {
