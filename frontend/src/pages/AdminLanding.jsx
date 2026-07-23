@@ -354,10 +354,10 @@ export default function AdminLanding() {
                       + New learning resource
                     </Link>
                     <Link
-                      to="/admin/worksheets"
+                      to="/admin/create/test"
                       className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
                     >
-                      Unlock a test
+                      + New test
                     </Link>
                   </div>
                 </section>
