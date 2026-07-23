@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getAdminHome, logout, switchAdminStudent, clearAdminStudentContext } from "../api";
+import {
+  getAdminHome,
+  logout,
+  switchAdminStudent,
+  clearAdminStudentContext,
+  unlockTestAttempt,
+  unlockTimedWorksheet,
+  setWorksheetAccessLock,
+  clearWorksheetAccessLock,
+} from "../api";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import {
   activityDestination,
@@ -11,6 +20,7 @@ import {
 import AppShell from "../components/AppShell";
 import AdminStudentRoster from "../components/AdminStudentRoster";
 import QuillLoading from "../components/QuillLoading";
+import WorksheetLockButton from "../components/WorksheetLockButton";
 
 function formatRelativeTime(iso) {
   if (!iso) return "No activity yet";
@@ -84,16 +94,63 @@ function SectionLabel({ children }) {
   );
 }
 
+function pendingBadgeLabel(item) {
+  if (item.lock_type === "access") return "Locked";
+  if (item.is_test) return "Test";
+  return "Timed";
+}
+
+function pendingStatusLine(item, scopedToStudent) {
+  const parts = [];
+  if (item.lock_type === "access") {
+    parts.push("Access locked");
+  } else if (item.lock_type === "test_attempt") {
+    parts.push(item.attempt_locked ? "Sitting locked" : "Test in progress");
+  } else {
+    parts.push("Timed attempt locked");
+  }
+  if (!scopedToStudent) parts.push(item.student_name);
+  parts.push("awaiting unlock");
+  return parts.join(" · ");
+}
+
+function pendingUnlockLabel(item) {
+  if (item.lock_type === "access") return `Unlock access to ${item.title}`;
+  if (item.lock_type === "test_attempt") return `Reset test sitting for ${item.title}`;
+  return `Reset timed attempt for ${item.title}`;
+}
+
+function pendingUnlockConfirm(item) {
+  if (item.lock_type === "access") {
+    return `Unlock access to “${item.title}” for ${item.student_name}?`;
+  }
+  if (item.is_test) {
+    return `Reset test sitting for “${item.title}” (${item.student_name})? The student can start again from scratch.`;
+  }
+  return `Unlock “${item.title}” for ${item.student_name}? They can start this timed worksheet again from scratch.`;
+}
+
+function pendingLockVariant(item) {
+  if (item.lock_type === "access") return "access";
+  if (item.lock_type === "test_attempt" || item.lock_type === "timed_attempt") return "timed";
+  return "neutral";
+}
+
 export default function AdminLanding() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [switchingStudent, setSwitchingStudent] = useState("");
+  const [unlockingKey, setUnlockingKey] = useState("");
+
+  async function refreshHome() {
+    const next = await getAdminHome();
+    setData(next);
+  }
 
   useEffect(() => {
-    getAdminHome()
-      .then(setData)
+    refreshHome()
       .catch(() => setError("Could not load home dashboard."))
       .finally(() => setLoading(false));
   }, []);
@@ -137,6 +194,39 @@ export default function AdminLanding() {
     } catch {
       setError("Could not switch student.");
       setSwitchingStudent("");
+    }
+  }
+
+  async function handleUnlockPending(item) {
+    const key = `${item.student_name}-${item.worksheet_id}`;
+    const ok = window.confirm(pendingUnlockConfirm(item));
+    if (!ok) return;
+
+    setUnlockingKey(key);
+    setError("");
+    const current = localStorage.getItem("studentName") || "";
+    try {
+      if (item.student_name && item.student_name !== current) {
+        await handleSelectStudentWithoutReload(item.student_name);
+      }
+
+      if (item.lock_type === "access") {
+        if (item.lock_reason === "admin") {
+          await clearWorksheetAccessLock(item.worksheet_id);
+        } else {
+          await setWorksheetAccessLock(item.worksheet_id, false);
+        }
+      } else if (item.lock_type === "test_attempt") {
+        await unlockTestAttempt(item.worksheet_id);
+      } else if (item.lock_type === "timed_attempt") {
+        await unlockTimedWorksheet(item.worksheet_id);
+      }
+
+      await refreshHome();
+    } catch (err) {
+      setError(err.message || "Could not unlock worksheet.");
+    } finally {
+      setUnlockingKey("");
     }
   }
 
@@ -282,28 +372,34 @@ export default function AdminLanding() {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2">
-                      {pending.map((item) => (
-                        <button
-                          key={`${item.student_name}-${item.worksheet_id}`}
-                          type="button"
-                          onClick={() => handleNavigateForStudent(item.student_name, "/admin/worksheets")}
-                          className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-3.5 py-2.5 hover:bg-slate-50 transition text-left"
-                        >
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="inline-flex shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide bg-violet-100 text-violet-900 border-violet-200">
-                              Test
-                            </span>
-                            <p className="text-sm font-medium text-slate-900">{item.title}</p>
+                      {pending.map((item) => {
+                        const itemKey = `${item.student_name}-${item.worksheet_id}`;
+                        return (
+                          <div
+                            key={itemKey}
+                            className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-3.5 py-2.5 flex items-start justify-between gap-3"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="inline-flex shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide bg-violet-100 text-violet-900 border-violet-200">
+                                  {pendingBadgeLabel(item)}
+                                </span>
+                                <p className="text-sm font-medium text-slate-900">{item.title}</p>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-0.5">
+                                {pendingStatusLine(item, scopedToStudent)}
+                              </p>
+                            </div>
+                            <WorksheetLockButton
+                              locked
+                              variant={pendingLockVariant(item)}
+                              label={pendingUnlockLabel(item)}
+                              disabled={Boolean(unlockingKey)}
+                              onClick={() => handleUnlockPending(item)}
+                            />
                           </div>
-                          {!scopedToStudent ? (
-                            <p className="text-xs text-slate-500 mt-0.5">
-                              Locked · {item.student_name} · awaiting unlock
-                            </p>
-                          ) : (
-                            <p className="text-xs text-slate-500 mt-0.5">Locked · awaiting unlock</p>
-                          )}
-                        </button>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </section>

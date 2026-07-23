@@ -185,20 +185,39 @@ def _pending_locked_for_student(
 ) -> list[dict]:
     pending: list[dict] = []
     for ws in list_worksheets(student_name, admin_id=admin_id):
-        if not ws.get("is_test"):
-            continue
         if ws.get("done"):
             continue
-        if not ws.get("access_locked"):
+
+        lock_type = None
+        if ws.get("access_locked"):
+            lock_type = "access"
+        elif ws.get("is_test") and (
+            ws.get("attempt_locked") or ws.get("attempt_started")
+        ):
+            lock_type = "test_attempt"
+        elif (
+            ws.get("timed")
+            and not ws.get("is_test")
+            and (ws.get("timed_locked") or ws.get("timed_started"))
+        ):
+            lock_type = "timed_attempt"
+
+        if not lock_type:
             continue
-        pending.append(
-            {
-                "student_name": student_name,
-                "worksheet_id": ws["id"],
-                "title": ws.get("title") or ws["id"],
-                "kind": "test_locked",
-            }
-        )
+
+        entry: dict = {
+            "student_name": student_name,
+            "worksheet_id": ws["id"],
+            "title": ws.get("title") or ws["id"],
+            "kind": "test_locked" if ws.get("is_test") else "worksheet_locked",
+            "lock_type": lock_type,
+            "is_test": bool(ws.get("is_test")),
+        }
+        if lock_type == "test_attempt":
+            entry["attempt_locked"] = bool(ws.get("attempt_locked"))
+        if ws.get("lock_reason"):
+            entry["lock_reason"] = ws["lock_reason"]
+        pending.append(entry)
     return pending
 
 
