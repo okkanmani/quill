@@ -53,6 +53,11 @@ export function activityDestination(item) {
   return null;
 }
 
+export function resultIdsMatch(a, b) {
+  if (a == null || b == null) return false;
+  return String(a) === String(b);
+}
+
 export async function navigateForStudent(
   navigate,
   studentName,

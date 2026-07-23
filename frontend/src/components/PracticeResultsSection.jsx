@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SectionSortSelect from "./SectionSortSelect";
 import { formatAreaLabel } from "../analysisUtils";
 import { formatSubjectLabel } from "../subjectUtils";
@@ -30,6 +30,7 @@ export default function PracticeResultsSection({
   openIds,
   toggleOpen,
   embedded = false,
+  scrollToOpenResult = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [sortMode, setSortMode] = useState(SECTION_SORT_TIME);
@@ -38,6 +39,18 @@ export default function PracticeResultsSection({
     () => sortPracticeItems(results, sortMode),
     [results, sortMode],
   );
+
+  useEffect(() => {
+    if (!scrollToOpenResult || openIds.size === 0) return;
+    const id = [...openIds][0];
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(`practice-result-${id}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [openIds, scrollToOpenResult]);
 
   if (results.length === 0) return null;
 
@@ -62,6 +75,7 @@ export default function PracticeResultsSection({
             return (
               <div
                 key={item.id}
+                id={expanded ? `practice-result-${item.id}` : undefined}
                 className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
               >
                 <button

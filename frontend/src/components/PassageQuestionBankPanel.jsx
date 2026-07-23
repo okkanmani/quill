@@ -61,6 +61,22 @@ function matchesPassageSearch(passage, query) {
   return haystack.includes(needle);
 }
 
+function matchesStandaloneSearch(item, query) {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  const haystack = [
+    item.prompt,
+    item.area,
+    item.id,
+    item.source,
+    item.answer,
+    ...(Array.isArray(item.choices) ? item.choices : []),
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(needle);
+}
+
 export default function PassageQuestionBankPanel({
   subject,
   showStandalone = false,
@@ -71,6 +87,7 @@ export default function PassageQuestionBankPanel({
   const [viewMode, setViewMode] = useState("passages");
   const [passages, setPassages] = useState([]);
   const [passageSearchQuery, setPassageSearchQuery] = useState("");
+  const [standaloneSearchQuery, setStandaloneSearchQuery] = useState("");
   const [passageEditorMode, setPassageEditorMode] = useState(null);
   const [passageDraft, setPassageDraft] = useState(emptyPassageDraft());
   const [passageItems, setPassageItems] = useState([]);
@@ -147,6 +164,13 @@ export default function PassageQuestionBankPanel({
     if (!passageSearchQuery.trim()) return passages;
     return passages.filter((passage) => matchesPassageSearch(passage, passageSearchQuery));
   }, [passages, passageSearchQuery]);
+
+  const filteredStandaloneItems = useMemo(() => {
+    if (!standaloneSearchQuery.trim()) return standaloneItems;
+    return standaloneItems.filter((item) =>
+      matchesStandaloneSearch(item, standaloneSearchQuery),
+    );
+  }, [standaloneItems, standaloneSearchQuery]);
 
   function openCreatePassage() {
     setPassageEditorMode("create");
@@ -531,7 +555,8 @@ export default function PassageQuestionBankPanel({
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-slate-600">
-              Critical reasoning and other English questions without a passage.
+              {filteredStandaloneItems.length} of {standaloneItems.length} standalone question
+              {standaloneItems.length === 1 ? "" : "s"}
             </p>
             <button
               type="button"
@@ -542,11 +567,23 @@ export default function PassageQuestionBankPanel({
             </button>
           </div>
 
+          <input
+            type="search"
+            value={standaloneSearchQuery}
+            onChange={(e) => setStandaloneSearchQuery(e.target.value)}
+            placeholder="Search questions, area, choices…"
+            className="w-full max-w-md rounded-xl border border-slate-300 px-3 py-2 text-sm"
+          />
+
           {loadingStandalone ? (
             <QuillLoading label="Loading questions…" />
           ) : standaloneItems.length === 0 ? (
             <p className="text-sm text-slate-500 py-12 text-center border border-dashed border-slate-200 rounded-xl">
               No standalone English questions yet.
+            </p>
+          ) : filteredStandaloneItems.length === 0 ? (
+            <p className="text-sm text-slate-500 py-12 text-center border border-dashed border-slate-200 rounded-xl">
+              No standalone questions match your search.
             </p>
           ) : (
             <div className="overflow-x-auto rounded-xl border border-slate-200">
@@ -568,7 +605,7 @@ export default function PassageQuestionBankPanel({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
-                  {standaloneItems.map((item) => {
+                  {filteredStandaloneItems.map((item) => {
                     const tier = TEST_TIERS.find((t) => t.value === Number(item.stars));
                     return (
                       <tr

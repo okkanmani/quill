@@ -130,12 +130,14 @@ def _resolve_subject(worksheet_id: str, row_subject) -> str:
 
 
 def _resolve_title(worksheet_id: str, row_title, ws_id: str) -> str:
+    if row_title is not None and str(row_title).strip():
+        return str(row_title).strip()
     data = _load_bundled_sheet_data(worksheet_id)
     if data:
         title = data.get("title")
         if isinstance(title, str) and title.strip():
             return title.strip()
-    return row_title or ws_id
+    return ws_id
 
 
 def _timed_from_sheet_data(data: dict) -> tuple[bool, int | None]:

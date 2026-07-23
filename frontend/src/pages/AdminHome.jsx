@@ -11,6 +11,7 @@ import {
   logout,
 } from "../api";
 import { ADMIN_MAIN_NAV } from "../adminNav";
+import { resultIdsMatch } from "../adminHomeUtils";
 import AppShell from "../components/AppShell";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import AdminStudentGate from "../components/AdminStudentGate";
@@ -20,6 +21,7 @@ import ResultsPageCategory from "../components/ResultsPageCategory";
 import PracticeResultsSection from "../components/PracticeResultsSection";
 import TestResultsSection from "../components/TestResultsSection";
 import WritingResultsSection from "../components/WritingResultsSection";
+import { normalizeSubjectKey } from "../subjectUtils";
 
 function ResultsViewTabs({ activeView }) {
   const worksheetClass =
@@ -65,6 +67,7 @@ export default function AdminHome() {
   const [openPracticeIds, setOpenPracticeIds] = useState(() => new Set());
   const [openTestIds, setOpenTestIds] = useState(() => new Set());
   const [openWritingIds, setOpenWritingIds] = useState(() => new Set());
+  const [expandResultSubjectKeys, setExpandResultSubjectKeys] = useState([]);
   const [deletingResultId, setDeletingResultId] = useState(null);
   const [deletingWritingId, setDeletingWritingId] = useState(null);
   const [gradingWritingId, setGradingWritingId] = useState(null);
@@ -89,19 +92,33 @@ export default function AdminHome() {
   }, [selectedStudent]);
 
   useEffect(() => {
-    if (!deepLinkResultId || results.length === 0) return;
-    const targetId = Number(deepLinkResultId);
-    if (!Number.isFinite(targetId)) return;
-    if (!results.some((result) => result.id === targetId)) return;
-    setOpenIds(new Set([targetId]));
-  }, [deepLinkResultId, results]);
+    if (!deepLinkResultId) return;
+
+    const mainMatch = results.find((result) =>
+      resultIdsMatch(result.id, deepLinkResultId),
+    );
+    if (mainMatch) {
+      setOpenIds(new Set([mainMatch.id]));
+      setExpandResultSubjectKeys([normalizeSubjectKey(mainMatch.subject)]);
+      return;
+    }
+
+    const practiceMatch = practiceResults.find((result) =>
+      resultIdsMatch(result.id, deepLinkResultId),
+    );
+    if (practiceMatch) {
+      setOpenPracticeIds(new Set([practiceMatch.id]));
+      setExpandResultSubjectKeys([]);
+    }
+  }, [deepLinkResultId, results, practiceResults]);
 
   useEffect(() => {
     if (!deepLinkAttemptId || testResults.length === 0) return;
-    const targetId = Number(deepLinkAttemptId);
-    if (!Number.isFinite(targetId)) return;
-    if (!testResults.some((result) => result.id === targetId)) return;
-    setOpenTestIds(new Set([targetId]));
+    const target = testResults.find((result) =>
+      resultIdsMatch(result.id, deepLinkAttemptId),
+    );
+    if (!target) return;
+    setOpenTestIds(new Set([target.id]));
   }, [deepLinkAttemptId, testResults]);
 
   function toggleAnswers(id) {
@@ -271,6 +288,8 @@ export default function AdminHome() {
                   <ResultsBySubject
                     results={results}
                     openIds={openIds}
+                    expandSubjectKeys={expandResultSubjectKeys}
+                    scrollToOpenResult
                     toggleAnswers={toggleAnswers}
                     onDeleteResult={handleDeleteResult}
                     deletingResultId={deletingResultId}
@@ -302,6 +321,7 @@ export default function AdminHome() {
                   results={practiceResults}
                   openIds={openPracticeIds}
                   toggleOpen={togglePractice}
+                  scrollToOpenResult
                 />
               </ResultsPageCategory>
             ) : null}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AnswerResponseView from "./AnswerResponseView";
 import AdminResultGrader from "./AdminResultGrader";
 import RecycleBinButton from "./RecycleBinButton";
@@ -50,6 +50,8 @@ export default function ResultsBySubject({
   results,
   openIds,
   toggleAnswers,
+  expandSubjectKeys = [],
+  scrollToOpenResult = false,
   onResultEvaluated,
   onDeleteResult,
   onAnalysisError,
@@ -63,6 +65,27 @@ export default function ResultsBySubject({
   const [downloadingResultId, setDownloadingResultId] = useState(null);
   const [analyzingResultId, setAnalyzingResultId] = useState(null);
   const pendingCount = results.filter((r) => r.status === "pending").length;
+
+  useEffect(() => {
+    if (!expandSubjectKeys.length) return;
+    setOpenSubjects((prev) => {
+      const next = new Set(prev);
+      expandSubjectKeys.forEach((key) => next.add(key));
+      return next;
+    });
+  }, [expandSubjectKeys]);
+
+  useEffect(() => {
+    if (!scrollToOpenResult || openIds.size === 0) return;
+    const id = [...openIds][0];
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(`result-${id}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [openIds, openSubjects, scrollToOpenResult, expandSubjectKeys]);
 
   async function handleAnalyze(result) {
     setAnalyzingResultId(result.id);
@@ -169,6 +192,7 @@ export default function ResultsBySubject({
                   return (
                     <div
                       key={r.id}
+                      id={expanded ? `result-${r.id}` : undefined}
                       className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4"
                     >
                       <div
