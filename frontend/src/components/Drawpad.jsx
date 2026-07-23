@@ -4,6 +4,8 @@ const BG = "#000000";
 const INK = "#ffffff";
 const TEXT_FONT = "24px system-ui, sans-serif";
 const TEXT_LINE_HEIGHT = 28;
+const MAX_CANVAS_HEIGHT = 1000;
+const MIN_CANVAS_HEIGHT = 200;
 
 function paintBackground(ctx, canvas) {
   ctx.fillStyle = BG;
@@ -82,6 +84,10 @@ export default function Drawpad({
   const loadedValue = useRef(null);
   const [tool, setTool] = useState("pen");
   const [textDraft, setTextDraft] = useState(null);
+  const effectiveHeight = Math.min(
+    MAX_CANVAS_HEIGHT,
+    Math.max(MIN_CANVAS_HEIGHT, Number(canvasHeight) || 350),
+  );
 
   const emitChange = useCallback(() => {
     if (!onChange || disabled) return;
@@ -117,6 +123,23 @@ export default function Drawpad({
     };
     img.src = value;
   }, [value]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const saved = loadedValue.current;
+    if (saved) {
+      const img = new Image();
+      img.onload = () => {
+        paintBackground(ctx, canvas);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      };
+      img.src = saved;
+      return;
+    }
+    paintBackground(ctx, canvas);
+  }, [effectiveHeight]);
 
   useEffect(() => {
     if (textDraft && textInputRef.current) {
@@ -338,12 +361,12 @@ export default function Drawpad({
           {renderToolbar(false)}
         </div>
       ) : null}
-      <div ref={containerRef} className="relative">
+      <div ref={containerRef} className="relative overflow-hidden">
         {!showHeading ? renderToolbar(true) : null}
         <canvas
           ref={canvasRef}
           width={800}
-          height={canvasHeight}
+          height={effectiveHeight}
           onMouseDown={handleCanvasDown}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
@@ -351,10 +374,10 @@ export default function Drawpad({
           onTouchStart={handleCanvasDown}
           onTouchMove={draw}
           onTouchEnd={stopDrawing}
-          className={`w-full rounded-xl border border-slate-200 touch-none ${
+          className={`w-full rounded-xl border border-slate-700 touch-none bg-black ${
             disabled ? "opacity-80" : ""
           }`}
-          style={{ cursor: canvasCursor }}
+          style={{ cursor: canvasCursor, backgroundColor: BG, maxHeight: MAX_CANVAS_HEIGHT }}
         />
         {textDraft ? (
           <textarea

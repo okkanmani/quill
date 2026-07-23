@@ -23,6 +23,9 @@ import { useStudentNavLinks } from "../useStudentNavLinks";
 import { formatTestTimer, formatWeightedTestScore } from "../testUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
 
+const MAX_WORK_AREA_HEIGHT = 1000;
+const MIN_WORK_AREA_HEIGHT = 320;
+
 export default function StudentTestTake() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -340,7 +343,12 @@ export default function StudentTestTake() {
     if (!el || !scratchpadAllowed) return undefined;
 
     const updateHeight = () => {
-      setWorkAreaHeight(Math.max(480, Math.floor(el.clientHeight)));
+      setWorkAreaHeight(
+        Math.min(
+          MAX_WORK_AREA_HEIGHT,
+          Math.max(MIN_WORK_AREA_HEIGHT, Math.floor(el.clientHeight)),
+        ),
+      );
     };
 
     updateHeight();
@@ -614,8 +622,8 @@ export default function StudentTestTake() {
         </div>
 
         {isRc && (passage || passageQuestions.length > 0) ? (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 flex-1 min-h-[calc(100dvh-12rem)] items-stretch mb-3">
-            <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm overflow-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 items-start mb-3">
+            <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm overflow-auto max-h-[calc(100dvh-12rem)]">
               {passage ? (
                 <div className="mb-4">
                   <WorksheetPassageContent passage={passage} embedded />
@@ -663,7 +671,7 @@ export default function StudentTestTake() {
             </div>
 
             {scratchpadAllowed ? (
-              <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col min-h-[480px] lg:min-h-0 h-full">
+              <div className="lg:col-span-1 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col max-h-[1000px]">
                 <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
                   <div>
                     <p className="text-sm font-medium text-slate-900">Your work</p>
@@ -673,14 +681,17 @@ export default function StudentTestTake() {
                   </div>
                   {renderWorkModeToggle()}
                 </div>
-                <div ref={workAreaRef} className="flex-1 min-h-[480px] flex flex-col">
+                <div
+                  ref={workAreaRef}
+                  className="flex flex-col min-h-[280px] max-h-[920px] overflow-hidden"
+                >
                   {workMode === "text" ? (
                     <textarea
                       value={workText}
                       onChange={(e) => handleWorkTextChange(e.target.value)}
                       disabled={submitting || timedOut}
                       placeholder="Jot notes about this passage…"
-                      className="w-full h-full min-h-0 flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-none"
+                      className="w-full h-full min-h-[280px] max-h-[920px] flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-none"
                     />
                   ) : (
                     <Drawpad
@@ -689,7 +700,7 @@ export default function StudentTestTake() {
                       onChange={handleScratchpadChange}
                       disabled={submitting || timedOut}
                       showHeading={false}
-                      className="mt-0 flex-1 min-h-0"
+                      className="mt-0 flex-1 min-h-0 overflow-hidden"
                       canvasHeight={workAreaHeight}
                     />
                   )}
@@ -698,8 +709,8 @@ export default function StudentTestTake() {
             ) : null}
           </div>
         ) : question ? (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 flex-1 min-h-[calc(100dvh-12rem)] items-stretch mb-3">
-            <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm overflow-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 items-start mb-3">
+            <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm overflow-auto max-h-[calc(100dvh-12rem)]">
               {question.passage ? (
                 <div className="mb-4">
                   <WorksheetPassageContent passage={question.passage} embedded />
@@ -732,7 +743,7 @@ export default function StudentTestTake() {
             </div>
 
             {scratchpadAllowed ? (
-              <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col min-h-[480px] lg:min-h-0 h-full">
+              <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col max-h-[1000px]">
                 <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
                   <div>
                     <p className="text-sm font-medium text-slate-900">Your work</p>
@@ -742,14 +753,17 @@ export default function StudentTestTake() {
                   </div>
                   {renderWorkModeToggle()}
                 </div>
-                <div ref={workAreaRef} className="flex-1 min-h-[480px] flex flex-col">
+                <div
+                  ref={workAreaRef}
+                  className="flex flex-col min-h-[320px] max-h-[920px] overflow-hidden"
+                >
                   {workMode === "text" ? (
                     <textarea
                       value={workText}
                       onChange={(e) => handleWorkTextChange(e.target.value)}
                       disabled={submitting || timedOut}
                       placeholder="Show your reasoning, calculations, or notes…"
-                      className="w-full h-full min-h-0 flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-none"
+                      className="w-full h-full min-h-[320px] max-h-[920px] flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-none"
                     />
                   ) : (
                     <Drawpad
@@ -758,7 +772,7 @@ export default function StudentTestTake() {
                       onChange={handleScratchpadChange}
                       disabled={submitting || timedOut}
                       showHeading={false}
-                      className="mt-0 flex-1 min-h-0"
+                      className="mt-0 flex-1 min-h-0 overflow-hidden"
                       canvasHeight={workAreaHeight}
                     />
                   )}
