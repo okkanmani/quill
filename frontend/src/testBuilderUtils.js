@@ -8,6 +8,13 @@ export const TEST_TIERS = [
   { value: 3, label: "Tier 3", shortLabel: "★★★ Hard", difficultyLabel: "Hard", weight: "2×" },
 ];
 
+export const RC_PASSAGE_TIERS = [
+  { value: 1, label: "Easy passage", shortLabel: "Easy", difficultyLabel: "Easy" },
+  { value: 2, label: "Complex passage", shortLabel: "Complex", difficultyLabel: "Complex" },
+];
+
+export const RC_QUESTIONS_BANK_MULTIPLIER = 2;
+
 export const DEFAULT_SITTING_COUNT = 20;
 export const DEFAULT_TIME_LIMIT_MINUTES = 45;
 export const DEFAULT_RC_PASSAGE_COUNT = 3;
@@ -29,6 +36,27 @@ export function newTestPassageId() {
 
 export function isDataPassageTest(subject) {
   return subject === "data";
+}
+
+export function isRcAdaptiveTest(subject, readingComprehension, adaptive = true) {
+  return readingComprehension && subject === "english" && adaptive !== false;
+}
+
+export function rcQuestionsBankSize(questionsPerPassage, adaptive = true) {
+  const per = Number(questionsPerPassage) || DEFAULT_RC_QUESTIONS_PER_PASSAGE;
+  return isFinite(per) && adaptive ? per * RC_QUESTIONS_BANK_MULTIPLIER : per;
+}
+
+export function rcQuestionAllowedOnPassage(passageTier, questionTier) {
+  const passage = Number(passageTier);
+  const question = Number(questionTier);
+  if (passage === 1) return question === 1 || question === 2;
+  if (passage === 2) return question === 2 || question === 3;
+  return false;
+}
+
+export function defaultRcQuestionTierForPassage(passageTier) {
+  return Number(passageTier) === 1 ? 1 : 2;
 }
 
 export function isPassageWindowTest(subject, readingComprehension = false) {
@@ -54,7 +82,8 @@ export function emptyTestPassage(id = null, tier = 2, { data = false } = {}) {
 
 export function isTestPassageComplete(passage, passageMode = "rc") {
   const tier = Number(passage?.tier);
-  const hasTier = tier >= 1 && tier <= 3;
+  const hasTier =
+    passageMode === "rc" ? tier === 1 || tier === 2 : tier >= 1 && tier <= 3;
   if (!passage?.title?.trim() || !hasTier) return false;
   if (passageMode === "data") {
     return Boolean(
@@ -64,9 +93,10 @@ export function isTestPassageComplete(passage, passageMode = "rc") {
   return Boolean(passage?.body?.trim());
 }
 
-export function emptyRcTestQuestion(passageId) {
+export function emptyRcTestQuestion(passageId, passageTier = 1) {
   return {
     id: newTestQuestionId(),
+    tier: defaultRcQuestionTierForPassage(passageTier),
     prompt: "",
     choices: ["", "", "", ""],
     correctIndex: 0,
@@ -75,42 +105,20 @@ export function emptyRcTestQuestion(passageId) {
   };
 }
 
-export function countRcQuestionsByPassageTier(passages, questions) {
-  const counts = { 1: 0, 2: 0, 3: 0 };
-  const passageTierById = Object.fromEntries(
-    (passages || []).map((passage) => [passage.id, Number(passage.tier) || 2]),
-  );
-  for (const question of questions || []) {
-    const tier = passageTierById[question.passageId];
-    if (tier >= 1 && tier <= 3) counts[tier] += 1;
-  }
-  return counts;
-}
-
-export function countPassagesByTier(passages) {
-  const counts = { 1: 0, 2: 0, 3: 0 };
+export function countPassagesByTier(passages, { rcMode = false } = {}) {
+  const counts = rcMode ? { 1: 0, 2: 0 } : { 1: 0, 2: 0, 3: 0 };
   for (const passage of passages || []) {
     const tier = Number(passage.tier);
-    if (tier >= 1 && tier <= 3) counts[tier] += 1;
+    if (counts[tier] != null) counts[tier] += 1;
   }
   return counts;
 }
 
 export function inferPassageTierFromWorksheet(passage, questions) {
   const stored = Number(passage?.tier ?? passage?.stars);
-  if (stored >= 1 && stored <= 3) return stored;
-  const linked = (questions || []).filter(
-    (question) => question.passage_id === passage.id || question.passageId === passage.id,
-  );
-  const tiers = linked
-    .map((question) => Number(question.stars ?? question.tier))
-    .filter((tier) => tier >= 1 && tier <= 3);
-  if (!tiers.length) return 2;
-  const tally = { 1: 0, 2: 0, 3: 0 };
-  for (const tier of tiers) tally[tier] += 1;
-  return Number(
-    Object.entries(tally).sort((left, right) => right[1] - left[1])[0][0],
-  );
+  if (stored === 1 || stored === 2) return stored;
+  if (stored === 3) return 2;
+  return 1;
 }
 
 export function passageTierById(passages) {
@@ -149,15 +157,16 @@ export function fixedOrderAiBankSize(sittingCount) {
   return Math.max(sitting + 4, Math.ceil(sitting * 1.2));
 }
 
-export function minimumBankSize(sittingCount, adaptive, passageWindow = false) {
+export function minimumBankSize(sittingCount, adaptive, passageWindow = false, rcMode = false) {
   const sitting = Number(sittingCount) || DEFAULT_SITTING_COUNT;
-  if (passageWindow) return minimumRcPassageBankSize(sitting, adaptive);
+  if (passageWindow) return minimumRcPassageBankSize(sitting, adaptive, { rcMode });
   return adaptive ? sitting * 3 : sitting;
 }
 
-export function minimumRcPassageBankSize(passageCount, adaptive) {
+export function minimumRcPassageBankSize(passageCount, adaptive, { rcMode = false } = {}) {
   const count = Number(passageCount) || DEFAULT_RC_PASSAGE_COUNT;
-  return adaptive ? count * 3 : count;
+  if (!rcMode) return adaptive ? count * 3 : count;
+  return adaptive ? count * 2 : count;
 }
 
 export function inferQuestionsPerPassageFromWorksheet(worksheet) {
@@ -175,18 +184,25 @@ export function inferQuestionsPerPassageFromWorksheet(worksheet) {
   return Math.max(...nonZero);
 }
 
-export function syncPassageQuestions(passages, questions, questionsPerPassage) {
-  const target = Math.max(
-    MIN_RC_QUESTIONS_PER_PASSAGE,
-    Number(questionsPerPassage) || DEFAULT_RC_QUESTIONS_PER_PASSAGE,
-  );
+export function syncPassageQuestions(
+  passages,
+  questions,
+  questionsPerPassage,
+  { rcAdaptive = false, adaptive = true } = {},
+) {
+  const target = rcAdaptive
+    ? rcQuestionsBankSize(questionsPerPassage, adaptive)
+    : Math.max(
+        MIN_RC_QUESTIONS_PER_PASSAGE,
+        Number(questionsPerPassage) || DEFAULT_RC_QUESTIONS_PER_PASSAGE,
+      );
   const orphans = unassignedTestQuestions(passages, questions);
   const next = [...orphans];
   for (const passage of passages || []) {
     const linked = (questions || []).filter((question) => question.passageId === passage.id);
     let bucket = [...linked];
     while (bucket.length < target) {
-      bucket.push(emptyRcTestQuestion(passage.id));
+      bucket.push(emptyRcTestQuestion(passage.id, passage.tier));
     }
     if (bucket.length > target) bucket = bucket.slice(0, target);
     next.push(...bucket);
@@ -230,6 +246,8 @@ export function validateTestBuilder({
   if (passageWindow || readingComprehension) {
     const passageCount = Number(sittingCount);
     const perPassage = Number(questionsPerPassage);
+    const rcMode = !isDataMode && readingComprehension;
+    const bankSize = rcMode ? rcQuestionsBankSize(perPassage, adaptive) : perPassage;
     if (
       !Number.isFinite(passageCount) ||
       passageCount < MIN_RC_PASSAGE_COUNT ||
@@ -245,16 +263,22 @@ export function validateTestBuilder({
       perPassage > MAX_RC_QUESTIONS_PER_PASSAGE
     ) {
       errors.push(
-        `Questions per ${unit} must be between ${MIN_RC_QUESTIONS_PER_PASSAGE} and ${MAX_RC_QUESTIONS_PER_PASSAGE}.`,
+        `Questions shown per ${unit} must be between ${MIN_RC_QUESTIONS_PER_PASSAGE} and ${MAX_RC_QUESTIONS_PER_PASSAGE}.`,
       );
     }
 
-    const tierCounts = countPassagesByTier(passages);
+    const tierCounts = countPassagesByTier(passages, { rcMode });
     if (adaptive) {
-      for (const tier of [1, 2, 3]) {
-        if (tierCounts[tier] < passageCount) {
+      const requiredTiers = rcMode ? [1, 2] : [1, 2, 3];
+      for (const tier of requiredTiers) {
+        if ((tierCounts[tier] || 0) < passageCount) {
+          const label = rcMode
+            ? tier === 1
+              ? "easy"
+              : "complex"
+            : `tier ${tier}`;
           errors.push(
-            `Tier ${tier} needs at least ${passageCount} ${unit}s (has ${tierCounts[tier]}).`,
+            `${label.charAt(0).toUpperCase() + label.slice(1)} ${unit}s need at least ${passageCount} (has ${tierCounts[tier] || 0}).`,
           );
         }
       }
@@ -287,13 +311,17 @@ export function validateTestBuilder({
         errors.push(`Passage ${index + 1} needs passage text.`);
       }
       const tier = Number(passage.tier);
-      if (!Number.isFinite(tier) || tier < 1 || tier > 3) {
+      if (rcMode) {
+        if (tier !== 1 && tier !== 2) {
+          errors.push(`Passage ${index + 1} must be easy or complex.`);
+        }
+      } else if (!Number.isFinite(tier) || tier < 1 || tier > 3) {
         errors.push(`${isDataMode ? "Data set" : "Passage"} ${index + 1} needs a difficulty tier.`);
       }
       const linked = questions.filter((question) => question.passageId === passage.id);
-      if (linked.length !== perPassage) {
+      if (linked.length !== bankSize) {
         errors.push(
-          `${isDataMode ? "Data set" : "Passage"} ${index + 1} needs exactly ${perPassage} questions (has ${linked.length}).`,
+          `${isDataMode ? "Data set" : "Passage"} ${index + 1} needs exactly ${bankSize} questions in the bank (has ${linked.length}).`,
         );
       }
       linked.forEach((question, questionIndex) => {
@@ -301,6 +329,18 @@ export function validateTestBuilder({
           errors.push(
             `${isDataMode ? "Data set" : "Passage"} ${index + 1}, question ${questionIndex + 1} is incomplete.`,
           );
+        }
+        if (rcMode) {
+          const qTier = Number(question.tier);
+          if (!Number.isFinite(qTier) || qTier < 1 || qTier > 3) {
+            errors.push(
+              `Passage ${index + 1}, question ${questionIndex + 1} needs a question tier (1–3).`,
+            );
+          } else if (!rcQuestionAllowedOnPassage(tier, qTier)) {
+            errors.push(
+              `Passage ${index + 1}, question ${questionIndex + 1}: tier ${qTier} is not allowed on a ${tier === 1 ? "easy" : "complex"} passage.`,
+            );
+          }
         }
       });
     });
@@ -395,6 +435,7 @@ export function draftRcToTestBuilderState(draft) {
     for (const question of passage.questions || []) {
       questions.push({
         id: newTestQuestionId(),
+        tier: Number(question.stars ?? question.tier) || (Number(passage.tier) === 1 ? 1 : 2),
         prompt: question.prompt || "",
         area: question.area || "",
         choices: Array.isArray(question.choices)
@@ -573,8 +614,7 @@ export function buildTestBuilderPreview({
   passageWindow = false,
   questionsPerPassage = DEFAULT_RC_QUESTIONS_PER_PASSAGE,
 }) {
-  const tiers = passageTierById(passages);
-  const usesPassageTiers = passageWindow || readingComprehension;
+  const usesPassageTiers = (passageWindow || readingComprehension) && passageMode === "data";
   const usedPassageIds = new Set(
     questions.map((question) => question.passageId).filter(Boolean),
   );
@@ -605,7 +645,7 @@ export function buildTestBuilderPreview({
         type: "multiple_choice",
         stars:
           usesPassageTiers && question.passageId
-            ? tiers[question.passageId] || 2
+            ? passageTierById(passages)[question.passageId] || 2
             : Number(question.tier) || 2,
         prompt: question.prompt.trim(),
         choices: question.choices.map((choice) => choice.trim()),

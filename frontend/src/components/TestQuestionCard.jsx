@@ -19,9 +19,11 @@ export default function TestQuestionCard({
   readingComprehension = false,
   passages = [],
   hideTier = false,
+  tierOptions = TEST_TIERS,
+  tierInvalid = false,
 }) {
   const complete = isTestQuestionComplete(question);
-  const tierLabel = TEST_TIERS.find((tier) => tier.value === Number(question.tier))?.shortLabel;
+  const tierLabel = tierOptions.find((tier) => tier.value === Number(question.tier))?.shortLabel;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
@@ -67,14 +69,19 @@ export default function TestQuestionCard({
                 <select
                   value={question.tier}
                   onChange={(e) => onChange({ tier: Number(e.target.value) })}
-                  className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+                  className={`mt-1 w-full rounded-xl border px-3 py-2 text-sm bg-white ${
+                    tierInvalid ? "border-red-400" : "border-slate-300"
+                  }`}
                 >
-                  {TEST_TIERS.map((tier) => (
+                  {tierOptions.map((tier) => (
                     <option key={tier.value} value={tier.value}>
                       {tier.label} ({tier.weight})
                     </option>
                   ))}
                 </select>
+                {tierInvalid ? (
+                  <p className="text-xs text-red-700 mt-1">This tier is not allowed on this passage.</p>
+                ) : null}
               </label>
 
               <label className="block text-sm font-semibold text-slate-800">

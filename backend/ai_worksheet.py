@@ -159,6 +159,16 @@ def _parse_ai_json(content: str) -> dict:
     return data
 
 
+def _clamp_rc_question_stars(stars: int, passage_tier: int | None) -> int:
+    """Keep question stars within RC v2 rules for easy (1) vs complex (2) passages."""
+    value = int(stars) if stars in (1, 2, 3) else 2
+    if passage_tier == 1:
+        return min(max(value, 1), 2)
+    if passage_tier == 2:
+        return min(max(value, 2), 3)
+    return value
+
+
 def _normalize_rc_draft(data: dict, *, passage_specs: list[dict]) -> dict:
     title = data.get("title")
     if not isinstance(title, str) or not title.strip():
@@ -221,12 +231,22 @@ def _normalize_rc_draft(data: dict, *, passage_specs: list[dict]) -> dict:
                 raise ValueError(f"{qprefix} has duplicate choices.")
             if not isinstance(correct_index, int) or correct_index not in (0, 1, 2, 3):
                 raise ValueError(f"{qprefix} has invalid correct_index.")
+            star_raw = rq.get("stars")
+            stars = (
+                int(star_raw)
+                if isinstance(star_raw, (int, float)) and int(star_raw) in (1, 2, 3)
+                else 2
+            )
+            passage_tier = spec.get("tier")
+            if isinstance(passage_tier, (int, float)) and int(passage_tier) in (1, 2):
+                stars = _clamp_rc_question_stars(stars, int(passage_tier))
             questions.append(
                 {
                     "prompt": prompt.strip(),
                     "area": area.strip().lower(),
                     "choices": trimmed,
                     "correct_index": correct_index,
+                    "stars": stars,
                 }
             )
 
@@ -573,8 +593,27 @@ def _build_rc_prompt(
     stars: int,
     passage_specs: list[dict],
     custom_prompt: str = "",
+    passage_level: str = "",
 ) -> str:
-    difficulty = _difficulty_label(stars)
+    if passage_level == "easy":
+        level_note = (
+            "Passage level: EASY. Each question must have \"stars\": 1 or 2 only "
+            "(mix tier-1 and tier-2 questions)."
+        )
+    elif passage_level == "complex":
+        level_note = (
+            "Passage level: COMPLEX. Each question must have \"stars\": 2 or 3 only "
+            "(mix tier-2 and tier-3 questions)."
+        )
+    else:
+        level_note = f"Difficulty: {_difficulty_label(stars)} (stars {stars} of 3)."
+    bank_note = ""
+    if passage_level in ("easy", "complex"):
+        bank_note = (
+            "\nAdaptive test bank: these questions form a per-passage bank. "
+            "Students see only a random subset each sitting, so vary difficulty and "
+            "skill focus across questions.\n"
+        )
     specs_text = "\n".join(
         f"- Passage {i + 1} (id {spec.get('id', f'p{i + 1}')}): "
         f"exactly {spec.get('question_count')} multiple-choice questions; "
@@ -598,6 +637,7 @@ def _build_rc_prompt(
         {
           "prompt": "question text",
           "area": "specific skill label",
+          "stars": 2,
           "choices": ["choice A text", "choice B text", "choice C text", "choice D text"],
           "correct_index": 0
         }
@@ -610,7 +650,7 @@ def _build_rc_prompt(
 
 Audience: grade {grade} students in Canada/US curriculum style.
 Subject: English reading comprehension
-Difficulty: {difficulty} (stars {stars} of 3)
+{level_note}{bank_note}
 
 Passage requirements:
 {specs_text}
@@ -620,6 +660,7 @@ Rules:
 - Include at least 2 vocabulary-focused questions per passage when possible.
 - Each question must have exactly 4 distinct choices and a correct_index (0-3).
 - Each question must include a specific lowercase area label (e.g. vocabulary, inference, main idea).
+- Each question must include "stars": 1, 2, or 3 for question difficulty (see passage level rules above).
 - Questions must be answerable from their passage only.
 - Do not prefix choices with letters.
 - Title under 80 characters.
@@ -1572,6 +1613,7 @@ def _rc_test_passage_specs(
     return [
         {
             "id": f"rc_t{tier}_{i + 1}",
+            "tier": tier,
             "question_count": questions_per_passage,
             "min_words": min_words,
             "prompt": "",
@@ -1687,6 +1729,7 @@ def _generate_rc_test_tier_passages(
     min_words: int,
     custom_prompt: str,
     api_key: str,
+    passage_level: str = "",
 ) -> tuple[str, list[dict]]:
     specs = _rc_test_passage_specs(
         count=sitting_count,
@@ -1699,6 +1742,7 @@ def _generate_rc_test_tier_passages(
         stars=tier,
         passage_specs=specs,
         custom_prompt=custom_prompt,
+        passage_level=passage_level,
     )
     parsed = _openai_json_completion(
         api_key=api_key,
@@ -1725,15 +1769,17 @@ def _generate_adaptive_rc_test_draft(
 ) -> dict:
     title = ""
     all_passages: list[dict] = []
-    for tier in (1, 2, 3):
+    bank_size = questions_per_passage * 2
+    for tier, level in ((1, "easy"), (2, "complex")):
         tier_title, tier_passages = _generate_rc_test_tier_passages(
             grade=grade,
             tier=tier,
             sitting_count=sitting_count,
-            questions_per_passage=questions_per_passage,
+            questions_per_passage=bank_size,
             min_words=min_words,
             custom_prompt=custom_prompt,
             api_key=api_key,
+            passage_level=level,
         )
         if not title and tier_title:
             title = tier_title

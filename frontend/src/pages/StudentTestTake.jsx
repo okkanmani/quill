@@ -26,6 +26,7 @@ import {
   isContextualTest,
   canNavigateToTestSlot,
   isPassageWindowSession,
+  rcPassageTierLabel,
   testTakeUnitLabels,
 } from "../testTakeUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
@@ -353,6 +354,8 @@ export default function StudentTestTake() {
   const passageQuestions = slotData?.questions || [];
   const passage = slotData?.passage;
   const isPassageWindow = isPassageWindowSession(session);
+  const rcAdaptive = Boolean(session?.is_rc && session?.test_adaptive !== false);
+  const passageTierLabel = rcAdaptive ? rcPassageTierLabel(slotData?.tier) : null;
   const isDataTest = session?.subject === "data";
   const unitLabels = testTakeUnitLabels(session);
   const sittingCount = session?.sitting_count || 20;
@@ -697,6 +700,20 @@ export default function StudentTestTake() {
             <h1 className="text-xl font-bold text-slate-950">{session.title}</h1>
             <p className="text-sm text-slate-600 mt-0.5">
               {isPassageWindow ? unitLabels.capitalized : "Question"} {currentSlot} of {sittingCount}
+              {passageTierLabel ? (
+                <>
+                  <span className="text-slate-400 mx-2">·</span>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      slotData?.tier === 1
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-violet-100 text-violet-800"
+                    }`}
+                  >
+                    {passageTierLabel} passage
+                  </span>
+                </>
+              ) : null}
               <span className="text-slate-400 mx-2">·</span>
               {answeredCount}/{sittingCount}{" "}
               {isPassageWindow ? unitLabels.plural : "answered"}

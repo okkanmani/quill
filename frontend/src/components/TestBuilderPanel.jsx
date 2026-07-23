@@ -20,6 +20,9 @@ import {
   MIN_RC_QUESTIONS_PER_PASSAGE,
   MAX_RC_QUESTIONS_PER_PASSAGE,
   TEST_TIERS,
+  RC_PASSAGE_TIERS,
+  isRcAdaptiveTest,
+  rcQuestionsBankSize,
   buildTestBuilderPreview,
   countQuestionsByTier,
   countPassagesByTier,
@@ -54,8 +57,10 @@ function TierBankStatus({
   aiBankTarget,
   passageWindow = false,
   unitPlural = "questions",
+  rcPassageMode = false,
 }) {
   const unitLabel = passageWindow ? unitPlural : "questions";
+  const tierOptions = rcPassageMode ? RC_PASSAGE_TIERS : TEST_TIERS;
   if (!adaptive) {
     const total = Object.values(tierCounts).reduce((sum, count) => sum + count, 0);
     const ready = total >= sittingCount;
@@ -80,8 +85,8 @@ function TierBankStatus({
   }
 
   return (
-    <div className="grid sm:grid-cols-3 gap-3">
-      {TEST_TIERS.map((tier) => {
+    <div className={`grid gap-3 ${rcPassageMode ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
+      {tierOptions.map((tier) => {
         const count = tierCounts[tier.value] || 0;
         const ready = count >= sittingCount;
         return (
@@ -95,11 +100,15 @@ function TierBankStatus({
           >
             <div className="flex items-center justify-between gap-2">
               <p className="text-sm font-semibold text-slate-900">{tier.label}</p>
-              <QuestionDifficultyStars stars={tier.value} />
+              {rcPassageMode ? null : <QuestionDifficultyStars stars={tier.value} />}
             </div>
-            <p className="text-xs text-slate-600 mt-1">{tier.weight} scoring weight</p>
+            {!rcPassageMode ? (
+              <p className="text-xs text-slate-600 mt-1">{tier.weight} scoring weight</p>
+            ) : null}
             {passageWindow ? (
-              <p className="text-xs text-slate-500 mt-1">Units at tier {tier.value}</p>
+              <p className="text-xs text-slate-500 mt-1">
+                {rcPassageMode ? `${tier.shortLabel} ${unitLabel}` : `Units at tier ${tier.value}`}
+              </p>
             ) : null}
             <p
               className={`text-lg font-bold tabular-nums mt-2 ${
@@ -216,15 +225,25 @@ export default function TestBuilderPanel() {
     subject === "english" && readingComprehensionEnabled;
   const passageWindowEnabled = isPassageWindowTest(subject, isReadingComprehension);
   const passageMode = isDataPassageTest(subject) ? "data" : "rc";
+  const rcAdaptiveMode = isRcAdaptiveTest(subject, isReadingComprehension, adaptiveEnabled);
   const unitLabels = passageWindowUnitLabels(subject, isReadingComprehension);
+  const passageTierOptions = rcAdaptiveMode || (isReadingComprehension && !isDataPassageTest(subject))
+    ? RC_PASSAGE_TIERS
+    : TEST_TIERS;
   const tierCounts = useMemo(
     () =>
       passageWindowEnabled
-        ? countPassagesByTier(passages)
+        ? countPassagesByTier(passages, { rcMode: isReadingComprehension && !isDataPassageTest(subject) })
         : countQuestionsByTier(questions),
-    [passageWindowEnabled, passages, questions],
+    [passageWindowEnabled, passages, questions, isReadingComprehension, subject],
   );
-  const bankMinimum = minimumBankSize(sittingCount, adaptiveEnabled, passageWindowEnabled);
+  const bankMinimum = minimumBankSize(
+    sittingCount,
+    adaptiveEnabled,
+    passageWindowEnabled,
+    isReadingComprehension && !isDataPassageTest(subject),
+  );
+  const rcBankSize = rcQuestionsBankSize(questionsPerPassage, adaptiveEnabled);
   const aiBankTarget = passageWindowEnabled
     ? bankMinimum
     : fixedOrderAiBankSize(sittingCount);
@@ -265,8 +284,19 @@ export default function TestBuilderPanel() {
 
   useEffect(() => {
     if (!passageWindowEnabled) return;
-    setQuestions((prev) => syncPassageQuestions(passages, prev, questionsPerPassage));
-  }, [passageWindowEnabled, questionsPerPassage, passages.map((p) => p.id).join(",")]);
+    setQuestions((prev) =>
+      syncPassageQuestions(passages, prev, questionsPerPassage, {
+        rcAdaptive: rcAdaptiveMode,
+        adaptive: adaptiveEnabled,
+      }),
+    );
+  }, [
+    passageWindowEnabled,
+    questionsPerPassage,
+    rcAdaptiveMode,
+    adaptiveEnabled,
+    passages.map((p) => p.id).join(","),
+  ]);
 
   const passageQuestionGroups = useMemo(
     () => groupTestQuestionsByPassage(passages, questions),
@@ -283,6 +313,13 @@ export default function TestBuilderPanel() {
     () => (passageWindowEnabled ? unassignedTestQuestions(passages, questions) : []),
     [passageWindowEnabled, passages, questions],
   );
+
+  function syncPassageQuestionBank(nextPassages, prev) {
+    return syncPassageQuestions(nextPassages, prev, questionsPerPassage, {
+      rcAdaptive: rcAdaptiveMode,
+      adaptive: adaptiveEnabled,
+    });
+  }
 
   function updatePassage(id, patch) {
     setPassages((prev) =>
@@ -304,7 +341,7 @@ export default function TestBuilderPanel() {
     const passage = emptyTestPassage(null, tier, { data: isDataPassageTest(subject) });
     const nextPassages = [...passages, passage];
     setPassages(nextPassages);
-    setQuestions((prev) => syncPassageQuestions(nextPassages, prev, questionsPerPassage));
+    setQuestions((prev) => syncPassageQuestionBank(nextPassages, prev));
     setExpandedPassageIds((prev) => new Set(prev).add(passage.id));
   }
 
@@ -329,10 +366,10 @@ export default function TestBuilderPanel() {
         const first = emptyTestPassage(null, 2, { data: true });
         const nextPassages = [first];
         setPassages(nextPassages);
-        setQuestions((prev) => syncPassageQuestions(nextPassages, prev, questionsPerPassage));
+        setQuestions((prev) => syncPassageQuestionBank(nextPassages, prev));
         setExpandedPassageIds(new Set([first.id]));
       } else {
-        setQuestions((prev) => syncPassageQuestions(passages, prev, questionsPerPassage));
+        setQuestions((prev) => syncPassageQuestionBank(passages, prev));
       }
     } else if (leavingData) {
       setPassages([]);
@@ -348,10 +385,10 @@ export default function TestBuilderPanel() {
         const first = emptyTestPassage(null, 2);
         const nextPassages = [first];
         setPassages(nextPassages);
-        setQuestions((prev) => syncPassageQuestions(nextPassages, prev, questionsPerPassage));
+        setQuestions((prev) => syncPassageQuestionBank(nextPassages, prev));
         setExpandedPassageIds(new Set([first.id]));
       } else {
-        setQuestions((prev) => syncPassageQuestions(passages, prev, questionsPerPassage));
+        setQuestions((prev) => syncPassageQuestionBank(passages, prev));
       }
     } else {
       setQuestions((prev) =>
@@ -529,14 +566,15 @@ export default function TestBuilderPanel() {
         }
         setPassages(generated.passages);
         setQuestions(
-          syncPassageQuestions(
-            generated.passages,
-            generated.questions,
-            questionsPerPassage,
-          ),
+          syncPassageQuestions(generated.passages, generated.questions, questionsPerPassage, {
+            rcAdaptive: rcAdaptiveMode,
+            adaptive: adaptiveEnabled,
+          }),
         );
         setNotice(
-          `Generated ${generated.passages.length} ${unitLabels.plural} with ${questionsPerPassage} questions each. Review and edit below before publishing.`,
+          rcAdaptiveMode
+            ? `Generated ${generated.passages.length} ${unitLabels.plural} with ${rcBankSize} questions each (${questionsPerPassage} shown per sitting). Review and edit below before publishing.`
+            : `Generated ${generated.passages.length} ${unitLabels.plural} with ${questionsPerPassage} questions each. Review and edit below before publishing.`,
         );
       } else {
         const generated = draftToTestBuilderQuestions(draft);
@@ -644,7 +682,7 @@ export default function TestBuilderPanel() {
             ? adaptiveEnabled
               ? isDataPassageTest(subject)
                 ? `Build an adaptive data analysis test. Each sitting draws ${unitLabels.plural} by tier; after a data set, difficulty adjusts for the next one.`
-                : "Build an adaptive RC test. Each sitting draws passages by tier; after a passage, difficulty adjusts for the next one."
+                : "Build an adaptive RC test. Easy and complex passages; weighted score adjusts the next passage tier."
               : isDataPassageTest(subject)
                 ? `Build a fixed-order data analysis test. ${unitLabels.capitalized}s are assigned at the start — tier labels affect scoring weight only.`
                 : "Build a fixed-order RC test. Passages are assigned at the start — tier labels affect scoring weight only."
@@ -660,22 +698,43 @@ export default function TestBuilderPanel() {
         <ul className="mt-2 space-y-1 list-disc pl-5 text-teal-900/90">
           {passageWindowEnabled ? (
             adaptiveEnabled ? (
-              <>
-                <li>
-                  Each sitting draws {sittingCount} {unitLabels.plural} from tiered pools (1 = easy, 3 = hard).
-                </li>
-                <li>
-                  Students answer all {questionsPerPassage} questions for a {unitLabels.singular}, then move to the
-                  next {unitLabels.singular}.
-                </li>
-                <li>
-                  A strong score moves up a tier; a weak score moves down (majority correct).
-                </li>
-                <li>
-                  You need at least {sittingCount} {unitLabels.plural} in every tier ({bankMinimum} total
-                  minimum).
-                </li>
-              </>
+              isReadingComprehension && !isDataPassageTest(subject) ? (
+                <>
+                  <li>
+                    Each sitting draws {sittingCount} passages — easy or complex — with{" "}
+                    {questionsPerPassage} random questions from a bank of {rcBankSize} per passage.
+                  </li>
+                  <li>
+                    Question tiers (1–3) set scoring weight. Easy passages allow tier 1–2 questions;
+                    complex passages allow tier 2–3.
+                  </li>
+                  <li>
+                    Weighted score ≥80% on an easy passage moves up to complex; below 70% on complex
+                    moves down to easy.
+                  </li>
+                  <li>
+                    Bank needs {sittingCount} easy and {sittingCount} complex passages ({bankMinimum}{" "}
+                    total), each with {rcBankSize} questions.
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    Each sitting draws {sittingCount} {unitLabels.plural} from tiered pools (1 = easy, 3 = hard).
+                  </li>
+                  <li>
+                    Students answer all {questionsPerPassage} questions for a {unitLabels.singular}, then move to the
+                    next {unitLabels.singular}.
+                  </li>
+                  <li>
+                    A strong score moves up a tier; a weak score moves down (majority correct).
+                  </li>
+                  <li>
+                    You need at least {sittingCount} {unitLabels.plural} in every tier ({bankMinimum} total
+                    minimum).
+                  </li>
+                </>
+              )
             ) : (
               <>
                 <li>All {sittingCount} {unitLabels.plural} are assigned when the student starts.</li>
@@ -932,11 +991,12 @@ export default function TestBuilderPanel() {
                 {isDataPassageTest(subject) ? "Data sets & questions" : "Passages & questions"}
               </h2>
               <p className="text-sm text-slate-600 mt-0.5">
-                Set a tier on each {unitLabels.singular} with exactly {questionsPerPassage} questions. Adaptive
-                difficulty adjusts between {unitLabels.plural} based on performance.
+                {rcAdaptiveMode
+                  ? `Each passage is easy or complex with a bank of ${rcBankSize} tiered questions (${questionsPerPassage} shown per sitting).`
+                  : `Set a tier on each ${unitLabels.singular} with exactly ${questionsPerPassage} questions.`}{" "}
                 {buildUsingAi
                   ? adaptiveEnabled
-                    ? ` AI generates ${bankMinimum} ${unitLabels.plural} (${sittingCount} per tier).`
+                    ? ` AI generates ${bankMinimum} ${unitLabels.plural} (${sittingCount} per ${rcAdaptiveMode ? "level" : "tier"}).`
                     : ` AI generates ${bankMinimum} ${unitLabels.plural}.`
                   : ""}
               </p>
@@ -963,14 +1023,20 @@ export default function TestBuilderPanel() {
                       : "Generate passages"}
                 </button>
               ) : null}
-              {TEST_TIERS.map((tier) => (
+              {(isReadingComprehension && !isDataPassageTest(subject)
+                ? RC_PASSAGE_TIERS
+                : TEST_TIERS
+              ).map((tier) => (
                 <button
                   key={`add-passage-${tier.value}`}
                   type="button"
                   onClick={() => addPassage(tier.value)}
                   className="rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-900 hover:bg-indigo-100 transition"
                 >
-                  + Tier {tier.value} {unitLabels.singular}
+                  + {isReadingComprehension && !isDataPassageTest(subject)
+                    ? tier.shortLabel
+                    : `Tier ${tier.value}`}{" "}
+                  {unitLabels.singular}
                 </button>
               ))}
               {passages.length > 1 ? (
@@ -992,6 +1058,7 @@ export default function TestBuilderPanel() {
             aiBankTarget={buildUsingAi ? aiBankTarget : null}
             passageWindow={passageWindowEnabled}
             unitPlural={unitLabels.plural}
+            rcPassageMode={isReadingComprehension && !isDataPassageTest(subject)}
           />
 
           <div className="flex flex-wrap gap-2">
@@ -1006,7 +1073,7 @@ export default function TestBuilderPanel() {
             >
               All {unitLabels.plural} ({passages.length})
             </button>
-            {TEST_TIERS.map((tier) => (
+            {passageTierOptions.map((tier) => (
               <button
                 key={tier.value}
                 type="button"
@@ -1017,7 +1084,8 @@ export default function TestBuilderPanel() {
                     : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
               >
-                {tier.label} ({tierCounts[tier.value] || 0} {unitLabels.plural})
+                {rcAdaptiveMode ? tier.shortLabel : tier.label} ({tierCounts[tier.value] || 0}{" "}
+                {unitLabels.plural})
               </button>
             ))}
           </div>
@@ -1046,6 +1114,8 @@ export default function TestBuilderPanel() {
                     passages.length > 1 ? () => removePassage(passage.id) : null
                   }
                   passageMode={passageMode}
+                  rcAdaptiveMode={rcAdaptiveMode}
+                  questionsShownPerPassage={questionsPerPassage}
                   passageQuestions={passageQuestions}
                   expandedQuestionIds={expandedIds}
                   onToggleQuestion={toggleExpanded}
@@ -1053,7 +1123,9 @@ export default function TestBuilderPanel() {
                   onRemoveQuestion={removeQuestion}
                   subject={subject}
                   areaSuggestions
-                  fixedQuestionCount={questionsPerPassage}
+                  fixedQuestionCount={
+                    rcAdaptiveMode ? rcBankSize : questionsPerPassage
+                  }
                 />
                 );
               })

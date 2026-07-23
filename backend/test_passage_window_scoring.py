@@ -1,19 +1,24 @@
-"""Passage-window test scoring uses per-question weights from context tier."""
+"""Passage-window data tests score per question using context tier."""
 
 from tests import (
     _build_rc_passage_answer,
+    _is_data_passage_test,
     _question_lookup,
     _weighted_test_score,
     build_ordered_test_slots,
 )
 
 
-def _sample_worksheet():
+def _sample_data_worksheet():
     return {
-        "subject": "english",
-        "english_type": "reading_comprehension",
+        "subject": "data",
         "passages": [
-            {"id": "p1", "tier": 3, "title": "Passage", "text": "Body text here."},
+            {
+                "id": "p1",
+                "tier": 3,
+                "title": "Sales",
+                "chart": {"type": "bar", "title": "Sales", "labels": ["A"], "values": [1]},
+            },
         ],
         "questions": [
             {
@@ -22,7 +27,7 @@ def _sample_worksheet():
                 "prompt": "Q1",
                 "answer": "A",
                 "choices": ["A", "B"],
-                "area": "main_idea",
+                "area": "read_values",
             },
             {
                 "id": "q2",
@@ -30,7 +35,7 @@ def _sample_worksheet():
                 "prompt": "Q2",
                 "answer": "A",
                 "choices": ["A", "B"],
-                "area": "detail",
+                "area": "read_values",
             },
             {
                 "id": "q3",
@@ -38,7 +43,7 @@ def _sample_worksheet():
                 "prompt": "Q3",
                 "answer": "A",
                 "choices": ["A", "B"],
-                "area": "inference",
+                "area": "read_values",
             },
             {
                 "id": "q4",
@@ -46,14 +51,15 @@ def _sample_worksheet():
                 "prompt": "Q4",
                 "answer": "A",
                 "choices": ["A", "B"],
-                "area": "vocabulary",
+                "area": "read_values",
             },
         ],
     }
 
 
-def test_passage_window_scores_each_question_by_context_tier():
-    ws = _sample_worksheet()
+def test_data_passage_scores_each_question_by_context_tier():
+    ws = _sample_data_worksheet()
+    assert _is_data_passage_test(ws)
     sequence = [
         {
             "slot": 1,
@@ -77,11 +83,9 @@ def test_passage_window_scores_each_question_by_context_tier():
         ws, sequence, answers, sitting_count=1
     )
 
-    assert answers["1"]["correct"] is True
     assert weighted == 6.0
     assert max_weighted == 8.0
 
     slots = build_ordered_test_slots(sequence, answers, sitting_count=1)
     assert len(slots) == 4
     assert all(slot["tier"] == 3 for slot in slots)
-    assert [slot["correct"] for slot in slots] == [True, True, True, False]

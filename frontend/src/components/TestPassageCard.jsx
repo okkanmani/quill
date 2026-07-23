@@ -1,7 +1,13 @@
 import { QuestionDifficultyStars } from "./DifficultyStars";
 import WorksheetPassageContent from "./WorksheetPassageContent";
 import TestQuestionCard from "./TestQuestionCard";
-import { isTestPassageComplete, isTestQuestionComplete, TEST_TIERS } from "../testBuilderUtils";
+import {
+  isTestPassageComplete,
+  isTestQuestionComplete,
+  TEST_TIERS,
+  RC_PASSAGE_TIERS,
+  rcQuestionAllowedOnPassage,
+} from "../testBuilderUtils";
 
 export default function TestPassageCard({
   passage,
@@ -12,6 +18,8 @@ export default function TestPassageCard({
   onRemove,
   removeLabel,
   passageMode = "rc",
+  rcAdaptiveMode = false,
+  questionsShownPerPassage = 4,
   passageQuestions = [],
   expandedQuestionIds = new Set(),
   onToggleQuestion,
@@ -34,7 +42,15 @@ export default function TestPassageCard({
         passageQuestions.every((question) => isTestQuestionComplete(question));
   const complete = passageComplete && questionsComplete;
   const summary = passage.title.trim() || `${unitLabel} ${index + 1}`;
-  const tierLabel = TEST_TIERS.find((tier) => tier.value === Number(passage.tier))?.shortLabel;
+  const passageTierOptions = rcAdaptiveMode ? RC_PASSAGE_TIERS : TEST_TIERS;
+  const tierLabel = passageTierOptions.find(
+    (tier) => tier.value === Number(passage.tier),
+  )?.shortLabel;
+  const allowedQuestionTiers = rcAdaptiveMode
+    ? Number(passage.tier) === 1
+      ? TEST_TIERS.filter((tier) => tier.value <= 2)
+      : TEST_TIERS.filter((tier) => tier.value >= 2)
+    : TEST_TIERS;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
@@ -57,7 +73,11 @@ export default function TestPassageCard({
           </span>
         </span>
         <span className="shrink-0 flex items-center gap-2">
-          <QuestionDifficultyStars stars={passage.tier} />
+          {rcAdaptiveMode ? (
+            <span className="text-xs font-semibold text-slate-600">{tierLabel}</span>
+          ) : (
+            <QuestionDifficultyStars stars={passage.tier} />
+          )}
           <span
             className={`text-xs font-semibold rounded-full px-2 py-0.5 border ${
               complete
@@ -75,15 +95,16 @@ export default function TestPassageCard({
         <div className="p-4 border-t border-slate-100 space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
             <label className="block text-sm font-semibold text-slate-800">
-              Difficulty tier
+              {rcAdaptiveMode ? "Passage level" : "Difficulty tier"}
               <select
-                value={passage.tier ?? 2}
+                value={passage.tier ?? (rcAdaptiveMode ? 1 : 2)}
                 onChange={(e) => onChange({ tier: Number(e.target.value) })}
                 className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
               >
-                {TEST_TIERS.map((tier) => (
+                {passageTierOptions.map((tier) => (
                   <option key={tier.value} value={tier.value}>
-                    {tier.label} ({tier.weight})
+                    {tier.label}
+                    {!rcAdaptiveMode && tier.weight ? ` (${tier.weight})` : ""}
                   </option>
                 ))}
               </select>
@@ -149,9 +170,15 @@ export default function TestPassageCard({
                   Questions for this {isDataMode ? "data set" : "passage"}
                 </p>
                 <p className="text-xs text-slate-600 mt-0.5">
-                  {targetCount > 0
-                    ? `Exactly ${targetCount} questions inherit this ${isDataMode ? "data set's" : "passage's"} tier (${tierLabel || "unset"}).`
-                    : `All questions inherit this ${isDataMode ? "data set's" : "passage's"} tier (${tierLabel || "unset"}).`}
+                  {rcAdaptiveMode
+                    ? `Bank of ${targetCount} questions — students see ${questionsShownPerPassage} at random. ${
+                        Number(passage.tier) === 1
+                          ? "Tier 1–2 questions only."
+                          : "Tier 2–3 questions only."
+                      }`
+                    : targetCount > 0
+                      ? `Exactly ${targetCount} questions inherit this ${isDataMode ? "data set's" : "passage's"} tier (${tierLabel || "unset"}).`
+                      : `All questions inherit this ${isDataMode ? "data set's" : "passage's"} tier (${tierLabel || "unset"}).`}
                 </p>
               </div>
               {targetCount > 0 ? null : (
@@ -186,7 +213,12 @@ export default function TestPassageCard({
                     }
                     subject={subject}
                     areaSuggestions={areaSuggestions}
-                    hideTier
+                    hideTier={isDataMode || !rcAdaptiveMode}
+                    tierOptions={rcAdaptiveMode ? allowedQuestionTiers : TEST_TIERS}
+                    tierInvalid={
+                      rcAdaptiveMode &&
+                      !rcQuestionAllowedOnPassage(passage.tier, question.tier)
+                    }
                   />
                 ))}
               </div>

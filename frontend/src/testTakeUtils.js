@@ -143,6 +143,13 @@ export function contextualAdvanceHint(session, slotData, questionsPerPassage) {
   return "";
 }
 
+export function rcPassageTierLabel(tier) {
+  const value = Number(tier);
+  if (value === 1) return "Easy";
+  if (value === 2) return "Complex";
+  return null;
+}
+
 export function testTakeUnitLabels(session) {
   const isData = session?.subject === "data";
   return {

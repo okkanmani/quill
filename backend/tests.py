@@ -19,6 +19,13 @@ from worksheets import (
 TIER_WEIGHTS = {1: 1.0, 2: 1.5, 3: 2.0}
 START_TIER = 2
 VALID_TIERS = (1, 2, 3)
+RC_PASSAGE_EASY = 1
+RC_PASSAGE_COMPLEX = 2
+RC_PASSAGE_TIERS = (RC_PASSAGE_EASY, RC_PASSAGE_COMPLEX)
+RC_START_PASSAGE_TIER = RC_PASSAGE_EASY
+RC_PROMOTE_WEIGHTED_PCT = 0.80
+RC_DEMOTE_WEIGHTED_PCT = 0.70
+RC_QUESTIONS_BANK_MULTIPLIER = 2
 
 
 def _normalize_subject(subject: str) -> str:
@@ -70,6 +77,40 @@ def test_rc_questions_per_passage_from_data(data: dict) -> int:
     return 4
 
 
+def test_rc_questions_bank_size_from_data(data: dict) -> int:
+    per_passage = test_rc_questions_per_passage_from_data(data)
+    if _is_rc_test(data) and test_adaptive_from_data(data):
+        return per_passage * RC_QUESTIONS_BANK_MULTIPLIER
+    return per_passage
+
+
+def _uses_rc_adaptive_v2(data: dict) -> bool:
+    return _is_rc_test(data) and test_adaptive_from_data(data)
+
+
+def _normalize_rc_passage_tier(raw) -> int | None:
+    tier = _normalize_passage_tier(raw)
+    if tier in RC_PASSAGE_TIERS:
+        return tier
+    return None
+
+
+def _question_stars(q: dict) -> int | None:
+    for key in ("stars", "tier"):
+        raw = q.get(key)
+        if isinstance(raw, (int, float)) and int(raw) in VALID_TIERS:
+            return int(raw)
+    return None
+
+
+def _rc_question_allowed_on_passage(passage_tier: int, question_tier: int) -> bool:
+    if passage_tier == RC_PASSAGE_EASY:
+        return question_tier in (1, 2)
+    if passage_tier == RC_PASSAGE_COMPLEX:
+        return question_tier in (2, 3)
+    return False
+
+
 def _normalize_passage_tier(raw) -> int | None:
     if isinstance(raw, bool):
         return None
@@ -108,6 +149,8 @@ def validate_test_worksheet_data(data: dict) -> list[str]:
         per_passage = test_rc_questions_per_passage_from_data(data)
         unit_label = "data set" if is_data else "passage"
         passages = data.get("passages") or []
+        is_rc = _is_rc_test(data)
+        bank_size = test_rc_questions_bank_size_from_data(data) if is_rc else per_passage
         if not isinstance(passages, list) or not passages:
             errors.append(
                 f"Data analysis tests require at least one data set."
@@ -127,13 +170,24 @@ def validate_test_worksheet_data(data: dict) -> list[str]:
                     errors.append(f"passages[{i}].id is required.")
                     continue
                 passage_ids.add(pid)
-                tier = _normalize_passage_tier(passage.get("tier"))
-                if tier is None:
-                    tier = _normalize_passage_tier(passage.get("stars"))
-                if tier is None:
-                    errors.append(f"passages[{i}] must have tier 1, 2, or 3.")
+                if is_rc:
+                    tier = _normalize_rc_passage_tier(passage.get("tier"))
+                    if tier is None:
+                        tier = _normalize_rc_passage_tier(passage.get("stars"))
+                    if tier is None:
+                        errors.append(
+                            f"passages[{i}] must be easy (tier 1) or complex (tier 2)."
+                        )
+                    else:
+                        passage_tier_counts[tier] += 1
                 else:
-                    passage_tier_counts[tier] += 1
+                    tier = _normalize_passage_tier(passage.get("tier"))
+                    if tier is None:
+                        tier = _normalize_passage_tier(passage.get("stars"))
+                    if tier is None:
+                        errors.append(f"passages[{i}] must have tier 1, 2, or 3.")
+                    else:
+                        passage_tier_counts[tier] += 1
                 if is_data and not _data_passage_has_visual(passage):
                     errors.append(
                         f"passages[{i}] must include a chart or table with numeric data."
@@ -151,22 +205,57 @@ def validate_test_worksheet_data(data: dict) -> list[str]:
                     )
                 else:
                     q_counts[passage_id] = q_counts.get(passage_id, 0) + 1
+                if is_rc:
+                    q_tier = _question_stars(q)
+                    if q_tier is None:
+                        errors.append(f"questions[{i}] must have stars 1, 2, or 3.")
+                    else:
+                        passage = next(
+                            (
+                                p
+                                for p in passages
+                                if isinstance(p, dict)
+                                and str(p.get("id") or "").strip() == passage_id
+                            ),
+                            None,
+                        )
+                        if passage:
+                            p_tier = _normalize_rc_passage_tier(
+                                passage.get("tier") or passage.get("stars")
+                            )
+                            if p_tier is not None and not _rc_question_allowed_on_passage(
+                                p_tier, q_tier
+                            ):
+                                label = "easy" if p_tier == RC_PASSAGE_EASY else "complex"
+                                errors.append(
+                                    f"questions[{i}] tier {q_tier} is not allowed on "
+                                    f"{label} passage (passages[{i}])."
+                                )
             for i, passage in enumerate(passages):
                 pid = str(passage.get("id") or "").strip()
                 if not pid:
                     continue
                 count = q_counts.get(pid, 0)
-                if count != per_passage:
+                if count != bank_size:
                     errors.append(
-                        f"passages[{i}] needs exactly {per_passage} questions (has {count})."
+                        f"passages[{i}] needs exactly {bank_size} questions (has {count})."
                     )
             if adaptive:
-                for tier in VALID_TIERS:
-                    if passage_tier_counts[tier] < sitting:
-                        errors.append(
-                            f"Test bank needs at least {sitting} tier-{tier} {unit_label}s "
-                            f"(has {passage_tier_counts[tier]})."
-                        )
+                if is_rc:
+                    for tier in RC_PASSAGE_TIERS:
+                        if passage_tier_counts[tier] < sitting:
+                            label = "easy" if tier == RC_PASSAGE_EASY else "complex"
+                            errors.append(
+                                f"Test bank needs at least {sitting} {label} {unit_label}s "
+                                f"(has {passage_tier_counts[tier]})."
+                            )
+                else:
+                    for tier in VALID_TIERS:
+                        if passage_tier_counts[tier] < sitting:
+                            errors.append(
+                                f"Test bank needs at least {sitting} tier-{tier} {unit_label}s "
+                                f"(has {passage_tier_counts[tier]})."
+                            )
             elif len(passages) < sitting:
                 errors.append(
                     f"Test bank needs at least {sitting} {unit_label}s "
@@ -239,6 +328,7 @@ def _data_passage_has_visual(passage: dict) -> bool:
 
 def _passage_tier_lookup(worksheet: dict) -> dict[str, int]:
     out: dict[str, int] = {}
+    rc = _is_rc_test(worksheet)
     for passage in worksheet.get("passages") or []:
         if not isinstance(passage, dict):
             continue
@@ -248,24 +338,25 @@ def _passage_tier_lookup(worksheet: dict) -> dict[str, int]:
         tier = passage.get("tier")
         if tier is None:
             tier = passage.get("stars")
-        if isinstance(tier, (int, float)) and int(tier) in VALID_TIERS:
+        if rc:
+            normalized = _normalize_rc_passage_tier(tier)
+            if normalized is not None:
+                out[pid] = normalized
+        elif isinstance(tier, (int, float)) and int(tier) in VALID_TIERS:
             out[pid] = int(tier)
     return out
 
 
 def _question_tier(q: dict, worksheet: dict) -> int:
-    if _is_passage_window_test(worksheet):
+    if _is_data_passage_test(worksheet):
         passage_id = q.get("passage_id")
         if passage_id:
             tier = _passage_tier_lookup(worksheet).get(str(passage_id))
             if tier is not None:
                 return tier
-    stars = q.get("stars")
-    if isinstance(stars, (int, float)) and int(stars) in VALID_TIERS:
-        return int(stars)
-    tier = q.get("tier")
-    if isinstance(tier, (int, float)) and int(tier) in VALID_TIERS:
-        return int(tier)
+    q_tier = _question_stars(q)
+    if q_tier is not None:
+        return q_tier
     return START_TIER
 
 
@@ -369,6 +460,10 @@ def _questions_by_passage_id(worksheet: dict) -> dict[str, list[dict]]:
 
 
 def _passages_by_tier(worksheet: dict) -> dict[int, list[dict]]:
+    if _uses_rc_adaptive_v2(worksheet) or (
+        _is_rc_test(worksheet) and not test_adaptive_from_data(worksheet)
+    ):
+        return _passages_by_tier_rc(worksheet)
     per_passage = test_rc_questions_per_passage_from_data(worksheet)
     qmap = _questions_by_passage_id(worksheet)
     pools: dict[int, list[dict]] = {1: [], 2: [], 3: []}
@@ -395,6 +490,123 @@ def _passages_by_tier(worksheet: dict) -> dict[int, list[dict]]:
             }
         )
     return pools
+
+
+def _passages_by_tier_rc(worksheet: dict) -> dict[int, list[dict]]:
+    per_passage = test_rc_questions_per_passage_from_data(worksheet)
+    bank_size = test_rc_questions_bank_size_from_data(worksheet)
+    qmap = _questions_by_passage_id(worksheet)
+    pools: dict[int, list[dict]] = {RC_PASSAGE_EASY: [], RC_PASSAGE_COMPLEX: []}
+    for passage in worksheet.get("passages") or []:
+        if not isinstance(passage, dict):
+            continue
+        pid = str(passage.get("id") or "").strip()
+        if not pid:
+            continue
+        tier = _normalize_rc_passage_tier(passage.get("tier") or passage.get("stars"))
+        if tier is None:
+            continue
+        qs = qmap.get(pid, [])
+        if len(qs) < bank_size:
+            continue
+        entry: dict = {"passage_id": pid, "tier": tier}
+        if not _uses_rc_adaptive_v2(worksheet):
+            entry["question_ids"] = [str(q["id"]) for q in qs[:per_passage]]
+        pools[tier].append(entry)
+    return pools
+
+
+def _pick_questions_for_passage(
+    passage_id: str,
+    count: int,
+    qmap: dict[str, list[dict]],
+    used_question_ids: set[str],
+    rng: random.Random,
+) -> list[str]:
+    candidates = [
+        str(q["id"])
+        for q in qmap.get(str(passage_id), [])
+        if str(q.get("id")) not in used_question_ids
+    ]
+    if len(candidates) <= count:
+        return candidates
+    return [str(qid) for qid in rng.sample(candidates, count)]
+
+
+def _pick_passage_rc(
+    pools: dict[int, list[dict]],
+    tier: int,
+    used_passage_ids: set[str],
+    rng: random.Random,
+) -> dict | None:
+    candidates = [
+        p for p in pools.get(tier, []) if str(p.get("passage_id")) not in used_passage_ids
+    ]
+    if not candidates:
+        for fallback_tier in RC_PASSAGE_TIERS:
+            if fallback_tier == tier:
+                continue
+            candidates = [
+                p
+                for p in pools.get(fallback_tier, [])
+                if str(p.get("passage_id")) not in used_passage_ids
+            ]
+            if candidates:
+                tier = fallback_tier
+                break
+    if not candidates:
+        return None
+    picked = rng.choice(candidates)
+    return {
+        "passage_id": str(picked["passage_id"]),
+        "tier": tier,
+        "question_ids": list(picked.get("question_ids") or []),
+    }
+
+
+def _answer_weighted_pct(answer: dict) -> float | None:
+    details = answer.get("questions") or []
+    if not isinstance(details, list) or not details:
+        return None
+    earned = 0.0
+    maximum = 0.0
+    for detail in details:
+        if not isinstance(detail, dict):
+            continue
+        tier = int(detail.get("tier") or START_TIER)
+        weight = tier_weight(tier)
+        maximum += weight
+        if detail.get("correct"):
+            earned += weight
+    if maximum <= 0:
+        return None
+    return earned / maximum
+
+
+def _next_rc_passage_tier(current: int, weighted_pct: float) -> int:
+    tier = RC_PASSAGE_EASY if int(current) <= RC_PASSAGE_EASY else RC_PASSAGE_COMPLEX
+    if tier == RC_PASSAGE_EASY:
+        if weighted_pct >= RC_PROMOTE_WEIGHTED_PCT:
+            return RC_PASSAGE_COMPLEX
+        return RC_PASSAGE_EASY
+    if weighted_pct < RC_DEMOTE_WEIGHTED_PCT:
+        return RC_PASSAGE_EASY
+    return RC_PASSAGE_COMPLEX
+
+
+def _adaptation_tier_after_answer(
+    answer: dict, worksheet: dict, entry_tier: int
+) -> int:
+    if _uses_rc_adaptive_v2(worksheet):
+        weighted_pct = answer.get("weighted_pct")
+        if not isinstance(weighted_pct, (int, float)):
+            weighted_pct = _answer_weighted_pct(answer)
+        if weighted_pct is None:
+            return int(entry_tier or RC_START_PASSAGE_TIER)
+        return _next_rc_passage_tier(int(entry_tier or RC_START_PASSAGE_TIER), float(weighted_pct))
+    if "correct" in answer:
+        return _next_tier(int(entry_tier or START_TIER), correct=bool(answer.get("correct")))
+    return int(entry_tier or START_TIER)
 
 
 def _passage_majority_correct(
@@ -444,6 +656,109 @@ def _pick_passage(
 
 
 def _assign_through_slot_rc(
+    sequence: list[dict | None],
+    answers: dict,
+    worksheet: dict,
+    sitting_count: int,
+    target_slot: int,
+    rng: random.Random,
+    *,
+    adaptive: bool = True,
+) -> list[dict | None]:
+    if _uses_rc_adaptive_v2(worksheet):
+        return _assign_through_slot_rc_v2(
+            sequence,
+            answers,
+            worksheet,
+            sitting_count,
+            target_slot,
+            rng,
+            adaptive=adaptive,
+        )
+    return _assign_through_slot_passage_data(
+        sequence,
+        answers,
+        _passages_by_tier(worksheet),
+        sitting_count,
+        target_slot,
+        rng,
+        adaptive=adaptive,
+    )
+
+
+def _assign_through_slot_rc_v2(
+    sequence: list[dict | None],
+    answers: dict,
+    worksheet: dict,
+    sitting_count: int,
+    target_slot: int,
+    rng: random.Random,
+    *,
+    adaptive: bool = True,
+) -> list[dict | None]:
+    target_slot = max(1, min(target_slot, sitting_count))
+    pools = _passages_by_tier_rc(worksheet)
+    qmap = _questions_by_passage_id(worksheet)
+    per_passage = test_rc_questions_per_passage_from_data(worksheet)
+    used_passage_ids = {
+        str(entry["passage_id"])
+        for entry in sequence
+        if isinstance(entry, dict) and entry.get("passage_id")
+    }
+
+    current_tier = RC_START_PASSAGE_TIER
+    for slot in range(1, target_slot + 1):
+        idx = slot - 1
+        if idx < len(sequence) and isinstance(sequence[idx], dict):
+            current_tier = int(sequence[idx].get("tier") or RC_START_PASSAGE_TIER)
+            if adaptive:
+                prev = answers.get(str(slot))
+                if isinstance(prev, dict) and (
+                    "weighted_pct" in prev or "correct" in prev or prev.get("questions")
+                ):
+                    current_tier = _adaptation_tier_after_answer(
+                        prev, worksheet, current_tier
+                    )
+            continue
+
+        tier_to_use = (
+            current_tier
+            if adaptive
+            else RC_PASSAGE_TIERS[(slot - 1) % len(RC_PASSAGE_TIERS)]
+        )
+        picked = _pick_passage_rc(pools, tier_to_use, used_passage_ids, rng)
+        if not picked:
+            break
+        question_ids = _pick_questions_for_passage(
+            picked["passage_id"],
+            per_passage,
+            qmap,
+            set(),
+            rng,
+        )
+        while len(sequence) < slot:
+            sequence.append(None)
+        sequence[idx] = {
+            "slot": slot,
+            "passage_id": picked["passage_id"],
+            "tier": picked["tier"],
+            "question_ids": question_ids,
+        }
+        used_passage_ids.add(picked["passage_id"])
+
+        if adaptive:
+            prev = answers.get(str(slot))
+            if isinstance(prev, dict) and (
+                "weighted_pct" in prev or "correct" in prev or prev.get("questions")
+            ):
+                current_tier = _adaptation_tier_after_answer(
+                    prev, worksheet, int(picked["tier"])
+                )
+
+    return sequence
+
+
+def _assign_through_slot_passage_data(
     sequence: list[dict | None],
     answers: dict,
     pools: dict[int, list[dict]],
@@ -671,7 +986,18 @@ def _build_rc_passage_answer(
         )
 
     correct_count = sum(1 for item in question_details if item.get("correct"))
+    weighted_earned = sum(
+        tier_weight(int(item.get("tier") or START_TIER))
+        for item in question_details
+        if item.get("correct")
+    )
+    weighted_max = sum(
+        tier_weight(int(item.get("tier") or START_TIER)) for item in question_details
+    )
+    weighted_pct = (weighted_earned / weighted_max) if weighted_max else 0.0
     passage_correct = _passage_majority_correct(responses, question_ids, lookup)
+    if _uses_rc_adaptive_v2(worksheet):
+        passage_correct = weighted_pct >= RC_PROMOTE_WEIGHTED_PCT
     return {
         "passage_id": passage_id,
         "tier": passage_tier,
@@ -679,6 +1005,7 @@ def _build_rc_passage_answer(
         "correct": passage_correct,
         "correct_count": correct_count,
         "question_count": len(question_ids),
+        "weighted_pct": round(weighted_pct, 4),
         "questions": question_details,
         "scratchpad": prev_scratchpad,
         "work_text": prev_work_text,
@@ -894,7 +1221,6 @@ def _attempt_row_to_rc_session(
 ) -> dict:
     sequence = _parse_json(row["sequence"], [])
     answers = _parse_json(row["answers"], {})
-    pools = _passages_by_tier(worksheet)
     rng = random.Random(f"{row['student']}:{row['worksheet_id']}:{row['id']}")
     adaptive = test_adaptive_from_data(worksheet)
     passage_lookup = _passage_lookup(worksheet)
@@ -919,7 +1245,7 @@ def _attempt_row_to_rc_session(
     sequence = _assign_through_slot_rc(
         sequence,
         answers,
-        pools,
+        worksheet,
         sitting_count,
         target_slot,
         rng,
@@ -999,6 +1325,7 @@ def _attempt_row_to_rc_session(
         "answers": answers,
         "is_passage_window": True,
         "is_rc": _is_rc_test(worksheet),
+        "test_adaptive": adaptive,
         "questions_per_passage": test_rc_questions_per_passage_from_data(worksheet),
     }
 
