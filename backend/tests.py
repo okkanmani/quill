@@ -263,7 +263,90 @@ def _question_tier(q: dict, worksheet: dict) -> int:
     stars = q.get("stars")
     if isinstance(stars, (int, float)) and int(stars) in VALID_TIERS:
         return int(stars)
+    tier = q.get("tier")
+    if isinstance(tier, (int, float)) and int(tier) in VALID_TIERS:
+        return int(tier)
     return START_TIER
+
+
+def _weighted_test_score(
+    worksheet: dict,
+    sequence: list,
+    answers: dict,
+    *,
+    sitting_count: int,
+) -> tuple[float, float]:
+    """Sum tier-weighted points per question (passage-window) or per slot."""
+    weighted = 0.0
+    max_weighted = 0.0
+    is_passage_window = _is_passage_window_test(worksheet)
+    lookup = _question_lookup(worksheet)
+
+    for slot in range(1, sitting_count + 1):
+        entry = sequence[slot - 1] if slot - 1 < len(sequence) else None
+        ans = answers.get(str(slot), {})
+        if not isinstance(ans, dict):
+            continue
+
+        if is_passage_window:
+            details = ans.get("questions") or []
+            if details:
+                for detail in details:
+                    if not isinstance(detail, dict):
+                        continue
+                    tier_raw = detail.get("tier")
+                    if not isinstance(tier_raw, (int, float)):
+                        q = lookup.get(str(detail.get("question_id") or ""))
+                        tier_raw = _question_tier(q, worksheet) if q else None
+                    if not isinstance(tier_raw, (int, float)) and isinstance(entry, dict):
+                        passage_id = entry.get("passage_id")
+                        tier_raw = _passage_tier_lookup(worksheet).get(str(passage_id or ""))
+                    tier = int(tier_raw) if isinstance(tier_raw, (int, float)) else START_TIER
+                    tier = max(1, min(3, tier))
+                    w = tier_weight(tier)
+                    max_weighted += w
+                    if detail.get("correct"):
+                        weighted += w
+                continue
+
+            if not isinstance(entry, dict):
+                continue
+            question_ids = [str(qid) for qid in (entry.get("question_ids") or [])]
+            for qid in question_ids:
+                q = lookup.get(qid)
+                tier = _question_tier(q, worksheet) if q else START_TIER
+                w = tier_weight(tier)
+                max_weighted += w
+            continue
+
+        tier_raw = ans.get("tier")
+        if not isinstance(tier_raw, (int, float)) and isinstance(entry, dict):
+            tier_raw = entry.get("tier")
+        tier = int(tier_raw) if isinstance(tier_raw, (int, float)) else START_TIER
+        tier = max(1, min(3, tier))
+        w = tier_weight(tier)
+        max_weighted += w
+        if ans.get("correct"):
+            weighted += w
+
+    return weighted, max_weighted
+
+
+def _test_correct_count(answers: dict) -> int:
+    total = 0
+    for answer in (answers or {}).values():
+        if not isinstance(answer, dict):
+            continue
+        questions = answer.get("questions")
+        if isinstance(questions, list) and questions:
+            total += sum(
+                1
+                for detail in questions
+                if isinstance(detail, dict) and detail.get("correct")
+            )
+        elif answer.get("correct"):
+            total += 1
+    return total
 
 
 def _questions_by_tier(worksheet: dict) -> dict[int, list[dict]]:
@@ -550,11 +633,16 @@ def _build_rc_passage_answer(
     entry: dict,
     responses: dict,
     lookup: dict[str, dict],
+    worksheet: dict,
     *,
     prev: dict | None = None,
 ) -> dict:
     question_ids = [str(qid) for qid in (entry.get("question_ids") or [])]
-    tier = int(entry.get("tier") or START_TIER)
+    passage_id = entry.get("passage_id")
+    passage_tier = _passage_tier_lookup(worksheet).get(
+        str(passage_id or ""),
+        int(entry.get("tier") or START_TIER),
+    )
     prev_scratchpad = prev.get("scratchpad", "") if isinstance(prev, dict) else ""
     prev_work_text = prev.get("work_text", "") if isinstance(prev, dict) else ""
     prev_work_mode = prev.get("work_mode", "text") if isinstance(prev, dict) else "text"
@@ -568,6 +656,7 @@ def _build_rc_passage_answer(
             continue
         expected = str(q.get("answer") or "").strip()
         given = str(responses.get(qid) or "").strip()
+        q_tier = _question_tier(q, worksheet)
         question_details.append(
             {
                 "question_id": qid,
@@ -577,14 +666,15 @@ def _build_rc_passage_answer(
                 "correct": given == expected,
                 "choices": q.get("choices") or [],
                 "area": q.get("area") or "",
+                "tier": q_tier,
             }
         )
 
     correct_count = sum(1 for item in question_details if item.get("correct"))
     passage_correct = _passage_majority_correct(responses, question_ids, lookup)
     return {
-        "passage_id": entry.get("passage_id"),
-        "tier": tier,
+        "passage_id": passage_id,
+        "tier": passage_tier,
         "responses": responses,
         "correct": passage_correct,
         "correct_count": correct_count,
@@ -666,10 +756,16 @@ def build_ordered_test_slots(
             for detail in answer.get("questions") or []:
                 if not isinstance(detail, dict):
                     continue
+                detail_tier = detail.get("tier")
+                if isinstance(detail_tier, (int, float)):
+                    q_tier = int(detail_tier)
+                else:
+                    q_tier = tier
+                q_tier = max(1, min(3, q_tier))
                 slots.append(
                     {
                         "slot": slot,
-                        "tier": tier,
+                        "tier": q_tier,
                         "area": str(detail.get("area") or "").strip(),
                         "correct": detail.get("correct") is True,
                         "question_id": detail.get("question_id"),
@@ -1304,7 +1400,9 @@ def _save_rc_test_answer(
                     cleaned[qid] = ""
 
         prev = answers.get(str(slot))
-        answer_payload = _build_rc_passage_answer(entry, cleaned, lookup, prev=prev)
+        answer_payload = _build_rc_passage_answer(
+            entry, cleaned, lookup, ws, prev=prev
+        )
         if _rc_responses_complete(cleaned, question_ids):
             answers[str(slot)] = answer_payload
             next_slot = min(slot + 1, sitting_count)
@@ -1595,7 +1693,11 @@ def submit_test(student_name: str, worksheet_id: str) -> dict:
                 responses = ans.get("responses") if isinstance(ans, dict) else {}
                 if _rc_responses_complete(responses, question_ids):
                     answers[str(slot)] = _build_rc_passage_answer(
-                        entry, responses, lookup, prev=ans if isinstance(ans, dict) else None
+                        entry,
+                        responses,
+                        lookup,
+                        ws,
+                        prev=ans if isinstance(ans, dict) else None,
                     )
         else:
             unanswered = [
@@ -1607,16 +1709,9 @@ def submit_test(student_name: str, worksheet_id: str) -> dict:
             if unanswered:
                 raise ValueError("Answer all questions before submitting.")
 
-        weighted = 0.0
-        max_weighted = 0.0
-        for slot in range(1, sitting_count + 1):
-            entry = sequence[slot - 1]
-            tier = int(entry.get("tier") or START_TIER)
-            w = tier_weight(tier)
-            max_weighted += w
-            ans = answers.get(str(slot), {})
-            if isinstance(ans, dict) and ans.get("correct"):
-                weighted += w
+        weighted, max_weighted = _weighted_test_score(
+            ws, sequence, answers, sitting_count=sitting_count
+        )
 
         started = datetime.fromisoformat(str(row["started_at"]).replace("Z", "+00:00"))
         if started.tzinfo is None:
@@ -1663,7 +1758,7 @@ def submit_test(student_name: str, worksheet_id: str) -> dict:
                             "expected": detail.get("expected") or "",
                             "choices": detail.get("choices") or [],
                             "area": detail.get("area") or "",
-                            "tier": ans.get("tier"),
+                            "tier": detail.get("tier") or ans.get("tier"),
                             "passage": passage,
                             "notes": {"mode": "text", "text": "", "scratchpad": ""},
                         }
@@ -1811,11 +1906,14 @@ def list_test_results(student_name: str) -> list[dict]:
             answers = _parse_json(row["answers"], {})
             sequence = _parse_json(row["sequence"], [])
             sitting_count = int(row["sitting_count"] or row["test_sitting_count"] or 20)
-            correct_count = sum(
-                1
+            correct_count = _test_correct_count(answers)
+            total_count = sum(
+                len(a.get("questions") or [])
+                if isinstance(a, dict) and isinstance(a.get("questions"), list) and a.get("questions")
+                else 1
                 for a in answers.values()
-                if isinstance(a, dict) and a.get("correct")
-            )
+                if isinstance(a, dict)
+            ) or len(answers)
             adaptive = int(row["test_adaptive"] or 0) != 0
             slots = (
                 build_ordered_test_slots(
@@ -1836,7 +1934,7 @@ def list_test_results(student_name: str) -> list[dict]:
                     "max_weighted_score": float(row["max_weighted_score"] or 0),
                     "duration_seconds": row["duration_seconds"],
                     "correct_count": correct_count,
-                    "total_count": len(answers),
+                    "total_count": total_count,
                     "sitting_count": sitting_count,
                     "time_limit_minutes": row["time_limit_minutes"],
                     "test_adaptive": adaptive,

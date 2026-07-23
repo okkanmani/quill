@@ -680,7 +680,9 @@ export default function TestBuilderPanel() {
               <>
                 <li>All {sittingCount} {unitLabels.plural} are assigned when the student starts.</li>
                 <li>Each {unitLabels.singular} includes {questionsPerPassage} questions shown together.</li>
-                <li>Scoring is weighted by each {unitLabels.singular}&apos;s tier.</li>
+                <li>
+                  Scoring is weighted per question using its {unitLabels.singular}&apos;s tier.
+                </li>
               </>
             )
           ) : adaptiveEnabled ? (
