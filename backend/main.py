@@ -284,6 +284,9 @@ class GenerateTestDraftRequest(BaseModel):
     sitting_count: int
     adaptive: bool = True
     custom_prompt: str = ""
+    english_type: str | None = None
+    questions_per_passage: int | None = None
+    min_words: int | None = None
 
 
 class TestBuilderQuestionRequest(BaseModel):
@@ -955,6 +958,9 @@ def admin_generate_test_draft(
             adaptive=req.adaptive,
             custom_prompt=req.custom_prompt,
             api_key=api_key,
+            english_type=req.english_type or "",
+            questions_per_passage=req.questions_per_passage,
+            min_words=req.min_words,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

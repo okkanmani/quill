@@ -315,6 +315,35 @@ export function draftToTestBuilderQuestions(draft) {
   }));
 }
 
+export function draftRcToTestBuilderState(draft) {
+  const passages = (draft?.passages || []).map((passage, index) => ({
+    id: passage.id || newTestPassageId(),
+    title: passage.title || "",
+    body: passage.body || "",
+    tier: Number(passage.tier) || 2,
+  }));
+  const questions = [];
+  for (const passage of draft?.passages || []) {
+    for (const question of passage.questions || []) {
+      questions.push({
+        id: newTestQuestionId(),
+        prompt: question.prompt || "",
+        area: question.area || "",
+        choices: Array.isArray(question.choices)
+          ? [...question.choices]
+          : ["", "", "", ""],
+        correctIndex: Number(question.correct_index) || 0,
+        passageId: passage.id,
+      });
+    }
+  }
+  return {
+    title: draft?.title || "",
+    passages,
+    questions,
+  };
+}
+
 export function worksheetQuestionToTestBuilderQuestion(question) {
   const choices = Array.isArray(question?.choices) ? [...question.choices] : ["", "", "", ""];
   while (choices.length < 4) choices.push("");

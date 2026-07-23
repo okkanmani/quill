@@ -1559,6 +1559,115 @@ def _normalize_test_draft(
     return {"title": title.strip(), "questions": questions}
 
 
+DEFAULT_RC_TEST_MIN_WORDS = 200
+
+
+def _rc_test_passage_specs(
+    *,
+    count: int,
+    tier: int,
+    questions_per_passage: int,
+    min_words: int,
+) -> list[dict]:
+    return [
+        {
+            "id": f"rc_t{tier}_{i + 1}",
+            "question_count": questions_per_passage,
+            "min_words": min_words,
+            "prompt": "",
+        }
+        for i in range(count)
+    ]
+
+
+def _generate_rc_test_tier_passages(
+    *,
+    grade: int,
+    tier: int,
+    sitting_count: int,
+    questions_per_passage: int,
+    min_words: int,
+    custom_prompt: str,
+    api_key: str,
+) -> tuple[str, list[dict]]:
+    specs = _rc_test_passage_specs(
+        count=sitting_count,
+        tier=tier,
+        questions_per_passage=questions_per_passage,
+        min_words=min_words,
+    )
+    user_prompt = _build_rc_prompt(
+        grade=grade,
+        stars=tier,
+        passage_specs=specs,
+        custom_prompt=custom_prompt,
+    )
+    parsed = _openai_json_completion(
+        api_key=api_key,
+        system_role="test",
+        timeout=240.0,
+        messages=[{"role": "user", "content": user_prompt}],
+    )
+    normalized = _normalize_rc_draft(parsed, passage_specs=specs)
+    title = normalized.get("title") or ""
+    passages: list[dict] = []
+    for passage in normalized.get("passages") or []:
+        passages.append({**passage, "tier": tier})
+    return title, passages
+
+
+def _generate_adaptive_rc_test_draft(
+    *,
+    grade: int,
+    sitting_count: int,
+    questions_per_passage: int,
+    min_words: int,
+    custom_prompt: str,
+    api_key: str,
+) -> dict:
+    title = ""
+    all_passages: list[dict] = []
+    for tier in (1, 2, 3):
+        tier_title, tier_passages = _generate_rc_test_tier_passages(
+            grade=grade,
+            tier=tier,
+            sitting_count=sitting_count,
+            questions_per_passage=questions_per_passage,
+            min_words=min_words,
+            custom_prompt=custom_prompt,
+            api_key=api_key,
+        )
+        if not title and tier_title:
+            title = tier_title
+        all_passages.extend(tier_passages)
+    if not title:
+        title = "Reading Comprehension Adaptive Test"
+    return {"title": title, "passages": all_passages}
+
+
+def _generate_fixed_rc_test_draft(
+    *,
+    grade: int,
+    sitting_count: int,
+    questions_per_passage: int,
+    min_words: int,
+    custom_prompt: str,
+    api_key: str,
+) -> dict:
+    title, passages = _generate_rc_test_tier_passages(
+        grade=grade,
+        tier=2,
+        sitting_count=sitting_count,
+        questions_per_passage=questions_per_passage,
+        min_words=min_words,
+        custom_prompt=custom_prompt,
+        api_key=api_key,
+    )
+    if not title:
+        title = "Reading Comprehension Test"
+    return {"title": title, "passages": passages}
+
+
 def generate_test_draft(
     *,
     subject: str,
@@ -1567,6 +1676,9 @@ def generate_test_draft(
     adaptive: bool = True,
     custom_prompt: str = "",
     api_key: str,
+    english_type: str = "",
+    questions_per_passage: int | None = None,
+    min_words: int | None = None,
 ) -> dict:
     """Call OpenAI and return test-builder-ready draft."""
     api_key = (api_key or "").strip()
@@ -1580,6 +1692,39 @@ def generate_test_draft(
         raise ValueError("grade must be an integer from 1 to 12.")
     if not isinstance(sitting_count, int) or sitting_count < 1 or sitting_count > 100:
         raise ValueError("sitting_count must be between 1 and 100.")
+
+    english_type = (english_type or "").strip().lower()
+    is_rc = subject == "english" and english_type == "reading_comprehension"
+    if is_rc:
+        per_passage = (
+            questions_per_passage
+            if questions_per_passage is not None
+            else 4
+        )
+        if not isinstance(per_passage, int) or per_passage < 1 or per_passage > 12:
+            raise ValueError("questions_per_passage must be between 1 and 12.")
+        rc_min_words = (
+            min_words if isinstance(min_words, int) else DEFAULT_RC_TEST_MIN_WORDS
+        )
+        if rc_min_words < 50 or rc_min_words > 2000:
+            raise ValueError("min_words must be between 50 and 2000.")
+        if adaptive:
+            return _generate_adaptive_rc_test_draft(
+                grade=grade,
+                sitting_count=sitting_count,
+                questions_per_passage=per_passage,
+                min_words=rc_min_words,
+                custom_prompt=custom_prompt,
+                api_key=api_key,
+            )
+        return _generate_fixed_rc_test_draft(
+            grade=grade,
+            sitting_count=sitting_count,
+            questions_per_passage=per_passage,
+            min_words=rc_min_words,
+            custom_prompt=custom_prompt,
+            api_key=api_key,
+        )
 
     user_prompt = _build_test_prompt(
         subject=subject,

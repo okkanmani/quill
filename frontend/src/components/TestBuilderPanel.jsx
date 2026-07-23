@@ -24,6 +24,7 @@ import {
   countQuestionsByTier,
   countPassagesByTier,
   draftToTestBuilderQuestions,
+  draftRcToTestBuilderState,
   emptyTestQuestion,
   emptyTestPassage,
   emptyRcTestQuestion,
@@ -216,7 +217,9 @@ export default function TestBuilderPanel() {
     [isReadingComprehension, passages, questions],
   );
   const bankMinimum = minimumBankSize(sittingCount, adaptiveEnabled, isReadingComprehension);
-  const aiBankTarget = fixedOrderAiBankSize(sittingCount);
+  const aiBankTarget = isReadingComprehension
+    ? bankMinimum
+    : fixedOrderAiBankSize(sittingCount);
 
   const filteredQuestions = useMemo(() => {
     if (activeTierFilter === "all") return questions;
@@ -346,6 +349,17 @@ export default function TestBuilderPanel() {
     });
   }
 
+  function removeAllUnassignedQuestions() {
+    const orphanIds = new Set(orphanQuestions.map((question) => question.id));
+    if (orphanIds.size === 0) return;
+    setQuestions((prev) => prev.filter((question) => !orphanIds.has(question.id)));
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      for (const id of orphanIds) next.delete(id);
+      return next;
+    });
+  }
+
   function addQuestion(tier = 2, passageId = null) {
     if (isReadingComprehension && passageId) {
       const question = emptyRcTestQuestion(passageId);
@@ -468,16 +482,40 @@ export default function TestBuilderPanel() {
         sitting_count: sittingCount,
         adaptive: adaptiveEnabled,
         custom_prompt: aiCustomPrompt.trim(),
+        ...(isReadingComprehension
+          ? {
+              english_type: "reading_comprehension",
+              questions_per_passage: questionsPerPassage,
+            }
+          : {}),
       });
-      const generated = draftToTestBuilderQuestions(draft);
-      if (!title.trim() && draft.title) {
-        setTitle(draft.title);
+      if (isReadingComprehension) {
+        const generated = draftRcToTestBuilderState(draft);
+        if (!title.trim() && generated.title) {
+          setTitle(generated.title);
+        }
+        setPassages(generated.passages);
+        setQuestions(
+          syncPassageQuestions(
+            generated.passages,
+            generated.questions,
+            questionsPerPassage,
+          ),
+        );
+        setNotice(
+          `Generated ${generated.passages.length} passages with ${questionsPerPassage} questions each. Review and edit below before publishing.`,
+        );
+      } else {
+        const generated = draftToTestBuilderQuestions(draft);
+        if (!title.trim() && draft.title) {
+          setTitle(draft.title);
+        }
+        setQuestions(generated);
+        setExpandedIds(new Set(generated.slice(0, 3).map((question) => question.id)));
+        setNotice(
+          `Generated ${generated.length} questions. Review and edit below before publishing.`,
+        );
       }
-      setQuestions(generated);
-      setExpandedIds(new Set(generated.slice(0, 3).map((question) => question.id)));
-      setNotice(
-        `Generated ${generated.length} questions. Review and edit below before publishing.`,
-      );
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setErrors([err.message || "Could not generate test questions."]);
@@ -843,6 +881,11 @@ export default function TestBuilderPanel() {
               <p className="text-sm text-slate-600 mt-0.5">
                 Set a tier on each passage with exactly {questionsPerPassage} questions. Adaptive
                 difficulty adjusts between passages based on passage performance.
+                {buildUsingAi
+                  ? adaptiveEnabled
+                    ? ` AI generates ${bankMinimum} passages (${sittingCount} per tier).`
+                    : ` AI generates ${bankMinimum} passages.`
+                  : ""}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -853,6 +896,16 @@ export default function TestBuilderPanel() {
               >
                 Add from bank
               </button>
+              {buildUsingAi ? (
+                <button
+                  type="button"
+                  onClick={handleGenerateWithAi}
+                  disabled={generating}
+                  className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-3 py-1.5 text-sm font-semibold transition"
+                >
+                  {generating ? "Generating…" : "Generate passages"}
+                </button>
+              ) : null}
               {TEST_TIERS.map((tier) => (
                 <button
                   key={`add-passage-${tier.value}`}
@@ -950,11 +1003,20 @@ export default function TestBuilderPanel() {
 
           {orphanQuestions.length > 0 ? (
             <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 space-y-3">
-              <div>
-                <p className="text-sm font-semibold text-amber-950">Unassigned questions</p>
-                <p className="text-xs text-amber-900/80 mt-0.5">
-                  These questions are not linked to a passage. Assign them or remove them.
-                </p>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-amber-950">Unassigned questions</p>
+                  <p className="text-xs text-amber-900/80 mt-0.5">
+                    These questions are not linked to a passage. Assign them or remove them.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeAllUnassignedQuestions}
+                  className="rounded-xl border border-amber-400 bg-white px-3 py-1.5 text-sm font-semibold text-amber-950 hover:bg-amber-100 transition shrink-0"
+                >
+                  Delete all ({orphanQuestions.length})
+                </button>
               </div>
               <div className="space-y-3">
                 {orphanQuestions.map((question) => {
