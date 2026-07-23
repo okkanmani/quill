@@ -1039,10 +1039,11 @@ export async function completeTestReview(reviewId) {
   return res.json();
 }
 
-export async function getTestSession(worksheetId, { slot, resume = true } = {}) {
+export async function getTestSession(worksheetId, { slot, resume = true, preview = false } = {}) {
   const params = new URLSearchParams();
   if (slot != null) params.set("slot", String(slot));
   params.set("resume", resume ? "1" : "0");
+  if (preview) params.set("preview", "1");
   const res = await apiFetch(
     `${BASE_URL}/tests/${worksheetId}/session?${params.toString()}`,
     { headers: authHeaders() },
@@ -1075,11 +1076,17 @@ export async function startTestSession(worksheetId, { slot, resume = false } = {
   return res.json();
 }
 
-export async function saveTestAnswer(worksheetId, { slot, given }) {
+export async function saveTestAnswer(worksheetId, { slot, given, responses }) {
+  const body = { slot };
+  if (responses && typeof responses === "object") {
+    body.responses = responses;
+  } else {
+    body.given = given ?? "";
+  }
   const res = await apiFetch(`${BASE_URL}/tests/${worksheetId}/answer`, {
     method: "PATCH",
     headers: authHeaders(),
-    body: JSON.stringify({ slot, given }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

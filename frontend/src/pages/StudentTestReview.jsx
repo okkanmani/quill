@@ -9,6 +9,7 @@ import {
 import AppShell from "../components/AppShell";
 import Drawpad from "../components/Drawpad";
 import QuillLoading from "../components/QuillLoading";
+import WorksheetPassageContent from "../components/WorksheetPassageContent";
 import { QuestionDifficultyStars } from "../components/DifficultyStars";
 import { ScratchpadIcon, TextAnswerIcon } from "../components/ResponseModeIcons";
 import { useStudentNavLinks } from "../useStudentNavLinks";
@@ -148,6 +149,11 @@ export default function StudentTestReview() {
                     key={q.question_id || index}
                     className="rounded-2xl border border-amber-200 bg-white p-5 shadow-sm"
                   >
+                    {q.passage ? (
+                      <div className="mb-4">
+                        <WorksheetPassageContent passage={q.passage} embedded />
+                      </div>
+                    ) : null}
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <p className="font-medium text-slate-900 flex-1">
                         {index + 1}. {q.prompt}

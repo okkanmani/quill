@@ -186,6 +186,57 @@ def _test_adaptive_from_sheet_data(data: dict) -> bool:
     return data.get("test_adaptive") is not False
 
 
+def _english_type_from_sheet_data(data: dict) -> str:
+    raw = data.get("english_type")
+    if isinstance(raw, str) and raw.strip():
+        return raw.strip().lower()
+    return ""
+
+
+def _test_rc_questions_per_passage_from_sheet_data(data: dict) -> int | None:
+    raw = data.get("test_rc_questions_per_passage")
+    if isinstance(raw, bool):
+        return None
+    try:
+        n = int(raw)
+    except (TypeError, ValueError):
+        return None
+    if n >= 1:
+        return min(n, 12)
+    return None
+
+
+def _resolve_english_type(worksheet_id: str, row_value) -> dict:
+    data = _load_bundled_sheet_data(worksheet_id)
+    if data:
+        english_type = _english_type_from_sheet_data(data)
+    elif isinstance(row_value, str) and row_value.strip():
+        english_type = row_value.strip().lower()
+    else:
+        english_type = ""
+    if not english_type:
+        return {}
+    return {"english_type": english_type}
+
+
+def _resolve_test_rc_questions_per_passage(worksheet_id: str, row_value) -> dict:
+    data = _load_bundled_sheet_data(worksheet_id)
+    if data:
+        per_passage = _test_rc_questions_per_passage_from_sheet_data(data)
+    else:
+        per_passage = None
+        if row_value is not None and not isinstance(row_value, bool):
+            try:
+                n = int(row_value)
+                if n >= 1:
+                    per_passage = min(n, 12)
+            except (TypeError, ValueError):
+                per_passage = None
+    if per_passage is None:
+        return {}
+    return {"test_rc_questions_per_passage": per_passage}
+
+
 def _resolve_test(
     worksheet_id: str, row_flag, row_sitting, row_adaptive=None
 ) -> dict:
@@ -998,12 +1049,14 @@ def _insert_worksheet(
     is_test = _test_from_sheet_data(data)
     test_sitting = _test_sitting_count_from_sheet_data(data) if is_test else 20
     test_adaptive = 1 if _test_adaptive_from_sheet_data(data) else 0
+    english_type = _english_type_from_sheet_data(data) or None
+    rc_questions_per_passage = _test_rc_questions_per_passage_from_sheet_data(data)
     conn.execute(
         """
-        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, is_test, test_sitting_count, test_adaptive, admin_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, is_test, test_sitting_count, test_adaptive, english_type, test_rc_questions_per_passage, admin_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, 1 if is_timed else 0, time_limit, 1 if is_enrichment else 0, 1 if is_gifted else 0, gifted_week, 1 if is_test else 0, test_sitting, test_adaptive, admin_id),
+        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, 1 if is_timed else 0, time_limit, 1 if is_enrichment else 0, 1 if is_gifted else 0, gifted_week, 1 if is_test else 0, test_sitting, test_adaptive, english_type, rc_questions_per_passage, admin_id),
     )
     for order, q in enumerate(questions):
         conn.execute(
@@ -1120,7 +1173,8 @@ def list_worksheets(
                        t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track, t.gifted_track_week,
                        t.is_test, t.test_sitting_count, t.test_adaptive,
                        t.last_score, t.last_total, t.last_status, t.draft_saved_at,
-                       t.timed_locked, t.timed_started, t.last_duration_seconds
+                       t.timed_locked, t.timed_started, t.last_duration_seconds,
+                       t.attempt_locked, t.attempt_started
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section, w.content_badge, w.evaluation,
@@ -1148,13 +1202,19 @@ def list_worksheets(
                            (SELECT t.locked FROM timed_attempts t
                             WHERE t.worksheet_id = w.id AND t.student = ?) AS timed_locked,
                            (SELECT 1 FROM timed_attempts t
-                            WHERE t.worksheet_id = w.id AND t.student = ?) AS timed_started
+                            WHERE t.worksheet_id = w.id AND t.student = ?) AS timed_started,
+                           (SELECT ta.locked FROM test_attempts ta
+                            WHERE ta.worksheet_id = w.id AND ta.student = ?
+                              AND ta.completed_at IS NULL) AS attempt_locked,
+                           (SELECT 1 FROM test_attempts ta
+                            WHERE ta.worksheet_id = w.id AND ta.student = ?
+                              AND ta.completed_at IS NULL) AS attempt_started
                     FROM worksheets w
                     {admin_filter}
                 ) t
                 ORDER BY t.done ASC, t.sort_ts DESC, t.id DESC
                 """,
-                (student_name, student_name, student_name, student_name, student_name, student_name, student_name, student_name, *admin_params),
+                (student_name, student_name, student_name, student_name, student_name, student_name, student_name, student_name, student_name, student_name, *admin_params),
             ).fetchall()
         else:
             rows = conn.execute(
@@ -1237,6 +1297,11 @@ def list_worksheets(
                     item["timed_started"] = True
                 if r["timed_locked"] if "timed_locked" in r.keys() else None:
                     item["timed_locked"] = True
+            if student_name is not None and item.get("is_test") and not item["done"]:
+                if r["attempt_started"] if "attempt_started" in r.keys() else None:
+                    item["attempt_started"] = True
+                if r["attempt_locked"] if "attempt_locked" in r.keys() else None:
+                    item["attempt_locked"] = True
             if last_status:
                 item["last_status"] = last_status
             if (
@@ -1285,7 +1350,7 @@ def get_worksheet(worksheet_id: str, *, admin_id: int | None = None) -> dict | N
     try:
         row = conn.execute(
             """
-            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, is_test, test_sitting_count, test_adaptive, admin_id
+            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, is_test, test_sitting_count, test_adaptive, english_type, test_rc_questions_per_passage, admin_id
             FROM worksheets WHERE id = ?
             """,
             (worksheet_id,),
@@ -1337,6 +1402,12 @@ def get_worksheet(worksheet_id: str, *, admin_id: int | None = None) -> dict | N
         out.update(_resolve_gifted_track(worksheet_id, row["is_gifted_track"]))
         out.update(_resolve_gifted_track_week(worksheet_id, row["gifted_track_week"]))
         out.update(_resolve_test(worksheet_id, row["is_test"], row["test_sitting_count"], row["test_adaptive"]))
+        out.update(_resolve_english_type(worksheet_id, row["english_type"]))
+        out.update(
+            _resolve_test_rc_questions_per_passage(
+                worksheet_id, row["test_rc_questions_per_passage"]
+            )
+        )
         return out
     finally:
         conn.close()
@@ -1597,6 +1668,11 @@ def worksheet_data_from_builder(body: dict, *, existing: dict | None = None) -> 
                 "title": ptitle.strip(),
                 "body": pbody.strip(),
             }
+            tier = raw.get("tier")
+            if tier is None:
+                tier = raw.get("stars")
+            if isinstance(tier, (int, float)) and int(tier) in (1, 2, 3):
+                built_entry["tier"] = int(tier)
             if has_chart:
                 built_entry["chart"] = chart
             if has_table:
@@ -1726,7 +1802,7 @@ def test_data_from_builder(body: dict) -> dict:
     if not adaptive and len(questions) > sitting:
         questions = questions[:sitting]
 
-    return {
+    data: dict = {
         "title": title.strip(),
         "subject": subject,
         "is_test": True,
@@ -1738,6 +1814,25 @@ def test_data_from_builder(body: dict) -> dict:
         "content_badge": (body.get("content_badge") or "Test").strip() or "Test",
         "questions": questions,
     }
+
+    raw_passages = body.get("passages")
+    if isinstance(raw_passages, list) and raw_passages:
+        data["passages"] = raw_passages
+
+    english_type = body.get("english_type")
+    if isinstance(english_type, str) and english_type.strip():
+        data["english_type"] = english_type.strip().lower()
+
+    rc_per_passage_raw = body.get("test_rc_questions_per_passage")
+    if rc_per_passage_raw is not None and not isinstance(rc_per_passage_raw, bool):
+        try:
+            rc_per_passage = int(rc_per_passage_raw)
+            if rc_per_passage >= 1:
+                data["test_rc_questions_per_passage"] = min(rc_per_passage, 12)
+        except (TypeError, ValueError):
+            pass
+
+    return data
 
 
 def create_test_from_builder(body: dict, *, admin_id: int) -> dict:

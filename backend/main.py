@@ -192,6 +192,8 @@ class WorksheetBuilderPassageRequest(BaseModel):
     id: str | None = None
     title: str
     body: str
+    tier: int | None = None
+    stars: int | None = None
     chart: dict | None = None
     table: dict | None = None
 
@@ -293,6 +295,7 @@ class TestBuilderQuestionRequest(BaseModel):
     answer: str
     hint: bool = False
     area: str | None = None
+    passage_id: str | None = None
 
 
 class CreateTestBuilderRequest(BaseModel):
@@ -302,6 +305,9 @@ class CreateTestBuilderRequest(BaseModel):
     test_adaptive: bool = True
     time_limit_minutes: int
     questions: list[TestBuilderQuestionRequest]
+    passages: list[WorksheetBuilderPassageRequest] | None = None
+    english_type: str | None = None
+    test_rc_questions_per_passage: int | None = None
     content_badge: str | None = "Test"
     lock_on_create: bool = False
 
@@ -421,7 +427,8 @@ class CompleteRevisionRequest(BaseModel):
 
 class TestAnswerRequest(BaseModel):
     slot: int
-    given: str
+    given: str = ""
+    responses: dict[str, str] | None = None
 
 
 class TestScratchpadRequest(BaseModel):
@@ -2018,15 +2025,18 @@ def get_test_session_route(
     authorization: str = Header(...),
     slot: int | None = Query(default=None),
     resume: int = Query(default=1),
+    preview: int = Query(default=0),
 ):
     payload = _payload(authorization)
     who = _test_context_name(payload)
+    preview_mode = bool(preview) and payload.get("role") == "admin"
     try:
         return get_or_start_test_session(
             who,
             worksheet_id,
             target_slot=slot,
             resume=bool(resume),
+            preview=preview_mode,
         )
     except ValueError as exc:
         msg = str(exc)
@@ -2073,6 +2083,7 @@ def save_test_answer_route(
             worksheet_id,
             slot=req.slot,
             given=req.given,
+            responses=req.responses,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

@@ -106,6 +106,12 @@ def init_schema() -> None:
             conn.execute(
                 "ALTER TABLE worksheets ADD COLUMN test_adaptive INTEGER NOT NULL DEFAULT 1"
             )
+        if "english_type" not in cols:
+            conn.execute("ALTER TABLE worksheets ADD COLUMN english_type TEXT")
+        if "test_rc_questions_per_passage" not in cols:
+            conn.execute(
+                "ALTER TABLE worksheets ADD COLUMN test_rc_questions_per_passage INTEGER"
+            )
         result_cols = {row[1] for row in conn.execute("PRAGMA table_info(results)")}
         if "duration_seconds" not in result_cols:
             conn.execute("ALTER TABLE results ADD COLUMN duration_seconds INTEGER")

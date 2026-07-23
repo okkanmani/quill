@@ -12,6 +12,7 @@ import AppHeader from "../components/AppHeader";
 import AdminStudentBanner from "../components/AdminStudentBanner";
 import Drawpad from "../components/Drawpad";
 import QuillLoading from "../components/QuillLoading";
+import WorksheetPassageContent from "../components/WorksheetPassageContent";
 import { QuestionDifficultyStars } from "../components/DifficultyStars";
 import PadlockIcon from "../components/PadlockIcon";
 import {
@@ -32,6 +33,7 @@ export default function StudentTestTake() {
   const [session, setSession] = useState(null);
   const [currentSlot, setCurrentSlot] = useState(1);
   const [selected, setSelected] = useState("");
+  const [passageResponses, setPassageResponses] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [submitError, setSubmitError] = useState("");
@@ -79,7 +81,7 @@ export default function StudentTestTake() {
 
   const loadSession = useCallback(
     async (slot) => {
-      const data = await getTestSession(id, { slot, resume: true });
+      const data = await getTestSession(id, { slot, resume: true, preview: isAdminPreview });
       setSession(data);
       if (isAdminPreview) {
         setRemainingSeconds(null);
@@ -156,7 +158,13 @@ export default function StudentTestTake() {
   useEffect(() => {
     if (!session?.slots) return;
     const slotData = session.slots.find((s) => s.slot === currentSlot);
-    setSelected(slotData?.given || "");
+    if (session.is_rc) {
+      setPassageResponses(slotData?.responses || {});
+      setSelected("");
+    } else {
+      setSelected(slotData?.given || "");
+      setPassageResponses({});
+    }
     const nextMode = slotData?.work_mode === "scratchpad" ? "scratchpad" : "text";
     const nextText = slotData?.work_text || "";
     const nextScratchpad = slotData?.scratchpad || "";
@@ -267,7 +275,7 @@ export default function StudentTestTake() {
     setSubmitError("");
     try {
       await flushWorkSave(currentSlot);
-      const data = await getTestSession(id, { slot, resume: true });
+      const data = await getTestSession(id, { slot, resume: true, preview: isAdminPreview });
       setSession(data);
       setCurrentSlot(slot);
     } catch (err) {
@@ -281,6 +289,22 @@ export default function StudentTestTake() {
     setSubmitError("");
     try {
       const data = await saveTestAnswer(id, { slot: currentSlot, given: choice });
+      setSession(data);
+    } catch (err) {
+      setSubmitError(err.message || "Could not save answer.");
+    }
+  }
+
+  async function handleSelectPassageChoice(questionId, choice) {
+    if (submitted || submitting || timedOut) return;
+    const nextResponses = { ...passageResponses, [questionId]: choice };
+    setPassageResponses(nextResponses);
+    setSubmitError("");
+    try {
+      const data = await saveTestAnswer(id, {
+        slot: currentSlot,
+        responses: nextResponses,
+      });
       setSession(data);
     } catch (err) {
       setSubmitError(err.message || "Could not save answer.");
@@ -301,8 +325,13 @@ export default function StudentTestTake() {
   const slots = session?.slots || [];
   const slotData = slots.find((s) => s.slot === currentSlot);
   const question = slotData?.question;
+  const passageQuestions = slotData?.questions || [];
+  const passage = slotData?.passage;
+  const isRc = Boolean(session?.is_rc);
   const sittingCount = session?.sitting_count || 20;
-  const answeredCount = slots.filter((s) => s.answered).length;
+  const answeredCount = isRc
+    ? slots.filter((s) => s.answered).length
+    : slots.filter((s) => s.answered).length;
   const allAnswered = answeredCount >= sittingCount;
   const scratchpadAllowed = session?.scratchpad !== false;
 
@@ -318,7 +347,7 @@ export default function StudentTestTake() {
     const observer = new ResizeObserver(updateHeight);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [scratchpadAllowed, workMode, question, currentSlot]);
+  }, [scratchpadAllowed, workMode, question, passageQuestions.length, currentSlot, isRc]);
 
   function renderWorkModeToggle() {
     const baseBtn =
@@ -499,9 +528,9 @@ export default function StudentTestTake() {
           <div>
             <h1 className="text-xl font-bold text-slate-950">{session.title}</h1>
             <p className="text-sm text-slate-600 mt-0.5">
-              Question {currentSlot} of {sittingCount}
+              {isRc ? "Passage" : "Question"} {currentSlot} of {sittingCount}
               <span className="text-slate-400 mx-2">·</span>
-              {answeredCount}/{sittingCount} answered
+              {answeredCount}/{sittingCount} {isRc ? "passages" : "answered"}
             </p>
           </div>
           {!isAdminPreview && remainingSeconds != null ? (
@@ -519,7 +548,7 @@ export default function StudentTestTake() {
 
         <div className="mb-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm shrink-0">
           <p className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">
-            Question navigator
+            {isRc ? "Passage navigator" : "Question navigator"}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {slots.map((slot) => (
@@ -531,8 +560,12 @@ export default function StudentTestTake() {
                 className={navigatorClass(slot)}
                 title={
                   slot.assigned
-                    ? `Question ${slot.slot}`
-                    : "Answer earlier questions first"
+                    ? isRc
+                      ? `Passage ${slot.slot}`
+                      : `Question ${slot.slot}`
+                    : isRc
+                      ? "Complete earlier passages first"
+                      : "Answer earlier questions first"
                 }
               >
                 {slot.slot}
@@ -550,7 +583,7 @@ export default function StudentTestTake() {
                 onClick={() => goToSlot(currentSlot - 1)}
                 className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
               >
-                ← Previous
+                ← Previous {isRc ? "passage" : ""}
               </button>
               <button
                 type="button"
@@ -558,7 +591,7 @@ export default function StudentTestTake() {
                 onClick={() => goToSlot(currentSlot + 1)}
                 className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
               >
-                Next →
+                Next {isRc ? "passage" : ""} →
               </button>
             </div>
             <button
@@ -573,14 +606,105 @@ export default function StudentTestTake() {
           {submitError ? <p className="text-red-600 text-sm">{submitError}</p> : null}
           {!allAnswered ? (
             <p className="text-slate-500 text-xs">
-              Answer all {sittingCount} questions to submit.
+              {isRc
+                ? `Answer all questions in every passage to submit (${session?.questions_per_passage || passageQuestions.length} per passage).`
+                : `Answer all ${sittingCount} questions to submit.`}
             </p>
           ) : null}
         </div>
 
-        {question ? (
+        {isRc && (passage || passageQuestions.length > 0) ? (
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 flex-1 min-h-[calc(100dvh-12rem)] items-stretch mb-3">
             <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm overflow-auto">
+              {passage ? (
+                <div className="mb-4">
+                  <WorksheetPassageContent passage={passage} embedded />
+                </div>
+              ) : null}
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <p className="text-sm font-semibold text-slate-900">
+                  Questions for this passage
+                </p>
+                <QuestionDifficultyStars stars={slotData?.tier} />
+              </div>
+              <div className="space-y-6">
+                {passageQuestions.map((passageQuestion, index) => {
+                  const qid = passageQuestion.id;
+                  const selectedChoice = passageResponses[qid] || "";
+                  return (
+                    <div key={qid} className="border-t border-slate-100 pt-4 first:border-t-0 first:pt-0">
+                      <p className="text-slate-900 font-medium mb-3">
+                        {index + 1}. {passageQuestion.prompt}
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        {(passageQuestion.choices || []).map((choice) => {
+                          const isSelected = selectedChoice === choice;
+                          return (
+                            <button
+                              key={`${qid}-${choice}`}
+                              type="button"
+                              disabled={submitting || timedOut}
+                              onClick={() => handleSelectPassageChoice(qid, choice)}
+                              className={`border rounded-xl px-4 py-3 text-sm text-left transition ${
+                                isSelected
+                                  ? "border-teal-500 bg-teal-50 text-slate-900"
+                                  : "border-slate-200 text-slate-800 hover:border-teal-300"
+                              }`}
+                            >
+                              {choice}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {scratchpadAllowed ? (
+              <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col min-h-[480px] lg:min-h-0 h-full">
+                <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Your work</p>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Notes for this passage — not graded.
+                    </p>
+                  </div>
+                  {renderWorkModeToggle()}
+                </div>
+                <div ref={workAreaRef} className="flex-1 min-h-[480px] flex flex-col">
+                  {workMode === "text" ? (
+                    <textarea
+                      value={workText}
+                      onChange={(e) => handleWorkTextChange(e.target.value)}
+                      disabled={submitting || timedOut}
+                      placeholder="Jot notes about this passage…"
+                      className="w-full h-full min-h-0 flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-none"
+                    />
+                  ) : (
+                    <Drawpad
+                      key={`test-scratch-${id}-${currentSlot}`}
+                      value={scratchpadData}
+                      onChange={handleScratchpadChange}
+                      disabled={submitting || timedOut}
+                      showHeading={false}
+                      className="mt-0 flex-1 min-h-0"
+                      canvasHeight={workAreaHeight}
+                    />
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : question ? (
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 flex-1 min-h-[calc(100dvh-12rem)] items-stretch mb-3">
+            <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm overflow-auto">
+              {question.passage ? (
+                <div className="mb-4">
+                  <WorksheetPassageContent passage={question.passage} embedded />
+                </div>
+              ) : null}
               <div className="flex items-start justify-between gap-3 mb-4">
                 <p className="text-slate-900 font-medium flex-1">{question.prompt}</p>
                 <QuestionDifficultyStars stars={slotData?.tier || question.stars} />
@@ -643,7 +767,9 @@ export default function StudentTestTake() {
             ) : null}
           </div>
         ) : (
-          <p className="text-slate-500">Loading question…</p>
+          <p className="text-slate-500">
+            {isRc ? "Loading passage…" : "Loading question…"}
+          </p>
         )}
       </div>
     </div>

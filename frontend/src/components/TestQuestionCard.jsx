@@ -16,8 +16,12 @@ export default function TestQuestionCard({
   removeLabel = "Remove question",
   subject = "",
   areaSuggestions = false,
+  readingComprehension = false,
+  passages = [],
+  hideTier = false,
 }) {
   const complete = isTestQuestionComplete(question);
+  const tierLabel = TEST_TIERS.find((tier) => tier.value === Number(question.tier))?.shortLabel;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
@@ -31,12 +35,16 @@ export default function TestQuestionCard({
           <span className="font-semibold text-slate-900">Question {index + 1}</span>
           <span className="block text-sm text-slate-600 truncate mt-0.5">
             {question.prompt.trim() || "No prompt yet"}
-            {" · "}
-            {TEST_TIERS.find((tier) => tier.value === Number(question.tier))?.shortLabel}
+            {!hideTier && tierLabel ? (
+              <>
+                {" · "}
+                {tierLabel}
+              </>
+            ) : null}
           </span>
         </span>
         <span className="shrink-0 flex items-center gap-2">
-          <QuestionDifficultyStars stars={question.tier} />
+          {!hideTier ? <QuestionDifficultyStars stars={question.tier} /> : null}
           <span
             className={`text-xs font-semibold rounded-full px-2 py-0.5 border ${
               complete
@@ -52,22 +60,44 @@ export default function TestQuestionCard({
 
       {expanded ? (
         <div className="p-4 border-t border-slate-100 space-y-4">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <label className="block text-sm font-semibold text-slate-800">
-              Difficulty tier
-              <select
-                value={question.tier}
-                onChange={(e) => onChange({ tier: Number(e.target.value) })}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
-              >
-                {TEST_TIERS.map((tier) => (
-                  <option key={tier.value} value={tier.value}>
-                    {tier.label} ({tier.weight})
-                  </option>
-                ))}
-              </select>
-            </label>
+          {!hideTier ? (
+            <div className="grid sm:grid-cols-2 gap-4">
+              <label className="block text-sm font-semibold text-slate-800">
+                Difficulty tier
+                <select
+                  value={question.tier}
+                  onChange={(e) => onChange({ tier: Number(e.target.value) })}
+                  className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+                >
+                  {TEST_TIERS.map((tier) => (
+                    <option key={tier.value} value={tier.value}>
+                      {tier.label} ({tier.weight})
+                    </option>
+                  ))}
+                </select>
+              </label>
 
+              <label className="block text-sm font-semibold text-slate-800">
+                Topic area <span className="font-normal text-slate-500">(optional)</span>
+                {areaSuggestions ? (
+                  <AreaCombobox
+                    subject={subject}
+                    value={question.area}
+                    onChange={(area) => onChange({ area })}
+                    placeholder="e.g. fractions, algebra"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    value={question.area}
+                    onChange={(e) => onChange({ area: e.target.value })}
+                    placeholder="e.g. fractions, algebra"
+                    className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                  />
+                )}
+              </label>
+            </div>
+          ) : (
             <label className="block text-sm font-semibold text-slate-800">
               Topic area <span className="font-normal text-slate-500">(optional)</span>
               {areaSuggestions ? (
@@ -75,19 +105,39 @@ export default function TestQuestionCard({
                   subject={subject}
                   value={question.area}
                   onChange={(area) => onChange({ area })}
-                  placeholder="e.g. fractions, algebra"
+                  placeholder="e.g. main idea, inference"
                 />
               ) : (
                 <input
                   type="text"
                   value={question.area}
                   onChange={(e) => onChange({ area: e.target.value })}
-                  placeholder="e.g. fractions, algebra"
+                  placeholder="e.g. main idea, inference"
                   className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                 />
               )}
             </label>
-          </div>
+          )}
+
+          {!hideTier && readingComprehension && passages.length > 0 ? (
+            <label className="block text-sm font-semibold text-slate-800">
+              Passage
+              <select
+                value={question.passageId || ""}
+                onChange={(e) =>
+                  onChange({ passageId: e.target.value || null })
+                }
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+              >
+                <option value="">Select a passage…</option>
+                {passages.map((passage, passageIndex) => (
+                  <option key={passage.id} value={passage.id}>
+                    {passage.title?.trim() || `Passage ${passageIndex + 1}`}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
 
           <label className="block text-sm font-semibold text-slate-800">
             Prompt

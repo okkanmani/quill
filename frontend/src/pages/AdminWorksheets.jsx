@@ -20,6 +20,13 @@ function adminWorksheetLockInfo(ws) {
       label: "Unlock worksheet access",
     };
   }
+  if (ws.is_test && (ws.attempt_locked || ws.attempt_started)) {
+    return {
+      locked: true,
+      variant: "timed",
+      label: "Reset test sitting",
+    };
+  }
   if (ws.timed && (ws.timed_locked || ws.timed_started)) {
     return {
       locked: true,
@@ -229,7 +236,9 @@ export default function AdminWorksheets() {
     const info = adminWorksheetLockInfo(ws);
     if (!info) return;
     if (info.locked) {
-      if (ws.timed && (ws.timed_locked || ws.timed_started)) {
+      if (ws.is_test && (ws.attempt_locked || ws.attempt_started)) {
+        await handleUnlock(ws);
+      } else if (ws.timed && (ws.timed_locked || ws.timed_started)) {
         await handleUnlock(ws);
       } else if (ws.access_locked) {
         await handleAllowAccess(ws);
