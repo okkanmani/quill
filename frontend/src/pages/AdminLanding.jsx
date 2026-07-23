@@ -21,6 +21,7 @@ import AppShell from "../components/AppShell";
 import AdminStudentRoster from "../components/AdminStudentRoster";
 import QuillLoading from "../components/QuillLoading";
 import WorksheetLockButton from "../components/WorksheetLockButton";
+import { AdminFocusChipSection } from "../adminFocusChipUtils";
 
 function formatRelativeTime(iso) {
   if (!iso) return "No activity yet";
@@ -261,6 +262,7 @@ export default function AdminLanding() {
   const students = data?.students || [];
   const recentActivity = data?.recent_activity || [];
   const pending = data?.pending || [];
+  const focusChips = data?.focus_chips || {};
   const selectedStudent = data?.selected_student || localStorage.getItem("studentName") || "";
   const scopedToStudent = Boolean(selectedStudent);
   const activitySectionLabel = scopedToStudent
@@ -308,7 +310,6 @@ export default function AdminLanding() {
                 students={students}
                 selectedName={selectedStudent}
                 onSelectStudent={handleSelectStudent}
-                onNavigateForStudent={handleNavigateForStudent}
                 switchingStudent={switchingStudent}
               />
             </section>
@@ -338,6 +339,14 @@ export default function AdminLanding() {
               </section>
 
               <div className="flex flex-col gap-5">
+                <AdminFocusChipSection
+                  chips={focusChips.preview || []}
+                  totalCount={focusChips.total_count || 0}
+                  showStudentName={!scopedToStudent}
+                  onNavigate={handleNavigateForStudent}
+                  switchingStudent={switchingStudent}
+                />
+
                 <section>
                   <SectionLabel>Quick actions</SectionLabel>
                   <div className="flex flex-col gap-2">

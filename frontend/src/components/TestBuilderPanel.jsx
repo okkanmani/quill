@@ -266,6 +266,7 @@ export default function TestBuilderPanel() {
         adaptive: adaptiveEnabled,
         readingComprehension: isReadingComprehension,
         passageWindow: passageWindowEnabled,
+        passageMode,
         questionsPerPassage,
       }),
     [
@@ -278,6 +279,7 @@ export default function TestBuilderPanel() {
       adaptiveEnabled,
       isReadingComprehension,
       passageWindowEnabled,
+      passageMode,
       questionsPerPassage,
     ],
   );
@@ -497,6 +499,7 @@ export default function TestBuilderPanel() {
           adaptive: adaptiveEnabled,
           readingComprehension: isReadingComprehension,
           passageWindow: passageWindowEnabled,
+          passageMode,
           questionsPerPassage,
         }),
         lock_on_create: lockOnPublish,

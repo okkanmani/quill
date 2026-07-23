@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 import db
 from auth_users import list_students_for_admin
+from focus_analysis import build_admin_focus_chip_preview
 from focus_discussion import list_focus_areas_discussed
 from revision import list_revision_analysis_records
 from worksheets import list_results, list_worksheets
@@ -253,11 +254,20 @@ def build_admin_home(admin_id: int, selected_student: str | None = None) -> dict
             all_pending.extend(_pending_locked_for_student(name, admin_id=admin_id))
 
         all_activity.sort(key=lambda item: item.get("at") or "", reverse=True)
+
+        chip_students = (
+            [selected_student]
+            if selected_student
+            else [student["name"] for student in students_raw]
+        )
+        focus_chips = build_admin_focus_chip_preview(chip_students)
+
         return {
             "students": student_cards,
             "selected_student": selected_student,
             "recent_activity": all_activity[:12],
             "pending": all_pending[:8],
+            "focus_chips": focus_chips,
         }
     finally:
         conn.close()

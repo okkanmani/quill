@@ -612,9 +612,10 @@ export function buildTestBuilderPreview({
   adaptive = true,
   readingComprehension = false,
   passageWindow = false,
+  passageMode = "rc",
   questionsPerPassage = DEFAULT_RC_QUESTIONS_PER_PASSAGE,
 }) {
-  const usesPassageTiers = (passageWindow || readingComprehension) && passageMode === "data";
+  const usesPassageTiers = passageWindow && passageMode === "data";
   const usedPassageIds = new Set(
     questions.map((question) => question.passageId).filter(Boolean),
   );
@@ -661,7 +662,7 @@ export function buildTestBuilderPreview({
   if (readingComprehension && subject === "english") {
     payload.english_type = "reading_comprehension";
   }
-  if (usesPassageTiers) {
+  if (usesPassageTiers || (passageWindow && readingComprehension)) {
     payload.test_rc_questions_per_passage =
       Number(questionsPerPassage) || DEFAULT_RC_QUESTIONS_PER_PASSAGE;
   }
