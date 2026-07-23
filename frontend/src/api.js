@@ -4,6 +4,7 @@ import {
   isAuthenticated,
   touchActivity,
 } from "./sessionAuth";
+import { notifyStudentHomeRefresh } from "./studentHomeRefresh";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -245,6 +246,7 @@ export async function submitResult(result) {
     const msg = typeof d === "string" ? d : "Failed to submit result";
     throw new Error(msg);
   }
+  notifyStudentHomeRefresh();
   return res.json();
 }
 
@@ -1126,6 +1128,7 @@ export async function submitTest(worksheetId) {
     const d = err.detail;
     throw new Error(typeof d === "string" ? d : "Failed to submit test");
   }
+  notifyStudentHomeRefresh();
   return res.json();
 }
 

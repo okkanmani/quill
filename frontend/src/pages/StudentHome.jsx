@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getStudentHome, logout } from "../api";
 import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
 import { useStudentNavLinks } from "../useStudentNavLinks";
+import { useStudentHomeRefresh } from "../studentHomeRefresh";
 
 function formatRelativeTime(iso) {
   if (!iso) return "";
@@ -120,18 +121,31 @@ function AlertCard({ alert }) {
 
 export default function StudentHome() {
   const navigate = useNavigate();
+  const location = useLocation();
   const name = localStorage.getItem("name");
   const { navLinks } = useStudentNavLinks();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    getStudentHome()
-      .then(setData)
-      .catch(() => setError("Could not load home."))
-      .finally(() => setLoading(false));
+  const loadHome = useCallback(async ({ background = false } = {}) => {
+    if (!background) setLoading(true);
+    try {
+      const next = await getStudentHome();
+      setData(next);
+      setError("");
+    } catch {
+      setError("Could not load home.");
+    } finally {
+      if (!background) setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadHome();
+  }, [loadHome, location.key]);
+
+  useStudentHomeRefresh(useCallback(() => loadHome({ background: true }), [loadHome]));
 
   async function handleLogout() {
     await logout();
