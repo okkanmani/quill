@@ -380,6 +380,125 @@ def _rc_responses_complete(responses: dict | None, question_ids: list[str]) -> b
     return True
 
 
+def _slot_answered_non_rc(answers: dict, slot: int) -> bool:
+    ans = answers.get(str(slot))
+    return isinstance(ans, dict) and bool(str(ans.get("given") or "").strip())
+
+
+def _rc_slot_fully_answered(answers: dict, sequence: list, slot: int) -> bool:
+    ans = answers.get(str(slot))
+    if isinstance(ans, dict) and "correct" in ans:
+        return True
+    entry = sequence[slot - 1] if slot - 1 < len(sequence) else None
+    if not isinstance(entry, dict):
+        return False
+    question_ids = [str(qid) for qid in (entry.get("question_ids") or [])]
+    responses = ans.get("responses") if isinstance(ans, dict) and isinstance(ans.get("responses"), dict) else {}
+    return _rc_responses_complete(responses, question_ids)
+
+
+def _question_has_passage_context(q: dict | None, worksheet: dict) -> bool:
+    if not q:
+        return False
+    pid = str(q.get("passage_id") or "").strip()
+    return bool(pid and _passage_lookup(worksheet).get(pid))
+
+
+def _worksheet_has_contextual_units(worksheet: dict) -> bool:
+    if _is_rc_test(worksheet):
+        return True
+    lookup = _passage_lookup(worksheet)
+    for q in worksheet.get("questions") or []:
+        if not isinstance(q, dict):
+            continue
+        pid = str(q.get("passage_id") or "").strip()
+        if pid and pid in lookup:
+            return True
+    return False
+
+
+def _context_passage_key_for_slot(
+    sequence: list,
+    lookup: dict[str, dict],
+    worksheet: dict,
+    slot: int,
+) -> str | None:
+    entry = sequence[slot - 1] if slot - 1 < len(sequence) else None
+    if not isinstance(entry, dict):
+        return None
+    q = lookup.get(str(entry.get("question_id")))
+    if not _question_has_passage_context(q, worksheet):
+        return None
+    return str(q.get("passage_id"))
+
+
+def _build_context_groups(
+    sequence: list,
+    lookup: dict[str, dict],
+    worksheet: dict,
+    sitting_count: int,
+) -> list[dict]:
+    groups: list[dict] = []
+    current: dict | None = None
+    for slot in range(1, sitting_count + 1):
+        entry = sequence[slot - 1] if slot - 1 < len(sequence) else None
+        if not isinstance(entry, dict):
+            break
+        key = _context_passage_key_for_slot(sequence, lookup, worksheet, slot)
+        if not key:
+            if current:
+                groups.append(current)
+                current = None
+            continue
+        if current and current["key"] == key:
+            current["slots"].append(slot)
+        else:
+            if current:
+                groups.append(current)
+            current = {"key": key, "slots": [slot]}
+    if current:
+        groups.append(current)
+    return groups
+
+
+def _max_navigable_target_slot(
+    answers: dict,
+    sequence: list,
+    worksheet: dict,
+    sitting_count: int,
+) -> int:
+    if not _worksheet_has_contextual_units(worksheet):
+        return sitting_count
+
+    if _is_rc_test(worksheet):
+        for slot in range(1, sitting_count + 1):
+            if not _rc_slot_fully_answered(answers, sequence, slot):
+                return slot
+        return sitting_count
+
+    lookup = _question_lookup(worksheet)
+    groups = _build_context_groups(sequence, lookup, worksheet, sitting_count)
+    for group in groups:
+        complete = all(_slot_answered_non_rc(answers, slot) for slot in group["slots"])
+        if not complete:
+            return max(group["slots"])
+    return sitting_count
+
+
+def _clamp_target_slot(
+    target_slot: int | None,
+    answers: dict,
+    sequence: list,
+    worksheet: dict,
+    sitting_count: int,
+) -> int:
+    max_nav = _max_navigable_target_slot(answers, sequence, worksheet, sitting_count)
+    if target_slot is None:
+        return max_nav
+    requested = max(1, min(int(target_slot), sitting_count))
+    return min(requested, max_nav)
+
+
 def _build_rc_passage_answer(
     entry: dict,
     responses: dict,
@@ -650,6 +769,10 @@ def _attempt_row_to_rc_session(
         else:
             target_slot = sitting_count
 
+    target_slot = _clamp_target_slot(
+        target_slot, answers, sequence, worksheet, sitting_count
+    )
+
     sequence = _assign_through_slot_rc(
         sequence,
         answers,
@@ -769,6 +892,10 @@ def _attempt_row_to_session(
             target_slot = max(1, assigned)
         else:
             target_slot = sitting_count
+
+    target_slot = _clamp_target_slot(
+        target_slot, answers, sequence, worksheet, sitting_count
+    )
 
     sequence = _assign_through_slot(
         sequence,
@@ -947,7 +1074,13 @@ def _preview_test_session(
     limit = int(worksheet.get("time_limit_minutes") or 0)
     assign_through = sitting_count
     if target_slot is not None:
-        assign_through = max(1, min(int(target_slot), sitting_count))
+        assign_through = _clamp_target_slot(
+            target_slot,
+            {},
+            [],
+            worksheet,
+            sitting_count,
+        )
 
     fake_row = {
         "id": 0,

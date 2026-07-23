@@ -13,7 +13,6 @@ import AdminStudentBanner from "../components/AdminStudentBanner";
 import Drawpad from "../components/Drawpad";
 import QuillLoading from "../components/QuillLoading";
 import WorksheetPassageContent from "../components/WorksheetPassageContent";
-import { QuestionDifficultyStars } from "../components/DifficultyStars";
 import PadlockIcon from "../components/PadlockIcon";
 import {
   ScratchpadIcon,
@@ -21,6 +20,12 @@ import {
 } from "../components/ResponseModeIcons";
 import { useStudentNavLinks } from "../useStudentNavLinks";
 import { formatTestTimer, formatWeightedTestScore } from "../testUtils";
+import {
+  isCurrentContextUnitComplete,
+  contextualAdvanceHint,
+  isContextualTest,
+  canNavigateToTestSlot,
+} from "../testTakeUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
 
 const MAX_WORK_AREA_HEIGHT = 1000;
@@ -275,6 +280,16 @@ export default function StudentTestTake() {
 
   async function goToSlot(slot) {
     if (!session || submitted) return;
+    if (!canNavigateToTestSlot(session, slot, currentSlot)) {
+      setSubmitError(
+        contextualAdvanceHint(
+          session,
+          slotData,
+          session?.questions_per_passage || passageQuestions.length,
+        ) || "Complete this passage or data set before moving on.",
+      );
+      return;
+    }
     setSubmitError("");
     try {
       await flushWorkSave(currentSlot);
@@ -337,6 +352,20 @@ export default function StudentTestTake() {
     : slots.filter((s) => s.answered).length;
   const allAnswered = answeredCount >= sittingCount;
   const scratchpadAllowed = session?.scratchpad !== false;
+  const contextualTest = isContextualTest(session);
+  const currentUnitComplete = isCurrentContextUnitComplete(
+    session,
+    slotData,
+    passageResponses,
+    currentSlot,
+  );
+  const advanceHint = contextualAdvanceHint(
+    session,
+    slotData,
+    session?.questions_per_passage || passageQuestions.length,
+  );
+  const canGoNext =
+    currentSlot < sittingCount && (!contextualTest || currentUnitComplete);
 
   useEffect(() => {
     const el = workAreaRef.current;
@@ -559,26 +588,31 @@ export default function StudentTestTake() {
             {isRc ? "Passage navigator" : "Question navigator"}
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {slots.map((slot) => (
+            {slots.map((slot) => {
+              const navigable = canNavigateToTestSlot(session, slot.slot, currentSlot);
+              return (
               <button
                 key={slot.slot}
                 type="button"
-                disabled={!slot.assigned}
+                disabled={!slot.assigned || !navigable}
                 onClick={() => goToSlot(slot.slot)}
                 className={navigatorClass(slot)}
                 title={
-                  slot.assigned
+                  !slot.assigned
                     ? isRc
-                      ? `Passage ${slot.slot}`
-                      : `Question ${slot.slot}`
-                    : isRc
                       ? "Complete earlier passages first"
                       : "Answer earlier questions first"
+                    : !navigable
+                      ? advanceHint || "Complete this passage or data set first"
+                    : isRc
+                      ? `Passage ${slot.slot}`
+                      : `Question ${slot.slot}`
                 }
               >
                 {slot.slot}
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -595,7 +629,7 @@ export default function StudentTestTake() {
               </button>
               <button
                 type="button"
-                disabled={currentSlot >= sittingCount}
+                disabled={!canGoNext}
                 onClick={() => goToSlot(currentSlot + 1)}
                 className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
               >
@@ -612,6 +646,9 @@ export default function StudentTestTake() {
             </button>
           </div>
           {submitError ? <p className="text-red-600 text-sm">{submitError}</p> : null}
+          {!allAnswered && contextualTest && !currentUnitComplete && advanceHint ? (
+            <p className="text-amber-800 text-xs">{advanceHint}</p>
+          ) : null}
           {!allAnswered ? (
             <p className="text-slate-500 text-xs">
               {isRc
@@ -629,11 +666,10 @@ export default function StudentTestTake() {
                   <WorksheetPassageContent passage={passage} embedded />
                 </div>
               ) : null}
-              <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="mb-4">
                 <p className="text-sm font-semibold text-slate-900">
                   Questions for this passage
                 </p>
-                <QuestionDifficultyStars stars={slotData?.tier} />
               </div>
               <div className="space-y-6">
                 {passageQuestions.map((passageQuestion, index) => {
@@ -716,10 +752,7 @@ export default function StudentTestTake() {
                   <WorksheetPassageContent passage={question.passage} embedded />
                 </div>
               ) : null}
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <p className="text-slate-900 font-medium flex-1">{question.prompt}</p>
-                <QuestionDifficultyStars stars={slotData?.tier || question.stars} />
-              </div>
+              <p className="text-slate-900 font-medium mb-4">{question.prompt}</p>
               <div className="flex flex-col gap-2">
                 {(question.choices || []).map((choice) => {
                   const isSelected = selected === choice;
