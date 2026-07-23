@@ -1126,7 +1126,6 @@ def merge_worksheets_from_json_files(
     try:
         if admin_id is None:
             admin_id = _default_admin_id(conn)
-        default_admin = _default_admin_id(conn)
         for path in sorted(WORKSHEETS_DIR.glob("*.json")):
             with open(path) as f:
                 data = json.load(f)
@@ -1134,10 +1133,9 @@ def merge_worksheets_from_json_files(
                 skipped_count += 1
                 continue
             ws_id = path.stem
-            conn.execute(
-                "DELETE FROM worksheets WHERE id = ? AND (admin_id = ? OR (admin_id IS NULL AND ? = ?))",
-                (ws_id, admin_id, admin_id, default_admin),
-            )
+            # Worksheet ids are globally unique (PRIMARY KEY on id). Replace by id so
+            # merge succeeds even when the existing row belongs to another admin_id.
+            conn.execute("DELETE FROM worksheets WHERE id = ?", (ws_id,))
             _insert_worksheet(conn, ws_id, data, path, admin_id=admin_id)
             merged_ids.append(ws_id)
         conn.commit()
