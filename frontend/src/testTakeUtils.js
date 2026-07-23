@@ -1,13 +1,17 @@
 /** Navigation rules for contextual tests (RC passages, data sets, etc.). */
 
-export function slotHasPassageContext(slot, isRc) {
-  if (isRc) return true;
+export function isPassageWindowSession(session) {
+  return Boolean(session?.is_passage_window ?? session?.is_rc);
+}
+
+export function slotHasPassageContext(slot, isPassageWindow) {
+  if (isPassageWindow) return true;
   return Boolean(slot?.question?.passage);
 }
 
 export function isContextualTest(session) {
   if (!session) return false;
-  if (session.is_rc) return true;
+  if (isPassageWindowSession(session)) return true;
   return (session.slots || []).some((slot) => slotHasPassageContext(slot, false));
 }
 
@@ -22,8 +26,8 @@ export function isRcSlotComplete(slot, passageResponses = {}) {
   });
 }
 
-export function buildContextGroups(slots, isRc) {
-  if (isRc) {
+export function buildContextGroups(slots, isPassageWindow) {
+  if (isPassageWindow) {
     return (slots || [])
       .filter((slot) => slot.assigned)
       .map((slot) => ({
@@ -62,7 +66,7 @@ export function maxNavigableSlot(session) {
   const sittingCount = session?.sitting_count || slots.length;
   if (!isContextualTest(session)) return sittingCount;
 
-  if (session.is_rc) {
+  if (isPassageWindowSession(session)) {
     for (const slot of slots) {
       if (!slot.assigned) continue;
       if (!slot.answered) return slot.slot;
@@ -94,7 +98,7 @@ export function canNavigateToTestSlot(session, targetSlot, currentSlot) {
   const slots = session.slots || [];
   const target = slots.find((slot) => slot.slot === targetSlot);
   if (!target?.assigned) return false;
-  if (session.is_rc) {
+  if (isPassageWindowSession(session)) {
     return canNavigateToRcSlot(session, targetSlot);
   }
   if (targetSlot <= currentSlot) return true;
@@ -104,7 +108,7 @@ export function canNavigateToTestSlot(session, targetSlot, currentSlot) {
 
 export function isCurrentContextUnitComplete(session, slotData, passageResponses, currentSlot) {
   if (!isContextualTest(session)) return true;
-  if (session.is_rc) {
+  if (isPassageWindowSession(session)) {
     return isRcSlotComplete(slotData, passageResponses);
   }
 
@@ -120,11 +124,13 @@ export function isCurrentContextUnitComplete(session, slotData, passageResponses
 
 export function contextualAdvanceHint(session, slotData, questionsPerPassage) {
   if (!isContextualTest(session)) return "";
-  if (session.is_rc) {
+  const isData = session?.subject === "data";
+  const unit = isData ? "data set" : "passage";
+  if (isPassageWindowSession(session)) {
     const count = questionsPerPassage || slotData?.questions?.length || 0;
     return count
-      ? `Answer all ${count} questions in this passage before moving on.`
-      : "Answer all questions in this passage before moving on.";
+      ? `Answer all ${count} questions in this ${unit} before moving on.`
+      : `Answer all questions in this ${unit} before moving on.`;
   }
   const groups = buildContextGroups(session.slots || [], false);
   const group = groups.find((item) => item.slots.includes(slotData?.slot));
@@ -135,4 +141,15 @@ export function contextualAdvanceHint(session, slotData, questionsPerPassage) {
     return "Answer this question before moving on.";
   }
   return "";
+}
+
+export function testTakeUnitLabels(session) {
+  const isData = session?.subject === "data";
+  return {
+    singular: isData ? "data set" : "passage",
+    plural: isData ? "data sets" : "passages",
+    capitalized: isData ? "Data set" : "Passage",
+    navigator: isData ? "Data set navigator" : "Passage navigator",
+    questionsHeading: isData ? "Questions for this data set" : "Questions for this passage",
+  };
 }

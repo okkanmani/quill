@@ -75,6 +75,7 @@ export default function Drawpad({
   showTextTool = false,
   className = "mt-4",
   canvasHeight = 350,
+  fillHeight = false,
 } = {}) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -354,14 +355,17 @@ export default function Drawpad({
         : "crosshair";
 
   return (
-    <div className={className}>
+    <div className={`${className}${fillHeight ? " h-full" : ""}`}>
       {showHeading ? (
         <div className="flex items-center justify-between mb-1 gap-2">
           <span className="text-indigo-500 text-xs">Scratch pad</span>
           {renderToolbar(false)}
         </div>
       ) : null}
-      <div ref={containerRef} className="relative overflow-hidden">
+      <div
+        ref={containerRef}
+        className={`relative overflow-hidden${fillHeight ? " h-full" : ""}`}
+      >
         {!showHeading ? renderToolbar(true) : null}
         <canvas
           ref={canvasRef}
@@ -377,7 +381,14 @@ export default function Drawpad({
           className={`w-full rounded-xl border border-slate-700 touch-none bg-black ${
             disabled ? "opacity-80" : ""
           }`}
-          style={{ cursor: canvasCursor, backgroundColor: BG, maxHeight: MAX_CANVAS_HEIGHT }}
+          style={{
+            cursor: canvasCursor,
+            backgroundColor: BG,
+            maxHeight: MAX_CANVAS_HEIGHT,
+            ...(fillHeight
+              ? { height: effectiveHeight, width: "100%", display: "block" }
+              : null),
+          }}
         />
         {textDraft ? (
           <textarea

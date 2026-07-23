@@ -25,10 +25,14 @@ import {
   countPassagesByTier,
   draftToTestBuilderQuestions,
   draftRcToTestBuilderState,
+  draftDataToTestBuilderState,
   emptyTestQuestion,
   emptyTestPassage,
   emptyRcTestQuestion,
   isTestQuestionComplete,
+  isPassageWindowTest,
+  isDataPassageTest,
+  passageWindowUnitLabels,
   fixedOrderAiBankSize,
   minimumBankSize,
   syncPassageQuestions,
@@ -48,9 +52,10 @@ function TierBankStatus({
   tierCounts,
   adaptive,
   aiBankTarget,
-  readingComprehension = false,
+  passageWindow = false,
+  unitPlural = "questions",
 }) {
-  const unitLabel = readingComprehension ? "passages" : "questions";
+  const unitLabel = passageWindow ? unitPlural : "questions";
   if (!adaptive) {
     const total = Object.values(tierCounts).reduce((sum, count) => sum + count, 0);
     const ready = total >= sittingCount;
@@ -93,8 +98,8 @@ function TierBankStatus({
               <QuestionDifficultyStars stars={tier.value} />
             </div>
             <p className="text-xs text-slate-600 mt-1">{tier.weight} scoring weight</p>
-            {readingComprehension ? (
-              <p className="text-xs text-slate-500 mt-1">Passages at tier {tier.value}</p>
+            {passageWindow ? (
+              <p className="text-xs text-slate-500 mt-1">Units at tier {tier.value}</p>
             ) : null}
             <p
               className={`text-lg font-bold tabular-nums mt-2 ${
@@ -209,15 +214,18 @@ export default function TestBuilderPanel() {
   const canUseAi = aiEnabled && apiKeyConfigured && !editId;
   const isReadingComprehension =
     subject === "english" && readingComprehensionEnabled;
+  const passageWindowEnabled = isPassageWindowTest(subject, isReadingComprehension);
+  const passageMode = isDataPassageTest(subject) ? "data" : "rc";
+  const unitLabels = passageWindowUnitLabels(subject, isReadingComprehension);
   const tierCounts = useMemo(
     () =>
-      isReadingComprehension
+      passageWindowEnabled
         ? countPassagesByTier(passages)
         : countQuestionsByTier(questions),
-    [isReadingComprehension, passages, questions],
+    [passageWindowEnabled, passages, questions],
   );
-  const bankMinimum = minimumBankSize(sittingCount, adaptiveEnabled, isReadingComprehension);
-  const aiBankTarget = isReadingComprehension
+  const bankMinimum = minimumBankSize(sittingCount, adaptiveEnabled, passageWindowEnabled);
+  const aiBankTarget = passageWindowEnabled
     ? bankMinimum
     : fixedOrderAiBankSize(sittingCount);
 
@@ -238,6 +246,7 @@ export default function TestBuilderPanel() {
         passages,
         adaptive: adaptiveEnabled,
         readingComprehension: isReadingComprehension,
+        passageWindow: passageWindowEnabled,
         questionsPerPassage,
       }),
     [
@@ -249,14 +258,15 @@ export default function TestBuilderPanel() {
       passages,
       adaptiveEnabled,
       isReadingComprehension,
+      passageWindowEnabled,
       questionsPerPassage,
     ],
   );
 
   useEffect(() => {
-    if (!isReadingComprehension) return;
+    if (!passageWindowEnabled) return;
     setQuestions((prev) => syncPassageQuestions(passages, prev, questionsPerPassage));
-  }, [isReadingComprehension, questionsPerPassage, passages.map((p) => p.id).join(",")]);
+  }, [passageWindowEnabled, questionsPerPassage, passages.map((p) => p.id).join(",")]);
 
   const passageQuestionGroups = useMemo(
     () => groupTestQuestionsByPassage(passages, questions),
@@ -270,8 +280,8 @@ export default function TestBuilderPanel() {
     );
   }, [activeTierFilter, passageQuestionGroups]);
   const orphanQuestions = useMemo(
-    () => (isReadingComprehension ? unassignedTestQuestions(passages, questions) : []),
-    [isReadingComprehension, passages, questions],
+    () => (passageWindowEnabled ? unassignedTestQuestions(passages, questions) : []),
+    [passageWindowEnabled, passages, questions],
   );
 
   function updatePassage(id, patch) {
@@ -291,7 +301,7 @@ export default function TestBuilderPanel() {
   }
 
   function addPassage(tier = 2) {
-    const passage = emptyTestPassage(null, tier);
+    const passage = emptyTestPassage(null, tier, { data: isDataPassageTest(subject) });
     const nextPassages = [...passages, passage];
     setPassages(nextPassages);
     setQuestions((prev) => syncPassageQuestions(nextPassages, prev, questionsPerPassage));
@@ -308,9 +318,25 @@ export default function TestBuilderPanel() {
   }
 
   function handleSubjectChange(nextSubject) {
+    const leavingData = subject === "data" && nextSubject !== "data";
     setSubject(nextSubject);
     if (nextSubject !== "english") {
       setReadingComprehensionEnabled(false);
+    }
+    if (nextSubject === "data") {
+      setSittingCount(DEFAULT_RC_PASSAGE_COUNT);
+      if (passages.length === 0) {
+        const first = emptyTestPassage(null, 2, { data: true });
+        const nextPassages = [first];
+        setPassages(nextPassages);
+        setQuestions((prev) => syncPassageQuestions(nextPassages, prev, questionsPerPassage));
+        setExpandedPassageIds(new Set([first.id]));
+      } else {
+        setQuestions((prev) => syncPassageQuestions(passages, prev, questionsPerPassage));
+      }
+    } else if (leavingData) {
+      setPassages([]);
+      setQuestions((prev) => prev.map((question) => ({ ...question, passageId: null })));
     }
   }
 
@@ -361,7 +387,7 @@ export default function TestBuilderPanel() {
   }
 
   function addQuestion(tier = 2, passageId = null) {
-    if (isReadingComprehension && passageId) {
+    if (passageWindowEnabled && passageId) {
       const question = emptyRcTestQuestion(passageId);
       setQuestions((prev) => [...prev, question]);
       setExpandedIds((prev) => new Set(prev).add(question.id));
@@ -394,6 +420,8 @@ export default function TestBuilderPanel() {
       questions,
       adaptive: adaptiveEnabled,
       readingComprehension: isReadingComprehension,
+      passageWindow: passageWindowEnabled,
+      passageMode,
       passages,
       questionsPerPassage,
     });
@@ -431,6 +459,7 @@ export default function TestBuilderPanel() {
           passages,
           adaptive: adaptiveEnabled,
           readingComprehension: isReadingComprehension,
+          passageWindow: passageWindowEnabled,
           questionsPerPassage,
         }),
         lock_on_create: lockOnPublish,
@@ -482,15 +511,19 @@ export default function TestBuilderPanel() {
         sitting_count: sittingCount,
         adaptive: adaptiveEnabled,
         custom_prompt: aiCustomPrompt.trim(),
-        ...(isReadingComprehension
+        ...(passageWindowEnabled
           ? {
-              english_type: "reading_comprehension",
+              ...(isReadingComprehension
+                ? { english_type: "reading_comprehension" }
+                : {}),
               questions_per_passage: questionsPerPassage,
             }
           : {}),
       });
-      if (isReadingComprehension) {
-        const generated = draftRcToTestBuilderState(draft);
+      if (passageWindowEnabled) {
+        const generated = isDataPassageTest(subject)
+          ? draftDataToTestBuilderState(draft)
+          : draftRcToTestBuilderState(draft);
         if (!title.trim() && generated.title) {
           setTitle(generated.title);
         }
@@ -503,7 +536,7 @@ export default function TestBuilderPanel() {
           ),
         );
         setNotice(
-          `Generated ${generated.passages.length} passages with ${questionsPerPassage} questions each. Review and edit below before publishing.`,
+          `Generated ${generated.passages.length} ${unitLabels.plural} with ${questionsPerPassage} questions each. Review and edit below before publishing.`,
         );
       } else {
         const generated = draftToTestBuilderQuestions(draft);
@@ -607,10 +640,14 @@ export default function TestBuilderPanel() {
       <p className="text-slate-600 text-sm mb-4 leading-relaxed">
         {editId
           ? `Editing ${editId}. Update questions below, then save.`
-          : isReadingComprehension
+          : passageWindowEnabled
             ? adaptiveEnabled
-              ? "Build an adaptive RC test. Each sitting draws passages by tier; after a passage, difficulty adjusts for the next one."
-              : "Build a fixed-order RC test. Passages are assigned at the start — tier labels affect scoring weight only."
+              ? isDataPassageTest(subject)
+                ? `Build an adaptive data analysis test. Each sitting draws ${unitLabels.plural} by tier; after a data set, difficulty adjusts for the next one.`
+                : "Build an adaptive RC test. Each sitting draws passages by tier; after a passage, difficulty adjusts for the next one."
+              : isDataPassageTest(subject)
+                ? `Build a fixed-order data analysis test. ${unitLabels.capitalized}s are assigned at the start — tier labels affect scoring weight only.`
+                : "Build a fixed-order RC test. Passages are assigned at the start — tier labels affect scoring weight only."
             : adaptiveEnabled
               ? "Build an adaptive timed test. Students answer one sitting; difficulty adjusts by tier after each question."
               : "Build a fixed-order timed test. All questions are assigned at the start — tier labels affect scoring weight only."}
@@ -621,29 +658,29 @@ export default function TestBuilderPanel() {
           {adaptiveEnabled ? "How adaptive tests work" : "How fixed-order tests work"}
         </p>
         <ul className="mt-2 space-y-1 list-disc pl-5 text-teal-900/90">
-          {isReadingComprehension ? (
+          {passageWindowEnabled ? (
             adaptiveEnabled ? (
               <>
                 <li>
-                  Each sitting draws {sittingCount} passages from tiered pools (1 = easy, 3 = hard).
+                  Each sitting draws {sittingCount} {unitLabels.plural} from tiered pools (1 = easy, 3 = hard).
                 </li>
                 <li>
-                  Students answer all {questionsPerPassage} questions for a passage, then move to the
-                  next passage.
+                  Students answer all {questionsPerPassage} questions for a {unitLabels.singular}, then move to the
+                  next {unitLabels.singular}.
                 </li>
                 <li>
-                  A strong passage score moves up a tier; a weak score moves down (majority correct).
+                  A strong score moves up a tier; a weak score moves down (majority correct).
                 </li>
                 <li>
-                  You need at least {sittingCount} passages in every tier ({bankMinimum} total
+                  You need at least {sittingCount} {unitLabels.plural} in every tier ({bankMinimum} total
                   minimum).
                 </li>
               </>
             ) : (
               <>
-                <li>All {sittingCount} passages are assigned when the student starts.</li>
-                <li>Each passage includes {questionsPerPassage} questions shown together.</li>
-                <li>Scoring is weighted by each passage&apos;s tier.</li>
+                <li>All {sittingCount} {unitLabels.plural} are assigned when the student starts.</li>
+                <li>Each {unitLabels.singular} includes {questionsPerPassage} questions shown together.</li>
+                <li>Scoring is weighted by each {unitLabels.singular}&apos;s tier.</li>
               </>
             )
           ) : adaptiveEnabled ? (
@@ -766,25 +803,27 @@ export default function TestBuilderPanel() {
           </label>
 
           <label className="block text-sm font-semibold text-slate-800">
-            {isReadingComprehension ? "Passages per test" : "Sitting size"}
+            {passageWindowEnabled
+              ? `${unitLabels.capitalized}s per test`
+              : "Sitting size"}
             <input
               type="number"
-              min={isReadingComprehension ? MIN_RC_PASSAGE_COUNT : MIN_SITTING_COUNT}
-              max={isReadingComprehension ? MAX_RC_PASSAGE_COUNT : MAX_SITTING_COUNT}
+              min={passageWindowEnabled ? MIN_RC_PASSAGE_COUNT : MIN_SITTING_COUNT}
+              max={passageWindowEnabled ? MAX_RC_PASSAGE_COUNT : MAX_SITTING_COUNT}
               value={sittingCount}
               onChange={(e) => setSittingCount(Number(e.target.value))}
               className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
             />
             <span className="mt-1 block text-xs font-normal text-slate-500">
-              {isReadingComprehension
-                ? `Passages shown per attempt (${MIN_RC_PASSAGE_COUNT}–${MAX_RC_PASSAGE_COUNT})`
+              {passageWindowEnabled
+                ? `${unitLabels.capitalized}s shown per attempt (${MIN_RC_PASSAGE_COUNT}–${MAX_RC_PASSAGE_COUNT})`
                 : `Questions per attempt (${MIN_SITTING_COUNT}–${MAX_SITTING_COUNT})`}
             </span>
           </label>
 
-          {isReadingComprehension ? (
+          {passageWindowEnabled ? (
             <label className="block text-sm font-semibold text-slate-800">
-              Questions per passage
+              Questions per {unitLabels.singular}
               <input
                 type="number"
                 min={MIN_RC_QUESTIONS_PER_PASSAGE}
@@ -794,7 +833,7 @@ export default function TestBuilderPanel() {
                 className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
               />
               <span className="mt-1 block text-xs font-normal text-slate-500">
-                Fixed count for every passage ({MIN_RC_QUESTIONS_PER_PASSAGE}–
+                Fixed count for every {unitLabels.singular} ({MIN_RC_QUESTIONS_PER_PASSAGE}–
                 {MAX_RC_QUESTIONS_PER_PASSAGE})
               </span>
             </label>
@@ -811,6 +850,16 @@ export default function TestBuilderPanel() {
             />
           </label>
         </div>
+
+        {subject === "data" ? (
+          <div className="rounded-xl border border-violet-200 bg-violet-50/60 px-4 py-3 space-y-2">
+            <p className="text-sm font-semibold text-slate-800">Data analysis test</p>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Each sitting shows chart/table data sets with grouped questions. Adaptive difficulty
+              adjusts between data sets based on performance — same flow as reading comprehension.
+            </p>
+          </div>
+        ) : null}
 
         {subject === "english" ? (
           <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 px-4 py-3 space-y-2">
@@ -841,8 +890,8 @@ export default function TestBuilderPanel() {
           Adaptive difficulty
           <span className="font-normal text-slate-500">
             {adaptiveEnabled
-              ? isReadingComprehension
-                ? "tier changes after each passage"
+              ? passageWindowEnabled
+                ? `tier changes after each ${unitLabels.singular}`
                 : "tier changes after each answer"
               : "fixed question order at start"}
           </span>
@@ -873,18 +922,20 @@ export default function TestBuilderPanel() {
         </label>
       </section>
 
-      {isReadingComprehension ? (
+      {passageWindowEnabled ? (
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="font-bold text-slate-900">Passages &amp; questions</h2>
+              <h2 className="font-bold text-slate-900">
+                {isDataPassageTest(subject) ? "Data sets & questions" : "Passages & questions"}
+              </h2>
               <p className="text-sm text-slate-600 mt-0.5">
-                Set a tier on each passage with exactly {questionsPerPassage} questions. Adaptive
-                difficulty adjusts between passages based on passage performance.
+                Set a tier on each {unitLabels.singular} with exactly {questionsPerPassage} questions. Adaptive
+                difficulty adjusts between {unitLabels.plural} based on performance.
                 {buildUsingAi
                   ? adaptiveEnabled
-                    ? ` AI generates ${bankMinimum} passages (${sittingCount} per tier).`
-                    : ` AI generates ${bankMinimum} passages.`
+                    ? ` AI generates ${bankMinimum} ${unitLabels.plural} (${sittingCount} per tier).`
+                    : ` AI generates ${bankMinimum} ${unitLabels.plural}.`
                   : ""}
               </p>
             </div>
@@ -903,7 +954,11 @@ export default function TestBuilderPanel() {
                   disabled={generating}
                   className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-3 py-1.5 text-sm font-semibold transition"
                 >
-                  {generating ? "Generating…" : "Generate passages"}
+                  {generating
+                    ? "Generating…"
+                    : isDataPassageTest(subject)
+                      ? "Generate data sets"
+                      : "Generate passages"}
                 </button>
               ) : null}
               {TEST_TIERS.map((tier) => (
@@ -913,7 +968,7 @@ export default function TestBuilderPanel() {
                   onClick={() => addPassage(tier.value)}
                   className="rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-900 hover:bg-indigo-100 transition"
                 >
-                  + Tier {tier.value} passage
+                  + Tier {tier.value} {unitLabels.singular}
                 </button>
               ))}
               {passages.length > 1 ? (
@@ -933,7 +988,8 @@ export default function TestBuilderPanel() {
             tierCounts={tierCounts}
             adaptive={adaptiveEnabled}
             aiBankTarget={buildUsingAi ? aiBankTarget : null}
-            readingComprehension
+            passageWindow={passageWindowEnabled}
+            unitPlural={unitLabels.plural}
           />
 
           <div className="flex flex-wrap gap-2">
@@ -946,7 +1002,7 @@ export default function TestBuilderPanel() {
                   : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
-              All passages ({passages.length})
+              All {unitLabels.plural} ({passages.length})
             </button>
             {TEST_TIERS.map((tier) => (
               <button
@@ -959,7 +1015,7 @@ export default function TestBuilderPanel() {
                     : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
               >
-                {tier.label} ({tierCounts[tier.value] || 0} passages)
+                {tier.label} ({tierCounts[tier.value] || 0} {unitLabels.plural})
               </button>
             ))}
           </div>
@@ -967,11 +1023,11 @@ export default function TestBuilderPanel() {
           <div className="space-y-4">
             {passages.length === 0 ? (
               <p className="text-sm text-slate-500 rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center">
-                No passages yet. Add a tier passage to get started.
+                No {unitLabels.plural} yet. Add a tier {unitLabels.singular} to get started.
               </p>
             ) : filteredPassageGroups.length === 0 ? (
               <p className="text-sm text-slate-500 rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center">
-                No passages in this tier yet.
+                No {unitLabels.plural} in this tier yet.
               </p>
             ) : (
               filteredPassageGroups.map(({ passage, questions: passageQuestions }) => {
@@ -987,6 +1043,7 @@ export default function TestBuilderPanel() {
                   onRemove={
                     passages.length > 1 ? () => removePassage(passage.id) : null
                   }
+                  passageMode={passageMode}
                   passageQuestions={passageQuestions}
                   expandedQuestionIds={expandedIds}
                   onToggleQuestion={toggleExpanded}
@@ -1007,7 +1064,7 @@ export default function TestBuilderPanel() {
                 <div>
                   <p className="text-sm font-semibold text-amber-950">Unassigned questions</p>
                   <p className="text-xs text-amber-900/80 mt-0.5">
-                    These questions are not linked to a passage. Assign them or remove them.
+                    These questions are not linked to a {unitLabels.singular}. Assign them or remove them.
                   </p>
                 </div>
                 <button
@@ -1032,7 +1089,7 @@ export default function TestBuilderPanel() {
                       onRemove={() => removeQuestion(question.id)}
                       subject={subject}
                       areaSuggestions
-                      readingComprehension
+                      readingComprehension={passageWindowEnabled}
                       passages={passages}
                     />
                   );
@@ -1045,7 +1102,7 @@ export default function TestBuilderPanel() {
 
       <section
         className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6 space-y-4${
-          isReadingComprehension ? " hidden" : ""
+          passageWindowEnabled ? " hidden" : ""
         }`}
       >
         <div className="flex flex-wrap items-center justify-between gap-3">

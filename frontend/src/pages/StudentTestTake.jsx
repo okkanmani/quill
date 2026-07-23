@@ -25,11 +25,18 @@ import {
   contextualAdvanceHint,
   isContextualTest,
   canNavigateToTestSlot,
+  isPassageWindowSession,
+  testTakeUnitLabels,
 } from "../testTakeUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
 
 const MAX_WORK_AREA_HEIGHT = 1000;
 const MIN_WORK_AREA_HEIGHT = 320;
+const DATA_WORK_AREA_HEIGHT = 500;
+
+function dataPanelGridStyle() {
+  return { gridTemplateRows: `auto ${DATA_WORK_AREA_HEIGHT}px` };
+}
 
 export default function StudentTestTake() {
   const { id } = useParams();
@@ -166,7 +173,7 @@ export default function StudentTestTake() {
   useEffect(() => {
     if (!session?.slots) return;
     const slotData = session.slots.find((s) => s.slot === currentSlot);
-    if (session.is_rc) {
+    if (isPassageWindowSession(session)) {
       setPassageResponses(slotData?.responses || {});
       setSelected("");
     } else {
@@ -345,11 +352,11 @@ export default function StudentTestTake() {
   const question = slotData?.question;
   const passageQuestions = slotData?.questions || [];
   const passage = slotData?.passage;
-  const isRc = Boolean(session?.is_rc);
+  const isPassageWindow = isPassageWindowSession(session);
+  const isDataTest = session?.subject === "data";
+  const unitLabels = testTakeUnitLabels(session);
   const sittingCount = session?.sitting_count || 20;
-  const answeredCount = isRc
-    ? slots.filter((s) => s.answered).length
-    : slots.filter((s) => s.answered).length;
+  const answeredCount = slots.filter((s) => s.answered).length;
   const allAnswered = answeredCount >= sittingCount;
   const scratchpadAllowed = session?.scratchpad !== false;
   const contextualTest = isContextualTest(session);
@@ -368,6 +375,11 @@ export default function StudentTestTake() {
     currentSlot < sittingCount && (!contextualTest || currentUnitComplete);
 
   useEffect(() => {
+    if (isDataTest && isPassageWindow) {
+      setWorkAreaHeight(DATA_WORK_AREA_HEIGHT);
+      return undefined;
+    }
+
     const el = workAreaRef.current;
     if (!el || !scratchpadAllowed) return undefined;
 
@@ -384,7 +396,15 @@ export default function StudentTestTake() {
     const observer = new ResizeObserver(updateHeight);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [scratchpadAllowed, workMode, question, passageQuestions.length, currentSlot, isRc]);
+  }, [
+    scratchpadAllowed,
+    workMode,
+    question,
+    passageQuestions.length,
+    currentSlot,
+    isPassageWindow,
+    isDataTest,
+  ]);
 
   function renderWorkModeToggle() {
     const baseBtn =
@@ -418,6 +438,117 @@ export default function StudentTestTake() {
         >
           <ScratchpadIcon />
         </button>
+      </div>
+    );
+  }
+
+  function renderPassageQuestionList() {
+    return (
+      <div className="space-y-6">
+        {passageQuestions.map((passageQuestion, index) => {
+          const qid = passageQuestion.id;
+          const selectedChoice = passageResponses[qid] || "";
+          return (
+            <div
+              key={qid}
+              className="border-t border-slate-100 pt-4 first:border-t-0 first:pt-0"
+            >
+              <p className="text-slate-900 font-medium mb-3">
+                {index + 1}. {passageQuestion.prompt}
+              </p>
+              <div className="flex flex-col gap-2">
+                {(passageQuestion.choices || []).map((choice) => {
+                  const isSelected = selectedChoice === choice;
+                  return (
+                    <button
+                      key={`${qid}-${choice}`}
+                      type="button"
+                      disabled={submitting || timedOut}
+                      onClick={() => handleSelectPassageChoice(qid, choice)}
+                      className={`border rounded-xl px-4 py-3 text-sm text-left transition ${
+                        isSelected
+                          ? "border-teal-500 bg-teal-50 text-slate-900"
+                          : "border-slate-200 text-slate-800 hover:border-teal-300"
+                      }`}
+                    >
+                      {choice}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  function renderPassageScratchpadPanel({
+    noteLabel,
+    textPlaceholder,
+    fixedWorkHeight = null,
+  }) {
+    if (!scratchpadAllowed) return null;
+
+    const workHeight = fixedWorkHeight ?? null;
+    const panelClass =
+      workHeight != null
+        ? "bg-white border border-slate-200 rounded-2xl p-4 shadow-sm grid shrink-0"
+        : "lg:col-span-1 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col max-h-[1000px]";
+
+    return (
+      <div
+        className={panelClass}
+        style={workHeight != null ? dataPanelGridStyle() : undefined}
+      >
+        <div className="flex items-center justify-between gap-3 mb-3 shrink-0 min-h-[3.5rem]">
+          <div>
+            <p className="text-sm font-medium text-slate-900">Your work</p>
+            <p className="text-xs text-slate-600 mt-0.5">{noteLabel}</p>
+          </div>
+          {renderWorkModeToggle()}
+        </div>
+        <div
+          ref={workAreaRef}
+          className={
+            workHeight != null
+              ? "relative min-h-0 overflow-hidden"
+              : "flex flex-col min-h-[280px] max-h-[920px] overflow-hidden"
+          }
+        >
+          {workMode === "text" ? (
+            <textarea
+              value={workText}
+              onChange={(e) => handleWorkTextChange(e.target.value)}
+              disabled={submitting || timedOut}
+              placeholder={textPlaceholder}
+              className={
+                workHeight != null
+                  ? "absolute inset-0 w-full h-full box-border border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-none overflow-y-auto"
+                  : "w-full h-full min-h-[280px] max-h-[920px] flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-none"
+              }
+            />
+          ) : (
+            <div
+              className={
+                workHeight != null
+                  ? "absolute inset-0 overflow-hidden"
+                  : "overflow-hidden shrink-0"
+              }
+            >
+              <Drawpad
+                key={`test-scratch-${id}-${currentSlot}`}
+                value={scratchpadData}
+                onChange={handleScratchpadChange}
+                disabled={submitting || timedOut}
+                showHeading={false}
+                className={workHeight != null ? "mt-0 h-full overflow-hidden" : "mt-0 overflow-hidden"}
+                canvasHeight={workHeight ?? workAreaHeight}
+                fillHeight={workHeight != null}
+              />
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -565,9 +696,10 @@ export default function StudentTestTake() {
           <div>
             <h1 className="text-xl font-bold text-slate-950">{session.title}</h1>
             <p className="text-sm text-slate-600 mt-0.5">
-              {isRc ? "Passage" : "Question"} {currentSlot} of {sittingCount}
+              {isPassageWindow ? unitLabels.capitalized : "Question"} {currentSlot} of {sittingCount}
               <span className="text-slate-400 mx-2">·</span>
-              {answeredCount}/{sittingCount} {isRc ? "passages" : "answered"}
+              {answeredCount}/{sittingCount}{" "}
+              {isPassageWindow ? unitLabels.plural : "answered"}
             </p>
           </div>
           {!isAdminPreview && remainingSeconds != null ? (
@@ -585,7 +717,7 @@ export default function StudentTestTake() {
 
         <div className="mb-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm shrink-0">
           <p className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">
-            {isRc ? "Passage navigator" : "Question navigator"}
+            {isPassageWindow ? unitLabels.navigator : "Question navigator"}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {slots.map((slot) => {
@@ -599,17 +731,17 @@ export default function StudentTestTake() {
                 className={navigatorClass(slot)}
                 title={
                   !slot.assigned
-                    ? isRc
-                      ? "Complete earlier passages first"
+                    ? isPassageWindow
+                      ? `Complete earlier ${unitLabels.plural} first`
                       : "Answer earlier questions first"
                     : !navigable
-                      ? isRc
-                        ? advanceHint || "Complete this passage before moving on"
+                      ? isPassageWindow
+                        ? advanceHint || `Complete this ${unitLabels.singular} before moving on`
                         : advanceHint || "Complete this passage or data set first"
-                      : isRc
+                      : isPassageWindow
                         ? slot.answered
-                          ? `Review passage ${slot.slot}`
-                          : `Passage ${slot.slot}`
+                          ? `Review ${unitLabels.singular} ${slot.slot}`
+                          : `${unitLabels.capitalized} ${slot.slot}`
                         : `Question ${slot.slot}`
                 }
               >
@@ -623,7 +755,7 @@ export default function StudentTestTake() {
         <div className="mb-3 shrink-0 flex flex-col gap-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-2 items-center">
-              {!isRc ? (
+              {!isPassageWindow ? (
                 <button
                   type="button"
                   disabled={currentSlot <= 1}
@@ -639,7 +771,7 @@ export default function StudentTestTake() {
                 onClick={() => goToSlot(currentSlot + 1)}
                 className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
               >
-                Next {isRc ? "passage" : ""} →
+                Next {isPassageWindow ? unitLabels.singular : ""} →
               </button>
             </div>
             <button
@@ -657,14 +789,41 @@ export default function StudentTestTake() {
           ) : null}
           {!allAnswered ? (
             <p className="text-slate-500 text-xs">
-              {isRc
-                ? `Answer all questions in every passage to submit (${session?.questions_per_passage || passageQuestions.length} per passage).`
+              {isPassageWindow
+                ? `Answer all questions in every ${unitLabels.singular} to submit (${session?.questions_per_passage || passageQuestions.length} per ${unitLabels.singular}).`
                 : `Answer all ${sittingCount} questions to submit.`}
             </p>
           ) : null}
         </div>
 
-        {isRc && (passage || passageQuestions.length > 0) ? (
+        {isPassageWindow && (passage || passageQuestions.length > 0) ? (
+          isDataTest ? (
+            <div className="space-y-3 mb-3">
+              {passage ? (
+                <WorksheetPassageContent passage={passage} embedded centered />
+              ) : null}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start">
+                <div
+                  className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm grid shrink-0"
+                  style={dataPanelGridStyle()}
+                >
+                  <div className="mb-4 shrink-0 min-h-[2.5rem]">
+                    <p className="text-sm font-semibold text-slate-900">
+                      {unitLabels.questionsHeading}
+                    </p>
+                  </div>
+                  <div className="overflow-y-auto min-h-0 box-border">
+                    {renderPassageQuestionList()}
+                  </div>
+                </div>
+                {renderPassageScratchpadPanel({
+                  noteLabel: `Notes for this ${unitLabels.singular} — not graded.`,
+                  textPlaceholder: `Jot notes about this ${unitLabels.singular}…`,
+                  fixedWorkHeight: DATA_WORK_AREA_HEIGHT,
+                })}
+              </div>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 items-start mb-3">
             <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm overflow-auto max-h-[calc(100dvh-12rem)]">
               {passage ? (
@@ -674,82 +833,18 @@ export default function StudentTestTake() {
               ) : null}
               <div className="mb-4">
                 <p className="text-sm font-semibold text-slate-900">
-                  Questions for this passage
+                  {unitLabels.questionsHeading}
                 </p>
               </div>
-              <div className="space-y-6">
-                {passageQuestions.map((passageQuestion, index) => {
-                  const qid = passageQuestion.id;
-                  const selectedChoice = passageResponses[qid] || "";
-                  return (
-                    <div key={qid} className="border-t border-slate-100 pt-4 first:border-t-0 first:pt-0">
-                      <p className="text-slate-900 font-medium mb-3">
-                        {index + 1}. {passageQuestion.prompt}
-                      </p>
-                      <div className="flex flex-col gap-2">
-                        {(passageQuestion.choices || []).map((choice) => {
-                          const isSelected = selectedChoice === choice;
-                          return (
-                            <button
-                              key={`${qid}-${choice}`}
-                              type="button"
-                              disabled={submitting || timedOut}
-                              onClick={() => handleSelectPassageChoice(qid, choice)}
-                              className={`border rounded-xl px-4 py-3 text-sm text-left transition ${
-                                isSelected
-                                  ? "border-teal-500 bg-teal-50 text-slate-900"
-                                  : "border-slate-200 text-slate-800 hover:border-teal-300"
-                              }`}
-                            >
-                              {choice}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              {renderPassageQuestionList()}
             </div>
 
-            {scratchpadAllowed ? (
-              <div className="lg:col-span-1 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col max-h-[1000px]">
-                <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">Your work</p>
-                    <p className="text-xs text-slate-600 mt-0.5">
-                      Notes for this passage — not graded.
-                    </p>
-                  </div>
-                  {renderWorkModeToggle()}
-                </div>
-                <div
-                  ref={workAreaRef}
-                  className="flex flex-col min-h-[280px] max-h-[920px] overflow-hidden"
-                >
-                  {workMode === "text" ? (
-                    <textarea
-                      value={workText}
-                      onChange={(e) => handleWorkTextChange(e.target.value)}
-                      disabled={submitting || timedOut}
-                      placeholder="Jot notes about this passage…"
-                      className="w-full h-full min-h-[280px] max-h-[920px] flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-none"
-                    />
-                  ) : (
-                    <Drawpad
-                      key={`test-scratch-${id}-${currentSlot}`}
-                      value={scratchpadData}
-                      onChange={handleScratchpadChange}
-                      disabled={submitting || timedOut}
-                      showHeading={false}
-                      className="mt-0 flex-1 min-h-0 overflow-hidden"
-                      canvasHeight={workAreaHeight}
-                    />
-                  )}
-                </div>
-              </div>
-            ) : null}
+            {renderPassageScratchpadPanel({
+              noteLabel: "Notes for this passage — not graded.",
+              textPlaceholder: "Jot notes about this passage…",
+            })}
           </div>
+          )
         ) : question ? (
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 items-start mb-3">
             <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm overflow-auto max-h-[calc(100dvh-12rem)]">
@@ -821,7 +916,7 @@ export default function StudentTestTake() {
           </div>
         ) : (
           <p className="text-slate-500">
-            {isRc ? "Loading passage…" : "Loading question…"}
+            {isPassageWindow ? `Loading ${unitLabels.singular}…` : "Loading question…"}
           </p>
         )}
       </div>

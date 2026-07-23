@@ -39,6 +39,8 @@ export default function WorksheetPassageContent({
   headerAction = null,
   embedded = false,
   hideTitle = false,
+  centered = false,
+  maxWidthClass = "max-w-2xl",
 }) {
   const body = passage.body ?? passage.text ?? "";
   const hasChart = passage.chart?.type && passage.chart?.labels?.length;
@@ -46,7 +48,7 @@ export default function WorksheetPassageContent({
   const icon = hasChart ? "📊" : "📖";
   const showTitle = !hideTitle && Boolean(String(passage.title || "").trim());
 
-  return (
+  const content = (
     <div
       className={
         embedded
@@ -69,6 +71,14 @@ export default function WorksheetPassageContent({
       ) : null}
       {hasTable ? <PassageTable table={passage.table} /> : null}
       {hasChart ? <WorksheetPassageChart chart={passage.chart} /> : null}
+    </div>
+  );
+
+  if (!centered) return content;
+
+  return (
+    <div className="flex justify-center w-full px-4 sm:px-8 lg:px-12">
+      <div className={`w-full ${maxWidthClass}`}>{content}</div>
     </div>
   );
 }

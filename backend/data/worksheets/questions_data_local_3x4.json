@@ -1,0 +1,472 @@
+{
+  "id": "questions_data_local_3x4",
+  "title": "Data Analysis Local Test — 3 Sets × 4 Questions",
+  "subject": "data",
+  "scratchpad": true,
+  "content_badge": "Test",
+  "is_test": true,
+  "test_sitting_count": 3,
+  "test_rc_questions_per_passage": 4,
+  "test_adaptive": true,
+  "timed": true,
+  "time_limit_minutes": 30,
+  "passages": [
+    {
+      "id": "data_local_t1_a",
+      "title": "Cafeteria Lunch Choices",
+      "body": "Students recorded what they ate for lunch on Monday.",
+      "tier": 1,
+      "chart": {
+        "type": "bar",
+        "title": "Lunches chosen",
+        "x_label": "Food",
+        "y_label": "Students",
+        "labels": ["Pizza", "Salad", "Sandwich", "Soup"],
+        "values": [12, 8, 10, 5]
+      }
+    },
+    {
+      "id": "data_local_t1_b",
+      "title": "Rainfall This Week",
+      "body": "Daily rainfall in millimeters.",
+      "tier": 1,
+      "table": {
+        "headers": ["Day", "Rain (mm)"],
+        "rows": [["Mon", 2], ["Tue", 0], ["Wed", 5], ["Thu", 1], ["Fri", 4]]
+      }
+    },
+    {
+      "id": "data_local_t1_c",
+      "title": "Books Read by Genre",
+      "tier": 1,
+      "chart": {
+        "type": "bar",
+        "labels": ["Mystery", "Sports", "Science", "History"],
+        "values": [6, 9, 4, 7]
+      }
+    },
+    {
+      "id": "data_local_t2_a",
+      "title": "Plant Height Over Time",
+      "body": "A class measured one plant each week.",
+      "tier": 2,
+      "chart": {
+        "type": "line",
+        "title": "Height (cm)",
+        "labels": ["Week 1", "Week 2", "Week 3", "Week 4"],
+        "values": [4, 7, 11, 14]
+      }
+    },
+    {
+      "id": "data_local_t2_b",
+      "title": "Store Sales by Hour",
+      "tier": 2,
+      "table": {
+        "headers": ["Hour", "Sales ($)"],
+        "rows": [["9 AM", 45], ["12 PM", 120], ["3 PM", 80], ["6 PM", 95]]
+      }
+    },
+    {
+      "id": "data_local_t2_c",
+      "title": "Survey: Favorite Subject",
+      "tier": 2,
+      "chart": {
+        "type": "bar",
+        "labels": ["Math", "Science", "Art", "PE"],
+        "values": [18, 22, 15, 20]
+      }
+    },
+    {
+      "id": "data_local_t3_a",
+      "title": "Temperature Change",
+      "body": "Morning and afternoon temperatures (°C).",
+      "tier": 3,
+      "table": {
+        "headers": ["Day", "Morning", "Afternoon"],
+        "rows": [["Mon", 12, 18], ["Tue", 10, 16], ["Wed", 14, 22], ["Thu", 11, 19]]
+      }
+    },
+    {
+      "id": "data_local_t3_b",
+      "title": "Fundraiser Progress",
+      "tier": 3,
+      "chart": {
+        "type": "line",
+        "labels": ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5"],
+        "values": [200, 350, 420, 500, 620]
+      }
+    },
+    {
+      "id": "data_local_t3_c",
+      "title": "Basketball Free Throws",
+      "body": "Shots made out of 20 attempts.",
+      "tier": 3,
+      "table": {
+        "headers": ["Player", "Made", "Attempts"],
+        "rows": [["Alex", 14, 20], ["Jordan", 17, 20], ["Sam", 11, 20], ["Riley", 16, 20]]
+      }
+    }
+  ],
+  "questions": [
+    {
+      "id": "data_local_t1_a_q1",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "data_local_t1_a",
+      "prompt": "Which lunch was chosen by the most students?",
+      "choices": ["Pizza", "Salad", "Sandwich", "Soup"],
+      "answer": "Pizza",
+      "area": "read chart"
+    },
+    {
+      "id": "data_local_t1_a_q2",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "data_local_t1_a",
+      "prompt": "How many students chose salad?",
+      "choices": ["5", "8", "10", "12"],
+      "answer": "8",
+      "area": "read values"
+    },
+    {
+      "id": "data_local_t1_a_q3",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "data_local_t1_a",
+      "prompt": "How many more students chose pizza than soup?",
+      "choices": ["3", "5", "7", "12"],
+      "answer": "7",
+      "area": "compare"
+    },
+    {
+      "id": "data_local_t1_a_q4",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "data_local_t1_a",
+      "prompt": "What is the total number of students surveyed?",
+      "choices": ["30", "35", "40", "45"],
+      "answer": "35",
+      "area": "sum"
+    },
+    {
+      "id": "data_local_t1_b_q1",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "data_local_t1_b",
+      "prompt": "On which day was there no rain?",
+      "choices": ["Monday", "Tuesday", "Wednesday", "Thursday"],
+      "answer": "Tuesday",
+      "area": "read table"
+    },
+    {
+      "id": "data_local_t1_b_q2",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "data_local_t1_b",
+      "prompt": "How much rain fell on Wednesday?",
+      "choices": ["1 mm", "2 mm", "4 mm", "5 mm"],
+      "answer": "5 mm",
+      "area": "read values"
+    },
+    {
+      "id": "data_local_t1_b_q3",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "data_local_t1_b",
+      "prompt": "What was the total rainfall for the week?",
+      "choices": ["10 mm", "11 mm", "12 mm", "13 mm"],
+      "answer": "12 mm",
+      "area": "sum"
+    },
+    {
+      "id": "data_local_t1_b_q4",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "data_local_t1_b",
+      "prompt": "How much more rain fell on Wednesday than on Monday?",
+      "choices": ["2 mm", "3 mm", "4 mm", "5 mm"],
+      "answer": "3 mm",
+      "area": "compare"
+    },
+    {
+      "id": "data_local_t1_c_q1",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "data_local_t1_c",
+      "prompt": "Which genre was read most often?",
+      "choices": ["Mystery", "Sports", "Science", "History"],
+      "answer": "Sports",
+      "area": "read chart"
+    },
+    {
+      "id": "data_local_t1_c_q2",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "data_local_t1_c",
+      "prompt": "How many science books were read?",
+      "choices": ["4", "6", "7", "9"],
+      "answer": "4",
+      "area": "read values"
+    },
+    {
+      "id": "data_local_t1_c_q3",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "data_local_t1_c",
+      "prompt": "How many more sports books were read than mystery books?",
+      "choices": ["2", "3", "4", "5"],
+      "answer": "3",
+      "area": "compare"
+    },
+    {
+      "id": "data_local_t1_c_q4",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "data_local_t1_c",
+      "prompt": "What is the total number of books read?",
+      "choices": ["24", "26", "28", "30"],
+      "answer": "26",
+      "area": "sum"
+    },
+    {
+      "id": "data_local_t2_a_q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "data_local_t2_a",
+      "prompt": "How much did the plant grow from Week 1 to Week 4?",
+      "choices": ["7 cm", "10 cm", "11 cm", "14 cm"],
+      "answer": "10 cm",
+      "area": "change"
+    },
+    {
+      "id": "data_local_t2_a_q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "data_local_t2_a",
+      "prompt": "During which week did the plant grow the most?",
+      "choices": ["Week 1 to 2", "Week 2 to 3", "Week 3 to 4", "Equal each week"],
+      "answer": "Week 2 to 3",
+      "area": "trend"
+    },
+    {
+      "id": "data_local_t2_a_q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "data_local_t2_a",
+      "prompt": "What was the height at Week 3?",
+      "choices": ["7 cm", "11 cm", "14 cm", "4 cm"],
+      "answer": "11 cm",
+      "area": "read values"
+    },
+    {
+      "id": "data_local_t2_a_q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "data_local_t2_a",
+      "prompt": "If growth continues at the same rate as Week 3 to Week 4, what might Week 5 height be?",
+      "choices": ["15 cm", "17 cm", "18 cm", "20 cm"],
+      "answer": "17 cm",
+      "area": "predict"
+    },
+    {
+      "id": "data_local_t2_b_q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "data_local_t2_b",
+      "prompt": "At which hour were sales highest?",
+      "choices": ["9 AM", "12 PM", "3 PM", "6 PM"],
+      "answer": "12 PM",
+      "area": "read table"
+    },
+    {
+      "id": "data_local_t2_b_q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "data_local_t2_b",
+      "prompt": "How much greater were noon sales than 9 AM sales?",
+      "choices": ["$35", "$75", "$80", "$120"],
+      "answer": "$75",
+      "area": "compare"
+    },
+    {
+      "id": "data_local_t2_b_q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "data_local_t2_b",
+      "prompt": "What were total sales for all four hours?",
+      "choices": ["$300", "$320", "$340", "$360"],
+      "answer": "$340",
+      "area": "sum"
+    },
+    {
+      "id": "data_local_t2_b_q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "data_local_t2_b",
+      "prompt": "Sales at 6 PM were how much more than at 3 PM?",
+      "choices": ["$5", "$10", "$15", "$20"],
+      "answer": "$15",
+      "area": "compare"
+    },
+    {
+      "id": "data_local_t2_c_q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "data_local_t2_c",
+      "prompt": "Which subject had the second-most votes?",
+      "choices": ["Math", "Science", "Art", "PE"],
+      "answer": "PE",
+      "area": "rank"
+    },
+    {
+      "id": "data_local_t2_c_q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "data_local_t2_c",
+      "prompt": "How many more students chose science than art?",
+      "choices": ["5", "6", "7", "8"],
+      "answer": "7",
+      "area": "compare"
+    },
+    {
+      "id": "data_local_t2_c_q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "data_local_t2_c",
+      "prompt": "What is the total number of votes?",
+      "choices": ["65", "70", "75", "80"],
+      "answer": "75",
+      "area": "sum"
+    },
+    {
+      "id": "data_local_t2_c_q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "data_local_t2_c",
+      "prompt": "Math and art combined received how many votes?",
+      "choices": ["28", "33", "38", "43"],
+      "answer": "33",
+      "area": "sum"
+    },
+    {
+      "id": "data_local_t3_a_q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "data_local_t3_a",
+      "prompt": "On which day was the afternoon temperature highest?",
+      "choices": ["Monday", "Tuesday", "Wednesday", "Thursday"],
+      "answer": "Wednesday",
+      "area": "read table"
+    },
+    {
+      "id": "data_local_t3_a_q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "data_local_t3_a",
+      "prompt": "What was the temperature increase from morning to afternoon on Thursday?",
+      "choices": ["6°C", "7°C", "8°C", "9°C"],
+      "answer": "8°C",
+      "area": "change"
+    },
+    {
+      "id": "data_local_t3_a_q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "data_local_t3_a",
+      "prompt": "What was the average morning temperature?",
+      "choices": ["11°C", "11.75°C", "12°C", "13°C"],
+      "answer": "11.75°C",
+      "area": "mean"
+    },
+    {
+      "id": "data_local_t3_a_q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "data_local_t3_a",
+      "prompt": "On Tuesday, the afternoon was how many degrees warmer than the morning?",
+      "choices": ["4°C", "5°C", "6°C", "7°C"],
+      "answer": "6°C",
+      "area": "compare"
+    },
+    {
+      "id": "data_local_t3_b_q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "data_local_t3_b",
+      "prompt": "How much money was raised from Day 1 to Day 3?",
+      "choices": ["$150", "$220", "$250", "$420"],
+      "answer": "$220",
+      "area": "change"
+    },
+    {
+      "id": "data_local_t3_b_q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "data_local_t3_b",
+      "prompt": "On which day did fundraising increase the most compared to the previous day?",
+      "choices": ["Day 2", "Day 3", "Day 4", "Day 5"],
+      "answer": "Day 2",
+      "area": "trend"
+    },
+    {
+      "id": "data_local_t3_b_q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "data_local_t3_b",
+      "prompt": "What was the total raised after Day 5?",
+      "choices": ["$500", "$580", "$620", "$700"],
+      "answer": "$620",
+      "area": "read values"
+    },
+    {
+      "id": "data_local_t3_b_q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "data_local_t3_b",
+      "prompt": "Average daily increase from Day 4 to Day 5 was how much?",
+      "choices": ["$80", "$100", "$120", "$140"],
+      "answer": "$120",
+      "area": "compare"
+    },
+    {
+      "id": "data_local_t3_c_q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "data_local_t3_c",
+      "prompt": "Who made the highest percentage of free throws?",
+      "choices": ["Alex", "Jordan", "Sam", "Riley"],
+      "answer": "Jordan",
+      "area": "percent"
+    },
+    {
+      "id": "data_local_t3_c_q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "data_local_t3_c",
+      "prompt": "What is Sam's free-throw percentage?",
+      "choices": ["45%", "50%", "55%", "60%"],
+      "answer": "55%",
+      "area": "percent"
+    },
+    {
+      "id": "data_local_t3_c_q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "data_local_t3_c",
+      "prompt": "How many total free throws were made by all four players?",
+      "choices": ["54", "56", "58", "60"],
+      "answer": "58",
+      "area": "sum"
+    },
+    {
+      "id": "data_local_t3_c_q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "data_local_t3_c",
+      "prompt": "Jordan made how many more shots than Sam?",
+      "choices": ["3", "5", "6", "8"],
+      "answer": "6",
+      "area": "compare"
+    }
+  ]
+}

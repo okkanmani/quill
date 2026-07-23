@@ -27,22 +27,41 @@ export function newTestPassageId() {
   return `tp_${Date.now()}_${passageCounter}`;
 }
 
-export function emptyTestPassage(id = null, tier = 2) {
+export function isDataPassageTest(subject) {
+  return subject === "data";
+}
+
+export function isPassageWindowTest(subject, readingComprehension = false) {
+  return readingComprehension || isDataPassageTest(subject);
+}
+
+export function passageWindowUnitLabels(subject, readingComprehension = false) {
+  if (isDataPassageTest(subject)) {
+    return { singular: "data set", plural: "data sets", capitalized: "Data set" };
+  }
+  return { singular: "passage", plural: "passages", capitalized: "Passage" };
+}
+
+export function emptyTestPassage(id = null, tier = 2, { data = false } = {}) {
   return {
     id: id || newTestPassageId(),
     title: "",
     body: "",
     tier: Number(tier) || 2,
+    ...(data ? { chart: null, table: null } : {}),
   };
 }
 
-export function isTestPassageComplete(passage) {
+export function isTestPassageComplete(passage, passageMode = "rc") {
   const tier = Number(passage?.tier);
-  return (
-    Boolean(passage?.title?.trim() && passage?.body?.trim()) &&
-    tier >= 1 &&
-    tier <= 3
-  );
+  const hasTier = tier >= 1 && tier <= 3;
+  if (!passage?.title?.trim() || !hasTier) return false;
+  if (passageMode === "data") {
+    return Boolean(
+      passage?.body?.trim() || passage?.chart?.type || passage?.table?.headers?.length,
+    );
+  }
+  return Boolean(passage?.body?.trim());
 }
 
 export function emptyRcTestQuestion(passageId) {
@@ -130,9 +149,9 @@ export function fixedOrderAiBankSize(sittingCount) {
   return Math.max(sitting + 4, Math.ceil(sitting * 1.2));
 }
 
-export function minimumBankSize(sittingCount, adaptive, readingComprehension = false) {
+export function minimumBankSize(sittingCount, adaptive, passageWindow = false) {
   const sitting = Number(sittingCount) || DEFAULT_SITTING_COUNT;
-  if (readingComprehension) return minimumRcPassageBankSize(sitting, adaptive);
+  if (passageWindow) return minimumRcPassageBankSize(sitting, adaptive);
   return adaptive ? sitting * 3 : sitting;
 }
 
@@ -190,10 +209,14 @@ export function validateTestBuilder({
   questions,
   adaptive = true,
   readingComprehension = false,
+  passageWindow = false,
+  passageMode = "rc",
   passages = [],
   questionsPerPassage = DEFAULT_RC_QUESTIONS_PER_PASSAGE,
 }) {
   const errors = [];
+  const isDataMode = passageMode === "data";
+  const unit = isDataMode ? "data set" : "passage";
 
   if (!title?.trim()) {
     errors.push("Test title is required.");
@@ -204,7 +227,7 @@ export function validateTestBuilder({
     errors.push("Time limit must be a positive number of minutes.");
   }
 
-  if (readingComprehension) {
+  if (passageWindow || readingComprehension) {
     const passageCount = Number(sittingCount);
     const perPassage = Number(questionsPerPassage);
     if (
@@ -213,7 +236,7 @@ export function validateTestBuilder({
       passageCount > MAX_RC_PASSAGE_COUNT
     ) {
       errors.push(
-        `Passages per test must be between ${MIN_RC_PASSAGE_COUNT} and ${MAX_RC_PASSAGE_COUNT}.`,
+        `${isDataMode ? "Data sets" : "Passages"} per test must be between ${MIN_RC_PASSAGE_COUNT} and ${MAX_RC_PASSAGE_COUNT}.`,
       );
     }
     if (
@@ -222,7 +245,7 @@ export function validateTestBuilder({
       perPassage > MAX_RC_QUESTIONS_PER_PASSAGE
     ) {
       errors.push(
-        `Questions per passage must be between ${MIN_RC_QUESTIONS_PER_PASSAGE} and ${MAX_RC_QUESTIONS_PER_PASSAGE}.`,
+        `Questions per ${unit} must be between ${MIN_RC_QUESTIONS_PER_PASSAGE} and ${MAX_RC_QUESTIONS_PER_PASSAGE}.`,
       );
     }
 
@@ -231,46 +254,60 @@ export function validateTestBuilder({
       for (const tier of [1, 2, 3]) {
         if (tierCounts[tier] < passageCount) {
           errors.push(
-            `Tier ${tier} needs at least ${passageCount} passages (has ${tierCounts[tier]}).`,
+            `Tier ${tier} needs at least ${passageCount} ${unit}s (has ${tierCounts[tier]}).`,
           );
         }
       }
     } else if (passages.length < passageCount) {
       errors.push(
-        `Add at least ${passageCount} passages for this test (has ${passages.length}).`,
+        `Add at least ${passageCount} ${unit}s for this test (has ${passages.length}).`,
       );
     }
 
     if (!passages.length) {
-      errors.push("Add at least one passage for reading comprehension.");
+      errors.push(
+        isDataMode
+          ? "Add at least one data set for data analysis."
+          : "Add at least one passage for reading comprehension.",
+      );
     }
     passages.forEach((passage, index) => {
       if (!passage.title?.trim()) {
-        errors.push(`Passage ${index + 1} needs a title.`);
+        errors.push(`${isDataMode ? "Data set" : "Passage"} ${index + 1} needs a title.`);
       }
-      if (!passage.body?.trim()) {
+      if (isDataMode) {
+        const hasVisual =
+          passage.body?.trim() || passage.chart?.type || passage.table?.headers?.length;
+        if (!hasVisual) {
+          errors.push(
+            `Data set ${index + 1} needs a caption, chart, or table (use AI or import from bank).`,
+          );
+        }
+      } else if (!passage.body?.trim()) {
         errors.push(`Passage ${index + 1} needs passage text.`);
       }
       const tier = Number(passage.tier);
       if (!Number.isFinite(tier) || tier < 1 || tier > 3) {
-        errors.push(`Passage ${index + 1} needs a difficulty tier.`);
+        errors.push(`${isDataMode ? "Data set" : "Passage"} ${index + 1} needs a difficulty tier.`);
       }
       const linked = questions.filter((question) => question.passageId === passage.id);
       if (linked.length !== perPassage) {
         errors.push(
-          `Passage ${index + 1} needs exactly ${perPassage} questions (has ${linked.length}).`,
+          `${isDataMode ? "Data set" : "Passage"} ${index + 1} needs exactly ${perPassage} questions (has ${linked.length}).`,
         );
       }
       linked.forEach((question, questionIndex) => {
         if (!isTestQuestionComplete(question)) {
-          errors.push(`Passage ${index + 1}, question ${questionIndex + 1} is incomplete.`);
+          errors.push(
+            `${isDataMode ? "Data set" : "Passage"} ${index + 1}, question ${questionIndex + 1} is incomplete.`,
+          );
         }
       });
     });
     const passageIds = new Set(passages.map((passage) => passage.id));
     questions.forEach((question, index) => {
       if (!question.passageId || !passageIds.has(question.passageId)) {
-        errors.push(`Question ${index + 1} must be linked to a passage.`);
+        errors.push(`Question ${index + 1} must be linked to a ${unit}.`);
       }
     });
     return errors;
@@ -313,6 +350,37 @@ export function draftToTestBuilderQuestions(draft) {
     correctIndex: Number(question.correct_index) || 0,
     area: question.area || "",
   }));
+}
+
+export function draftDataToTestBuilderState(draft) {
+  const passages = (draft?.passages || []).map((passage, index) => ({
+    id: passage.id || newTestPassageId(),
+    title: passage.title || "",
+    body: passage.body || "",
+    chart: passage.chart ?? null,
+    table: passage.table ?? null,
+    tier: Number(passage.tier) || 2,
+  }));
+  const questions = [];
+  for (const passage of draft?.passages || []) {
+    for (const question of passage.questions || []) {
+      questions.push({
+        id: newTestQuestionId(),
+        prompt: question.prompt || "",
+        area: question.area || "",
+        choices: Array.isArray(question.choices)
+          ? [...question.choices]
+          : ["", "", "", ""],
+        correctIndex: Number(question.correct_index) || 0,
+        passageId: passage.id,
+      });
+    }
+  }
+  return {
+    title: draft?.title || "",
+    passages,
+    questions,
+  };
 }
 
 export function draftRcToTestBuilderState(draft) {
@@ -384,6 +452,8 @@ export function worksheetToTestBuilderState(worksheet) {
       worksheet.english_type === "reading_comprehension" ||
       (worksheet.subject === "english" &&
         inferEnglishTypeFromWorksheet(worksheet) === "reading_comprehension"),
+    dataPassageTestEnabled:
+      worksheet.subject === "data" && (worksheet.passages || []).length > 0,
     passages: (worksheet.passages || [])
       .map((passage) => {
         const normalized = worksheetPassageToTestPassage(passage);
@@ -500,9 +570,11 @@ export function buildTestBuilderPreview({
   passages = [],
   adaptive = true,
   readingComprehension = false,
+  passageWindow = false,
   questionsPerPassage = DEFAULT_RC_QUESTIONS_PER_PASSAGE,
 }) {
   const tiers = passageTierById(passages);
+  const usesPassageTiers = passageWindow || readingComprehension;
   const usedPassageIds = new Set(
     questions.map((question) => question.passageId).filter(Boolean),
   );
@@ -532,7 +604,7 @@ export function buildTestBuilderPreview({
         id: question.id || `q${index + 1}`,
         type: "multiple_choice",
         stars:
-          readingComprehension && question.passageId
+          usesPassageTiers && question.passageId
             ? tiers[question.passageId] || 2
             : Number(question.tier) || 2,
         prompt: question.prompt.trim(),
@@ -548,7 +620,10 @@ export function buildTestBuilderPreview({
   if (passagesOut.length) payload.passages = passagesOut;
   if (readingComprehension && subject === "english") {
     payload.english_type = "reading_comprehension";
-    payload.test_rc_questions_per_passage = Number(questionsPerPassage) || DEFAULT_RC_QUESTIONS_PER_PASSAGE;
+  }
+  if (usesPassageTiers) {
+    payload.test_rc_questions_per_passage =
+      Number(questionsPerPassage) || DEFAULT_RC_QUESTIONS_PER_PASSAGE;
   }
   return payload;
 }

@@ -101,13 +101,19 @@ def validate_test_worksheet_data(data: dict) -> list[str]:
         errors.append("Tests require a non-empty question bank.")
         return errors
 
-    is_rc = _is_rc_test(data)
+    is_passage_window = _is_passage_window_test(data)
+    is_data = _is_data_passage_test(data)
 
-    if is_rc:
+    if is_passage_window:
         per_passage = test_rc_questions_per_passage_from_data(data)
+        unit_label = "data set" if is_data else "passage"
         passages = data.get("passages") or []
         if not isinstance(passages, list) or not passages:
-            errors.append("Reading comprehension tests require at least one passage.")
+            errors.append(
+                f"Data analysis tests require at least one data set."
+                if is_data
+                else "Reading comprehension tests require at least one passage."
+            )
         else:
             passage_ids: set[str] = set()
             passage_tier_counts = {1: 0, 2: 0, 3: 0}
@@ -128,13 +134,20 @@ def validate_test_worksheet_data(data: dict) -> list[str]:
                     errors.append(f"passages[{i}] must have tier 1, 2, or 3.")
                 else:
                     passage_tier_counts[tier] += 1
+                if is_data and not _data_passage_has_visual(passage):
+                    errors.append(
+                        f"passages[{i}] must include a chart or table with numeric data."
+                    )
+                elif not is_data and not _passage_has_content(passage):
+                    errors.append(f"passages[{i}] needs passage text.")
             for i, q in enumerate(questions):
                 if not isinstance(q, dict):
                     continue
                 passage_id = str(q.get("passage_id") or "").strip()
                 if not passage_id or passage_id not in passage_ids:
                     errors.append(
-                        f"questions[{i}] must reference a passage for reading comprehension."
+                        f"questions[{i}] must reference a {unit_label} for "
+                        f"{'data analysis' if is_data else 'reading comprehension'}."
                     )
                 else:
                     q_counts[passage_id] = q_counts.get(passage_id, 0) + 1
@@ -151,12 +164,13 @@ def validate_test_worksheet_data(data: dict) -> list[str]:
                 for tier in VALID_TIERS:
                     if passage_tier_counts[tier] < sitting:
                         errors.append(
-                            f"Test bank needs at least {sitting} tier-{tier} passages "
+                            f"Test bank needs at least {sitting} tier-{tier} {unit_label}s "
                             f"(has {passage_tier_counts[tier]})."
                         )
             elif len(passages) < sitting:
                 errors.append(
-                    f"Test bank needs at least {sitting} passages (has {len(passages)})."
+                    f"Test bank needs at least {sitting} {unit_label}s "
+                    f"(has {len(passages)})."
                 )
         if data.get("evaluation") == "manual":
             errors.append("Tests must use auto-evaluated multiple choice questions.")
@@ -194,6 +208,35 @@ def _is_rc_test(data: dict) -> bool:
     return str(data.get("english_type") or "").strip().lower() == "reading_comprehension"
 
 
+def _is_data_passage_test(data: dict) -> bool:
+    if _normalize_subject(data.get("subject") or "") != "data":
+        return False
+    passages = data.get("passages") or []
+    return isinstance(passages, list) and bool(passages)
+
+
+def _is_passage_window_test(data: dict) -> bool:
+    return _is_rc_test(data) or _is_data_passage_test(data)
+
+
+def _passage_has_content(passage: dict) -> bool:
+    body = passage.get("text") or passage.get("body") or ""
+    has_body = isinstance(body, str) and bool(body.strip())
+    chart = passage.get("chart")
+    has_chart = isinstance(chart, dict) and bool(chart.get("type"))
+    table = passage.get("table")
+    has_table = isinstance(table, dict) and bool(table.get("headers"))
+    return has_body or has_chart or has_table
+
+
+def _data_passage_has_visual(passage: dict) -> bool:
+    chart = passage.get("chart")
+    has_chart = isinstance(chart, dict) and bool(chart.get("type"))
+    table = passage.get("table")
+    has_table = isinstance(table, dict) and bool(table.get("headers"))
+    return has_chart or has_table
+
+
 def _passage_tier_lookup(worksheet: dict) -> dict[str, int]:
     out: dict[str, int] = {}
     for passage in worksheet.get("passages") or []:
@@ -211,7 +254,7 @@ def _passage_tier_lookup(worksheet: dict) -> dict[str, int]:
 
 
 def _question_tier(q: dict, worksheet: dict) -> int:
-    if _is_rc_test(worksheet):
+    if _is_passage_window_test(worksheet):
         passage_id = q.get("passage_id")
         if passage_id:
             tier = _passage_tier_lookup(worksheet).get(str(passage_id))
@@ -405,7 +448,7 @@ def _question_has_passage_context(q: dict | None, worksheet: dict) -> bool:
 
 
 def _worksheet_has_contextual_units(worksheet: dict) -> bool:
-    if _is_rc_test(worksheet):
+    if _is_passage_window_test(worksheet):
         return True
     lookup = _passage_lookup(worksheet)
     for q in worksheet.get("questions") or []:
@@ -470,7 +513,7 @@ def _max_navigable_target_slot(
     if not _worksheet_has_contextual_units(worksheet):
         return sitting_count
 
-    if _is_rc_test(worksheet):
+    if _is_passage_window_test(worksheet):
         for slot in range(1, sitting_count + 1):
             if not _rc_slot_fully_answered(answers, sequence, slot):
                 return slot
@@ -496,7 +539,7 @@ def _clamp_target_slot(
     if target_slot is None:
         return max_nav
     requested = max(1, min(int(target_slot), sitting_count))
-    if _is_rc_test(worksheet) and _rc_slot_fully_answered(
+    if _is_passage_window_test(worksheet) and _rc_slot_fully_answered(
         answers, sequence, requested
     ):
         return requested
@@ -858,8 +901,8 @@ def _attempt_row_to_rc_session(
         "locked": bool(int(row["locked"] or 0)),
         "sequence": sequence,
         "answers": answers,
-        "is_rc": True,
-        "english_type": "reading_comprehension",
+        "is_passage_window": True,
+        "is_rc": _is_rc_test(worksheet),
         "questions_per_passage": test_rc_questions_per_passage_from_data(worksheet),
     }
 
@@ -871,7 +914,7 @@ def _attempt_row_to_session(
     sitting_count: int,
     target_slot: int | None = None,
 ) -> dict:
-    if _is_rc_test(worksheet):
+    if _is_passage_window_test(worksheet):
         return _attempt_row_to_rc_session(
             row,
             worksheet,
@@ -1314,7 +1357,7 @@ def save_test_answer(
     if slot < 1 or slot > sitting_count:
         raise ValueError("Invalid question slot.")
 
-    if _is_rc_test(ws):
+    if _is_passage_window_test(ws):
         return _save_rc_test_answer(
             student_name,
             worksheet_id,
@@ -1512,17 +1555,19 @@ def submit_test(student_name: str, worksheet_id: str) -> dict:
         )
         sequence = session["sequence"]
         answers = session["answers"]
-        is_rc = _is_rc_test(ws)
+        is_passage_window = _is_passage_window_test(ws)
+        is_data = _is_data_passage_test(ws)
+        unit_label = "data sets" if is_data else "passages"
 
         assigned = sum(1 for s in sequence if isinstance(s, dict))
         if assigned < sitting_count:
             raise ValueError(
-                "Answer all passages before submitting."
-                if is_rc
+                f"Answer all {unit_label} before submitting."
+                if is_passage_window
                 else "Answer all questions before submitting."
             )
 
-        if is_rc:
+        if is_passage_window:
             unanswered = []
             for slot in range(1, sitting_count + 1):
                 entry = sequence[slot - 1] if slot - 1 < len(sequence) else None
@@ -1536,7 +1581,9 @@ def submit_test(student_name: str, worksheet_id: str) -> dict:
                 if not _rc_responses_complete(responses, question_ids):
                     unanswered.append(slot)
             if unanswered:
-                raise ValueError("Answer all questions in every passage before submitting.")
+                raise ValueError(
+                    f"Answer all questions in every {'data set' if is_data else 'passage'} before submitting."
+                )
 
             lookup = _question_lookup(ws)
             for slot in range(1, sitting_count + 1):
@@ -1602,7 +1649,7 @@ def submit_test(student_name: str, worksheet_id: str) -> dict:
             ans = answers.get(str(slot), {})
             if not isinstance(ans, dict):
                 continue
-            if is_rc:
+            if is_passage_window:
                 passage = passage_lookup.get(str(ans.get("passage_id") or ""))
                 for detail in ans.get("questions") or []:
                     if not isinstance(detail, dict) or detail.get("correct"):
