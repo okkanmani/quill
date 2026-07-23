@@ -32,6 +32,13 @@ export const PASSAGE_BANK_COPY = {
     titlePlaceholder: "e.g. Basketball free throws",
     bodyField: "Context",
     bodyPlaceholder: "Describe the chart or table shown to students.",
+    captionField: "Caption (optional)",
+    captionPlaceholder: "Short note shown below the chart or table.",
+    visualSectionLabel: "Chart / table",
+    noVisualHint:
+      "No chart or table stored yet. Save a data set from a worksheet to import one, or add context text below.",
+    saveValidationHint:
+      "Data set title and at least one of context text, a chart, or a table are required.",
     deleteLabel: "Delete data set",
     saveNewLabel: "Save data set",
     saveExistingLabel: "Save changes",
@@ -42,4 +49,21 @@ export const PASSAGE_BANK_COPY = {
 
 export function passageBankCopy(subject) {
   return PASSAGE_BANK_COPY[subject] || PASSAGE_BANK_COPY.english;
+}
+
+export function passageHasVisual(passage) {
+  return Boolean(
+    (passage?.chart?.type && passage?.chart?.labels?.length) ||
+      passage?.table?.headers?.length,
+  );
+}
+
+export function isPassageDraftComplete(draft, subject) {
+  const title = String(draft?.title || "").trim();
+  if (!title) return false;
+  const body = String(draft?.body || "").trim();
+  if (subject === "data") {
+    return Boolean(body || passageHasVisual(draft));
+  }
+  return Boolean(body);
 }

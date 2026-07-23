@@ -13,7 +13,11 @@ import {
 import QuillLoading from "./QuillLoading";
 import QuestionBankEditorModal from "./QuestionBankEditorModal";
 import QuestionBankPassageEditorModal from "./QuestionBankPassageEditorModal";
-import { passageBankCopy } from "./passageQuestionBankCopy";
+import {
+  isPassageDraftComplete,
+  passageBankCopy,
+  passageHasVisual,
+} from "./passageQuestionBankCopy";
 import { QuestionDifficultyStars } from "./DifficultyStars";
 import {
   TEST_TIERS,
@@ -35,7 +39,17 @@ function formatBankDate(iso) {
 }
 
 function emptyPassageDraft() {
-  return { title: "", body: "" };
+  return { title: "", body: "", chart: null, table: null };
+}
+
+function passageDraftToPayload(draft, subject) {
+  return {
+    subject,
+    title: draft.title.trim(),
+    body: draft.body.trim(),
+    chart: draft.chart ?? null,
+    table: draft.table ?? null,
+  };
 }
 
 function matchesPassageSearch(passage, query) {
@@ -104,6 +118,8 @@ export default function PassageQuestionBankPanel({
           setPassageDraft({
             title: data.passage?.title || "",
             body: data.passage?.body || "",
+            chart: data.passage?.chart ?? null,
+            table: data.passage?.table ?? null,
           });
           setPassageItems(data.items || []);
         })
@@ -151,33 +167,40 @@ export default function PassageQuestionBankPanel({
   }
 
   async function handleSavePassage() {
-    const title = passageDraft.title.trim();
-    const body = passageDraft.body.trim();
-    if (!title || !body) {
-      onError(`${copy.titleField} and ${copy.bodyField.toLowerCase()} are required.`);
+    if (!isPassageDraftComplete(passageDraft, subject)) {
+      onError(
+        subject === "data" && copy.saveValidationHint
+          ? copy.saveValidationHint
+          : `${copy.titleField} and ${copy.bodyField.toLowerCase()} are required.`,
+      );
       return;
     }
+    const payload = passageDraftToPayload(passageDraft, subject);
     setSavingPassage(true);
     onError("");
     try {
       if (passageEditorMode === "create") {
-        const created = await createQuestionBankPassage({
-          subject,
-          title,
-          body,
-        });
+        const created = await createQuestionBankPassage(payload);
         setPassages((prev) => [created, ...prev]);
         setPassageEditorMode(created.id);
+        setPassageDraft({
+          title: created.title || payload.title,
+          body: created.body || payload.body,
+          chart: created.chart ?? payload.chart,
+          table: created.table ?? payload.table,
+        });
         onNotice(`${copy.passageSingular[0].toUpperCase()}${copy.passageSingular.slice(1)} created.`);
       } else if (passageEditorMode) {
-        const saved = await updateQuestionBankPassage(passageEditorMode, {
-          subject,
-          title,
-          body,
-        });
+        const saved = await updateQuestionBankPassage(passageEditorMode, payload);
         setPassages((prev) =>
           prev.map((p) => (p.id === saved.id ? { ...p, ...saved } : p)),
         );
+        setPassageDraft({
+          title: saved.title || payload.title,
+          body: saved.body || payload.body,
+          chart: saved.chart ?? payload.chart,
+          table: saved.table ?? payload.table,
+        });
         onNotice(`${copy.passageSingular[0].toUpperCase()}${copy.passageSingular.slice(1)} saved.`);
       }
     } catch (err) {
@@ -441,11 +464,13 @@ export default function PassageQuestionBankPanel({
                         >
                           {passage.title?.trim() || `Untitled ${copy.passageSingular}`}
                         </p>
-                        <p
-                          className="text-xs text-slate-400 mt-1 font-mono truncate"
-                          title={passage.id}
-                        >
-                          {passage.id}
+                        <p className="text-xs text-slate-500 mt-1 truncate">
+                          {passageHasVisual(passage) ? (
+                            <span className="mr-2">📊 Chart or table</span>
+                          ) : null}
+                          <span className="font-mono text-slate-400" title={passage.id}>
+                            {passage.id}
+                          </span>
                         </p>
                       </td>
                       <td className="px-4 py-3 align-top text-slate-700">
@@ -475,6 +500,7 @@ export default function PassageQuestionBankPanel({
 
           <QuestionBankPassageEditorModal
             open={Boolean(passageEditorMode)}
+            subject={subject}
             copy={copy}
             title={
               passageEditorMode === "create" ? copy.addModalTitle : copy.editModalTitle

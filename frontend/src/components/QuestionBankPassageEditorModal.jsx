@@ -1,12 +1,15 @@
 import QuillLoading from "./QuillLoading";
 import QuestionBankEditorModal from "./QuestionBankEditorModal";
+import WorksheetPassageContent from "./WorksheetPassageContent";
 import { QuestionDifficultyStars } from "./DifficultyStars";
+import { passageHasVisual } from "./passageQuestionBankCopy";
 import { TEST_TIERS } from "../testBuilderUtils";
 
 export default function QuestionBankPassageEditorModal({
   open,
   title,
   subtitle = "",
+  subject = "english",
   copy,
   passageDraft,
   onPassageChange,
@@ -23,6 +26,15 @@ export default function QuestionBankPassageEditorModal({
   questionEditor,
 }) {
   if (!open || !copy) return null;
+
+  const isDataSet = subject === "data";
+  const hasVisual = isDataSet && passageHasVisual(passageDraft);
+  const bodyLabel =
+    isDataSet && hasVisual ? copy.captionField || copy.bodyField : copy.bodyField;
+  const bodyPlaceholder =
+    isDataSet && hasVisual
+      ? copy.captionPlaceholder || copy.bodyPlaceholder
+      : copy.bodyPlaceholder;
 
   return (
     <>
@@ -63,14 +75,35 @@ export default function QuestionBankPassageEditorModal({
                   placeholder={copy.titlePlaceholder}
                 />
               </label>
+              {isDataSet && hasVisual ? (
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-slate-800">
+                    {copy.visualSectionLabel || "Chart / table"}
+                  </p>
+                  <WorksheetPassageContent
+                    passage={passageDraft}
+                    embedded
+                    hideTitle
+                  />
+                </div>
+              ) : null}
+
+              {isDataSet && !hasVisual && !isNew ? (
+                <p className="text-sm text-slate-500 rounded-xl border border-dashed border-slate-200 px-4 py-3">
+                  {copy.noVisualHint}
+                </p>
+              ) : null}
+
               <label className="block text-sm font-semibold text-slate-800">
-                {copy.bodyField}
+                {bodyLabel}
                 <textarea
                   value={passageDraft.body}
                   onChange={(e) => onPassageChange({ body: e.target.value })}
-                  rows={10}
-                  className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y min-h-[12rem]"
-                  placeholder={copy.bodyPlaceholder}
+                  rows={isDataSet && hasVisual ? 4 : 10}
+                  className={`mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y ${
+                    isDataSet && hasVisual ? "min-h-[6rem]" : "min-h-[12rem]"
+                  }`}
+                  placeholder={bodyPlaceholder}
                 />
               </label>
             </div>

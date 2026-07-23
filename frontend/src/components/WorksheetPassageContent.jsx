@@ -34,20 +34,34 @@ function PassageTable({ table }) {
   );
 }
 
-export default function WorksheetPassageContent({ passage, headerAction = null }) {
+export default function WorksheetPassageContent({
+  passage,
+  headerAction = null,
+  embedded = false,
+  hideTitle = false,
+}) {
   const body = passage.body ?? passage.text ?? "";
   const hasChart = passage.chart?.type && passage.chart?.labels?.length;
   const hasTable = passage.table?.headers?.length;
   const icon = hasChart ? "📊" : "📖";
+  const showTitle = !hideTitle && Boolean(String(passage.title || "").trim());
 
   return (
-    <div className="sticky top-4 z-10 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <p className="text-slate-800 font-semibold text-base min-w-0">
-          {icon} {passage.title}
-        </p>
-        {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
-      </div>
+    <div
+      className={
+        embedded
+          ? "rounded-xl border border-slate-200 bg-slate-50 p-4"
+          : "sticky top-4 z-10 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm"
+      }
+    >
+      {showTitle ? (
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <p className="text-slate-800 font-semibold text-base min-w-0">
+            {icon} {passage.title}
+          </p>
+          {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
+        </div>
+      ) : null}
       {body.trim() ? (
         <p className="text-slate-900 text-sm leading-relaxed whitespace-pre-line">
           {body}

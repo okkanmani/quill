@@ -1,4 +1,4 @@
-import { isWorksheetDone } from "./subjectUtils";
+import { isWorksheetDone, normalizeSubjectKey } from "./subjectUtils";
 
 /** Keep in sync with backend LATEST_WINDOW_MS (14 days). Used only if API omits is_latest. */
 export const LATEST_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
