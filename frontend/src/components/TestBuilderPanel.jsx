@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { generateTestDraft, getAdminSettings, getWorksheet, createTestFromBuilder, updateTestFromBuilder, bulkSaveQuestionBank, getQuestionBankPassage } from "../api";
+import { generateTestDraft, getAdminSettings, getWorksheet, createTestFromBuilder, updateTestFromBuilder, bulkSaveQuestionBank, saveWorksheetContextToBank, getQuestionBankPassage } from "../api";
 import QuillLoading from "./QuillLoading";
 import { QuestionDifficultyStars } from "./DifficultyStars";
 import TestQuestionCard from "./TestQuestionCard";
@@ -33,6 +33,7 @@ import {
   emptyTestPassage,
   emptyRcTestQuestion,
   isTestQuestionComplete,
+  isTestPassageComplete,
   isPassageWindowTest,
   isDataPassageTest,
   passageWindowUnitLabels,
@@ -42,6 +43,8 @@ import {
   trimQuestionsForPublish,
   validateTestBuilder,
   testQuestionToBankPayload,
+  testPassageToBankPayload,
+  testQuestionToContextBankPayload,
   bankItemToTestQuestion,
   bankPassageToTestPassage,
   mergeTestPassages,
@@ -647,6 +650,7 @@ export default function TestBuilderPanel() {
 
   async function handleSaveToBank(source = "manual") {
     setErrors([]);
+    setNotice("");
     const completeQuestions = questions.filter(isTestQuestionComplete);
     if (completeQuestions.length === 0) {
       setErrors(["Add at least one complete question before saving to the bank."]);
@@ -654,13 +658,108 @@ export default function TestBuilderPanel() {
     }
     setSavingToBank(true);
     try {
-      await bulkSaveQuestionBank({
+      if (passageWindowEnabled) {
+        let totalCreated = 0;
+        let totalSkipped = 0;
+        let passagesCreated = 0;
+        const saveErrors = [];
+
+        for (const { passage, questions: passageQuestions } of groupTestQuestionsByPassage(
+          passages,
+          completeQuestions,
+        )) {
+          const readyQuestions = passageQuestions.filter(isTestQuestionComplete);
+          if (readyQuestions.length === 0) continue;
+
+          const passageLabel = passage.title?.trim() || "Untitled passage";
+          if (!isTestPassageComplete(passage, passageMode)) {
+            saveErrors.push(
+              `${passageLabel}: Passage must have a title, tier, and content before saving.`,
+            );
+            continue;
+          }
+
+          const result = await saveWorksheetContextToBank({
+            subject,
+            stars: Number(passage.tier) || 2,
+            source,
+            passage: testPassageToBankPayload(passage),
+            questions: readyQuestions.map((question) =>
+              testQuestionToContextBankPayload(question, passage),
+            ),
+          });
+
+          totalCreated += result.created_count || 0;
+          totalSkipped += result.skipped_duplicate_count || 0;
+          if (result.created_passage) passagesCreated += 1;
+          if (Array.isArray(result.errors) && result.errors.length) {
+            saveErrors.push(...result.errors);
+          }
+        }
+
+        const unassigned = unassignedTestQuestions(passages, completeQuestions).filter(
+          isTestQuestionComplete,
+        );
+        if (unassigned.length > 0) {
+          const result = await bulkSaveQuestionBank({
+            subject,
+            source,
+          questions: unassigned.map((question) => {
+            const payload = testQuestionToBankPayload(question, subject, null, passages);
+            delete payload.passage_id;
+            return payload;
+          }),
+          });
+          totalCreated += result.created_count || 0;
+          totalSkipped += result.skipped_duplicate_count || 0;
+          if (Array.isArray(result.errors) && result.errors.length) {
+            saveErrors.push(...result.errors);
+          }
+        }
+
+        if (saveErrors.length && totalCreated === 0 && totalSkipped === 0) {
+          setErrors(saveErrors);
+          return;
+        }
+
+        if (saveErrors.length) {
+          setErrors(saveErrors);
+        }
+
+        const passageNote =
+          passagesCreated > 0
+            ? ` ${passagesCreated} passage${passagesCreated === 1 ? "" : "s"} added to the bank.`
+            : "";
+        if (totalCreated === 0 && totalSkipped > 0) {
+          setNotice(
+            `All ${totalSkipped} question${totalSkipped === 1 ? "" : "s"} are already in the question bank.${passageNote}`,
+          );
+        } else {
+          setNotice(
+            `Saved ${totalCreated} question${totalCreated === 1 ? "" : "s"} to the question bank.${totalSkipped ? ` ${totalSkipped} duplicate${totalSkipped === 1 ? "" : "s"} skipped.` : ""}${passageNote}`,
+          );
+        }
+        return;
+      }
+
+      const result = await bulkSaveQuestionBank({
         subject,
         source,
         questions: completeQuestions.map((question) =>
           testQuestionToBankPayload(question, subject, null, passages),
         ),
       });
+      const created = result.created_count ?? completeQuestions.length;
+      const skipped = result.skipped_duplicate_count || 0;
+      if (created === 0 && skipped > 0) {
+        setNotice(
+          `All ${skipped} question${skipped === 1 ? "" : "s"} are already in the question bank.`,
+        );
+      } else {
+        setNotice(
+          `Saved ${created} question${created === 1 ? "" : "s"} to the question bank.${skipped ? ` ${skipped} duplicate${skipped === 1 ? "" : "s"} skipped.` : ""}`,
+        );
+      }
     } catch (err) {
       setErrors([err.message || "Could not save questions to the bank."]);
     } finally {

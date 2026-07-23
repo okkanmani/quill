@@ -593,6 +593,30 @@ export function testQuestionToBankPayload(question, subject, passageId = null, p
   return payload;
 }
 
+export function testPassageToBankPayload(passage) {
+  const payload = {
+    title: String(passage?.title || "").trim(),
+    body: String(passage?.body || "").trim(),
+  };
+  if (passage?.chart) payload.chart = passage.chart;
+  if (passage?.table) payload.table = passage.table;
+  return payload;
+}
+
+export function testQuestionToContextBankPayload(question, passage) {
+  const choices = (question.choices || []).map((c) => String(c || "").trim());
+  const idx = Number(question.correctIndex);
+  const stars =
+    Number(question.tier ?? question.bankTier) || Number(passage?.tier) || 2;
+  return {
+    prompt: String(question.prompt || "").trim(),
+    choices,
+    answer: choices[idx] || "",
+    area: String(question.area || "").trim(),
+    stars,
+  };
+}
+
 export function bankItemToEditorQuestion(item) {
   const q = bankItemToTestQuestion(item);
   return { ...q, bankId: item.id, passageId: item.passage_id || null };
