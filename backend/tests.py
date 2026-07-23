@@ -496,6 +496,10 @@ def _clamp_target_slot(
     if target_slot is None:
         return max_nav
     requested = max(1, min(int(target_slot), sitting_count))
+    if _is_rc_test(worksheet) and _rc_slot_fully_answered(
+        answers, sequence, requested
+    ):
+        return requested
     return min(requested, max_nav)
 
 

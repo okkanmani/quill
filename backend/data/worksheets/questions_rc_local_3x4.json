@@ -1,0 +1,431 @@
+{
+  "title": "RC Local Test — 3 Passages × 4 Questions",
+  "subject": "english",
+  "english_type": "reading_comprehension",
+  "scratchpad": true,
+  "content_badge": "Test",
+  "is_test": true,
+  "test_sitting_count": 3,
+  "test_rc_questions_per_passage": 4,
+  "test_adaptive": true,
+  "timed": true,
+  "time_limit_minutes": 30,
+  "passages": [
+    {
+      "id": "rc_local_t1_a",
+      "title": "The Lighthouse Keeper's Morning",
+      "body": "Mara climbed the spiral stairs before sunrise, carrying a tin of coffee and a coil of rope. The lighthouse beam had swept the harbor all night while she checked the weather log every hour. This morning the fog sat low on the water, turning fishing boats into gray shadows. Her father had kept this light for thirty years, and Mara had learned that a steady routine mattered more than speed. She polished the lens, tested the horn, and watched gulls argue over scraps near the pier. When the first ferry horn sounded, she knew commuters would soon depend on the beam cutting through the mist. Mara wrote her notes carefully because the next keeper might need them years from now.",
+      "tier": 1
+    },
+    {
+      "id": "rc_local_t1_b",
+      "title": "A Map in the Attic",
+      "body": "Jonah found the map folded inside a music box he was supposed to donate. Faded ink showed their town surrounded by forests that no longer existed on modern road maps. Small stars marked places along a river that had been redirected decades ago. His grandmother said the attic held stories, not junk, and Jonah began to believe her. He matched one star to the old mill pond where he learned to skip stones. Another point lined up with the hill where the annual kite festival still took place. The map was not perfect, yet it revealed how the community had changed while keeping familiar names. Jonah decided to trace the routes on foot before winter arrived.",
+      "tier": 1
+    },
+    {
+      "id": "rc_local_t1_c",
+      "title": "The Community Garden",
+      "body": "Every Saturday volunteers met at the corner lot to weed, water, and share seedlings. Priya joined because she wanted fresh herbs and because her apartment window faced a brick wall. She soon discovered the garden was also a classroom. Mr. Chen taught her to test soil moisture with two fingers instead of guessing. Children painted signs for each bed, labeling tomatoes, basil, and sunflowers in bright letters. When a heat wave arrived, members took shifts at dawn to protect young plants. By autumn the garden produced enough vegetables for a small harvest table outside the library. Priya left with a basket of peppers and a notebook full of planting dates.",
+      "tier": 1
+    },
+    {
+      "id": "rc_local_t2_a",
+      "title": "The Debate Team's Final",
+      "body": "The auditorium buzzed as the debate team prepared for the regional final. Elena revised her rebuttal cards one last time, focusing on evidence rather than volume. Her partner Malik practiced transitions so their arguments would feel like one conversation instead of two speeches. The resolution asked whether cities should prioritize public transit over new parking structures. Elena cited a study showing reduced commute times when bus lanes were protected. Malik prepared examples from neighborhoods where traffic noise had decreased. Their coach reminded them to address the opposing team's strongest point directly. When the timer started, Elena breathed slowly and spoke with calm precision.",
+      "tier": 2
+    },
+    {
+      "id": "rc_local_t2_b",
+      "title": "Repairing the Old Clock",
+      "body": "The town hall clock had stopped at eleven minutes past six for as long as anyone could remember. Ms. Ortiz, a watchmaker who retired near the square, agreed to examine the mechanism. She discovered a bent escape wheel and a layer of dust that had thickened into grit. Volunteers helped her document each removed piece with photographs and labeled bags. Children from the school visited in small groups to ask how gears translated steady ticks into moving hands. Ms. Ortiz explained that patience prevented damage more reliably than force. After three weeks the clock resumed its deep ringing, and shop owners said the sound made the street feel complete again.",
+      "tier": 2
+    },
+    {
+      "id": "rc_local_t2_c",
+      "title": "The Night of the Comet",
+      "body": "Astronomy club members spread blankets on the soccer field after the stadium lights were switched off. Mr. Alvarez set up a borrowed telescope and projected a simple star map on a portable screen. He explained that comets were icy travelers whose tails grew when they approached the sun. Students learned to distinguish the comet's fuzzy head from distant satellites drifting overhead. Clouds threatened early, but a clear band opened near the horizon after nine o'clock. Gasps spread when the comet appeared, smaller than the moon yet unmistakably bright with a trailing veil. Mr. Alvarez encouraged everyone to sketch what they saw instead of relying only on phone photos.",
+      "tier": 2
+    },
+    {
+      "id": "rc_local_t3_a",
+      "title": "Letters from the Expedition",
+      "body": "In the archive room, Leila read letters sent home by botanist Amira Singh during a 1912 expedition. The handwriting shifted from confident lists of specimen numbers to hurried notes about sudden storms. Amira described lichen samples clinging to rocks that had never appeared in published catalogs. She also wrote about disagreements within the team over whether to push farther north or preserve remaining supplies. Leila noticed that Amira's later letters mentioned a local guide whose knowledge prevented a dangerous river crossing. The final envelope contained no letter, only a pressed leaf and coordinates marked in red ink. Leila realized the expedition's public report omitted several passages that revealed how much the team had depended on collaboration.",
+      "tier": 3
+    },
+    {
+      "id": "rc_local_t3_b",
+      "title": "The Reservoir Decision",
+      "body": "City council members faced a proposal to expand a reservoir that would flood a valley used by migrating birds. Engineers presented charts showing increased water storage needed for drought years. Environmental advocates argued the valley supported rare nesting pairs documented for decades. A compromise emerged to raise one section of the dam while preserving a corridor of wetlands along the eastern ridge. The plan required monitoring water quality monthly and funding habitat restoration elsewhere. Residents debated whether short-term construction costs outweighed long-term reliability. The chair asked speakers to cite specific data rather than repeating slogans. When the vote passed narrowly, both sides agreed to revisit the monitoring results in two years.",
+      "tier": 3
+    },
+    {
+      "id": "rc_local_t3_c",
+      "title": "The Translator's Choice",
+      "body": "Renzo translated novels by balancing literal meaning with the rhythm of each sentence. His latest project included a poem embedded in dialogue, and every word carried emotional weight. The author had used a metaphor tied to a harvest festival unknown outside its region. Renzo researched customs, interviewed elders, and tested three versions with bilingual readers. One version preserved the festival name and added a brief footnote. Another replaced the metaphor with an image familiar to the new audience but risked shifting the tone. Renzo chose a middle path, keeping the festival reference while adjusting surrounding phrases for clarity. He wrote to the author explaining that translation was not copying but rebuilding trust between languages.",
+      "tier": 3
+    }
+  ],
+  "questions": [
+    {
+      "id": "rc_local_t1_a_q1",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "rc_local_t1_a",
+      "prompt": "Why does Mara climb the lighthouse stairs before sunrise?",
+      "choices": ["To begin her routine of maintaining the light", "To meet the first ferry passengers", "To search for lost fishing boats", "To repair a broken horn"],
+      "answer": "To begin her routine of maintaining the light",
+      "area": "main idea"
+    },
+    {
+      "id": "rc_local_t1_a_q2",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "rc_local_t1_a",
+      "prompt": "What does the fog cause in the harbor?",
+      "choices": ["Fishing boats look like gray shadows", "The lighthouse beam stops working", "Gulls leave the pier", "The ferry cancels its route"],
+      "answer": "Fishing boats look like gray shadows",
+      "area": "inference"
+    },
+    {
+      "id": "rc_local_t1_a_q3",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "rc_local_t1_a",
+      "prompt": "What lesson did Mara learn from her father?",
+      "choices": ["Steady routine matters more than speed", "Weather logs should be avoided", "Commuters do not need the beam", "Notes are unnecessary for keepers"],
+      "answer": "Steady routine matters more than speed",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t1_a_q4",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "rc_local_t1_a",
+      "prompt": "Why does Mara write careful notes?",
+      "choices": ["Future keepers may need them", "She plans to sell the lighthouse", "The ferry captain requires them", "Her father still reads them daily"],
+      "answer": "Future keepers may need them",
+      "area": "inference"
+    },
+    {
+      "id": "rc_local_t1_b_q1",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "rc_local_t1_b",
+      "prompt": "Where did Jonah find the map?",
+      "choices": ["Inside a music box", "Under the hill near the river", "In the school library", "At the kite festival"],
+      "answer": "Inside a music box",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t1_b_q2",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "rc_local_t1_b",
+      "prompt": "What is unusual about the map?",
+      "choices": ["It shows forests no longer on modern maps", "It lists names of current highways", "It marks only the town square", "It was printed last year"],
+      "answer": "It shows forests no longer on modern maps",
+      "area": "main idea"
+    },
+    {
+      "id": "rc_local_t1_b_q3",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "rc_local_t1_b",
+      "prompt": "One star on the map matched which place?",
+      "choices": ["The old mill pond", "The brick apartment", "The music shop", "The modern highway"],
+      "answer": "The old mill pond",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t1_b_q4",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "rc_local_t1_b",
+      "prompt": "What does Jonah plan to do before winter?",
+      "choices": ["Trace the routes on foot", "Donate the music box", "Redirect the river", "Remove the hill markers"],
+      "answer": "Trace the routes on foot",
+      "area": "inference"
+    },
+    {
+      "id": "rc_local_t1_c_q1",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "rc_local_t1_c",
+      "prompt": "Why did Priya join the community garden?",
+      "choices": ["For fresh herbs and a better view than her brick wall", "To teach children how to paint", "To sell vegetables at the library", "To avoid volunteering on Saturdays"],
+      "answer": "For fresh herbs and a better view than her brick wall",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t1_c_q2",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "rc_local_t1_c",
+      "prompt": "What did Mr. Chen teach Priya?",
+      "choices": ["How to test soil moisture with two fingers", "How to build a brick wall", "How to run the library harvest table", "How to forecast heat waves"],
+      "answer": "How to test soil moisture with two fingers",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t1_c_q3",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "rc_local_t1_c",
+      "prompt": "When did members protect young plants during the heat wave?",
+      "choices": ["At dawn", "At midnight", "Only on weekdays", "Inside the library"],
+      "answer": "At dawn",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t1_c_q4",
+      "type": "multiple_choice",
+      "stars": 1,
+      "passage_id": "rc_local_t1_c",
+      "prompt": "What did Priya take home in autumn?",
+      "choices": ["Peppers and a notebook of planting dates", "Only painted signs", "A brick from her apartment", "The harvest table"],
+      "answer": "Peppers and a notebook of planting dates",
+      "area": "inference"
+    },
+    {
+      "id": "rc_local_t2_a_q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "rc_local_t2_a",
+      "prompt": "What resolution are the teams debating?",
+      "choices": ["Whether cities should prioritize public transit over new parking", "Whether schools should cancel regional finals", "Whether buses should be painted brighter colors", "Whether coaches should write speeches for students"],
+      "answer": "Whether cities should prioritize public transit over new parking",
+      "area": "main idea"
+    },
+    {
+      "id": "rc_local_t2_a_q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "rc_local_t2_a",
+      "prompt": "What evidence does Elena cite?",
+      "choices": ["A study showing reduced commute times with protected bus lanes", "A survey about auditorium seating", "A report on debate card colors", "A map of the regional finals"],
+      "answer": "A study showing reduced commute times with protected bus lanes",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t2_a_q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "rc_local_t2_a",
+      "prompt": "What does their coach advise them to address?",
+      "choices": ["The opposing team's strongest point", "Only their opening statement", "The timer settings", "The audience's applause"],
+      "answer": "The opposing team's strongest point",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t2_a_q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "rc_local_t2_a",
+      "prompt": "How does Elena begin speaking when the timer starts?",
+      "choices": ["She breathes slowly and speaks with calm precision", "She reads her cards as quickly as possible", "She asks Malik to speak first", "She repeats the resolution twice"],
+      "answer": "She breathes slowly and speaks with calm precision",
+      "area": "inference"
+    },
+    {
+      "id": "rc_local_t2_b_q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "rc_local_t2_b",
+      "prompt": "What had the town hall clock done for years?",
+      "choices": ["Stopped at eleven minutes past six", "Rung every fifteen minutes", "Displayed the wrong time zone", "Been hidden in the attic"],
+      "answer": "Stopped at eleven minutes past six",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t2_b_q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "rc_local_t2_b",
+      "prompt": "What problems did Ms. Ortiz find?",
+      "choices": ["A bent escape wheel and thick dust", "A missing pendulum and broken glass", "A cracked bell and faded numbers", "A stolen gear and loose hands"],
+      "answer": "A bent escape wheel and thick dust",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t2_b_q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "rc_local_t2_b",
+      "prompt": "What lesson did Ms. Ortiz share with visiting children?",
+      "choices": ["Patience prevents damage more reliably than force", "Clocks should never be cleaned", "Photographs replace all repairs", "Gears are too dangerous to study"],
+      "answer": "Patience prevents damage more reliably than force",
+      "area": "main idea"
+    },
+    {
+      "id": "rc_local_t2_b_q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "rc_local_t2_b",
+      "prompt": "How did shop owners react when the clock worked again?",
+      "choices": ["They said the street felt complete again", "They asked for the clock to stop at night", "They moved their shops away", "They replaced it with a digital sign"],
+      "answer": "They said the street felt complete again",
+      "area": "inference"
+    },
+    {
+      "id": "rc_local_t2_c_q1",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "rc_local_t2_c",
+      "prompt": "Why did astronomy club members turn off the stadium lights?",
+      "choices": ["To see the comet more clearly", "To finish homework early", "To protect the telescope lens", "To avoid waking neighbors"],
+      "answer": "To see the comet more clearly",
+      "area": "inference"
+    },
+    {
+      "id": "rc_local_t2_c_q2",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "rc_local_t2_c",
+      "prompt": "What did Mr. Alvarez explain about comets?",
+      "choices": ["They grow tails when approaching the sun", "They are identical to satellites", "They appear only in winter", "They are brighter than the moon"],
+      "answer": "They grow tails when approaching the sun",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t2_c_q3",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "rc_local_t2_c",
+      "prompt": "When did the comet become visible?",
+      "choices": ["After nine o'clock when a clear band opened", "Before the blankets were spread", "During afternoon practice", "Only through phone photos"],
+      "answer": "After nine o'clock when a clear band opened",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t2_c_q4",
+      "type": "multiple_choice",
+      "stars": 2,
+      "passage_id": "rc_local_t2_c",
+      "prompt": "What did Mr. Alvarez encourage students to do?",
+      "choices": ["Sketch what they saw", "Memorize every satellite name", "Leave the field immediately", "Ignore the star map"],
+      "answer": "Sketch what they saw",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t3_a_q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "rc_local_t3_a",
+      "prompt": "How does Amira's handwriting change over the letters?",
+      "choices": ["From confident lists to hurried storm notes", "From unreadable scribbles to typed pages", "It stays identical throughout", "It disappears in the final envelope"],
+      "answer": "From confident lists to hurried storm notes",
+      "area": "main idea"
+    },
+    {
+      "id": "rc_local_t3_a_q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "rc_local_t3_a",
+      "prompt": "What did later letters reveal about the local guide?",
+      "choices": ["His knowledge prevented a dangerous river crossing", "He refused to help the team", "He sold the lichen samples", "He wrote the public report alone"],
+      "answer": "His knowledge prevented a dangerous river crossing",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t3_a_q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "rc_local_t3_a",
+      "prompt": "What was inside the final envelope?",
+      "choices": ["A pressed leaf and coordinates in red ink", "A complete final letter", "A published catalog", "A list of specimen prices"],
+      "answer": "A pressed leaf and coordinates in red ink",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t3_a_q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "rc_local_t3_a",
+      "prompt": "What did Leila realize about the public report?",
+      "choices": ["It omitted passages showing the team depended on collaboration", "It included every private letter", "It was written by the local guide", "It disproved the expedition happened"],
+      "answer": "It omitted passages showing the team depended on collaboration",
+      "area": "inference"
+    },
+    {
+      "id": "rc_local_t3_b_q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "rc_local_t3_b",
+      "prompt": "What would expanding the reservoir flood?",
+      "choices": ["A valley used by migrating birds", "The entire city council chamber", "The eastern ridge wetlands", "All downtown parking structures"],
+      "answer": "A valley used by migrating birds",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t3_b_q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "rc_local_t3_b",
+      "prompt": "What compromise emerged?",
+      "choices": ["Raise one dam section while preserving an eastern wetland corridor", "Cancel all drought planning", "Flood the entire valley immediately", "Remove all monitoring requirements"],
+      "answer": "Raise one dam section while preserving an eastern wetland corridor",
+      "area": "main idea"
+    },
+    {
+      "id": "rc_local_t3_b_q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "rc_local_t3_b",
+      "prompt": "What did the chair ask speakers to cite?",
+      "choices": ["Specific data rather than slogans", "Personal anecdotes only", "Construction company advertisements", "Unrelated historical events"],
+      "answer": "Specific data rather than slogans",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t3_b_q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "rc_local_t3_b",
+      "prompt": "What did both sides agree to after the vote?",
+      "choices": ["Revisit monitoring results in two years", "Stop all habitat restoration", "Remove the wetland corridor", "Ignore water quality testing"],
+      "answer": "Revisit monitoring results in two years",
+      "area": "inference"
+    },
+    {
+      "id": "rc_local_t3_c_q1",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "rc_local_t3_c",
+      "prompt": "What challenge does Renzo face in his latest project?",
+      "choices": ["Translating a poem embedded in dialogue", "Copying a novel word for word", "Removing all metaphors", "Writing footnotes in three languages"],
+      "answer": "Translating a poem embedded in dialogue",
+      "area": "main idea"
+    },
+    {
+      "id": "rc_local_t3_c_q2",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "rc_local_t3_c",
+      "prompt": "Why is the harvest festival metaphor difficult?",
+      "choices": ["It is unknown outside its region", "It has no emotional weight", "It appears in every chapter", "It cannot be written in dialogue"],
+      "answer": "It is unknown outside its region",
+      "area": "detail"
+    },
+    {
+      "id": "rc_local_t3_c_q3",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "rc_local_t3_c",
+      "prompt": "What middle path did Renzo choose?",
+      "choices": ["Keep the festival reference while adjusting nearby phrases", "Delete the poem entirely", "Replace every sentence with footnotes", "Ignore the author's tone completely"],
+      "answer": "Keep the festival reference while adjusting nearby phrases",
+      "area": "inference"
+    },
+    {
+      "id": "rc_local_t3_c_q4",
+      "type": "multiple_choice",
+      "stars": 3,
+      "passage_id": "rc_local_t3_c",
+      "prompt": "How does Renzo describe translation in his letter?",
+      "choices": ["Rebuilding trust between languages", "Copying words without change", "Removing cultural references", "Avoiding contact with authors"],
+      "answer": "Rebuilding trust between languages",
+      "area": "detail"
+    }
+  ]
+}

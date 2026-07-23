@@ -81,11 +81,22 @@ export function maxNavigableSlot(session) {
   return sittingCount;
 }
 
+export function canNavigateToRcSlot(session, targetSlot) {
+  const slots = session?.slots || [];
+  const target = slots.find((slot) => slot.slot === targetSlot);
+  if (!target?.assigned) return false;
+  if (target.answered) return true;
+  return targetSlot === maxNavigableSlot(session);
+}
+
 export function canNavigateToTestSlot(session, targetSlot, currentSlot) {
   if (!session) return false;
   const slots = session.slots || [];
   const target = slots.find((slot) => slot.slot === targetSlot);
   if (!target?.assigned) return false;
+  if (session.is_rc) {
+    return canNavigateToRcSlot(session, targetSlot);
+  }
   if (targetSlot <= currentSlot) return true;
   if (!isContextualTest(session)) return true;
   return targetSlot <= maxNavigableSlot(session);

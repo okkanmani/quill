@@ -603,10 +603,14 @@ export default function StudentTestTake() {
                       ? "Complete earlier passages first"
                       : "Answer earlier questions first"
                     : !navigable
-                      ? advanceHint || "Complete this passage or data set first"
-                    : isRc
-                      ? `Passage ${slot.slot}`
-                      : `Question ${slot.slot}`
+                      ? isRc
+                        ? advanceHint || "Complete this passage before moving on"
+                        : advanceHint || "Complete this passage or data set first"
+                      : isRc
+                        ? slot.answered
+                          ? `Review passage ${slot.slot}`
+                          : `Passage ${slot.slot}`
+                        : `Question ${slot.slot}`
                 }
               >
                 {slot.slot}
@@ -619,14 +623,16 @@ export default function StudentTestTake() {
         <div className="mb-3 shrink-0 flex flex-col gap-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-2 items-center">
-              <button
-                type="button"
-                disabled={currentSlot <= 1}
-                onClick={() => goToSlot(currentSlot - 1)}
-                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
-              >
-                ← Previous {isRc ? "passage" : ""}
-              </button>
+              {!isRc ? (
+                <button
+                  type="button"
+                  disabled={currentSlot <= 1}
+                  onClick={() => goToSlot(currentSlot - 1)}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+                >
+                  ← Previous
+                </button>
+              ) : null}
               <button
                 type="button"
                 disabled={!canGoNext}
