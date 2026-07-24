@@ -79,6 +79,7 @@ def _db_subject_catalog(*, admin_id: int) -> dict[str, dict]:
                 "title": title,
                 "description": desc,
                 "grade": row["grade"],
+                "curriculum": row["curriculum"],
                 "created_at": row["created_at"],
             }
         return out
@@ -851,11 +852,17 @@ def get_subject(subject: str, *, admin_id: int) -> dict | None:
         conn.close()
 
     data = _load_fs_subject(subject) if bundled else None
+    catalog = _db_subject_catalog(admin_id=admin_id)
+    meta = catalog.get(subject, {})
+
     if data:
         _merge_db_sections(subject, data["groups"], data["sections"], admin_id=admin_id)
+        if meta.get("grade") is not None:
+            data["grade"] = meta.get("grade")
+        if meta.get("curriculum"):
+            data["curriculum"] = meta.get("curriculum")
         return rewrite_learn_subject_asset_urls(data)
 
-    catalog = _db_subject_catalog(admin_id=admin_id)
     db_secs = _db_sections(subject, admin_id=admin_id)
     if subject not in catalog and not db_secs:
         return None
@@ -874,6 +881,8 @@ def get_subject(subject: str, *, admin_id: int) -> dict | None:
         "key": subject,
         "title": meta.get("title", subject),
         "description": meta.get("description", ""),
+        "grade": meta.get("grade"),
+        "curriculum": meta.get("curriculum"),
         "groups": groups_out,
         "sections": flat_sections,
     }

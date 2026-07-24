@@ -8,7 +8,14 @@ import {
   saveLearnPageHighlights,
 } from "../api";
 import LearnChrome from "../components/LearnChrome";
-import LearnSubjectPdfButton from "../components/LearnSubjectPdfButton";
+import {
+  buildCollectionPrintRequest,
+  buildSectionPrintRequest,
+  LearnSubjectPdfTrigger,
+  LearnSubjectPrintHost,
+  useLearnSubjectPrint,
+} from "../components/LearnSubjectPrint";
+import { countLearnSections } from "../learnPrintGroups";
 import LearnMarkdown from "../components/LearnMarkdown";
 import LearnHighlightToolbar from "../components/LearnHighlightToolbar";
 import LearnPageNotes from "../components/LearnPageNotes";
@@ -198,6 +205,9 @@ export default function LearnSubject() {
   }, [data]);
 
   const { pages } = useMemo(() => buildLearnLinePages(groups), [groups]);
+  const sectionCount = useMemo(() => countLearnSections(groups), [groups]);
+  const { printRequest, busy: printBusy, requestPrint, clearPrint } =
+    useLearnSubjectPrint();
 
   const sectionBlocks = useMemo(() => {
     const blocks = [];
@@ -267,18 +277,37 @@ export default function LearnSubject() {
             </aside>
 
             <div className="min-w-0">
+              <LearnSubjectPrintHost printRequest={printRequest} onPrintDone={clearPrint} />
+
               <h1 className="text-2xl font-bold text-slate-950 mb-3">{data.title}</h1>
-              <LearnSubjectPdfButton
-                title={data.title}
-                description={data.description}
-                groups={groups}
-              />
               {data.description ? (
-                <p className="text-slate-700 text-sm mb-10 leading-relaxed border-b border-slate-200 pb-8">
-                  {data.description}
+                <p className="text-slate-700 text-sm mb-3 leading-relaxed">{data.description}</p>
+              ) : null}
+              {sectionCount > 1 ? (
+                <p className="text-xs text-slate-500 mb-8 pb-8 border-b border-slate-200">
+                  <LearnSubjectPdfTrigger
+                    variant="link"
+                    label="Download full collection (PDF)"
+                    busy={printBusy}
+                    onClick={() =>
+                      requestPrint(
+                        buildCollectionPrintRequest({
+                          collectionTitle: data.title,
+                          collectionDescription: data.description,
+                          groups,
+                          grade: data.grade,
+                          curriculum: data.curriculum,
+                        }),
+                      )
+                    }
+                  />
+                  <span className="text-slate-400">
+                    {" "}
+                    · Chrome or Safari → Print → Save as PDF
+                  </span>
                 </p>
               ) : (
-                <div className="mb-10 border-b border-slate-200 pb-8" />
+                <div className="mb-8 pb-8 border-b border-slate-200" />
               )}
 
               <div className="lg:hidden sticky top-44 z-30 mb-8 rounded-xl border border-slate-200 bg-slate-50/95 backdrop-blur-sm shadow-sm p-4">
@@ -331,17 +360,41 @@ export default function LearnSubject() {
                   const sectionHeading = block.group.title ? (
                     <h3
                       id={block.section.id}
-                      className="text-base font-bold text-slate-950 mb-4 scroll-mt-48"
+                      className="text-base font-bold text-slate-950 scroll-mt-48 min-w-0 flex-1"
                     >
                       {block.section.title}
                     </h3>
                   ) : (
                     <h2
                       id={block.section.id}
-                      className="text-lg font-bold text-slate-950 mb-4 scroll-mt-48"
+                      className="text-lg font-bold text-slate-950 scroll-mt-48 min-w-0 flex-1"
                     >
                       {block.section.title}
                     </h2>
+                  );
+
+                  const sectionHeadingRow = (
+                    <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                      {sectionHeading}
+                      <LearnSubjectPdfTrigger
+                        label="PDF"
+                        title={`Download “${block.section.title}” as PDF`}
+                        busy={printBusy}
+                        onClick={() =>
+                          requestPrint(
+                            buildSectionPrintRequest({
+                              collectionTitle: data.title,
+                              collectionDescription: data.description,
+                              groups,
+                              sectionId: block.section.id,
+                              sectionTitle: block.section.title,
+                              grade: data.grade,
+                              curriculum: data.curriculum,
+                            }),
+                          )
+                        }
+                      />
+                    </div>
                   );
 
                   return (
@@ -358,7 +411,7 @@ export default function LearnSubject() {
                       ) : null}
 
                       <div className="px-6 sm:px-8 py-6 sm:py-8 space-y-0">
-                        {sectionHeading}
+                        {sectionHeadingRow}
 
                         {block.chunks.map((page, chunkIndex) => {
                           const noteKey = `${page.section.id}:${page.pageIndexWithinSection}`;
