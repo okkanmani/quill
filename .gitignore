@@ -4,3 +4,4 @@ backend/__pycache__
 scripts/publish_worksheet.local.sh
 scripts/*.local.sh
 .quill.local/
+backend/.env_local

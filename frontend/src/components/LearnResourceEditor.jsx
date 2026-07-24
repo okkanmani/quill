@@ -3,6 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { getLearnSubject, updateLearnSection } from "../api";
 import LearnMarkdownEditor from "./LearnMarkdownEditor";
 import QuillLoading from "./QuillLoading";
+import {
+  expandPendingLearnImagesInMarkdown,
+  markdownHasPendingLearnImages,
+} from "../learnImageMarkdown";
+import { forgetPendingLearnImagesInMarkdown } from "../learnPendingImages";
 
 export default function LearnResourceEditor({ subjectKey, sectionId }) {
   const navigate = useNavigate();
@@ -48,10 +53,12 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
 
     setSaving(true);
     try {
+      const markdownForPublish = expandPendingLearnImagesInMarkdown(markdown.trim());
       const result = await updateLearnSection(subjectKey, sectionId, {
         title: title.trim(),
-        markdown: markdown.trim(),
+        markdown: markdownForPublish,
       });
+      forgetPendingLearnImagesInMarkdown(markdown);
       navigate(`/student/learn/${result.subject_key}#${result.section_id}`, {
         replace: true,
       });
@@ -82,6 +89,12 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
 
   const learnUrl = `/student/learn/${subjectKey}#${sectionId}`;
 
+  const republishLabel = saving
+    ? markdownHasPendingLearnImages(markdown)
+      ? "Uploading images & republishing…"
+      : "Republishing…"
+    : "Republish";
+
   return (
     <LearnMarkdownEditor
       title={title}
@@ -89,7 +102,7 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
       onTitleChange={setTitle}
       onMarkdownChange={setMarkdown}
       titleHint="Shown as the heading on the learning resource page."
-      publishLabel="Republish"
+      publishLabel={republishLabel}
       onPublish={handleRepublish}
       publishing={saving}
       error={error}

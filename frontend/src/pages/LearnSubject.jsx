@@ -8,16 +8,16 @@ import {
   saveLearnPageHighlights,
 } from "../api";
 import LearnChrome from "../components/LearnChrome";
+import LearnSubjectPdfButton from "../components/LearnSubjectPdfButton";
 import LearnMarkdown from "../components/LearnMarkdown";
+import LearnHighlightToolbar from "../components/LearnHighlightToolbar";
 import LearnPageNotes from "../components/LearnPageNotes";
 import LearnPageHighlighter, {
   LearnPageHighlightMarkdown,
-  LearnPageHighlightToolbarSlot,
 } from "../components/LearnPageHighlighter";
-import { LearnPageSheet, LearnPageStickyToolbar } from "../components/LearnPageLabel";
 import { useShellLayout } from "../components/ShellLayoutContext";
 import QuillLoading from "../components/QuillLoading";
-import { buildLearnLinePages, getSectionStartPage } from "../learnPageUtils";
+import { buildLearnLinePages } from "../learnPageUtils";
 import {
   getStoredLearnHighlightColor,
   setStoredLearnHighlightColor,
@@ -197,12 +197,33 @@ export default function LearnSubject() {
       : [{ id: "", title: "", sections: data.sections ?? [] }];
   }, [data]);
 
-  const { pages, sectionStarts, totalPages } = useMemo(
-    () => buildLearnLinePages(groups),
-    [groups],
-  );
+  const { pages } = useMemo(() => buildLearnLinePages(groups), [groups]);
 
-  const showPageNumbers = totalPages > 1;
+  const sectionBlocks = useMemo(() => {
+    const blocks = [];
+    for (const page of pages) {
+      const last = blocks[blocks.length - 1];
+      if (last && last.section.id === page.section.id) {
+        last.chunks.push(page);
+      } else {
+        blocks.push({
+          group: page.group,
+          section: page.section,
+          chunks: [page],
+        });
+      }
+    }
+    let lastGroupId = null;
+    return blocks.map((block) => {
+      const showGroupHeader =
+        Boolean(block.group.title) && block.group.id !== lastGroupId;
+      if (showGroupHeader) {
+        lastGroupId = block.group.id;
+      }
+      return { ...block, showGroupHeader };
+    });
+  }, [pages]);
+
   const { sidebarCollapsed } = useShellLayout();
   const contentWidthClass =
     sidebarCollapsed || canViewLearnNotes ? "max-w-none" : "max-w-6xl";
@@ -231,23 +252,15 @@ export default function LearnSubject() {
                         {g.title}
                       </p>
                     ) : null}
-                    {g.sections.map((sec) => {
-                      const startPage = getSectionStartPage(sectionStarts, sec.id);
-                      return (
+                    {g.sections.map((sec) => (
                         <a
                           key={sec.id}
                           href={`#${sec.id}`}
                           className="flex items-baseline gap-1.5 text-xs leading-snug text-slate-700 hover:text-slate-950 py-px"
                         >
-                          {showPageNumbers && startPage ? (
-                            <span className="shrink-0 w-4 text-right text-[10px] font-semibold text-slate-400 tabular-nums">
-                              {startPage}
-                            </span>
-                          ) : null}
                           <span className="min-w-0">{sec.title}</span>
                         </a>
-                      );
-                    })}
+                      ))}
                   </div>
                 ))}
               </nav>
@@ -255,6 +268,11 @@ export default function LearnSubject() {
 
             <div className="min-w-0">
               <h1 className="text-2xl font-bold text-slate-950 mb-3">{data.title}</h1>
+              <LearnSubjectPdfButton
+                title={data.title}
+                description={data.description}
+                groups={groups}
+              />
               {data.description ? (
                 <p className="text-slate-700 text-sm mb-10 leading-relaxed border-b border-slate-200 pb-8">
                   {data.description}
@@ -274,164 +292,151 @@ export default function LearnSubject() {
                         </p>
                       ) : null}
                       <div className="flex flex-wrap gap-2">
-                        {g.sections.map((sec) => {
-                          const startPage = getSectionStartPage(sectionStarts, sec.id);
-                          return (
+                        {g.sections.map((sec) => (
                             <a
                               key={sec.id}
                               href={`#${sec.id}`}
                               className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-800 bg-slate-100 px-2 py-1 rounded-lg"
                             >
-                              {showPageNumbers && startPage ? (
-                                <span className="text-slate-500 tabular-nums">
-                                  {startPage}.
-                                </span>
-                              ) : null}
                               {sec.title}
                             </a>
-                          );
-                        })}
+                          ))}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="space-y-8">
-                {pages.map((page, index) => {
-                  const prev = pages[index - 1];
-                  const showGroupHeader =
-                    page.group.title &&
-                    page.isFirstPageOfSection &&
-                    (!prev || prev.group.id !== page.group.id);
+              {showHighlightToolbar ? (
+                <div className="sticky top-[4.5rem] lg:top-6 z-30 mb-6 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm shadow-sm px-3 py-2.5">
+                  <LearnHighlightToolbar
+                    activeColor={highlightColor}
+                    onActiveColorChange={setHighlightColor}
+                    eraserActive={highlightEraser}
+                    onEraserActiveChange={setHighlightEraser}
+                    disabled={!canEditLearnHighlights}
+                    disabledHint={
+                      canEditLearnHighlights
+                        ? ""
+                        : "Log in as a student to highlight and save."
+                    }
+                  />
+                </div>
+              ) : null}
 
-                  const noteKey = `${page.section.id}:${page.pageIndexWithinSection}`;
-                  const noteRecord = notesByKey[noteKey];
-                  const pageHighlights = highlightsByKey[noteKey] || [];
+              <div className="space-y-10">
+                {sectionBlocks.map((block) => {
+                  const showGroupHeader = block.showGroupHeader;
 
-                  const markdownBlock = canViewLearnHighlights ? (
-                    <LearnPageHighlightMarkdown markdown={page.markdown} />
-                  ) : (
-                    <div className="learn-md">
-                      <LearnMarkdown markdown={page.markdown} />
-                    </div>
-                  );
-
-                  const pageBody = (
-                    <>
-                      {showGroupHeader ? (
-                        <h2 className="text-lg font-bold text-slate-950 pb-2 mb-3 border-b border-slate-200">
-                          {page.group.title}
-                        </h2>
-                      ) : null}
-
-                      {page.isFirstPageOfSection ? (
-                        page.group.title ? (
-                          <h3
-                            id={page.section.id}
-                            className="text-base font-bold text-slate-950 mb-3 scroll-mt-44"
-                          >
-                            {page.section.title}
-                          </h3>
-                        ) : (
-                          <h2
-                            id={page.section.id}
-                            className="text-lg font-bold text-slate-950 mb-3 scroll-mt-44"
-                          >
-                            {page.section.title}
-                          </h2>
-                        )
-                      ) : (
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-3">
-                          {page.section.title} · continued
-                        </p>
-                      )}
-
-                      {markdownBlock}
-                    </>
-                  );
-
-                  const highlightToolbar = showHighlightToolbar ? (
-                    <LearnPageHighlightToolbarSlot
-                      disabledHint={
-                        canEditLearnHighlights
-                          ? ""
-                          : "Log in as a student to highlight and save."
-                      }
-                    />
-                  ) : null;
-
-                  const pageCardInner = !showPageNumbers ? (
-                    <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm scroll-mt-44">
-                      {showHighlightToolbar && highlightToolbar ? (
-                        <LearnPageStickyToolbar>{highlightToolbar}</LearnPageStickyToolbar>
-                      ) : null}
-                      {pageBody}
-                    </div>
-                  ) : (
-                    <LearnPageSheet
-                      pageNumber={page.pageNumber}
-                      totalPages={page.totalPages}
-                      className="scroll-mt-44"
-                      headerStart={highlightToolbar || null}
-                      stickyHeader={showHighlightToolbar && Boolean(highlightToolbar)}
+                  const sectionHeading = block.group.title ? (
+                    <h3
+                      id={block.section.id}
+                      className="text-base font-bold text-slate-950 mb-4 scroll-mt-48"
                     >
-                      {pageBody}
-                    </LearnPageSheet>
-                  );
-
-                  const pageCard = canViewLearnHighlights ? (
-                    <LearnPageHighlighter
-                      highlights={pageHighlights}
-                      onHighlightsChange={(next) =>
-                        handleHighlightUpdate(
-                          page.section.id,
-                          page.pageIndexWithinSection,
-                          next,
-                        )
-                      }
-                      readOnly={!canEditLearnHighlights}
-                      enabled
-                      showToolbar={showHighlightToolbar}
-                      activeColor={highlightColor}
-                      onActiveColorChange={setHighlightColor}
-                      eraserActive={highlightEraser}
-                      onEraserActiveChange={setHighlightEraser}
-                    >
-                      {pageCardInner}
-                    </LearnPageHighlighter>
+                      {block.section.title}
+                    </h3>
                   ) : (
-                    pageCardInner
+                    <h2
+                      id={block.section.id}
+                      className="text-lg font-bold text-slate-950 mb-4 scroll-mt-48"
+                    >
+                      {block.section.title}
+                    </h2>
                   );
-
-                  if (!canViewLearnNotes) {
-                    return (
-                      <div key={`${page.section.id}-${page.pageNumber}`}>
-                        {pageCard}
-                      </div>
-                    );
-                  }
 
                   return (
-                    <div
-                      key={`${page.section.id}-${page.pageNumber}`}
-                      className="flex flex-col lg:flex-row lg:items-start overflow-visible"
+                    <article
+                      key={block.section.id}
+                      className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden scroll-mt-44"
                     >
-                      <div className="min-w-0 flex-1">{pageCard}</div>
-                      <LearnPageNotes
-                        subjectKey={subjectKey}
-                        sectionId={page.section.id}
-                        pageIndex={page.pageIndexWithinSection}
-                        pageMarkdown={page.markdown}
-                        sectionTitle={page.section.title}
-                        subjectTitle={data.title}
-                        note={noteRecord}
-                        onNoteUpdate={handleNoteUpdate}
-                        readOnly={!canEditLearnNotes}
-                        collapsed={notesCollapsed}
-                        onToggleCollapsed={toggleNotesCollapsed}
-                      />
-                    </div>
+                      {showGroupHeader ? (
+                        <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-2 border-b border-slate-100">
+                          <h2 className="text-lg font-bold text-slate-950">
+                            {block.group.title}
+                          </h2>
+                        </div>
+                      ) : null}
+
+                      <div className="px-6 sm:px-8 py-6 sm:py-8 space-y-0">
+                        {sectionHeading}
+
+                        {block.chunks.map((page, chunkIndex) => {
+                          const noteKey = `${page.section.id}:${page.pageIndexWithinSection}`;
+                          const noteRecord = notesByKey[noteKey];
+                          const pageHighlights = highlightsByKey[noteKey] || [];
+
+                          const markdownBlock = canViewLearnHighlights ? (
+                            <LearnPageHighlightMarkdown markdown={page.markdown} />
+                          ) : (
+                            <div className="learn-md">
+                              <LearnMarkdown markdown={page.markdown} />
+                            </div>
+                          );
+
+                          const chunkInner = (
+                            <div
+                              className={
+                                chunkIndex > 0
+                                  ? "pt-8 mt-8 border-t border-slate-100"
+                                  : ""
+                              }
+                            >
+                              {canViewLearnHighlights ? (
+                                <LearnPageHighlighter
+                                  highlights={pageHighlights}
+                                  onHighlightsChange={(next) =>
+                                    handleHighlightUpdate(
+                                      page.section.id,
+                                      page.pageIndexWithinSection,
+                                      next,
+                                    )
+                                  }
+                                  readOnly={!canEditLearnHighlights}
+                                  enabled
+                                  showToolbar={false}
+                                  activeColor={highlightColor}
+                                  onActiveColorChange={setHighlightColor}
+                                  eraserActive={highlightEraser}
+                                  onEraserActiveChange={setHighlightEraser}
+                                >
+                                  {markdownBlock}
+                                </LearnPageHighlighter>
+                              ) : (
+                                markdownBlock
+                              )}
+                            </div>
+                          );
+
+                          if (!canViewLearnNotes) {
+                            return (
+                              <div key={noteKey}>{chunkInner}</div>
+                            );
+                          }
+
+                          return (
+                            <div
+                              key={noteKey}
+                              className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-0 overflow-visible"
+                            >
+                              <div className="min-w-0 flex-1">{chunkInner}</div>
+                              <LearnPageNotes
+                                subjectKey={subjectKey}
+                                sectionId={page.section.id}
+                                pageIndex={page.pageIndexWithinSection}
+                                pageMarkdown={page.markdown}
+                                sectionTitle={block.section.title}
+                                subjectTitle={data.title}
+                                note={noteRecord}
+                                onNoteUpdate={handleNoteUpdate}
+                                readOnly={!canEditLearnNotes}
+                                collapsed={notesCollapsed}
+                                onToggleCollapsed={toggleNotesCollapsed}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </article>
                   );
                 })}
               </div>

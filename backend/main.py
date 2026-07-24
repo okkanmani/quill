@@ -37,6 +37,7 @@ from focus_practice import (
 )
 from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from pydantic import BaseModel
 from learn_notes import (
     generate_and_save_note,
@@ -47,6 +48,7 @@ from learn_highlights import (
     list_highlights_for_subject,
     save_highlights,
 )
+from learn_storage import fetch_learn_object
 from learn_content import (
     delete_learn_section,
     get_subject,
@@ -2240,6 +2242,25 @@ def learn_subjects(authorization: str = Header(...)):
     if payload.get("role") == "admin":
         hub["editable_sections"] = list_admin_learn_sections(admin_id=admin_id)
     return hub
+
+
+@app.get("/learn/assets/{asset_path:path}")
+def serve_learn_asset(asset_path: str):
+    """Serve learn images from Tigris when the bucket is not public-read."""
+    key = asset_path.lstrip("/")
+    try:
+        body, content_type = fetch_learn_object(key)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Not found")
+    except RuntimeError:
+        raise HTTPException(status_code=503, detail="Learn image storage is not configured")
+    except Exception:
+        raise HTTPException(status_code=404, detail="Not found")
+    return Response(
+        content=body,
+        media_type=content_type,
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
 
 
 @app.get("/learn/{subject_key}")

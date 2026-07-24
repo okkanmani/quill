@@ -191,3 +191,168 @@ input[type="checkbox"].text-indigo-600 { accent-color: var(--quill-accent-600); 
 .learn-highlight-area--interactive mark.learn-hl {
   cursor: pointer;
 }
+
+.learn-md::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.learn-figure {
+  margin: 0 0 1rem;
+}
+
+.learn-figure--block {
+  display: block;
+  clear: both;
+  width: min(var(--learn-img-w, 18rem), 100%);
+  height: var(--learn-img-h, 13.5rem);
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.learn-figure--text-right {
+  float: left;
+  clear: left;
+  margin: 0.15rem 1.25rem 0.75rem 0;
+  width: min(var(--learn-img-w, 18rem), 100%);
+  height: var(--learn-img-h, 13.5rem);
+}
+
+.learn-figure--text-left {
+  float: right;
+  clear: right;
+  margin: 0.15rem 0 0.75rem 1.25rem;
+  width: min(var(--learn-img-w, 18rem), 100%);
+  height: var(--learn-img-h, 13.5rem);
+}
+
+.learn-figure:not(.learn-figure--legacy) {
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+  background: rgb(248 250 252);
+}
+
+.learn-figure__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.learn-figure--legacy {
+  width: fit-content;
+  max-width: 100%;
+  border: none;
+  background: transparent;
+  overflow: visible;
+}
+
+.learn-figure--legacy .learn-figure__img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: none;
+  object-fit: contain;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+}
+
+@media (max-width: 640px) {
+  .learn-figure--text-right,
+  .learn-figure--text-left {
+    float: none;
+    clear: both;
+    margin-left: auto;
+    margin-right: auto;
+    width: min(var(--learn-img-w, 18rem), 100%);
+  }
+}
+
+/* Learn resource → Download PDF (Save as PDF in Chrome/Safari) */
+@media print {
+  html.learn-printing {
+    page: learn-resource;
+  }
+
+  html.learn-printing,
+  html.learn-printing body {
+    min-height: 0 !important;
+    height: auto !important;
+    background: #fff !important;
+    color: #0f172a;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html.learn-printing body {
+    padding: 0;
+    margin: 0;
+  }
+
+  html.learn-printing body > *:not(.learn-print-host) {
+    display: none !important;
+  }
+
+  html.learn-printing .learn-print-host {
+    display: block !important;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+  }
+
+  html.learn-printing .learn-print-host .learn-print-document {
+    box-sizing: border-box;
+    max-width: 42rem;
+    margin: 0 auto;
+    padding: 18mm 16mm 18mm;
+  }
+
+  /* Keep image-left / image-right text wrap in PDF (same as desktop reader). */
+  html.learn-printing .learn-print-host .learn-figure--text-right {
+    float: left;
+    clear: left;
+    margin: 0.15rem 1.25rem 0.75rem 0;
+    width: min(var(--learn-img-w, 18rem), 100%);
+    height: var(--learn-img-h, 13.5rem);
+    margin-left: 0;
+    margin-right: 1.25rem;
+  }
+
+  html.learn-printing .learn-print-host .learn-figure--text-left {
+    float: right;
+    clear: right;
+    margin: 0.15rem 0 0.75rem 1.25rem;
+    width: min(var(--learn-img-w, 18rem), 100%);
+    height: var(--learn-img-h, 13.5rem);
+    margin-left: 1.25rem;
+    margin-right: 0;
+  }
+
+  html.learn-printing .learn-print-host .learn-md p,
+  html.learn-printing .learn-print-host .learn-md li {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  html.learn-printing .learn-print-host section {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+}
+
+@page learn-resource {
+  margin: 0;
+  size: auto;
+}

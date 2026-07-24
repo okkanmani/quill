@@ -175,8 +175,8 @@ export default function LearnPageNotes({
 
   return (
     <>
-      {/* Desktop: sticky rail — follows the page until the next page row starts */}
-      <div className="relative hidden lg:block shrink-0 sticky top-6 self-start z-20 max-h-[calc(100vh-3rem)]">
+      {/* Desktop: notes rail aligned with this ~38-line segment (scrolls with content) */}
+      <div className="relative hidden lg:block shrink-0 self-start z-10">
         <div
           className={`flex flex-col overflow-hidden border-l border-slate-200 bg-white transition-[width] duration-200 ease-out max-h-[calc(100vh-3rem)] ${notesWidthClass}`}
         >

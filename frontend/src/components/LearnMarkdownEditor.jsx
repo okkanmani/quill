@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import LearnMarkdown from "./LearnMarkdown";
 import LearnMarkdownToolbar from "./LearnMarkdownToolbar";
+import { pasteImageIntoMarkdown, prepareLearnImagePaste } from "../learnImageMarkdown";
+import { normalizeLearnImageOptions } from "../learnImagePresets";
 
 export default function LearnMarkdownEditor({
   title,
@@ -20,6 +22,42 @@ export default function LearnMarkdownEditor({
 }) {
   const textareaRef = useRef(null);
   const [mobilePane, setMobilePane] = useState("edit");
+  const [imageError, setImageError] = useState("");
+  const [imageSize, setImageSize] = useState("medium");
+  const [imageLayout, setImageLayout] = useState("block");
+  const [imageShape, setImageShape] = useState("landscape");
+
+  function handlePaste(event) {
+    const el = textareaRef.current;
+    if (!el) return;
+    if (!prepareLearnImagePaste(event)) return;
+
+    void (async () => {
+      try {
+        const imageOptions = normalizeLearnImageOptions(
+          imageSize,
+          imageLayout,
+          imageShape,
+        );
+        const edit = await pasteImageIntoMarkdown(
+          event,
+          el.value,
+          el.selectionStart,
+          el.selectionEnd,
+          imageOptions,
+        );
+        if (!edit) return;
+        onMarkdownChange(edit.value);
+        requestAnimationFrame(() => {
+          el.focus();
+          el.setSelectionRange(edit.selectionStart, edit.selectionEnd);
+        });
+        setImageError("");
+      } catch (err) {
+        setImageError(err.message || "Could not paste image.");
+      }
+    })();
+  }
 
   const editorShellClass = borderless
     ? "flex-1 grid lg:grid-cols-2 gap-0 overflow-hidden min-h-[28rem]"
@@ -86,12 +124,29 @@ export default function LearnMarkdownEditor({
         >
           <LearnMarkdownToolbar
             textareaRef={textareaRef}
-            onChange={onMarkdownChange}
+            markdown={markdown}
+            onChange={(value) => {
+              setImageError("");
+              onMarkdownChange(value);
+            }}
+            onImageError={setImageError}
+            imageSize={imageSize}
+            imageLayout={imageLayout}
+            onImageSizeChange={setImageSize}
+            onImageLayoutChange={setImageLayout}
+            imageShape={imageShape}
+            onImageShapeChange={setImageShape}
           />
+          {imageError ? (
+            <p className="px-4 py-2 text-xs text-red-700 bg-red-50 border-b border-red-100">
+              {imageError}
+            </p>
+          ) : null}
           <textarea
             ref={textareaRef}
             value={markdown}
             onChange={(e) => onMarkdownChange(e.target.value)}
+            onPaste={handlePaste}
             spellCheck
             className="flex-1 w-full resize-none border-0 px-4 py-4 text-sm font-mono text-slate-900 leading-relaxed focus:outline-none focus:ring-0 min-h-[24rem]"
             placeholder="Write markdown content…"
@@ -125,7 +180,7 @@ export default function LearnMarkdownEditor({
             disabled={publishing}
             className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2.5 transition"
           >
-            {publishing ? "Publishing…" : publishLabel}
+            {publishLabel}
           </button>
         </div>
       ) : null}

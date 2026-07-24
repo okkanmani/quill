@@ -7,6 +7,11 @@ import {
 } from "../api";
 import LearnMarkdownEditor from "./LearnMarkdownEditor";
 import QuillLoading from "./QuillLoading";
+import {
+  expandPendingLearnImagesInMarkdown,
+  markdownHasPendingLearnImages,
+} from "../learnImageMarkdown";
+import { forgetPendingLearnImagesInMarkdown } from "../learnPendingImages";
 import { BUILDER_SUBJECTS, GRADE_OPTIONS } from "../questionBuilderUtils";
 
 export default function LearnResourceCreator() {
@@ -72,6 +77,7 @@ export default function LearnResourceCreator() {
 
     setPublishing(true);
     try {
+      const markdownForPublish = expandPendingLearnImagesInMarkdown(markdown.trim());
       const result = buildUsingAi
         ? await generateAndPublishLearnResource({
             subject,
@@ -85,10 +91,11 @@ export default function LearnResourceCreator() {
             grade,
             curriculum: curriculum.trim(),
             section_title: sectionTitle.trim(),
-            markdown: markdown.trim(),
+            markdown: markdownForPublish,
           });
 
       setSuccess(result);
+      forgetPendingLearnImagesInMarkdown(markdown);
       setSectionTitle("");
       setMarkdown("");
       setCustomPrompt("");
@@ -116,7 +123,9 @@ export default function LearnResourceCreator() {
   const publishLabel = publishing
     ? buildUsingAi
       ? "Generating & publishing…"
-      : "Publishing…"
+      : markdownHasPendingLearnImages(markdown)
+        ? "Uploading images & publishing…"
+        : "Publishing…"
     : buildUsingAi
       ? "Generate & publish"
       : "Publish resource";
@@ -134,6 +143,7 @@ export default function LearnResourceCreator() {
           <li>Resources are grouped by subject, grade, and curriculum.</li>
           <li>Students read them under Learning Resources in the app.</li>
           <li>Use markdown for headings, lists, math, and emphasis.</li>
+          <li>Paste or insert images in the editor; they upload to storage when you publish.</li>
         </ul>
       </div>
 

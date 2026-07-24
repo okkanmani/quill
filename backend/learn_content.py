@@ -6,6 +6,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import db
+from learn_images import (
+    purge_learn_section_assets,
+    resolve_learn_markdown_images,
+    rewrite_learn_subject_asset_urls,
+)
 
 LEARN_DIR = Path(__file__).parent / "data" / "learn"
 
@@ -479,6 +484,13 @@ def publish_learn_section(
             section_id = f"{base_id}-{n}"
             n += 1
 
+        markdown = resolve_learn_markdown_images(
+            markdown,
+            admin_id=admin_id,
+            subject_key=subject_key,
+            section_id=section_id,
+        )
+
         fs_meta = None
         if _can_read_bundled_learn(admin_id, conn):
             fs_meta = _fs_subject_meta(subject_key)
@@ -600,6 +612,13 @@ def update_learn_section(
             if candidate not in existing_ids or candidate == section_id:
                 next_section_id = candidate
 
+        markdown = resolve_learn_markdown_images(
+            markdown,
+            admin_id=admin_id,
+            subject_key=subject_key,
+            section_id=next_section_id,
+        )
+
         conn.execute(
             f"""
             UPDATE learn_sections
@@ -654,6 +673,16 @@ def delete_learn_section(*, subject_key: str, section_id: str, admin_id: int) ->
         raise
     finally:
         conn.close()
+
+    try:
+        purge_learn_section_assets(
+            admin_id=admin_id,
+            subject_key=subject_key,
+            section_id=section_id,
+        )
+    except Exception:
+        # Section is already removed from the app; log in ops if Tigris cleanup fails.
+        pass
 
     return {"subject_key": subject_key, "section_id": section_id}
 
@@ -824,7 +853,7 @@ def get_subject(subject: str, *, admin_id: int) -> dict | None:
     data = _load_fs_subject(subject) if bundled else None
     if data:
         _merge_db_sections(subject, data["groups"], data["sections"], admin_id=admin_id)
-        return data
+        return rewrite_learn_subject_asset_urls(data)
 
     catalog = _db_subject_catalog(admin_id=admin_id)
     db_secs = _db_sections(subject, admin_id=admin_id)
@@ -841,10 +870,11 @@ def get_subject(subject: str, *, admin_id: int) -> dict | None:
     if not flat_sections:
         return None
 
-    return {
+    payload = {
         "key": subject,
         "title": meta.get("title", subject),
         "description": meta.get("description", ""),
         "groups": groups_out,
         "sections": flat_sections,
     }
+    return rewrite_learn_subject_asset_urls(payload)

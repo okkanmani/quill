@@ -16,6 +16,9 @@ primary_region = 'yyz'
 # Scheduled jobs: set fly secret QUILL_CRON_SECRET, header X-Quill-Cron-Key: <secret>
 #   POST /cron/merge-worksheets — merge worksheet JSON from disk; optional ?subjects=math,english
 #     Script: ./scripts/cron_merge_worksheets.sh
+# Learn resource images (Tigris): set fly secrets AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+#   AWS_ENDPOINT_URL_S3, BUCKET_NAME. Images are served via GET /learn/assets/… (private bucket OK).
+#   Optional LEARN_ASSETS_PUBLIC_BASE_URL for direct public Tigris URLs instead of the proxy.
 # One-time: fly volumes create quill_data --region yyz --size 1
 [mounts]
   source = "quill_data"
@@ -24,6 +27,7 @@ primary_region = 'yyz'
 
 [env]
   QUILL_DATA_DIR = "/data"
+  QUILL_PUBLIC_API_URL = "https://quill-backend.fly.dev"
   # First boot from legacy auth.json: student password is bcrypt(DEFAULT_STUDENT_PASSWORD); default "changeme".
 
 [http_service]

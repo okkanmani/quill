@@ -1,5 +1,6 @@
 fastapi[standard]
 uvicorn
+boto3
 bcrypt
 python-jose[cryptography]
 python-multipart
