@@ -7,6 +7,7 @@ import {
   expandPendingLearnImagesInMarkdown,
   markdownHasPendingLearnImagePlaceholders,
 } from "./learnPendingImages";
+import { learnImageInsertSnippet } from "./learnMarkdownCaptions";
 
 const DATA_IMAGE_MARKDOWN_RE =
   /!\[[^\]]*\]\(data:image\/(jpeg|jpg|png|gif|webp);base64,/i;
@@ -60,7 +61,7 @@ export function insertMarkdownImage(
   const safeAlt = (alt || "image").replace(/]/g, "");
   const title = serializeLearnImageTitle(size, layout, shape);
   const pendingId = createPendingLearnImage(dataUrl);
-  const snippet = `\n\n![${safeAlt}](learn:pending:${pendingId} "${title}")\n\n`;
+  const snippet = learnImageInsertSnippet(safeAlt, pendingId, title);
   const next = `${text.slice(0, selectionStart)}${snippet}${text.slice(selectionEnd)}`;
   const cursor = selectionStart + snippet.length;
   return { value: next, selectionStart: cursor, selectionEnd: cursor };

@@ -249,7 +249,7 @@ export default function LearnMarkdownToolbar({
           </select>
         </label>
         <span className="text-[10px] text-slate-500">
-          Applies to the next image insert or paste
+          Applies to the next image insert or paste. Adds an optional *Caption* line below.
         </span>
       </div>
     </div>

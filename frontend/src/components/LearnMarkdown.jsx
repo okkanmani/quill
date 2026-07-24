@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import LearnFigure, { isLearnFigureElement } from "./LearnFigure";
+import { splitLearnMarkdownFigures } from "../learnMarkdownCaptions";
 
 /** Allow pasted draft images (data URLs) in preview; keep default sanitization elsewhere. */
 function learnMarkdownUrlTransform(url) {
@@ -109,17 +110,41 @@ function buildMdComponents(eagerImages) {
 }
 
 export default function LearnMarkdown({ markdown, eagerImages = false }) {
-  const components = React.useMemo(
+  const parts = useMemo(() => splitLearnMarkdownFigures(markdown), [markdown]);
+  const components = useMemo(
     () => buildMdComponents(eagerImages),
     [eagerImages],
   );
+
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={components}
-      urlTransform={learnMarkdownUrlTransform}
-    >
-      {markdown}
-    </ReactMarkdown>
+    <>
+      {parts.map((part, index) => {
+        if (part.type === "figure") {
+          return (
+            <LearnFigure
+              key={`fig-${index}-${part.src}`}
+              src={part.src}
+              alt={part.alt}
+              title={part.title}
+              caption={part.caption}
+              eager={eagerImages}
+            />
+          );
+        }
+        if (!part.text?.trim()) {
+          return null;
+        }
+        return (
+          <ReactMarkdown
+            key={`md-${index}`}
+            remarkPlugins={[remarkGfm]}
+            components={components}
+            urlTransform={learnMarkdownUrlTransform}
+          >
+            {part.text}
+          </ReactMarkdown>
+        );
+      })}
+    </>
   );
 }
