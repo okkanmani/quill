@@ -46,6 +46,7 @@ Style and structure:
 - Use ## and ### headings to organize concepts.
 - Include worked **Examples** where helpful.
 - Use markdown tables or bullet lists when they clarify ideas.
+- Where a diagram, chart, or photo would help, mark the spot on its own line as *[Image: brief description of what to show]* so a teacher knows what to add later (use at most 2–3 unless the topic clearly needs more; do not use image URLs or markdown image syntax).
 - Friendly, clear tone for home learning — not a full textbook chapter.
 - Accurate facts and age-appropriate vocabulary for grade {grade}.
 - Length: roughly 400–900 words unless the topic needs more.
