@@ -8,44 +8,106 @@ import { formatWeightedTestScore } from "../testUtils";
 import {
   analyzeTestAttempt,
   filterAdaptiveTestAttempts,
+  buildPassageBandSegments,
   TEST_TIER_LABELS,
+  trendUsesPassageBands,
 } from "../testAnalysisUtils";
 
-function TierTrendChart({ trend }) {
+function TierTrendChart({ trend, chartKey }) {
   if (!trend?.length) {
     return (
       <p className="text-sm text-slate-600">No slot data available for this attempt.</p>
     );
   }
 
+  const showPassageBands = trendUsesPassageBands(trend);
+  const passageBands = showPassageBands ? buildPassageBandSegments(trend) : [];
+
   const width = 640;
-  const height = 180;
+  const height = showPassageBands ? 248 : 180;
   const padLeft = 64;
   const padRight = 20;
-  const padY = 24;
+  const plotTop = showPassageBands ? 36 : 24;
+  const plotBottom = showPassageBands ? 208 : height - 24;
   const plotRight = width - padRight;
   const innerW = plotRight - padLeft;
-  const innerH = height - padY * 2;
+  const innerH = plotBottom - plotTop;
   const stepX = trend.length > 1 ? innerW / (trend.length - 1) : 0;
 
-  const yForTier = (tier) => padY + innerH - ((tier - 1) / 2) * innerH;
+  const yForTier = (tier) => plotTop + innerH - ((tier - 1) / 2) * innerH;
+
+  const xCenter = (index) => padLeft + index * stepX;
+
+  const xBandStart = (index) =>
+    index === 0 ? padLeft : padLeft + (index - 0.5) * stepX;
+
+  const xBandEnd = (index) =>
+    index === trend.length - 1 ? plotRight : padLeft + (index + 0.5) * stepX;
 
   const points = trend
     .map((point, index) => {
-      const x = padLeft + index * stepX;
+      const x = xCenter(index);
       const y = yForTier(point.tier);
       return `${x},${y}`;
     })
     .join(" ");
 
+  const xLabel = (point) =>
+    showPassageBands ? point.questionIndex : point.slot;
+
   return (
     <div className="overflow-x-auto">
       <svg
+        key={chartKey}
         viewBox={`0 0 ${width} ${height}`}
         className="w-full min-w-[320px]"
         role="img"
-        aria-label="Tier progress across the test sitting"
+        aria-label={
+          showPassageBands
+            ? "Tier progress by question with passage complexity bands"
+            : "Tier progress across the test sitting"
+        }
       >
+        {showPassageBands
+          ? passageBands.map((band) => {
+              const x = xBandStart(band.startIndex);
+              const bandWidth = xBandEnd(band.endIndex) - x;
+              const fill =
+                band.passageTier === 1
+                  ? "rgba(16, 185, 129, 0.22)"
+                  : "rgba(244, 63, 94, 0.18)";
+              const centerX = x + bandWidth / 2;
+              return (
+                <g key={`${chartKey}-band-${band.passageSlot}`}>
+                  <rect
+                    x={x}
+                    y={plotTop}
+                    width={bandWidth}
+                    height={innerH}
+                    fill={fill}
+                  />
+                  {band.startIndex > 0 ? (
+                    <line
+                      x1={x}
+                      x2={x}
+                      y1={plotTop}
+                      y2={plotBottom}
+                      stroke="#cbd5e1"
+                      strokeWidth="1"
+                    />
+                  ) : null}
+                  <text
+                    x={centerX}
+                    y={plotTop - 10}
+                    textAnchor="middle"
+                    className="fill-slate-600 text-[10px] font-medium"
+                  >
+                    {band.label}
+                  </text>
+                </g>
+              );
+            })
+          : null}
         {[1, 2, 3].map((tier) => (
           <g key={tier}>
             <line
@@ -67,29 +129,40 @@ function TierTrendChart({ trend }) {
           </g>
         ))}
         <polyline
+          key={`${chartKey}-line`}
           fill="none"
           stroke="#6366f1"
           strokeWidth="2.5"
           points={points}
         />
         {trend.map((point, index) => {
-          const x = padLeft + index * stepX;
+          const x = xCenter(index);
           const y = yForTier(point.tier);
           const fill = point.correct ? "#059669" : "#dc2626";
           return (
-            <g key={point.slot}>
+            <g key={`${chartKey}-slot-${index}`}>
               <circle cx={x} cy={y} r="7" fill={fill} stroke="#fff" strokeWidth="2" />
               <text
                 x={x}
-                y={height - 6}
+                y={height - (showPassageBands ? 18 : 6)}
                 textAnchor="middle"
                 className="fill-slate-500 text-[10px]"
               >
-                {point.slot}
+                {xLabel(point)}
               </text>
             </g>
           );
         })}
+        {showPassageBands ? (
+          <text
+            x={(padLeft + plotRight) / 2}
+            y={height - 4}
+            textAnchor="middle"
+            className="fill-slate-500 text-[10px]"
+          >
+            Question number in test
+          </text>
+        ) : null}
       </svg>
       <div className="flex flex-wrap gap-4 mt-2 text-xs text-slate-600">
         <span className="inline-flex items-center gap-1.5">
@@ -300,10 +373,12 @@ function TestAnalysisDetail({ attempt, analysis }) {
       <div className={narrative ? "mt-6" : ""}>
         <h3 className="text-sm font-semibold text-slate-900">Tier progress</h3>
         <p className="text-xs text-slate-600 mt-1">
-          How difficulty shifted question by question under adaptive rules.
+          {trendUsesPassageBands(analysis.tierTrend)
+            ? "Question difficulty across the sitting; bands mark easy vs complex passages."
+            : "How difficulty shifted question by question under adaptive rules."}
         </p>
         <div className="mt-3">
-          <TierTrendChart trend={tierTrend} />
+          <TierTrendChart trend={tierTrend} chartKey={attempt.id} />
         </div>
       </div>
 
@@ -519,7 +594,11 @@ export default function AdminTestAnalysisView({ initialAttemptId = null }) {
 
           <div className="flex-1 min-w-0 lg:sticky lg:top-4">
             {selectedAttempt && analysis ? (
-              <TestAnalysisDetail attempt={selectedAttempt} analysis={analysis} />
+              <TestAnalysisDetail
+                key={selectedAttempt.id}
+                attempt={selectedAttempt}
+                analysis={analysis}
+              />
             ) : (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-5 py-8 min-h-[20rem] flex items-center justify-center text-sm text-slate-500">
                 Select a test to view analysis.

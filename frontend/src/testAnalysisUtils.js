@@ -14,11 +14,50 @@ export function filterAdaptiveTestAttempts(attempts) {
 }
 
 export function buildTierTrend(slots) {
-  return (slots || []).map((slot) => ({
+  return (slots || []).map((slot, index) => ({
     slot: slot.slot,
+    questionIndex: Number(slot.question_index) || index + 1,
+    passageTier:
+      slot.passage_tier === 1 || slot.passage_tier === 2
+        ? Number(slot.passage_tier)
+        : null,
     tier: Number(slot.tier) || 2,
     correct: slot.correct === true,
   }));
+}
+
+export function trendUsesPassageBands(trend) {
+  if (!trend?.length) return false;
+  const passageSlots = new Set(trend.map((point) => point.slot));
+  if (passageSlots.size >= trend.length) return false;
+  return trend.every(
+    (point) => point.passageTier === 1 || point.passageTier === 2,
+  );
+}
+
+export function buildPassageBandSegments(trend) {
+  if (!trendUsesPassageBands(trend)) return [];
+
+  const segments = [];
+  let start = 0;
+  while (start < trend.length) {
+    const passageSlot = trend[start].slot;
+    let end = start;
+    while (end + 1 < trend.length && trend[end + 1].slot === passageSlot) {
+      end += 1;
+    }
+    segments.push({
+      passageSlot,
+      passageTier: trend[start].passageTier,
+      startIndex: start,
+      endIndex: end,
+      label: `Passage ${passageSlot} · ${
+        trend[start].passageTier === 1 ? "easy" : "complex"
+      }`,
+    });
+    start = end + 1;
+  }
+  return segments;
 }
 
 export function buildTierBandAccuracy(slots) {
@@ -89,7 +128,7 @@ export function buildAreaBreakdown(slots) {
       if (Number(slot.tier) === 3) entry.tier3Correct += 1;
     } else {
       if (Number(slot.tier) === 1) entry.tier1Wrong += 1;
-      entry.misses.push(slot);
+      entry.misses.push({ ...slot, slot: slot.question_index ?? slot.slot });
     }
   }
 

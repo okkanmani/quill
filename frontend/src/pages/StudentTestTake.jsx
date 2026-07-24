@@ -73,6 +73,7 @@ export default function StudentTestTake() {
   const workModeRef = useRef("text");
   const workAreaRef = useRef(null);
   const [workAreaHeight, setWorkAreaHeight] = useState(400);
+  const [activePassageQuestionIndex, setActivePassageQuestionIndex] = useState(0);
 
   const timedOut = !isAdminPreview && timeExpired;
 
@@ -191,6 +192,10 @@ export default function StudentTestTake() {
     workTextRef.current = nextText;
     scratchpadDataRef.current = nextScratchpad;
   }, [session, currentSlot]);
+
+  useEffect(() => {
+    setActivePassageQuestionIndex(0);
+  }, [currentSlot]);
 
   const flushWorkSave = useCallback(
     async (
@@ -357,6 +362,7 @@ export default function StudentTestTake() {
   const rcAdaptive = Boolean(session?.is_rc && session?.test_adaptive !== false);
   const passageTierLabel = rcAdaptive ? rcPassageTierLabel(slotData?.tier) : null;
   const isDataTest = session?.subject === "data";
+  const isRcPassageLayout = isPassageWindow && !isDataTest;
   const unitLabels = testTakeUnitLabels(session);
   const sittingCount = session?.sitting_count || 20;
   const answeredCount = slots.filter((s) => s.answered).length;
@@ -445,6 +451,18 @@ export default function StudentTestTake() {
     );
   }
 
+  function passageQuestionMarkerClass(index, answered) {
+    const base =
+      "shrink-0 min-w-[2.25rem] h-9 px-2 rounded-lg text-xs font-bold tabular-nums border transition";
+    if (index === activePassageQuestionIndex) {
+      return `${base} bg-teal-600 text-white border-teal-700`;
+    }
+    if (answered) {
+      return `${base} bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100`;
+    }
+    return `${base} bg-white text-slate-700 border-slate-200 hover:border-teal-300`;
+  }
+
   function renderPassageQuestionList() {
     return (
       <div className="space-y-6">
@@ -482,6 +500,94 @@ export default function StudentTestTake() {
             </div>
           );
         })}
+      </div>
+    );
+  }
+
+  function renderRcPassageQuestionView() {
+    if (!passageQuestions.length) {
+      return (
+        <p className="text-sm text-slate-500">No questions loaded for this passage.</p>
+      );
+    }
+
+    const safeIndex = Math.min(
+      activePassageQuestionIndex,
+      Math.max(0, passageQuestions.length - 1),
+    );
+    const passageQuestion = passageQuestions[safeIndex];
+    const qid = passageQuestion.id;
+    const selectedChoice = passageResponses[qid] || "";
+
+    return (
+      <div className="flex flex-col min-h-0">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-3">
+          <p className="text-sm font-semibold text-slate-900">
+            {unitLabels.questionsHeading}
+          </p>
+          <div className="overflow-x-auto max-w-full ml-auto">
+            <div
+              className="flex gap-1.5 min-w-min justify-end"
+              role="tablist"
+              aria-label="Questions for this passage"
+            >
+              {passageQuestions.map((item, index) => {
+                const answered = Boolean(
+                  String(passageResponses[item.id] || "").trim(),
+                );
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={index === safeIndex}
+                    aria-controls={`rc-passage-question-${item.id}`}
+                    disabled={submitting || timedOut}
+                    onClick={() => setActivePassageQuestionIndex(index)}
+                    className={passageQuestionMarkerClass(index, answered)}
+                    title={
+                      answered
+                        ? `Question ${index + 1} — answered`
+                        : `Question ${index + 1}`
+                    }
+                  >
+                    {index + 1}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div
+          id={`rc-passage-question-${qid}`}
+          role="tabpanel"
+          className="rounded-xl border border-slate-100 bg-slate-50/40 px-4 py-4"
+        >
+          <p className="text-slate-900 font-medium mb-3 leading-relaxed">
+            {safeIndex + 1}. {passageQuestion.prompt}
+          </p>
+          <div className="flex flex-col gap-2">
+            {(passageQuestion.choices || []).map((choice) => {
+              const isSelected = selectedChoice === choice;
+              return (
+                <button
+                  key={`${qid}-${choice}`}
+                  type="button"
+                  disabled={submitting || timedOut}
+                  onClick={() => handleSelectPassageChoice(qid, choice)}
+                  className={`border rounded-xl px-4 py-3 text-sm text-left transition ${
+                    isSelected
+                      ? "border-teal-500 bg-teal-50 text-slate-900"
+                      : "border-slate-200 bg-white text-slate-800 hover:border-teal-300"
+                  }`}
+                >
+                  {choice}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     );
   }
@@ -841,19 +947,23 @@ export default function StudentTestTake() {
               </div>
             </div>
           ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 items-start mb-3">
-            <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm overflow-auto max-h-[calc(100dvh-12rem)]">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 items-start mb-3 min-h-0 flex-1">
+            <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col max-h-[calc(100dvh-12rem)] min-h-0">
               {passage ? (
-                <div className="mb-4">
+                <div className="overflow-y-auto min-h-0 shrink mb-4 max-h-[min(42vh,28rem)] pr-1">
                   <WorksheetPassageContent passage={passage} embedded />
                 </div>
               ) : null}
-              <div className="mb-4">
-                <p className="text-sm font-semibold text-slate-900">
-                  {unitLabels.questionsHeading}
-                </p>
+              <div className="shrink-0 border-t border-slate-100 pt-4 min-h-0 flex flex-col">
+                {isRcPassageLayout ? renderRcPassageQuestionView() : (
+                  <>
+                    <p className="text-sm font-semibold text-slate-900 mb-3">
+                      {unitLabels.questionsHeading}
+                    </p>
+                    {renderPassageQuestionList()}
+                  </>
+                )}
               </div>
-              {renderPassageQuestionList()}
             </div>
 
             {renderPassageScratchpadPanel({

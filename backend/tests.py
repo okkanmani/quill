@@ -1065,6 +1065,7 @@ def build_ordered_test_slots(
     answers = answers if isinstance(answers, dict) else {}
     sitting_count = max(1, int(sitting_count or 1))
     slots: list[dict] = []
+    question_index = 0
 
     for slot in range(1, sitting_count + 1):
         key = str(slot)
@@ -1079,10 +1080,16 @@ def build_ordered_test_slots(
         tier = int(tier) if isinstance(tier, (int, float)) else START_TIER
         tier = max(1, min(3, tier))
 
+        passage_tier_raw = answer.get("tier")
+        passage_tier = None
+        if isinstance(passage_tier_raw, (int, float)):
+            passage_tier = int(passage_tier_raw)
+
         if isinstance(answer.get("responses"), dict):
             for detail in answer.get("questions") or []:
                 if not isinstance(detail, dict):
                     continue
+                question_index += 1
                 detail_tier = detail.get("tier")
                 if isinstance(detail_tier, (int, float)):
                     q_tier = int(detail_tier)
@@ -1092,6 +1099,7 @@ def build_ordered_test_slots(
                 slots.append(
                     {
                         "slot": slot,
+                        "question_index": question_index,
                         "tier": q_tier,
                         "area": str(detail.get("area") or "").strip(),
                         "correct": detail.get("correct") is True,
@@ -1101,13 +1109,16 @@ def build_ordered_test_slots(
                         "expected": detail.get("expected") or "",
                         "choices": detail.get("choices") or [],
                         "passage_id": answer.get("passage_id"),
+                        "passage_tier": passage_tier,
                     }
                 )
             continue
 
+        question_index += 1
         slots.append(
             {
                 "slot": slot,
+                "question_index": question_index,
                 "tier": tier,
                 "area": str(answer.get("area") or "").strip(),
                 "correct": answer.get("correct") is True,
@@ -1116,6 +1127,7 @@ def build_ordered_test_slots(
                 "given": answer.get("given") or "",
                 "expected": answer.get("expected") or "",
                 "choices": answer.get("choices") or [],
+                "passage_tier": passage_tier,
             }
         )
     return slots
