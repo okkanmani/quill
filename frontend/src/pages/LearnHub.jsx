@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   deleteLearnSection,
@@ -16,12 +16,18 @@ import {
   mergeTopicSectionOrder,
 } from "../learnTopics";
 import {
-  filterHubEntriesByGrade,
+  curriculumKey,
+  filterHubEntriesByGradeAndCurriculum,
   flattenHubSubjects,
+  learnHubCollectionBlurb,
+  learnHubSearchParams,
+  learnSubjectCurriculum,
   learnSubjectGrade,
-  learnHubDescriptionWithoutGrade,
+  resolveLearnHubCurriculum,
   resolveLearnHubGrade,
+  sortedCurriculaFromSubjects,
   sortedGradesFromSubjects,
+  subjectMatchesCurriculum,
 } from "../learnHubGrades";
 import LearnChrome from "../components/LearnChrome";
 import QuillLoading from "../components/QuillLoading";
@@ -142,7 +148,7 @@ function PublishedResourceRow({
   const savingTitle =
     titleSavingKey === `${section.subject_key}:${section.section_id}`;
   const pad = compact ? "p-3.5" : "p-4";
-  const collectionBlurb = learnHubDescriptionWithoutGrade(section.subject_description);
+  const collectionBlurb = learnHubCollectionBlurb(section.subject_description);
 
   const adminActions = isAdmin ? (
     <>
@@ -399,7 +405,7 @@ function SubjectCard({
   expandedTopics = new Set(),
   onToggleTopic = () => {},
 }) {
-  const collectionBlurb = learnHubDescriptionWithoutGrade(subject.description);
+  const collectionBlurb = learnHubCollectionBlurb(subject.description);
 
   const renderPublishedRow = (section) => (
     <PublishedResourceRow
@@ -502,6 +508,13 @@ async function discoverSubjectSections(entries, { dbOnly = false } = {}) {
             subject_title: data.title,
             subject_description: data.description || "",
             subject_grade: data.grade ?? learnSubjectGrade({ key: data.key, title: data.title, description: data.description }),
+            subject_curriculum:
+              data.curriculum ??
+              learnSubjectCurriculum({
+                key: data.key,
+                title: data.title,
+                description: data.description,
+              }),
           });
         }
       } catch {
@@ -512,32 +525,131 @@ async function discoverSubjectSections(entries, { dbOnly = false } = {}) {
   return sections;
 }
 
-function LearnHubGradeNav({ grades, activeGrade }) {
-  if (!grades.length) return null;
+function HubFilterDropdown({
+  label,
+  ariaLabel,
+  value,
+  options,
+  onChange,
+  formatOption = (v) => String(v),
+  optionKey = (v) => String(v),
+  isSelected = (a, b) => a === b,
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    function handlePointerDown(event) {
+      if (!rootRef.current?.contains(event.target)) setOpen(false);
+    }
+    function handleKeyDown(event) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  const triggerClass =
+    "mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 flex items-center justify-between gap-1 text-left";
 
   return (
-    <nav
-      className="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-3"
-      aria-label="Grades"
-    >
-      {grades.map((grade) => {
-        const active = grade === activeGrade;
-        return (
-          <Link
-            key={grade}
-            to={`/student/learn?grade=${grade}`}
-            className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-              active
-                ? "bg-indigo-600 text-white"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-            }`}
-            aria-current={active ? "page" : undefined}
+    <div className="block w-full max-w-[9rem] text-xs">
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </span>
+      <div ref={rootRef} className="relative">
+        <button
+          type="button"
+          aria-label={ariaLabel}
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          onClick={() => setOpen((prev) => !prev)}
+          className={triggerClass}
+        >
+          <span className="truncate">{formatOption(value)}</span>
+          <span className="shrink-0 text-[10px] text-slate-500" aria-hidden>
+            ▾
+          </span>
+        </button>
+        {open ? (
+          <ul
+            role="listbox"
+            aria-label={ariaLabel}
+            className="absolute left-0 right-0 top-full z-30 mt-0.5 max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white py-0.5 shadow-lg"
           >
-            Grade {grade}
-          </Link>
-        );
-      })}
-    </nav>
+            {options.map((option) => {
+              const selected = isSelected(option, value);
+              return (
+                <li key={optionKey(option)} role="presentation">
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    onClick={() => {
+                      onChange(option);
+                      setOpen(false);
+                    }}
+                    className={`w-full px-2.5 py-1.5 text-xs text-left transition ${
+                      selected
+                        ? "bg-indigo-50 text-indigo-900 font-semibold"
+                        : "text-slate-800 hover:bg-slate-50"
+                    }`}
+                  >
+                    {formatOption(option)}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function LearnHubFilterNav({
+  grades,
+  activeGrade,
+  curricula,
+  activeCurriculum,
+  onGradeChange,
+  onCurriculumChange,
+}) {
+  if (!grades.length && !curricula.length) return null;
+
+  const gradeValue = activeGrade ?? grades[0];
+  const curriculumValue = activeCurriculum ?? curricula[0];
+
+  return (
+    <div className="mb-6 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 pb-1">
+      {grades.length > 0 ? (
+        <HubFilterDropdown
+          label="Grade"
+          ariaLabel="Grade"
+          value={gradeValue}
+          options={grades}
+          onChange={onGradeChange}
+          formatOption={(grade) => `Grade ${grade}`}
+        />
+      ) : null}
+      {curricula.length > 0 ? (
+        <HubFilterDropdown
+          label="Curriculum"
+          ariaLabel="Curriculum"
+          value={curriculumValue}
+          options={curricula}
+          onChange={onCurriculumChange}
+          formatOption={(curriculum) => curriculum}
+          optionKey={(curriculum) => curriculumKey(curriculum)}
+          isSelected={(a, b) => curriculumKey(a) === curriculumKey(b)}
+        />
+      ) : null}
+    </div>
   );
 }
 
@@ -670,6 +782,26 @@ export default function LearnHub() {
     return map;
   }, [entries, publishedSections]);
 
+  const subjectCurriculumByKey = useMemo(() => {
+    const map = new Map();
+    for (const subject of flattenHubSubjects(entries)) {
+      const label = learnSubjectCurriculum(subject);
+      if (label) map.set(subject.key, label);
+    }
+    for (const section of publishedSections) {
+      if (map.has(section.subject_key)) continue;
+      const label =
+        section.subject_curriculum ??
+        learnSubjectCurriculum({
+          key: section.subject_key,
+          title: section.subject_title,
+          description: section.subject_description,
+        });
+      if (label) map.set(section.subject_key, label);
+    }
+    return map;
+  }, [entries, publishedSections]);
+
   const availableGrades = useMemo(() => {
     const subjects = flattenHubSubjects(entries);
     const grades = sortedGradesFromSubjects(subjects);
@@ -685,28 +817,105 @@ export default function LearnHub() {
     [searchParams, availableGrades],
   );
 
+  const gradeFilteredSubjects = useMemo(() => {
+    const all = flattenHubSubjects(entries);
+    if (activeGrade == null) return all;
+    return all.filter((subject) => learnSubjectGrade(subject) === activeGrade);
+  }, [entries, activeGrade]);
+
+  const availableCurricula = useMemo(
+    () => sortedCurriculaFromSubjects(gradeFilteredSubjects),
+    [gradeFilteredSubjects],
+  );
+
+  const activeCurriculum = useMemo(
+    () => resolveLearnHubCurriculum(searchParams.get("curriculum"), availableCurricula),
+    [searchParams, availableCurricula],
+  );
+
   useEffect(() => {
-    if (loading || availableGrades.length === 0) return;
-    const param = searchParams.get("grade");
-    const parsed = parseInt(String(param || "").trim(), 10);
-    if (availableGrades.includes(parsed)) return;
-    setSearchParams({ grade: String(activeGrade) }, { replace: true });
-  }, [loading, availableGrades, activeGrade, searchParams, setSearchParams]);
+    if (loading) return;
+    const next = new URLSearchParams(searchParams);
+    let changed = false;
+
+    if (availableGrades.length > 0) {
+      const parsed = parseInt(String(next.get("grade") || "").trim(), 10);
+      if (!availableGrades.includes(parsed)) {
+        next.set("grade", String(activeGrade));
+        changed = true;
+      }
+    }
+
+    if (availableCurricula.length > 0) {
+      const resolved = resolveLearnHubCurriculum(next.get("curriculum"), availableCurricula);
+      const paramKey = curriculumKey(decodeURIComponent(next.get("curriculum") || ""));
+      if (curriculumKey(resolved) !== paramKey) {
+        next.set("curriculum", resolved);
+        changed = true;
+      }
+    } else if (next.has("curriculum")) {
+      next.delete("curriculum");
+      changed = true;
+    }
+
+    if (changed) setSearchParams(next, { replace: true });
+  }, [
+    loading,
+    availableGrades,
+    availableCurricula,
+    activeGrade,
+    activeCurriculum,
+    searchParams,
+    setSearchParams,
+  ]);
 
   const filteredEntries = useMemo(
     () =>
-      activeGrade != null
-        ? filterHubEntriesByGrade(entries, activeGrade)
-        : entries,
-    [entries, activeGrade],
+      filterHubEntriesByGradeAndCurriculum(entries, activeGrade, activeCurriculum),
+    [entries, activeGrade, activeCurriculum],
   );
 
   const filteredOrphanGroups = useMemo(() => {
-    if (activeGrade == null) return orphanGroups;
-    return orphanGroups.filter(
-      (group) => subjectGradeByKey.get(group.subjectKey) === activeGrade,
+    return orphanGroups.filter((group) => {
+      if (activeGrade != null && subjectGradeByKey.get(group.subjectKey) !== activeGrade) {
+        return false;
+      }
+      if (
+        activeCurriculum &&
+        !subjectMatchesCurriculum(
+          {
+            key: group.subjectKey,
+            title: group.subjectTitle,
+            curriculum: subjectCurriculumByKey.get(group.subjectKey),
+          },
+          activeCurriculum,
+        )
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [
+    orphanGroups,
+    activeGrade,
+    activeCurriculum,
+    subjectGradeByKey,
+    subjectCurriculumByKey,
+  ]);
+
+  function handleHubGradeChange(grade) {
+    setSearchParams(
+      learnHubSearchParams({ grade, curriculum: activeCurriculum }),
+      { replace: true },
     );
-  }, [orphanGroups, activeGrade, subjectGradeByKey]);
+  }
+
+  function handleHubCurriculumChange(curriculum) {
+    setSearchParams(
+      learnHubSearchParams({ grade: activeGrade, curriculum }),
+      { replace: true },
+    );
+  }
 
   function toggleGroup(id) {
     setExpandedGroups((prev) => {
@@ -859,8 +1068,15 @@ export default function LearnHub() {
           Reference pages you can read before worksheets.
         </p>
 
-        {!loading && availableGrades.length > 0 ? (
-          <LearnHubGradeNav grades={availableGrades} activeGrade={activeGrade} />
+        {!loading && (availableGrades.length > 0 || availableCurricula.length > 0) ? (
+          <LearnHubFilterNav
+            grades={availableGrades}
+            activeGrade={activeGrade}
+            curricula={availableCurricula}
+            activeCurriculum={activeCurriculum}
+            onGradeChange={handleHubGradeChange}
+            onCurriculumChange={handleHubCurriculumChange}
+          />
         ) : null}
 
         {statusMessage ? (
@@ -947,8 +1163,10 @@ export default function LearnHub() {
 
         {!loading && !error && filteredEntries.length === 0 && (
           <p className="text-slate-600 text-sm">
-            {activeGrade != null
-              ? `No learning resources for grade ${activeGrade} yet.`
+            {activeGrade != null || activeCurriculum
+              ? `No learning resources${
+                  activeGrade != null ? ` for grade ${activeGrade}` : ""
+                }${activeCurriculum ? ` (${activeCurriculum})` : ""} yet.`
               : "No topics yet."}
           </p>
         )}
