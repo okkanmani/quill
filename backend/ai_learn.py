@@ -28,28 +28,36 @@ def _build_learn_prompt(
     grade: int,
     curriculum: str,
     section_title: str,
+    topic: str = "",
     custom_prompt: str = "",
 ) -> str:
     extra = (custom_prompt or "").strip()
     if len(extra) > 2000:
         extra = extra[:2000]
 
+    topic_line = (topic or "").strip()
+    topic_context = (
+        f"Topic group (for context only): {topic_line}\n"
+        if topic_line
+        else ""
+    )
+
     base = f"""Write a student-facing learning resource as Markdown only.
 
 Audience: grade {grade} students.
 Subject area: {_subject_label(subject)}
 Curriculum / program: {curriculum.strip()}
-Topic: {section_title.strip()}
+{topic_context}Section focus (one slice — teach only this): {section_title.strip()}
 
 Style and structure:
 - Start with a short intro paragraph (no top-level # title — the app shows the section title separately).
-- Use ## and ### headings to organize concepts.
+- Use ## and ### headings to organize concepts for this slice only.
 - Include worked **Examples** where helpful.
 - Use markdown tables or bullet lists when they clarify ideas.
 - Where a diagram, chart, or photo would help, mark the spot on its own line as *[Image: brief description of what to show]* so a teacher knows what to add later (use at most 2–3 unless the topic clearly needs more; do not use image URLs or markdown image syntax).
 - Friendly, clear tone for home learning — not a full textbook chapter.
 - Accurate facts and age-appropriate vocabulary for grade {grade}.
-- Length: roughly 400–900 words unless the topic needs more.
+- Length: one section, roughly 500–800 words (stay under ~1,000). Do not survey an entire course or topic group.
 
 Return JSON only:
 {{
@@ -68,6 +76,7 @@ def generate_learn_resource(
     grade: int,
     curriculum: str,
     section_title: str,
+    topic: str = "",
     custom_prompt: str = "",
     api_key: str,
 ) -> dict:
@@ -95,6 +104,7 @@ def generate_learn_resource(
         grade=grade,
         curriculum=curriculum,
         section_title=section_title,
+        topic=topic,
         custom_prompt=custom_prompt,
     )
 

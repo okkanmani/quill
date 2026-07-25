@@ -382,6 +382,7 @@ class GenerateLearnResourceRequest(BaseModel):
     grade: int
     curriculum: str
     section_title: str
+    topic: str = ""
     custom_prompt: str = ""
 
 
@@ -452,12 +453,14 @@ class PublishLearnResourceRequest(BaseModel):
     grade: int
     curriculum: str
     section_title: str
+    topic: str = ""
     markdown: str
 
 
 class UpdateLearnSectionRequest(BaseModel):
     title: str
     markdown: str
+    topic: str = ""
 
 
 class ReorderLearnSectionsRequest(BaseModel):
@@ -1340,6 +1343,7 @@ def admin_generate_learn_resource(
             grade=req.grade,
             curriculum=req.curriculum,
             section_title=req.section_title,
+            topic=req.topic,
             custom_prompt=req.custom_prompt,
             api_key=api_key,
         )
@@ -1364,6 +1368,7 @@ def admin_generate_learn_resource(
             subject_description=f"Grade {req.grade} · {req.curriculum.strip()}",
             grade=req.grade,
             curriculum=req.curriculum,
+            topic=req.topic,
             admin_id=_admin_id(payload),
         )
     except ValueError as exc:
@@ -1400,6 +1405,7 @@ def admin_publish_learn_resource(
             subject_description=f"Grade {req.grade} · {req.curriculum.strip()}",
             grade=req.grade,
             curriculum=req.curriculum,
+            topic=req.topic,
             admin_id=_admin_id(payload),
         )
     except ValueError as exc:
@@ -1467,6 +1473,7 @@ def admin_update_learn_section(
             section_id=section_id,
             title=req.title,
             markdown=req.markdown,
+            topic=req.topic,
             admin_id=_admin_id(payload),
         )
     except ValueError as exc:

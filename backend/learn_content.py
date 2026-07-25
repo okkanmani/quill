@@ -14,6 +14,17 @@ from learn_images import (
 
 LEARN_DIR = Path(__file__).parent / "data" / "learn"
 
+LEARN_MISC_GROUP_ID = "miscellaneous"
+LEARN_MISC_GROUP_TITLE = "Miscellaneous"
+
+
+def learn_topic_to_group(topic: str | None) -> tuple[str, str]:
+    """Map optional author topic to stored group_id / group_title."""
+    label = (topic or "").strip()
+    if not label:
+        return (LEARN_MISC_GROUP_ID, LEARN_MISC_GROUP_TITLE)
+    return (_slugify(label, max_len=60), label)
+
 
 def _slugify(text: str, *, max_len: int = 60) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", (text or "").lower().strip())
@@ -206,7 +217,8 @@ def list_admin_learn_sections(*, admin_id: int) -> list[dict]:
         admin_params = _admin_filter_params(admin_id, conn)
         rows = conn.execute(
             f"""
-            SELECT subject_key, section_id, title, subject_title, subject_description, created_at
+            SELECT subject_key, section_id, title, group_id, group_title,
+                   subject_title, subject_description, created_at
             FROM learn_sections
             WHERE {_admin_filter_sql()}
             ORDER BY subject_key ASC, sort_order ASC, id ASC
@@ -218,6 +230,8 @@ def list_admin_learn_sections(*, admin_id: int) -> list[dict]:
                 "subject_key": row["subject_key"],
                 "section_id": row["section_id"],
                 "title": row["title"],
+                "group_id": row["group_id"] or LEARN_MISC_GROUP_ID,
+                "group_title": row["group_title"] or LEARN_MISC_GROUP_TITLE,
                 "subject_title": row["subject_title"]
                 or row["subject_key"].replace("-", " ").title(),
                 "subject_description": row["subject_description"] or "",
@@ -397,9 +411,12 @@ def reorder_learn_hub_collections(
     return {"scope": scope, "subject_keys": ordered}
 
 
-def _is_hidden_learn_group(group_id: str, group_title: str) -> bool:
+def _is_legacy_learn_group(group_id: str, group_title: str) -> bool:
+    """Legacy rows without a topic → bucket as Miscellaneous."""
     gid = (group_id or "").strip().lower()
     gtitle = (group_title or "").strip()
+    if gid == LEARN_MISC_GROUP_ID:
+        return False
     if gid in ("main", "ai-generated"):
         return True
     if not gtitle or gtitle.lower() in ("sections", "ai generated"):
@@ -407,13 +424,29 @@ def _is_hidden_learn_group(group_id: str, group_title: str) -> bool:
     return False
 
 
-def _ungrouped_bucket(groups_out: list, by_group: dict) -> dict:
-    key = ""
+def _miscellaneous_bucket(groups_out: list, by_group: dict) -> dict:
+    key = LEARN_MISC_GROUP_ID
     if key not in by_group:
-        bucket = {"id": "", "title": "", "sections": []}
+        bucket = {
+            "id": LEARN_MISC_GROUP_ID,
+            "title": LEARN_MISC_GROUP_TITLE,
+            "sections": [],
+        }
         groups_out.append(bucket)
         by_group[key] = bucket
     return by_group[key]
+
+
+def _sort_learn_groups(groups_out: list) -> None:
+    """Named topics first (insertion order), Miscellaneous last."""
+    misc: list[dict] = []
+    rest: list[dict] = []
+    for group in groups_out:
+        if (group.get("id") or "").lower() == LEARN_MISC_GROUP_ID:
+            misc.append(group)
+        else:
+            rest.append(group)
+    groups_out[:] = rest + misc
 
 
 def _merge_db_sections(
@@ -430,8 +463,8 @@ def _merge_db_sections(
         gid = sec.pop("group_id", "main")
         gtitle = sec.pop("group_title", "")
         loaded = {**sec, "source": "db", "group_id": gid, "group_title": gtitle}
-        if _is_hidden_learn_group(gid, gtitle):
-            bucket = _ungrouped_bucket(groups_out, by_group)
+        if _is_legacy_learn_group(gid, gtitle):
+            bucket = _miscellaneous_bucket(groups_out, by_group)
             bucket["sections"].append(loaded)
         else:
             if gid not in by_group:
@@ -440,6 +473,7 @@ def _merge_db_sections(
                 by_group[gid] = bucket
             by_group[gid]["sections"].append(loaded)
         flat_sections.append(loaded)
+    _sort_learn_groups(groups_out)
 
 
 def publish_learn_section(
@@ -450,8 +484,9 @@ def publish_learn_section(
     admin_id: int,
     subject_title: str | None = None,
     subject_description: str | None = None,
-    group_id: str = "main",
-    group_title: str = "",
+    topic: str | None = None,
+    group_id: str | None = None,
+    group_title: str | None = None,
     grade: int | None = None,
     curriculum: str | None = None,
 ) -> dict:
@@ -464,6 +499,14 @@ def publish_learn_section(
         raise ValueError("Section title is required.")
     if not markdown:
         raise ValueError("Markdown content is required.")
+
+    if topic is not None:
+        gid, gtitle = learn_topic_to_group(topic)
+    elif group_id is not None or group_title is not None:
+        gid = (group_id or "main").strip() or "main"
+        gtitle = (group_title or "").strip()
+    else:
+        gid, gtitle = learn_topic_to_group("")
 
     base_id = _slugify(section_title)
     section_id = base_id
@@ -527,8 +570,8 @@ def publish_learn_section(
                 section_id,
                 section_title,
                 markdown,
-                (group_id or "main").strip() or "main",
-                (group_title or "").strip(),
+                gid,
+                gtitle,
                 subject_title,
                 subject_description,
                 grade,
@@ -569,6 +612,7 @@ def update_learn_section(
     title: str,
     markdown: str,
     admin_id: int,
+    topic: str | None = None,
 ) -> dict:
     subject_key = subject_key.strip().lower()
     section_id = section_id.strip().lower()
@@ -620,14 +664,34 @@ def update_learn_section(
             section_id=next_section_id,
         )
 
-        conn.execute(
-            f"""
-            UPDATE learn_sections
-            SET section_id = ?, title = ?, markdown = ?
-            WHERE subject_key = ? AND section_id = ? AND {_admin_filter_sql()}
-            """,
-            (next_section_id, title, markdown, subject_key, section_id, *admin_params),
-        )
+        if topic is not None:
+            gid, gtitle = learn_topic_to_group(topic)
+            conn.execute(
+                f"""
+                UPDATE learn_sections
+                SET section_id = ?, title = ?, markdown = ?, group_id = ?, group_title = ?
+                WHERE subject_key = ? AND section_id = ? AND {_admin_filter_sql()}
+                """,
+                (
+                    next_section_id,
+                    title,
+                    markdown,
+                    gid,
+                    gtitle,
+                    subject_key,
+                    section_id,
+                    *admin_params,
+                ),
+            )
+        else:
+            conn.execute(
+                f"""
+                UPDATE learn_sections
+                SET section_id = ?, title = ?, markdown = ?
+                WHERE subject_key = ? AND section_id = ? AND {_admin_filter_sql()}
+                """,
+                (next_section_id, title, markdown, subject_key, section_id, *admin_params),
+            )
         conn.commit()
         section_id = next_section_id
     except Exception:
@@ -857,6 +921,7 @@ def get_subject(subject: str, *, admin_id: int) -> dict | None:
 
     if data:
         _merge_db_sections(subject, data["groups"], data["sections"], admin_id=admin_id)
+        _sort_learn_groups(data["groups"])
         if meta.get("grade") is not None:
             data["grade"] = meta.get("grade")
         if meta.get("curriculum"):
@@ -876,6 +941,8 @@ def get_subject(subject: str, *, admin_id: int) -> dict | None:
     _merge_db_sections(subject, groups_out, flat_sections, admin_id=admin_id)
     if not flat_sections:
         return None
+
+    _sort_learn_groups(groups_out)
 
     payload = {
         "key": subject,

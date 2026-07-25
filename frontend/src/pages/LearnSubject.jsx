@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   getLearnPageHighlights,
   getLearnPageNotes,
@@ -33,8 +33,25 @@ import {
   getStoredLearnNotesCollapsed,
   setStoredLearnNotesCollapsed,
 } from "../learnNotesUtils";
+import {
+  displayLearnGroups,
+  filterGroupsToSoloSection,
+  filterGroupsToTopic,
+  learnReaderHashScrollId,
+  learnReaderScopedQuery,
+  resolveSoloSectionId,
+  resolveTopicFilterId,
+  topicLabelFromGroups,
+} from "../learnTopics";
+import { scrollToLearnHashTarget } from "../learnReaderScroll";
 
 /* Sticky TOC sits below the page top padding in the sidebar layout. */
+
+/** AppShell back pill: sticky top-4 + button height — keep learn stickies below it. */
+const LEARN_TOC_STICKY_CLASS =
+  "sticky top-[4.75rem] z-30 mb-8 lg:mb-0 self-start max-h-[calc(100vh-5.5rem)] overflow-y-auto pr-0.5 pt-0.5";
+const LEARN_HIGHLIGHT_STICKY_CLASS =
+  "sticky top-[4.5rem] lg:top-[4.75rem] z-30 mb-6 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm shadow-sm px-3 py-2.5";
 
 export default function LearnSubject() {
   const { subjectKey } = useParams();
@@ -46,6 +63,26 @@ export default function LearnSubject() {
   const [notesByKey, setNotesByKey] = useState({});
   const [highlightsByKey, setHighlightsByKey] = useState({});
   const highlightSaveTimersRef = useRef({});
+  const scrollKeyDoneRef = useRef(null);
+  const hashScrollAllowedRef = useRef(false);
+  const locationSnapshotRef = useRef(null);
+  const notesExtrasReadyRef = useRef(false);
+  const highlightsExtrasReadyRef = useRef(false);
+  const [readerExtrasReady, setReaderExtrasReady] = useState(false);
+  const [contentVisible, setContentVisible] = useState(true);
+
+  function syncReaderExtrasReady() {
+    const ready =
+      notesExtrasReadyRef.current &&
+      highlightsExtrasReadyRef.current;
+    setReaderExtrasReady(ready);
+  }
+
+  function resetReaderExtrasReady() {
+    notesExtrasReadyRef.current = false;
+    highlightsExtrasReadyRef.current = false;
+    setReaderExtrasReady(false);
+  }
   const [sessionRole, setSessionRole] = useState(
     () => localStorage.getItem("role") || "",
   );
@@ -141,6 +178,42 @@ export default function LearnSubject() {
     [],
   );
 
+  useLayoutEffect(() => {
+    const scopedOpen = learnReaderScopedQuery(location);
+    const prev = locationSnapshotRef.current;
+    const hashOnlyNavigation =
+      prev != null &&
+      prev.search === location.search &&
+      prev.hash !== location.hash &&
+      Boolean(location.hash);
+    locationSnapshotRef.current = {
+      search: location.search,
+      hash: location.hash,
+    };
+
+    if (!location.hash) {
+      hashScrollAllowedRef.current = false;
+    } else if (hashOnlyNavigation) {
+      hashScrollAllowedRef.current = true;
+    } else if (scopedOpen) {
+      hashScrollAllowedRef.current = false;
+    } else {
+      hashScrollAllowedRef.current = true;
+    }
+  }, [location.search, location.hash]);
+
+  useEffect(() => {
+    scrollKeyDoneRef.current = null;
+    resetReaderExtrasReady();
+    const scoped = learnReaderScopedQuery(location);
+    setContentVisible(!location.hash || scoped);
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [subjectKey, location.search]);
+
+  useEffect(() => {
+    scrollKeyDoneRef.current = null;
+  }, [location.hash]);
+
   useEffect(() => {
     if (!subjectKey) return;
     setLoading(true);
@@ -153,8 +226,12 @@ export default function LearnSubject() {
   useEffect(() => {
     if (!subjectKey || !canViewLearnNotes) {
       setNotesByKey({});
+      notesExtrasReadyRef.current = true;
+      syncReaderExtrasReady();
       return;
     }
+    notesExtrasReadyRef.current = false;
+    syncReaderExtrasReady();
     getLearnPageNotes(subjectKey)
       .then(({ notes }) => {
         const map = {};
@@ -165,14 +242,22 @@ export default function LearnSubject() {
       })
       .catch(() => {
         setNotesByKey({});
+      })
+      .finally(() => {
+        notesExtrasReadyRef.current = true;
+        syncReaderExtrasReady();
       });
   }, [subjectKey, canViewLearnNotes]);
 
   useEffect(() => {
     if (!subjectKey || !canViewLearnNotes) {
       setHighlightsByKey({});
+      highlightsExtrasReadyRef.current = true;
+      syncReaderExtrasReady();
       return;
     }
+    highlightsExtrasReadyRef.current = false;
+    syncReaderExtrasReady();
     getLearnPageHighlights(subjectKey)
       .then(({ highlights }) => {
         const map = {};
@@ -183,19 +268,22 @@ export default function LearnSubject() {
       })
       .catch(() => {
         setHighlightsByKey({});
+      })
+      .finally(() => {
+        highlightsExtrasReadyRef.current = true;
+        syncReaderExtrasReady();
       });
   }, [subjectKey, canViewLearnNotes]);
 
   useEffect(() => {
-    if (!data?.sections?.length || loading) return;
-    const raw = location.hash?.replace(/^#/, "");
-    if (!raw) return;
-    const id = decodeURIComponent(raw);
-    requestAnimationFrame(() => {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }, [data, loading, location.hash]);
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      const previous = window.history.scrollRestoration;
+      window.history.scrollRestoration = "manual";
+      return () => {
+        window.history.scrollRestoration = previous;
+      };
+    }
+  }, []);
 
   const groups = useMemo(() => {
     if (!data) return [];
@@ -204,8 +292,62 @@ export default function LearnSubject() {
       : [{ id: "", title: "", sections: data.sections ?? [] }];
   }, [data]);
 
-  const { pages } = useMemo(() => buildLearnLinePages(groups), [groups]);
-  const sectionCount = useMemo(() => countLearnSections(groups), [groups]);
+  const soloSectionId = useMemo(
+    () => resolveSoloSectionId(location, data?.sections),
+    [location.search, location.hash, data?.sections],
+  );
+
+  const topicFilterId = useMemo(
+    () => resolveTopicFilterId(location, data?.sections),
+    [location.search, location.hash, data?.sections],
+  );
+
+  const scopedToTopic = Boolean(topicFilterId && !soloSectionId);
+
+  const displayGroups = useMemo(() => {
+    let filtered = groups;
+    if (soloSectionId) {
+      filtered = filterGroupsToSoloSection(filtered, soloSectionId);
+    } else if (topicFilterId) {
+      filtered = filterGroupsToTopic(filtered, topicFilterId);
+    }
+    return displayLearnGroups(filtered);
+  }, [groups, soloSectionId, topicFilterId]);
+
+  const topicFilterLabel = useMemo(
+    () => topicLabelFromGroups(groups, topicFilterId),
+    [groups, topicFilterId],
+  );
+
+  const readerScoped = Boolean(soloSectionId || topicFilterId);
+
+  const soloSectionTitle = useMemo(() => {
+    if (!soloSectionId || !data?.sections) return "";
+    const match = data.sections.find(
+      (s) => (s.id || "").toLowerCase() === soloSectionId,
+    );
+    return match?.title || "";
+  }, [soloSectionId, data?.sections]);
+
+  const soloSectionDomId = useMemo(() => {
+    if (!soloSectionId || !data?.sections) return undefined;
+    const match = data.sections.find(
+      (s) => (s.id || "").toLowerCase() === soloSectionId,
+    );
+    return match?.id;
+  }, [soloSectionId, data?.sections]);
+
+  const hashScrollTargetId = useMemo(
+    () => learnReaderHashScrollId(location, data?.sections),
+    [location.hash, location.search, data?.sections],
+  );
+
+  const { pages } = useMemo(() => buildLearnLinePages(displayGroups), [displayGroups]);
+  const sectionCount = useMemo(() => countLearnSections(displayGroups), [displayGroups]);
+  const fullCollectionSectionCount = useMemo(
+    () => countLearnSections(groups),
+    [groups],
+  );
   const { printRequest, busy: printBusy, requestPrint, clearPrint } =
     useLearnSubjectPrint();
 
@@ -226,13 +368,61 @@ export default function LearnSubject() {
     let lastGroupId = null;
     return blocks.map((block) => {
       const showGroupHeader =
-        Boolean(block.group.title) && block.group.id !== lastGroupId;
+        !readerScoped &&
+        Boolean(block.group.title) &&
+        block.group.id !== lastGroupId;
       if (showGroupHeader) {
         lastGroupId = block.group.id;
       }
       return { ...block, showGroupHeader };
     });
-  }, [pages]);
+  }, [pages, readerScoped]);
+
+  const contentReady =
+    !loading && Boolean(data?.sections?.length) && readerExtrasReady && pages.length > 0;
+
+  useLayoutEffect(() => {
+    if (!contentReady) return;
+
+    const scrollKey = `${location.pathname}${location.search}${location.hash}`;
+
+    const hashScrollId = hashScrollAllowedRef.current ? hashScrollTargetId : null;
+
+    if (!hashScrollId) {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      scrollKeyDoneRef.current = scrollKey;
+      setContentVisible(true);
+      return;
+    }
+
+    if (scrollKeyDoneRef.current === scrollKey) {
+      setContentVisible(true);
+      return;
+    }
+
+    let cancelled = false;
+    setContentVisible(false);
+    window.scrollTo({ top: 0, behavior: "auto" });
+
+    (async () => {
+      const root = document.getElementById("learn-reader-root");
+      const ok = await scrollToLearnHashTarget(hashScrollId, { root });
+      if (cancelled) return;
+      if (ok) scrollKeyDoneRef.current = scrollKey;
+      setContentVisible(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    contentReady,
+    hashScrollTargetId,
+    pages.length,
+    location.hash,
+    location.search,
+    location.pathname,
+  ]);
 
   const { sidebarCollapsed } = useShellLayout();
   const contentWidthClass =
@@ -245,18 +435,23 @@ export default function LearnSubject() {
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
         {data && !loading && (
-          <div className="lg:grid lg:grid-cols-[minmax(0,9.5rem)_minmax(0,1fr)] lg:gap-6 items-start">
-            <aside className="hidden lg:block sticky top-6 z-30 mb-8 lg:mb-0 self-start max-h-[calc(100vh-3rem)] overflow-y-auto pr-0.5">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-2">
-                On this page
+          <div
+            id="learn-reader-root"
+            className={`lg:grid lg:grid-cols-[minmax(0,9.5rem)_minmax(0,1fr)] lg:gap-6 items-start transition-opacity duration-75 [overflow-anchor:none] ${
+              contentVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+          >
+            <aside className={`hidden lg:block ${LEARN_TOC_STICKY_CLASS}`}>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+                Contents
               </p>
-              <nav className="flex flex-col gap-0.5 border-l border-slate-200 pl-2 pb-2">
-                {groups.map((g, gi) => (
+              <nav className="flex flex-col gap-0.5 border-l border-slate-200 pl-2 pb-2 text-sm">
+                {displayGroups.map((g, gi) => (
                   <div key={g.id || `toc-${gi}`}>
-                    {g.title ? (
+                    {g.title && !scopedToTopic ? (
                       <p
-                        className={`text-[10px] font-bold uppercase tracking-wide text-indigo-500 mb-0.5 leading-tight ${
-                          gi > 0 ? "mt-2" : ""
+                        className={`text-xs font-semibold uppercase tracking-wide text-indigo-700 mb-1 leading-tight ${
+                          gi > 0 ? "mt-2.5" : ""
                         }`}
                       >
                         {g.title}
@@ -266,7 +461,7 @@ export default function LearnSubject() {
                         <a
                           key={sec.id}
                           href={`#${sec.id}`}
-                          className="flex items-baseline gap-1.5 text-xs leading-snug text-slate-700 hover:text-slate-950 py-px"
+                          className="flex items-baseline gap-1.5 text-sm leading-snug text-slate-700 hover:text-slate-950 py-0.5"
                         >
                           <span className="min-w-0">{sec.title}</span>
                         </a>
@@ -279,11 +474,32 @@ export default function LearnSubject() {
             <div className="min-w-0">
               <LearnSubjectPrintHost printRequest={printRequest} onPrintDone={clearPrint} />
 
-              <h1 className="text-2xl font-bold text-slate-950 mb-3">{data.title}</h1>
-              {data.description ? (
+              <h1
+                id={soloSectionDomId}
+                className="text-2xl font-bold text-slate-950 mb-3 scroll-mt-48"
+              >
+                {soloSectionId && soloSectionTitle
+                  ? soloSectionTitle
+                  : scopedToTopic && topicFilterLabel
+                    ? topicFilterLabel
+                    : data.title}
+              </h1>
+              {readerScoped ? (
+                <p className="text-sm text-slate-600 mb-3">
+                  {data.title}
+                  {" · "}
+                  <Link
+                    to={`/student/learn/${encodeURIComponent(subjectKey)}`}
+                    className="font-semibold text-indigo-700 hover:text-indigo-900 underline"
+                  >
+                    View full collection
+                  </Link>
+                </p>
+              ) : null}
+              {!readerScoped && data.description ? (
                 <p className="text-slate-700 text-sm mb-3 leading-relaxed">{data.description}</p>
               ) : null}
-              {sectionCount > 1 ? (
+              {!readerScoped && fullCollectionSectionCount > 1 ? (
                 <p className="text-xs text-slate-500 mb-8 pb-8 border-b border-slate-200">
                   <LearnSubjectPdfTrigger
                     variant="link"
@@ -294,7 +510,7 @@ export default function LearnSubject() {
                         buildCollectionPrintRequest({
                           collectionTitle: data.title,
                           collectionDescription: data.description,
-                          groups,
+                          groups: displayGroups,
                           grade: data.grade,
                           curriculum: data.curriculum,
                         }),
@@ -311,12 +527,14 @@ export default function LearnSubject() {
               )}
 
               <div className="lg:hidden sticky top-44 z-30 mb-8 rounded-xl border border-slate-200 bg-slate-50/95 backdrop-blur-sm shadow-sm p-4">
-                <p className="text-xs font-semibold text-slate-600 mb-2">Sections</p>
-                <div className="flex flex-col gap-3">
-                  {groups.map((g, gi) => (
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+                  Contents
+                </p>
+                <div className="flex flex-col gap-3 text-sm">
+                  {displayGroups.map((g, gi) => (
                     <div key={g.id || `mob-${gi}`}>
-                      {g.title ? (
-                        <p className="text-[11px] font-bold uppercase tracking-wide text-indigo-500 mb-1.5">
+                      {g.title && !scopedToTopic ? (
+                        <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700 mb-1.5">
                           {g.title}
                         </p>
                       ) : null}
@@ -325,7 +543,7 @@ export default function LearnSubject() {
                             <a
                               key={sec.id}
                               href={`#${sec.id}`}
-                              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-800 bg-slate-100 px-2 py-1 rounded-lg"
+                              className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg"
                             >
                               {sec.title}
                             </a>
@@ -337,7 +555,7 @@ export default function LearnSubject() {
               </div>
 
               {showHighlightToolbar ? (
-                <div className="sticky top-[4.5rem] lg:top-6 z-30 mb-6 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm shadow-sm px-3 py-2.5">
+                <div className={LEARN_HIGHLIGHT_STICKY_CLASS}>
                   <LearnHighlightToolbar
                     activeColor={highlightColor}
                     onActiveColorChange={setHighlightColor}
@@ -357,14 +575,7 @@ export default function LearnSubject() {
                 {sectionBlocks.map((block) => {
                   const showGroupHeader = block.showGroupHeader;
 
-                  const sectionHeading = block.group.title ? (
-                    <h3
-                      id={block.section.id}
-                      className="text-base font-bold text-slate-950 scroll-mt-48 min-w-0 flex-1"
-                    >
-                      {block.section.title}
-                    </h3>
-                  ) : (
+                  const sectionHeading = soloSectionId ? null : (
                     <h2
                       id={block.section.id}
                       className="text-lg font-bold text-slate-950 scroll-mt-48 min-w-0 flex-1"
@@ -373,8 +584,31 @@ export default function LearnSubject() {
                     </h2>
                   );
 
-                  const sectionHeadingRow = (
-                    <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                  const sectionHeadingRow = soloSectionId ? (
+                    <div className="flex flex-wrap items-start justify-end gap-3 mb-2">
+                      <LearnSubjectPdfTrigger
+                        label="PDF"
+                        title={`Download “${block.section.title}” as PDF`}
+                        busy={printBusy}
+                        onClick={() =>
+                          requestPrint(
+                            buildSectionPrintRequest({
+                              collectionTitle: data.title,
+                              collectionDescription: data.description,
+                              groups,
+                              sectionId: block.section.id,
+                              sectionTitle: block.section.title,
+                              grade: data.grade,
+                              curriculum: data.curriculum,
+                            }),
+                          )
+                        }
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={`flex flex-wrap items-start justify-between gap-3 mb-4`}
+                    >
                       {sectionHeading}
                       <LearnSubjectPdfTrigger
                         label="PDF"
@@ -404,9 +638,9 @@ export default function LearnSubject() {
                     >
                       {showGroupHeader ? (
                         <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-2 border-b border-slate-100">
-                          <h2 className="text-lg font-bold text-slate-950">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
                             {block.group.title}
-                          </h2>
+                          </p>
                         </div>
                       ) : null}
 
@@ -422,7 +656,10 @@ export default function LearnSubject() {
                             <LearnPageHighlightMarkdown markdown={page.markdown} />
                           ) : (
                             <div className="learn-md">
-                              <LearnMarkdown markdown={page.markdown} />
+                              <LearnMarkdown
+                                markdown={page.markdown}
+                                eagerImages={page.isFirstPageOfSection}
+                              />
                             </div>
                           );
 

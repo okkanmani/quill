@@ -8,10 +8,16 @@ import {
   markdownHasPendingLearnImages,
 } from "../learnImageMarkdown";
 import { forgetPendingLearnImagesInMarkdown } from "../learnPendingImages";
+import {
+  authorTopicFromSection,
+  learnSectionReaderUrl,
+  sectionForReaderUrl,
+} from "../learnTopics";
 
 export default function LearnResourceEditor({ subjectKey, sectionId }) {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
+  const [topic, setTopic] = useState("");
   const [markdown, setMarkdown] = useState("");
   const [collectionTitle, setCollectionTitle] = useState("");
   const [loading, setLoading] = useState(true);
@@ -31,6 +37,7 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
         }
         setCollectionTitle(data.title || subjectKey);
         setTitle(section.title || "");
+        setTopic(authorTopicFromSection(section));
         setMarkdown(section.markdown || "");
         setError("");
       })
@@ -56,12 +63,16 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
       const markdownForPublish = expandPendingLearnImagesInMarkdown(markdown.trim());
       const result = await updateLearnSection(subjectKey, sectionId, {
         title: title.trim(),
+        topic: topic.trim(),
         markdown: markdownForPublish,
       });
       forgetPendingLearnImagesInMarkdown(markdown);
-      navigate(`/student/learn/${result.subject_key}#${result.section_id}`, {
-        replace: true,
-      });
+      navigate(
+        learnSectionReaderUrl(
+          sectionForReaderUrl(result.subject_key, result.section_id, topic.trim()),
+        ),
+        { replace: true },
+      );
     } catch (err) {
       setError(err.message || "Could not republish.");
     } finally {
@@ -87,7 +98,9 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
     );
   }
 
-  const learnUrl = `/student/learn/${subjectKey}#${sectionId}`;
+  const learnUrl = learnSectionReaderUrl(
+    sectionForReaderUrl(subjectKey, sectionId, topic.trim()),
+  );
 
   const republishLabel = saving
     ? markdownHasPendingLearnImages(markdown)
@@ -96,29 +109,42 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
     : "Republish";
 
   return (
-    <LearnMarkdownEditor
-      title={title}
-      markdown={markdown}
-      onTitleChange={setTitle}
-      onMarkdownChange={setMarkdown}
-      titleHint="Shown as the heading on the learning resource page."
-      publishLabel={republishLabel}
-      onPublish={handleRepublish}
-      publishing={saving}
-      error={error}
-      headerActions={
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mr-2">
-            {collectionTitle}
-          </p>
-          <Link
-            to={learnUrl}
-            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
-          >
-            Cancel
-          </Link>
-        </div>
-      }
-    />
+    <div className="space-y-4">
+      <label className="block text-sm font-semibold text-slate-800 max-w-xl">
+        Topic <span className="font-normal text-slate-500">(optional)</span>
+        <input
+          type="text"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          placeholder="e.g. Calculus — leave blank for Miscellaneous"
+          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        />
+      </label>
+      <LearnMarkdownEditor
+        title={title}
+        markdown={markdown}
+        onTitleChange={setTitle}
+        onMarkdownChange={setMarkdown}
+        titleLabel="Sub-topic"
+        titleHint="One focused slice — shown as the section heading."
+        publishLabel={republishLabel}
+        onPublish={handleRepublish}
+        publishing={saving}
+        error={error}
+        headerActions={
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mr-2">
+              {collectionTitle}
+            </p>
+            <Link
+              to={learnUrl}
+              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
+            >
+              Cancel
+            </Link>
+          </div>
+        }
+      />
+    </div>
   );
 }

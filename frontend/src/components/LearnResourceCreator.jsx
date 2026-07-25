@@ -12,6 +12,7 @@ import {
   markdownHasPendingLearnImages,
 } from "../learnImageMarkdown";
 import { forgetPendingLearnImagesInMarkdown } from "../learnPendingImages";
+import { learnSectionReaderUrl, sectionForReaderUrl } from "../learnTopics";
 import { BUILDER_SUBJECTS, GRADE_OPTIONS } from "../questionBuilderUtils";
 
 export default function LearnResourceCreator() {
@@ -20,6 +21,7 @@ export default function LearnResourceCreator() {
   const [subject, setSubject] = useState("math");
   const [grade, setGrade] = useState(initialGrade);
   const [curriculum, setCurriculum] = useState("");
+  const [topic, setTopic] = useState("");
   const [sectionTitle, setSectionTitle] = useState("");
   const [markdown, setMarkdown] = useState("");
   const [customPrompt, setCustomPrompt] = useState("");
@@ -66,7 +68,7 @@ export default function LearnResourceCreator() {
       return;
     }
     if (!sectionTitle.trim()) {
-      setError("Section title is required.");
+      setError("Sub-topic is required.");
       return;
     }
 
@@ -84,6 +86,7 @@ export default function LearnResourceCreator() {
             grade,
             curriculum: curriculum.trim(),
             section_title: sectionTitle.trim(),
+            topic: topic.trim(),
             custom_prompt: customPrompt.trim(),
           })
         : await publishLearnResource({
@@ -91,11 +94,13 @@ export default function LearnResourceCreator() {
             grade,
             curriculum: curriculum.trim(),
             section_title: sectionTitle.trim(),
+            topic: topic.trim(),
             markdown: markdownForPublish,
           });
 
-      setSuccess(result);
+      setSuccess({ ...result, published_topic: topic.trim() });
       forgetPendingLearnImagesInMarkdown(markdown);
+      setTopic("");
       setSectionTitle("");
       setMarkdown("");
       setCustomPrompt("");
@@ -117,7 +122,13 @@ export default function LearnResourceCreator() {
   }
 
   const learnLink = success
-    ? `/student/learn/${success.subject_key}#${success.section_id}`
+    ? learnSectionReaderUrl(
+        sectionForReaderUrl(
+          success.subject_key,
+          success.section_id,
+          success.published_topic,
+        ),
+      )
     : null;
 
   const publishLabel = publishing
@@ -133,17 +144,23 @@ export default function LearnResourceCreator() {
   return (
     <div className="min-w-0">
       <p className="text-slate-600 text-sm mb-4 leading-relaxed">
-        Create learning resources for students. Write markdown with the formatting
-        toolbar and live preview, or generate a draft with AI.
+        Publish one learning section at a time — a focused sub-topic students read in one
+        sitting. Optional topic groups sections (e.g. Calculus → Limits). Leave topic blank
+        to place the section under Miscellaneous. This is not a course generator.
       </p>
 
       <div className="mb-4 rounded-xl border border-teal-200 bg-teal-50/70 px-4 py-3 text-sm text-teal-950 leading-relaxed">
-        <p className="font-semibold">How learning resources work</p>
+        <p className="font-semibold">One section = one slice</p>
         <ul className="mt-2 space-y-1 list-disc pl-5 text-teal-900/90">
-          <li>Resources are grouped by subject, grade, and curriculum.</li>
-          <li>Students read them under Learning Resources in the app.</li>
-          <li>Use markdown for headings, lists, math, and emphasis.</li>
-          <li>Paste or insert images in the editor; they upload to storage when you publish.</li>
+          <li>
+            Collections group by subject, grade, and curriculum; topics organize sections
+            inside a collection.
+          </li>
+          <li>
+            Example: topic <span className="font-medium">Calculus</span>, sub-topic{" "}
+            <span className="font-medium">Limits — intuitive idea</span>.
+          </li>
+          <li>Students see topics and sections on the Learn page and in the reader contents.</li>
         </ul>
       </div>
 
@@ -209,18 +226,41 @@ export default function LearnResourceCreator() {
         ) : null}
 
         <label className="block text-sm font-semibold text-slate-800">
-          Section title
+          Topic{" "}
+          <span className="font-normal text-slate-500">(optional)</span>
+          <input
+            type="text"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            placeholder="e.g. Calculus"
+            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          />
+          <span className="mt-1 block text-xs font-normal text-slate-500">
+            Groups related sections. If empty, this section goes under Miscellaneous.
+          </span>
+        </label>
+
+        <label className="block text-sm font-semibold text-slate-800">
+          Sub-topic{" "}
+          <span className="font-normal text-slate-500">(required)</span>
           <input
             type="text"
             value={sectionTitle}
             onChange={(e) => setSectionTitle(e.target.value)}
-            placeholder="e.g. Fractions — adding unlike denominators"
+            placeholder="e.g. Limits — intuitive idea of getting closer"
             className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
           />
           <span className="mt-1 block text-xs font-normal text-slate-500">
-            Shown as the heading on the learning resource page.
+            Shown as the section heading — one focused slice, not a whole course.
           </span>
         </label>
+
+        {buildUsingAi ? (
+          <p className="text-sm text-indigo-950 rounded-xl border border-indigo-200 bg-indigo-50/80 px-3 py-2.5 leading-relaxed">
+            AI writes one section (~500–800 words) for the sub-topic only. Naming the topic
+            and sub-topic yourself gives the best results.
+          </p>
+        ) : null}
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <label className="block text-sm font-semibold text-slate-800">
