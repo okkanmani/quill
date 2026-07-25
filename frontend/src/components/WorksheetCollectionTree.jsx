@@ -209,6 +209,25 @@ function CollectionRowHeader({
   );
 }
 
+/** Visual nesting for sections below top-level (Practice, Timed, …). */
+function nestedCollectionNestClass(depth) {
+  if (depth < 1) return "";
+  if (depth === 1) {
+    return "ml-2 sm:ml-3 pl-3 sm:pl-4";
+  }
+  return "ml-1 sm:ml-1.5 pl-2 sm:pl-2.5";
+}
+
+function nestedExpandedBodyClass(depth) {
+  return depth <= 1
+    ? "flex flex-col gap-3 pb-1 pt-0.5 pl-2 sm:pl-3"
+    : "flex flex-col gap-3 pb-1 pt-0.5 pl-1 sm:pl-2";
+}
+
+function nestedWorksheetInsetClass(depth) {
+  return depth <= 1 ? "pl-1 sm:pl-1.5 ml-1.5 sm:ml-2" : "pl-0.5 sm:pl-1 ml-1 sm:ml-1.5";
+}
+
 function CollectionNode({
   node,
   worksheets,
@@ -280,9 +299,7 @@ function CollectionNode({
   const expandedBody = open ? (
     <div
       className={
-        isNested
-          ? "flex flex-col gap-3 pb-1 pl-1 sm:pl-2"
-          : "p-3 flex flex-col gap-3 bg-slate-50/40"
+        isNested ? nestedExpandedBodyClass(depth) : "p-3 flex flex-col gap-3 bg-slate-50/40"
       }
     >
       {adminMode && !isRoot && items.length > 0 ? (
@@ -337,15 +354,17 @@ function CollectionNode({
       ))}
 
       {!isRoot && sortedItems.length > 0 ? (
-        <WorksheetsBySubject
-          worksheets={sortedItems}
-          onOpenWorksheet={onOpenWorksheet}
-          onOpenTest={onOpenTest}
-          renderSideAction={renderSideAction}
-          renderLeadingAction={renderLeadingAction}
-          ungrouped
-          preserveOrder
-        />
+        <div className={nestedWorksheetInsetClass(depth)}>
+          <WorksheetsBySubject
+            worksheets={sortedItems}
+            onOpenWorksheet={onOpenWorksheet}
+            onOpenTest={onOpenTest}
+            renderSideAction={renderSideAction}
+            renderLeadingAction={renderLeadingAction}
+            ungrouped
+            preserveOrder
+          />
+        </div>
       ) : null}
 
       {adminMode && emptyRoot ? (
@@ -399,7 +418,7 @@ function CollectionNode({
   }
 
   return (
-    <div className={shellClass}>
+    <div className={`${shellClass} ${nestedCollectionNestClass(depth)}`}>
       <CollectionRowHeader
         displayTitle={displayTitle}
         meta={nestedMeta}
