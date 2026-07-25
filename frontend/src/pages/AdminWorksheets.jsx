@@ -40,6 +40,7 @@ export default function AdminWorksheets() {
   const [deleting, setDeleting] = useState(false);
   const [worksheetSections, setWorksheetSections] = useState({ sections: [] });
   const [moveTarget, setMoveTarget] = useState(null);
+  const [bulkMoveOpen, setBulkMoveOpen] = useState(false);
   const [moveSaving, setMoveSaving] = useState(false);
   const [moveCollectionTarget, setMoveCollectionTarget] = useState(null);
   const [moveCollectionSaving, setMoveCollectionSaving] = useState(false);
@@ -77,6 +78,7 @@ export default function AdminWorksheets() {
 
   function clearSelection() {
     setSelectedIds(new Set());
+    setBulkMoveOpen(false);
   }
 
   async function deleteWorksheets(ids) {
@@ -162,6 +164,8 @@ export default function AdminWorksheets() {
   );
 
   const selectedCount = selectedIds.size;
+
+  const selectionBusy = deleting || moveSaving;
 
   async function handleAddCollection({ title, parentId }) {
     setAddCollectionSaving(true);
@@ -251,26 +255,68 @@ export default function AdminWorksheets() {
   }
 
   async function handleMoveConfirm(payload) {
-    if (!moveTarget) return;
+    const ids = bulkMoveOpen
+      ? [...selectedIds]
+      : moveTarget
+        ? [moveTarget.id]
+        : [];
+    if (ids.length === 0) return;
+
     setMoveSaving(true);
     setError("");
+    const moved = [];
+    const failed = [];
+
     try {
-      const result = await assignWorksheetSection(moveTarget.id, payload);
-      setWorksheets((prev) =>
-        prev.map((row) =>
-          row.id === moveTarget.id
-            ? { ...row, admin_section_id: result.admin_section_id ?? undefined }
-            : row,
-        ),
-      );
-      setStatusMessage(`Moved “${moveTarget.title}”.`);
-      setMoveTarget(null);
-      loadWorksheets({ preserveError: true });
-    } catch (err) {
-      setError(err.message || "Could not move worksheet.");
+      for (const id of ids) {
+        try {
+          await assignWorksheetSection(id, payload);
+          moved.push(id);
+        } catch {
+          const ws = worksheets.find((w) => w.id === id);
+          failed.push(ws?.title || id);
+        }
+      }
+
+      if (moved.length > 0) {
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          for (const id of moved) next.delete(id);
+          return next;
+        });
+        if (ids.length === 1) {
+          const ws = worksheets.find((w) => w.id === ids[0]);
+          setStatusMessage(`Moved “${ws?.title ?? "worksheet"}”.`);
+        } else {
+          setStatusMessage(`Moved ${moved.length} worksheets.`);
+        }
+        setMoveTarget(null);
+        setBulkMoveOpen(false);
+        loadWorksheets({ preserveError: true });
+      }
+
+      if (failed.length > 0) {
+        setError(`Could not move: ${failed.join(", ")}.`);
+      }
     } finally {
       setMoveSaving(false);
     }
+  }
+
+  function openSingleMove(ws) {
+    setBulkMoveOpen(false);
+    setMoveTarget(ws);
+  }
+
+  function openBulkMove() {
+    setMoveTarget(null);
+    setBulkMoveOpen(true);
+  }
+
+  function closeMoveDialog() {
+    if (moveSaving) return;
+    setMoveTarget(null);
+    setBulkMoveOpen(false);
   }
 
   function renderWorksheetLeadingAction(ws) {
@@ -283,7 +329,7 @@ export default function AdminWorksheets() {
           type="checkbox"
           checked={selectedIds.has(ws.id)}
           onChange={() => toggleSelected(ws.id)}
-          disabled={deleting}
+          disabled={selectionBusy}
           aria-label={`Select ${ws.title}`}
           className="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
         />
@@ -296,8 +342,8 @@ export default function AdminWorksheets() {
       <>
         <MoveActionButton
           label={`Move ${ws.title}`}
-          disabled={deleting}
-          onClick={() => setMoveTarget(ws)}
+          disabled={selectionBusy}
+          onClick={() => openSingleMove(ws)}
         />
         <EditActionButton
           to={
@@ -306,12 +352,12 @@ export default function AdminWorksheets() {
               : `/admin/create/worksheet?edit=${encodeURIComponent(ws.id)}`
           }
           label={`Edit ${ws.title}`}
-          disabled={deleting}
+          disabled={selectionBusy}
         />
         <RecycleBinButton
           onClick={() => handleDelete(ws)}
           label={`Delete ${ws.title}`}
-          disabled={deleting}
+          disabled={selectionBusy}
         />
       </>
     );
@@ -354,15 +400,24 @@ export default function AdminWorksheets() {
                 <span className="text-sm font-semibold text-slate-800 tabular-nums">
                   {selectedCount} selected
                 </span>
+                <MoveActionButton
+                  label={
+                    moveSaving
+                      ? "Moving selected worksheets…"
+                      : "Move selected worksheets"
+                  }
+                  disabled={selectionBusy}
+                  onClick={openBulkMove}
+                />
                 <RecycleBinButton
                   label={deleting ? "Deleting selected worksheets…" : "Delete selected worksheets"}
-                  disabled={deleting}
+                  disabled={selectionBusy}
                   onClick={handleDeleteSelected}
                 />
                 <button
                   type="button"
                   onClick={clearSelection}
-                  disabled={deleting}
+                  disabled={selectionBusy}
                   title="Clear selection"
                   aria-label="Clear selection"
                   className="inline-flex shrink-0 items-center justify-center rounded-lg border w-7 h-7 bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800 disabled:opacity-50 transition"
@@ -411,7 +466,7 @@ export default function AdminWorksheets() {
                         ? "Organizing worksheets…"
                         : "Organize unassigned worksheets into sections"
                     }
-                    disabled={organizing || deleting}
+                    disabled={organizing || selectionBusy}
                     onClick={handleOrganizeUnassigned}
                   />
                 </div>
@@ -467,13 +522,12 @@ export default function AdminWorksheets() {
       />
 
       <WorksheetMoveDialog
-        open={Boolean(moveTarget)}
+        open={Boolean(moveTarget) || bulkMoveOpen}
         worksheet={moveTarget}
+        bulkCount={bulkMoveOpen ? selectedCount : 0}
         sections={worksheetSections.sections}
         saving={moveSaving}
-        onCancel={() => {
-          if (!moveSaving) setMoveTarget(null);
-        }}
+        onCancel={closeMoveDialog}
         onConfirm={handleMoveConfirm}
       />
 

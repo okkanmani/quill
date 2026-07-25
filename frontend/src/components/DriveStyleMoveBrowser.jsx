@@ -35,7 +35,10 @@ function sortSections(list) {
 
 function breadcrumbTrail(sections, browseId, rootLabel) {
   if (browseId === MOVE_BROWSE_UNASSIGNED) {
-    return [{ id: MOVE_BROWSE_UNASSIGNED, title: "Unassigned" }];
+    return [
+      { id: null, title: rootLabel },
+      { id: MOVE_BROWSE_UNASSIGNED, title: "Unassigned" },
+    ];
   }
   if (browseId == null) {
     return [{ id: null, title: rootLabel }];

@@ -9,6 +9,7 @@ import DriveStyleMoveBrowser, {
 export default function WorksheetMoveDialog({
   open,
   worksheet,
+  bulkCount = 0,
   sections,
   onCancel,
   onConfirm,
@@ -19,19 +20,22 @@ export default function WorksheetMoveDialog({
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [mergedSections, setMergedSections] = useState([]);
 
+  const isBulk = bulkCount > 0;
   const currentSectionId = worksheet?.admin_section_id || null;
 
   useEffect(() => {
     if (!open) return;
     setMergedSections([]);
-    if (currentSectionId) {
+    if (isBulk) {
+      setBrowseId(null);
+    } else if (currentSectionId) {
       setBrowseId(currentSectionId);
     } else {
       setBrowseId(MOVE_BROWSE_UNASSIGNED);
     }
-  }, [open, worksheet?.id, currentSectionId]);
+  }, [open, worksheet?.id, currentSectionId, isBulk]);
 
-  if (!open || !worksheet) return null;
+  if (!open || (!worksheet && !isBulk)) return null;
 
   const moveHereOk = worksheetMoveHereAllowed(browseId, [
     ...(sections || []),
@@ -69,11 +73,24 @@ export default function WorksheetMoveDialog({
         className="fixed left-1/2 top-1/2 z-50 w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-[14px] border border-slate-200 bg-white px-6 py-[22px] shadow-lg max-h-[min(90vh,34rem)] overflow-y-auto"
       >
         <h2 id={titleId} className="font-semibold text-[15px] text-slate-950 m-0 mb-1">
-          Move &ldquo;{worksheet.title}&rdquo;
+          {isBulk ? (
+            <>Move {bulkCount} worksheets</>
+          ) : (
+            <>Move &ldquo;{worksheet.title}&rdquo;</>
+          )}
         </h2>
         <p className="text-[13px] text-slate-600 m-0 mb-4 leading-relaxed">
-          Open a folder, then choose <span className="font-medium">Move here</span>.
-          You can create a new folder in the location you are viewing.
+          {isBulk ? (
+            <>
+              Choose a destination for all selected worksheets. Open a folder,
+              then choose <span className="font-medium">Move here</span>.
+            </>
+          ) : (
+            <>
+              Open a folder, then choose <span className="font-medium">Move here</span>.
+              You can create a new folder in the location you are viewing.
+            </>
+          )}
         </p>
 
         <DriveStyleMoveBrowser
