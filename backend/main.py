@@ -28,6 +28,10 @@ from admin_secrets import (
     resolve_openai_api_key,
     set_admin_openai_api_key,
 )
+from admin_preferences import (
+    expert_json_warning_enabled,
+    set_expert_json_warning_enabled,
+)
 from ai_worksheet import generate_worksheet_draft, generate_test_draft
 from ai_learn import generate_learn_resource
 from ai_focus_discussion import generate_focus_discussion_reference
@@ -35,7 +39,7 @@ from focus_practice import (
     build_manual_focus_practice_worksheet,
     generate_focus_practice_worksheet,
 )
-from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
+from fastapi import FastAPI, File, Header, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from pydantic import BaseModel
@@ -146,6 +150,7 @@ from worksheets import (
     unlock_gifted_track_week,
     unlock_timed_worksheet,
     upsert_worksheet_from_data,
+    validate_worksheet_data,
     strip_reference_answers_for_student,
 )
 
@@ -375,6 +380,10 @@ class WorksheetContextBankSaveRequest(BaseModel):
 
 class AdminOpenAiKeyRequest(BaseModel):
     api_key: str
+
+
+class AdminPreferencesRequest(BaseModel):
+    expert_json_warning_enabled: bool
 
 
 class GenerateLearnResourceRequest(BaseModel):
@@ -786,6 +795,37 @@ async def admin_upload_worksheet(
         raise HTTPException(status_code=400, detail=detail)
 
     return result
+
+
+@app.post("/admin/worksheets/validate")
+async def admin_validate_worksheet(
+    request: Request,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    try:
+        data = await request.json()
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail=["Request body must be valid JSON."])
+
+    if not isinstance(data, dict):
+        raise HTTPException(status_code=400, detail=["JSON must be an object."])
+
+    errors = validate_worksheet_data(data)
+    if errors:
+        raise HTTPException(status_code=400, detail=errors)
+
+    questions = data.get("questions") or []
+    return {
+        "valid": True,
+        "title": data.get("title"),
+        "subject": str(data.get("subject", "general")).strip().lower(),
+        "question_count": len(questions),
+        "is_test": data.get("is_test") is True,
+    }
 
 
 @app.get("/admin/learn/link-options")
@@ -1512,6 +1552,23 @@ def admin_get_settings(authorization: str = Header(...)):
     return {
         "openai_key_configured": admin_openai_key_configured(payload["admin_id"]),
         "ai_enabled": not ai_disabled,
+        "expert_json_warning_enabled": expert_json_warning_enabled(payload["admin_id"]),
+    }
+
+
+@app.put("/admin/settings/preferences")
+def admin_set_preferences(
+    req: AdminPreferencesRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    set_expert_json_warning_enabled(
+        payload["admin_id"], req.expert_json_warning_enabled
+    )
+    return {
+        "expert_json_warning_enabled": req.expert_json_warning_enabled,
     }
 
 

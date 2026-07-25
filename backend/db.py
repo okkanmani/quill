@@ -169,6 +169,10 @@ def init_schema() -> None:
             conn.execute(
                 "ALTER TABLE admins ADD COLUMN plan TEXT NOT NULL DEFAULT 'standard'"
             )
+        if "expert_json_warning_enabled" not in admin_cols:
+            conn.execute(
+                "ALTER TABLE admins ADD COLUMN expert_json_warning_enabled INTEGER NOT NULL DEFAULT 1"
+            )
         orphans = conn.execute(
             """
             SELECT id FROM admins

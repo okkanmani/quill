@@ -184,6 +184,29 @@ export async function uploadWorksheet(file) {
   return res.json();
 }
 
+export async function validateWorksheetJson(data) {
+  const res = await apiFetch(`${BASE_URL}/admin/worksheets/validate`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const error = new Error("Validation failed");
+    if (Array.isArray(d)) {
+      error.details = d;
+    } else if (typeof d === "string") {
+      error.details = [d];
+    } else {
+      error.details = ["Validation failed"];
+    }
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
+
 export async function updateWorksheetFromBuilder(worksheetId, payload) {
   const res = await apiFetch(`${BASE_URL}/admin/worksheets/${worksheetId}`, {
     method: "PUT",
@@ -1191,6 +1214,21 @@ export async function getAdminSettings() {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to load settings");
+  return res.json();
+}
+
+export async function saveAdminPreferences(preferences) {
+  const res = await apiFetch(`${BASE_URL}/admin/settings/preferences`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(preferences),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to save preferences";
+    throw new Error(msg);
+  }
   return res.json();
 }
 
