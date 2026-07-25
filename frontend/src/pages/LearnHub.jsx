@@ -6,6 +6,7 @@ import {
   getLearnSubject,
   getLearnSubjects,
   reorderLearnHubCollections,
+  reorderLearnSections,
   updateLearnSection,
 } from "../api";
 import EditActionButton from "../components/EditActionButton";
@@ -184,6 +185,97 @@ function reorderList(items, fromIndex, toIndex) {
   return next;
 }
 
+function reorderPublishedSections(flatList, subjectKey, orderedSections) {
+  const result = [];
+  let inserted = false;
+  for (const section of flatList) {
+    if (section.subject_key === subjectKey) {
+      if (!inserted) {
+        result.push(...orderedSections);
+        inserted = true;
+      }
+      continue;
+    }
+    result.push(section);
+  }
+  if (!inserted) {
+    result.push(...orderedSections);
+  }
+  return result;
+}
+
+function SortableSectionList({
+  subjectKey,
+  sections,
+  reorderingSubjectKey,
+  onReorder,
+  renderSection,
+}) {
+  const [dragIndex, setDragIndex] = useState(null);
+  const [dropIndex, setDropIndex] = useState(null);
+  const busy = reorderingSubjectKey === subjectKey;
+
+  if (sections.length < 2) {
+    return sections.map((section) => renderSection(section));
+  }
+
+  async function finishDrop(targetIndex) {
+    if (dragIndex === null || dragIndex === targetIndex) {
+      setDragIndex(null);
+      setDropIndex(null);
+      return;
+    }
+    const ordered = reorderList(sections, dragIndex, targetIndex);
+    setDragIndex(null);
+    setDropIndex(null);
+    await onReorder(subjectKey, ordered);
+  }
+
+  return sections.map((section, index) => (
+    <div
+      key={`${section.subject_key}-${section.section_id}`}
+      onDragOver={(event) => {
+        event.preventDefault();
+        if (dragIndex !== null && dragIndex !== index) setDropIndex(index);
+      }}
+      onDragLeave={() => {
+        if (dropIndex === index) setDropIndex(null);
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        finishDrop(index);
+      }}
+      className={`flex gap-2 sm:gap-3 transition-opacity ${
+        dragIndex === index ? "opacity-40" : ""
+      } ${dropIndex === index ? "ring-2 ring-indigo-300 ring-offset-2 rounded-2xl" : ""}`}
+    >
+      <div className="flex items-start justify-center shrink-0 pt-5">
+        <button
+          type="button"
+          aria-label={`Drag to reorder ${section.title}`}
+          draggable={!busy}
+          onDragStart={(event) => {
+            setDragIndex(index);
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", section.section_id);
+          }}
+          onDragEnd={() => {
+            setDragIndex(null);
+            setDropIndex(null);
+          }}
+          className="cursor-grab active:cursor-grabbing rounded-lg border border-slate-200 bg-white px-1.5 py-2.5 text-slate-400 hover:text-slate-600 hover:border-slate-300 transition touch-none disabled:opacity-40"
+          disabled={busy}
+        >
+          <span aria-hidden className="block text-sm leading-none tracking-tighter">
+            ⋮⋮
+          </span>
+        </button>
+      </div>
+      <div className="flex-1 min-w-0">{renderSection(section)}</div>
+    </div>
+  ));
+}
+
 function SortableSubjectList({
   scope,
   subjects,
@@ -262,7 +354,21 @@ function SubjectCard({
   onDelete,
   onTitleSave,
   titleSavingKey,
+  reorderingSectionsSubjectKey,
+  onReorderSections,
 }) {
+  const renderPublishedRow = (section) => (
+    <PublishedResourceRow
+      key={`${section.subject_key}-${section.section_id}`}
+      section={section}
+      deleting={deleting}
+      onDelete={isAdmin ? onDelete : undefined}
+      onTitleSave={onTitleSave}
+      titleSavingKey={titleSavingKey}
+      compact
+    />
+  );
+
   if (publishedSections.length > 0) {
     return (
       <div className="rounded-xl border border-slate-200 bg-slate-50/80 overflow-hidden">
@@ -278,17 +384,22 @@ function SubjectCard({
           ) : null}
         </Link>
         <div className="border-t border-slate-200 bg-white px-4 py-4 flex flex-col gap-3">
-          {publishedSections.map((section) => (
-            <PublishedResourceRow
-              key={`${section.subject_key}-${section.section_id}`}
-              section={section}
-              deleting={deleting}
-              onDelete={isAdmin ? onDelete : undefined}
-              onTitleSave={onTitleSave}
-              titleSavingKey={titleSavingKey}
-              compact
-            />
-          ))}
+          {isAdmin && publishedSections.length >= 2 ? (
+            <>
+              <p className="text-[10px] font-medium text-slate-500 -mb-1">
+                Drag ⋮⋮ to reorder sections in this collection
+              </p>
+              <SortableSectionList
+                subjectKey={subject.key}
+                sections={publishedSections}
+                reorderingSubjectKey={reorderingSectionsSubjectKey}
+                onReorder={onReorderSections}
+                renderSection={renderPublishedRow}
+              />
+            </>
+          ) : (
+            publishedSections.map((section) => renderPublishedRow(section))
+          )}
         </div>
       </div>
     );
@@ -355,6 +466,7 @@ export default function LearnHub() {
   const [pendingDelete, setPendingDelete] = useState(null);
   const [titleSavingKey, setTitleSavingKey] = useState(null);
   const [reorderingScope, setReorderingScope] = useState(null);
+  const [reorderingSectionsSubjectKey, setReorderingSectionsSubjectKey] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState(() => new Set(["math"]));
   const isAdmin = localStorage.getItem("role") === "admin";
 
@@ -509,6 +621,31 @@ export default function LearnHub() {
     }
   }
 
+  async function handleReorderSections(subjectKey, orderedSections) {
+    if (orderedSections.length < 2) return;
+
+    setReorderingSectionsSubjectKey(subjectKey);
+    setError("");
+    setStatusMessage("");
+    const previousSections = publishedSections;
+    setPublishedSections(
+      reorderPublishedSections(publishedSections, subjectKey, orderedSections),
+    );
+
+    try {
+      await reorderLearnSections(
+        subjectKey,
+        orderedSections.map((section) => section.section_id),
+      );
+      setStatusMessage("Section order updated.");
+    } catch (err) {
+      setPublishedSections(previousSections);
+      setError(err.message || "Could not reorder sections.");
+    } finally {
+      setReorderingSectionsSubjectKey(null);
+    }
+  }
+
   async function confirmDeleteSection() {
     if (!pendingDelete) return;
 
@@ -544,6 +681,8 @@ export default function LearnHub() {
         onDelete={isAdmin ? requestDeleteSection : undefined}
         onTitleSave={isAdmin ? saveSectionTitle : undefined}
         titleSavingKey={titleSavingKey}
+        reorderingSectionsSubjectKey={reorderingSectionsSubjectKey}
+        onReorderSections={isAdmin ? handleReorderSections : undefined}
       />
     );
   }
@@ -578,16 +717,40 @@ export default function LearnHub() {
                     {group.subjectTitle}
                   </p>
                   <div className="flex flex-col gap-3">
-                    {group.sections.map((section) => (
-                      <PublishedResourceRow
-                        key={`${section.subject_key}-${section.section_id}`}
-                        section={section}
-                        deleting={deleting}
-                        onDelete={requestDeleteSection}
-                        onTitleSave={saveSectionTitle}
-                        titleSavingKey={titleSavingKey}
-                      />
-                    ))}
+                    {group.sections.length >= 2 ? (
+                      <>
+                        <p className="text-[10px] font-medium text-slate-500">
+                          Drag ⋮⋮ to reorder sections
+                        </p>
+                        <SortableSectionList
+                          subjectKey={group.subjectKey}
+                          sections={group.sections}
+                          reorderingSubjectKey={reorderingSectionsSubjectKey}
+                          onReorder={handleReorderSections}
+                          renderSection={(section) => (
+                            <PublishedResourceRow
+                              key={`${section.subject_key}-${section.section_id}`}
+                              section={section}
+                              deleting={deleting}
+                              onDelete={requestDeleteSection}
+                              onTitleSave={saveSectionTitle}
+                              titleSavingKey={titleSavingKey}
+                            />
+                          )}
+                        />
+                      </>
+                    ) : (
+                      group.sections.map((section) => (
+                        <PublishedResourceRow
+                          key={`${section.subject_key}-${section.section_id}`}
+                          section={section}
+                          deleting={deleting}
+                          onDelete={requestDeleteSection}
+                          onTitleSave={saveSectionTitle}
+                          titleSavingKey={titleSavingKey}
+                        />
+                      ))
+                    )}
                   </div>
                 </div>
               ))}
