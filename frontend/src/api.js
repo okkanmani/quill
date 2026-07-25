@@ -163,6 +163,46 @@ export async function deleteWorksheet(id) {
   return res.json();
 }
 
+export async function restoreWorksheet(id, { data, sortTs, sectionId }) {
+  const res = await apiFetch(`${BASE_URL}/admin/worksheets/${encodeURIComponent(id)}/restore`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      data,
+      sort_ts: sortTs ?? null,
+      admin_section_id: sectionId ?? null,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const detail = err.detail;
+    const msg = Array.isArray(detail)
+      ? detail.join(" ")
+      : detail || "Failed to restore worksheet";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function restoreWorksheetSections({ sections, assignments }) {
+  const res = await apiFetch(`${BASE_URL}/admin/worksheet-sections/restore`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ sections, assignments: assignments ?? [] }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to restore sections");
+  }
+  return res.json();
+}
+
 export async function getWorksheetCollections() {
   const res = await apiFetch(`${BASE_URL}/worksheet-collections`, {
     headers: authHeaders(),

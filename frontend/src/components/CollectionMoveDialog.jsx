@@ -9,34 +9,42 @@ import { descendantSectionIds, isRootSection } from "../worksheetCollectionTree"
 export default function CollectionMoveDialog({
   open,
   collection,
+  bulkCount = 0,
   sections,
   onCancel,
   onConfirm,
   saving = false,
+  blockedIds: blockedIdsProp = null,
 }) {
   const titleId = useId();
   const [browseId, setBrowseId] = useState(null);
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [mergedSections, setMergedSections] = useState([]);
 
+  const isBulk = bulkCount > 0;
+
   const blockedIds = useMemo(() => {
+    if (blockedIdsProp) return blockedIdsProp;
     if (!collection?.id) return new Set();
     const desc = descendantSectionIds(sections, collection.id);
     desc.add(collection.id);
     return desc;
-  }, [sections, collection?.id]);
+  }, [sections, collection?.id, blockedIdsProp]);
 
   useEffect(() => {
-    if (!open || !collection) return;
+    if (!open) return;
+    if (!collection && !isBulk) return;
     setMergedSections([]);
-    if (!isRootSection(collection) && collection.parent_id) {
+    if (isBulk) {
+      setBrowseId(null);
+    } else if (!isRootSection(collection) && collection.parent_id) {
       setBrowseId(collection.parent_id);
     } else {
       setBrowseId(null);
     }
-  }, [open, collection]);
+  }, [open, collection, isBulk]);
 
-  if (!open || !collection) return null;
+  if (!open || (!collection && !isBulk)) return null;
 
   const moveHereOk = sectionMoveHereAllowed(browseId, blockedIds);
   const movingToTopLevel = browseId == null;
@@ -53,6 +61,7 @@ export default function CollectionMoveDialog({
 
   async function handleMoveHere() {
     if (!moveHereOk || saving) return;
+    if (isBulk && browseId == null) return;
     await onConfirm({ parentId: browseIdToSectionParentId(browseId) });
   }
 
@@ -71,11 +80,25 @@ export default function CollectionMoveDialog({
         className="fixed left-1/2 top-1/2 z-50 w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-[14px] border border-slate-200 bg-white px-6 py-[22px] shadow-lg max-h-[min(90vh,34rem)] overflow-y-auto"
       >
         <h2 id={titleId} className="font-semibold text-[15px] text-slate-950 m-0 mb-1">
-          Move &ldquo;{collection.title}&rdquo;
+          {isBulk ? (
+            <>Move {bulkCount} sections</>
+          ) : (
+            <>Move &ldquo;{collection.title}&rdquo;</>
+          )}
         </h2>
         <p className="text-[13px] text-slate-600 m-0 mb-4 leading-relaxed">
-          Open a folder, then choose <span className="font-medium">Move here</span>.
-          Use <span className="font-medium">New folder</span> to add one in the current location.
+          {isBulk ? (
+            <>
+              Choose a new parent for all selected sections. Open a folder, then
+              choose <span className="font-medium">Move here</span>.
+            </>
+          ) : (
+            <>
+              Open a folder, then choose <span className="font-medium">Move here</span>.
+              Use <span className="font-medium">New folder</span> to add one in the
+              current location.
+            </>
+          )}
         </p>
 
         <DriveStyleMoveBrowser
@@ -90,7 +113,14 @@ export default function CollectionMoveDialog({
           onLocalSectionsChange={setMergedSections}
         />
 
-        {willHoldWorksheets ? (
+        {isBulk ? (
+          movingToTopLevel ? (
+            <p className="text-[12px] text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 m-0 mt-3">
+              Moving to top level is only for top-level sections. Pick a folder
+              under Practice, Timed, or another root.
+            </p>
+          ) : null
+        ) : willHoldWorksheets ? (
           <p className="text-[12px] text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 m-0 mt-3">
             After this move, &ldquo;{collection.title}&rdquo; can contain worksheets.
           </p>
@@ -113,7 +143,7 @@ export default function CollectionMoveDialog({
           <button
             type="button"
             onClick={handleMoveHere}
-            disabled={saving || !moveHereOk}
+            disabled={saving || !moveHereOk || (isBulk && browseId == null)}
             className="rounded-xl border border-indigo-600 bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-40"
           >
             {saving ? "Moving…" : "Move here"}

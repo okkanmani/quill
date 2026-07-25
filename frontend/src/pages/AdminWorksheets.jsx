@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   deleteWorksheet,
+  getWorksheet,
   getWorksheets,
   logout,
   getAdminWorksheetSections,
@@ -10,6 +11,8 @@ import {
   moveWorksheetCollection,
   organizeUnassignedWorksheets,
   deleteWorksheetCollection,
+  restoreWorksheet,
+  restoreWorksheetSections,
 } from "../api";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
@@ -27,7 +30,43 @@ import TimedAckDialog from "../components/TimedAckDialog";
 import StatusToast from "../components/StatusToast";
 import AdminWorksheetCollectionTree from "../components/AdminWorksheetCollectionTree";
 import { unassignedWorksheets, descendantSectionIds } from "../worksheetCollectionTree";
-import { useAutoDismissToast } from "../useAutoDismissToast";
+import { useAutoDismissToast, TOAST_AUTO_DISMISS_MS } from "../useAutoDismissToast";
+
+const TOAST_UNDO_MS = 8000;
+
+function collectSectionDeleteSnapshot(rootIds, sections, worksheets) {
+  const idSet = new Set();
+  for (const id of rootIds) {
+    idSet.add(id);
+    for (const descId of descendantSectionIds(sections, id)) {
+      idSet.add(descId);
+    }
+  }
+  const sectionRows = sections.filter((s) => idSet.has(s.id));
+  const assignments = worksheets
+    .filter((ws) => ws.admin_section_id && idSet.has(ws.admin_section_id))
+    .map((ws) => ({
+      worksheet_id: ws.id,
+      section_id: ws.admin_section_id,
+    }));
+  return { sections: sectionRows, assignments };
+}
+
+async function snapshotWorksheetsForRestore(ids, worksheets) {
+  const snapshots = [];
+  for (const id of ids) {
+    const row = worksheets.find((w) => w.id === id);
+    const data = await getWorksheet(id);
+    const { unlock_schedule: _unlockSchedule, ...worksheetData } = data;
+    snapshots.push({
+      id,
+      data: worksheetData,
+      sortTs: row?.sort_ts ?? null,
+      sectionId: row?.admin_section_id ?? null,
+    });
+  }
+  return snapshots;
+}
 
 export default function AdminWorksheets() {
   const navigate = useNavigate();
@@ -35,21 +74,65 @@ export default function AdminWorksheets() {
   const [worksheets, setWorksheets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
+  const [toast, setToast] = useState(null);
+  const [undoing, setUndoing] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [selectedSectionIds, setSelectedSectionIds] = useState(() => new Set());
   const [deleting, setDeleting] = useState(false);
+  const [deletingSections, setDeletingSections] = useState(false);
   const [worksheetSections, setWorksheetSections] = useState({ sections: [] });
   const [moveTarget, setMoveTarget] = useState(null);
   const [bulkMoveOpen, setBulkMoveOpen] = useState(false);
   const [moveSaving, setMoveSaving] = useState(false);
   const [moveCollectionTarget, setMoveCollectionTarget] = useState(null);
+  const [bulkSectionMoveOpen, setBulkSectionMoveOpen] = useState(false);
   const [moveCollectionSaving, setMoveCollectionSaving] = useState(false);
   const [addCollection, setAddCollection] = useState(null);
   const [addCollectionSaving, setAddCollectionSaving] = useState(false);
   const [organizing, setOrganizing] = useState(false);
   const [sectionDeleteAck, setSectionDeleteAck] = useState(null);
 
-  useAutoDismissToast(statusMessage, setStatusMessage);
+  useAutoDismissToast(
+    toast?.message ?? "",
+    () => setToast(null),
+    toast?.onUndo ? TOAST_UNDO_MS : TOAST_AUTO_DISMISS_MS,
+  );
+
+  function showToast(message, { onUndo = null } = {}) {
+    setToast(onUndo ? { message, onUndo } : { message });
+  }
+
+  async function runToastUndo() {
+    if (!toast?.onUndo || undoing) return;
+    setUndoing(true);
+    setError("");
+    try {
+      await toast.onUndo();
+      setToast(null);
+      loadWorksheets({ preserveError: true });
+      showToast("Restored.");
+    } catch (err) {
+      setError(err.message || "Could not undo.");
+    } finally {
+      setUndoing(false);
+    }
+  }
+
+  async function runSectionDeleteUndo() {
+    if (!sectionDeleteAck?.onUndo || undoing) return;
+    setUndoing(true);
+    setError("");
+    try {
+      await sectionDeleteAck.onUndo();
+      setSectionDeleteAck(null);
+      loadWorksheets({ preserveError: true });
+      showToast("Section restored.");
+    } catch (err) {
+      setError(err.message || "Could not undo.");
+    } finally {
+      setUndoing(false);
+    }
+  }
 
   function loadWorksheets({ preserveError = false } = {}) {
     setLoading(true);
@@ -76,9 +159,20 @@ export default function AdminWorksheets() {
     });
   }
 
+  function toggleSectionSelected(id) {
+    setSelectedSectionIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
   function clearSelection() {
     setSelectedIds(new Set());
+    setSelectedSectionIds(new Set());
     setBulkMoveOpen(false);
+    setBulkSectionMoveOpen(false);
   }
 
   async function deleteWorksheets(ids) {
@@ -101,8 +195,15 @@ export default function AdminWorksheets() {
     setError("");
     const removed = [];
     const failed = [];
+    let restoreSnapshots = [];
 
     try {
+      try {
+        restoreSnapshots = await snapshotWorksheetsForRestore(list, worksheets);
+      } catch {
+        restoreSnapshots = [];
+      }
+
       for (const id of list) {
         try {
           await deleteWorksheet(id);
@@ -120,10 +221,31 @@ export default function AdminWorksheets() {
           for (const id of removed) next.delete(id);
           return next;
         });
-        setStatusMessage(
+        const undoSnapshots = restoreSnapshots.filter((s) =>
+          removed.includes(s.id),
+        );
+        const previewTitle =
           removed.length === 1
-            ? `Deleted ${removed[0]}.`
+            ? worksheets.find((w) => w.id === removed[0])?.title || removed[0]
+            : null;
+        showToast(
+          removed.length === 1
+            ? `Deleted “${previewTitle}”.`
             : `Deleted ${removed.length} worksheets.`,
+          {
+            onUndo:
+              undoSnapshots.length > 0
+                ? async () => {
+                    for (const snap of undoSnapshots) {
+                      await restoreWorksheet(snap.id, {
+                        data: snap.data,
+                        sortTs: snap.sortTs,
+                        sectionId: snap.sectionId,
+                      });
+                    }
+                  }
+                : null,
+          },
         );
       }
 
@@ -164,8 +286,25 @@ export default function AdminWorksheets() {
   );
 
   const selectedCount = selectedIds.size;
+  const selectedSectionCount = selectedSectionIds.size;
+  const anySelected = selectedCount > 0 || selectedSectionCount > 0;
 
-  const selectionBusy = deleting || moveSaving;
+  const bulkSectionBlockedIds = useMemo(() => {
+    const blocked = new Set();
+    for (const id of selectedSectionIds) {
+      blocked.add(id);
+      for (const descId of descendantSectionIds(
+        worksheetSections.sections,
+        id,
+      )) {
+        blocked.add(descId);
+      }
+    }
+    return blocked;
+  }, [selectedSectionIds, worksheetSections.sections]);
+
+  const selectionBusy =
+    deleting || deletingSections || moveSaving || moveCollectionSaving;
 
   async function handleAddCollection({ title, parentId }) {
     setAddCollectionSaving(true);
@@ -203,9 +342,19 @@ export default function AdminWorksheets() {
     );
     if (!ok) return;
     setError("");
+    const sectionSnapshot = collectSectionDeleteSnapshot(
+      [section.id],
+      worksheetSections.sections,
+      worksheets,
+    );
     try {
       await deleteWorksheetCollection(section.id);
-      setSectionDeleteAck(section.title);
+      setSectionDeleteAck({
+        title: section.title,
+        onUndo: async () => {
+          await restoreWorksheetSections(sectionSnapshot);
+        },
+      });
       loadWorksheets({ preserveError: true });
     } catch (err) {
       setError(err.message || "Could not delete section.");
@@ -224,7 +373,7 @@ export default function AdminWorksheets() {
     setError("");
     try {
       const result = await organizeUnassignedWorksheets();
-      setStatusMessage(
+      showToast(
         `Organized ${result.assigned_count} worksheet(s) into ${result.sections_created} new sub-section(s).`,
       );
       loadWorksheets({ preserveError: true });
@@ -235,23 +384,129 @@ export default function AdminWorksheets() {
     }
   }
 
+  async function handleDeleteSelectedSections() {
+    const list = [...selectedSectionIds];
+    if (list.length === 0) return;
+
+    const ok = window.confirm(
+      list.length === 1
+        ? "Delete the selected section? Worksheets inside will become unassigned."
+        : `Delete ${list.length} selected sections? Worksheets inside will become unassigned.`,
+    );
+    if (!ok) return;
+
+    const sectionSnapshot = collectSectionDeleteSnapshot(
+      list,
+      worksheetSections.sections,
+      worksheets,
+    );
+
+    setDeletingSections(true);
+    setError("");
+    const removed = [];
+    const failed = [];
+
+    try {
+      for (const id of list) {
+        try {
+          await deleteWorksheetCollection(id);
+          removed.push(id);
+        } catch {
+          const row = worksheetSections.sections.find((s) => s.id === id);
+          failed.push(row?.title || id);
+        }
+      }
+
+      if (removed.length > 0) {
+        setSelectedSectionIds((prev) => {
+          const next = new Set(prev);
+          for (const id of removed) next.delete(id);
+          return next;
+        });
+        showToast(
+          removed.length === 1
+            ? "Deleted 1 section."
+            : `Deleted ${removed.length} sections.`,
+          {
+            onUndo: async () => {
+              await restoreWorksheetSections(sectionSnapshot);
+            },
+          },
+        );
+        loadWorksheets({ preserveError: true });
+      }
+
+      if (failed.length > 0) {
+        setError(`Could not delete sections: ${failed.join(", ")}.`);
+      }
+    } finally {
+      setDeletingSections(false);
+    }
+  }
+
   async function handleMoveCollectionConfirm(payload) {
-    if (!moveCollectionTarget) return;
+    const ids = bulkSectionMoveOpen
+      ? [...selectedSectionIds]
+      : moveCollectionTarget
+        ? [moveCollectionTarget.id]
+        : [];
+    if (ids.length === 0) return;
+
     setMoveCollectionSaving(true);
     setError("");
+    const moved = [];
+    const failed = [];
+
     try {
-      await moveWorksheetCollection(
-        moveCollectionTarget.id,
-        payload.parentId ?? null,
-      );
-      setStatusMessage(`Moved section “${moveCollectionTarget.title}”.`);
-      setMoveCollectionTarget(null);
-      loadWorksheets({ preserveError: true });
-    } catch (err) {
-      setError(err.message || "Could not move section.");
+      for (const id of ids) {
+        try {
+          await moveWorksheetCollection(id, payload.parentId ?? null);
+          moved.push(id);
+        } catch {
+          const row = worksheetSections.sections.find((s) => s.id === id);
+          failed.push(row?.title || id);
+        }
+      }
+
+      if (moved.length > 0) {
+        setSelectedSectionIds((prev) => {
+          const next = new Set(prev);
+          for (const id of moved) next.delete(id);
+          return next;
+        });
+        if (ids.length === 1) {
+          const row = worksheetSections.sections.find((s) => s.id === ids[0]);
+          showToast(`Moved section “${row?.title ?? "section"}”.`);
+        } else {
+          showToast(`Moved ${moved.length} sections.`);
+        }
+        setMoveCollectionTarget(null);
+        setBulkSectionMoveOpen(false);
+        loadWorksheets({ preserveError: true });
+      }
+
+      if (failed.length > 0) {
+        setError(`Could not move sections: ${failed.join(", ")}.`);
+      }
     } finally {
       setMoveCollectionSaving(false);
     }
+  }
+
+  function openMoveCollection(section) {
+    setBulkSectionMoveOpen(false);
+    setMoveCollectionTarget(section);
+  }
+
+  function openBulkSectionMove() {
+    setMoveCollectionTarget(null);
+    setBulkSectionMoveOpen(true);
+  }
+
+  function closeSectionMoveDialog() {
+    if (moveCollectionSaving) return;
+    setMoveCollectionTarget(null);
+    setBulkSectionMoveOpen(false);
   }
 
   async function handleMoveConfirm(payload) {
@@ -286,9 +541,9 @@ export default function AdminWorksheets() {
         });
         if (ids.length === 1) {
           const ws = worksheets.find((w) => w.id === ids[0]);
-          setStatusMessage(`Moved “${ws?.title ?? "worksheet"}”.`);
+          showToast(`Moved “${ws?.title ?? "worksheet"}”.`);
         } else {
-          setStatusMessage(`Moved ${moved.length} worksheets.`);
+          showToast(`Moved ${moved.length} worksheets.`);
         }
         setMoveTarget(null);
         setBulkMoveOpen(false);
@@ -395,25 +650,59 @@ export default function AdminWorksheets() {
 
         {!loading && !error && (worksheets.length > 0 || worksheetSections.sections?.length > 0) && (
           <>
-            {selectedCount > 0 ? (
+            {anySelected ? (
               <div className="sticky top-0 z-30 -mx-1 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-3 shadow-md">
                 <span className="text-sm font-semibold text-slate-800 tabular-nums">
-                  {selectedCount} selected
+                  {selectedCount > 0 && selectedSectionCount > 0
+                    ? `${selectedCount} worksheet${selectedCount === 1 ? "" : "s"}, ${selectedSectionCount} section${selectedSectionCount === 1 ? "" : "s"}`
+                    : selectedCount > 0
+                      ? `${selectedCount} worksheet${selectedCount === 1 ? "" : "s"}`
+                      : `${selectedSectionCount} section${selectedSectionCount === 1 ? "" : "s"}`}
                 </span>
-                <MoveActionButton
-                  label={
-                    moveSaving
-                      ? "Moving selected worksheets…"
-                      : "Move selected worksheets"
-                  }
-                  disabled={selectionBusy}
-                  onClick={openBulkMove}
-                />
-                <RecycleBinButton
-                  label={deleting ? "Deleting selected worksheets…" : "Delete selected worksheets"}
-                  disabled={selectionBusy}
-                  onClick={handleDeleteSelected}
-                />
+                {selectedCount > 0 ? (
+                  <>
+                    <MoveActionButton
+                      label={
+                        moveSaving
+                          ? "Moving selected worksheets…"
+                          : "Move selected worksheets"
+                      }
+                      disabled={selectionBusy}
+                      onClick={openBulkMove}
+                    />
+                    <RecycleBinButton
+                      label={
+                        deleting
+                          ? "Deleting selected worksheets…"
+                          : "Delete selected worksheets"
+                      }
+                      disabled={selectionBusy}
+                      onClick={handleDeleteSelected}
+                    />
+                  </>
+                ) : null}
+                {selectedSectionCount > 0 ? (
+                  <>
+                    <MoveActionButton
+                      label={
+                        moveCollectionSaving
+                          ? "Moving selected sections…"
+                          : "Move selected sections"
+                      }
+                      disabled={selectionBusy}
+                      onClick={openBulkSectionMove}
+                    />
+                    <RecycleBinButton
+                      label={
+                        deletingSections
+                          ? "Deleting selected sections…"
+                          : "Delete selected sections"
+                      }
+                      disabled={selectionBusy}
+                      onClick={handleDeleteSelectedSections}
+                    />
+                  </>
+                ) : null}
                 <button
                   type="button"
                   onClick={clearSelection}
@@ -450,8 +739,11 @@ export default function AdminWorksheets() {
               onAddSubCollection={(parentId) =>
                 setAddCollection({ variant: "nested", fixedParentId: parentId })
               }
-              onMoveCollection={(section) => setMoveCollectionTarget(section)}
+              onMoveCollection={openMoveCollection}
               onDeleteCollection={handleDeleteCollection}
+              selectedSectionIds={selectedSectionIds}
+              onToggleSectionSelected={toggleSectionSelected}
+              sectionSelectionDisabled={selectionBusy}
             />
 
             {worksheetsNotInCollections.length > 0 ? (
@@ -471,7 +763,7 @@ export default function AdminWorksheets() {
                   />
                 </div>
                 {unassignedThinkingQuest.length > 0 ? (
-                  <div className="mb-4 rounded-2xl border border-slate-300 bg-white shadow-sm overflow-hidden p-3 bg-slate-50/40">
+                  <div className="mb-4 rounded-2xl border border-slate-300 bg-white shadow-sm overflow-hidden p-2 sm:p-2.5 bg-slate-50/40">
                     <ThinkingQuestByWeek
                       worksheets={unassignedThinkingQuest}
                       onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
@@ -496,16 +788,20 @@ export default function AdminWorksheets() {
         )}
       </div>
 
-      <StatusToast message={statusMessage} />
+      <StatusToast
+        message={toast?.message}
+        onUndo={toast?.onUndo ? runToastUndo : null}
+        undoDisabled={undoing}
+      />
 
       <CollectionMoveDialog
-        open={Boolean(moveCollectionTarget)}
+        open={Boolean(moveCollectionTarget) || bulkSectionMoveOpen}
         collection={moveCollectionTarget}
+        bulkCount={bulkSectionMoveOpen ? selectedSectionCount : 0}
         sections={worksheetSections.sections}
+        blockedIds={bulkSectionMoveOpen ? bulkSectionBlockedIds : null}
         saving={moveCollectionSaving}
-        onCancel={() => {
-          if (!moveCollectionSaving) setMoveCollectionTarget(null);
-        }}
+        onCancel={closeSectionMoveDialog}
         onConfirm={handleMoveCollectionConfirm}
       />
 
@@ -535,10 +831,12 @@ export default function AdminWorksheets() {
         open={Boolean(sectionDeleteAck)}
         message={
           sectionDeleteAck
-            ? `Section “${sectionDeleteAck}” was deleted.`
+            ? `Section “${sectionDeleteAck.title}” was deleted.`
             : ""
         }
         onClose={() => setSectionDeleteAck(null)}
+        onUndo={sectionDeleteAck?.onUndo ? runSectionDeleteUndo : null}
+        undoDisabled={undoing}
       />
     </AppShell>
   );

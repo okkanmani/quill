@@ -213,19 +213,15 @@ function CollectionRowHeader({
 function nestedCollectionNestClass(depth) {
   if (depth < 1) return "";
   if (depth === 1) {
-    return "ml-2 sm:ml-3 pl-3 sm:pl-4";
+    return "pl-0.5 sm:pl-1";
   }
-  return "ml-1 sm:ml-1.5 pl-2 sm:pl-2.5";
+  return "pl-0 sm:pl-0.5";
 }
 
 function nestedExpandedBodyClass(depth) {
   return depth <= 1
-    ? "flex flex-col gap-3 pb-1 pt-0.5 pl-2 sm:pl-3"
-    : "flex flex-col gap-3 pb-1 pt-0.5 pl-1 sm:pl-2";
-}
-
-function nestedWorksheetInsetClass(depth) {
-  return depth <= 1 ? "pl-1 sm:pl-1.5 ml-1.5 sm:ml-2" : "pl-0.5 sm:pl-1 ml-1 sm:ml-1.5";
+    ? "flex flex-col gap-2 pb-0.5 pt-0 pl-0 sm:pl-0.5"
+    : "flex flex-col gap-2 pb-0.5 pt-0 pl-0";
 }
 
 function CollectionNode({
@@ -240,6 +236,9 @@ function CollectionNode({
   onAddSubCollection,
   onMoveCollection,
   onDeleteCollection,
+  selectedSectionIds = null,
+  onToggleSectionSelected = null,
+  sectionSelectionDisabled = false,
 }) {
   const [open, setOpen] = useState(false);
   const [sortMode, setSortMode] = useState(SECTION_SORT_STATUS);
@@ -259,6 +258,26 @@ function CollectionNode({
   const emptyRoot = isRoot && childCount === 0;
   const displayTitle = collectionDisplayTitle(node);
   const isNested = !isRoot;
+  const sectionSelectable =
+    adminMode && isNested && selectedSectionIds && onToggleSectionSelected;
+
+  const sectionCheckbox = sectionSelectable ? (
+    <label
+      className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition shrink-0 mt-0.5"
+      title={`Select section ${displayTitle}`}
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
+    >
+      <input
+        type="checkbox"
+        checked={selectedSectionIds.has(node.id)}
+        onChange={() => onToggleSectionSelected(node.id)}
+        disabled={sectionSelectionDisabled}
+        aria-label={`Select section ${displayTitle}`}
+        className="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+      />
+    </label>
+  ) : null;
 
   const shellClass = isNested
     ? "overflow-hidden"
@@ -299,7 +318,7 @@ function CollectionNode({
   const expandedBody = open ? (
     <div
       className={
-        isNested ? nestedExpandedBodyClass(depth) : "p-3 flex flex-col gap-3 bg-slate-50/40"
+        isNested ? nestedExpandedBodyClass(depth) : "px-1.5 py-2 sm:px-2 flex flex-col gap-2 bg-slate-50/40"
       }
     >
       {adminMode && !isRoot && items.length > 0 ? (
@@ -350,21 +369,22 @@ function CollectionNode({
           onAddSubCollection={onAddSubCollection}
           onMoveCollection={onMoveCollection}
           onDeleteCollection={onDeleteCollection}
+          selectedSectionIds={selectedSectionIds}
+          onToggleSectionSelected={onToggleSectionSelected}
+          sectionSelectionDisabled={sectionSelectionDisabled}
         />
       ))}
 
       {!isRoot && sortedItems.length > 0 ? (
-        <div className={nestedWorksheetInsetClass(depth)}>
-          <WorksheetsBySubject
-            worksheets={sortedItems}
-            onOpenWorksheet={onOpenWorksheet}
-            onOpenTest={onOpenTest}
-            renderSideAction={renderSideAction}
-            renderLeadingAction={renderLeadingAction}
-            ungrouped
-            preserveOrder
-          />
-        </div>
+        <WorksheetsBySubject
+          worksheets={sortedItems}
+          onOpenWorksheet={onOpenWorksheet}
+          onOpenTest={onOpenTest}
+          renderSideAction={renderSideAction}
+          renderLeadingAction={renderLeadingAction}
+          ungrouped
+          preserveOrder
+        />
       ) : null}
 
       {adminMode && emptyRoot ? (
@@ -418,16 +438,19 @@ function CollectionNode({
   }
 
   return (
-    <div className={`${shellClass} ${nestedCollectionNestClass(depth)}`}>
-      <CollectionRowHeader
-        displayTitle={displayTitle}
-        meta={nestedMeta}
-        open={open}
-        onToggle={toggle}
-        adminInlineActions={adminToolbarInline}
-        smallChevron
-      />
-      {expandedBody}
+    <div className={`flex gap-1 min-w-0 ${nestedCollectionNestClass(depth)}`}>
+      {sectionCheckbox}
+      <div className={`flex-1 min-w-0 ${shellClass}`}>
+        <CollectionRowHeader
+          displayTitle={displayTitle}
+          meta={nestedMeta}
+          open={open}
+          onToggle={toggle}
+          adminInlineActions={adminToolbarInline}
+          smallChevron
+        />
+        {expandedBody}
+      </div>
     </div>
   );
 }
@@ -443,6 +466,9 @@ export default function WorksheetCollectionTree({
   onAddSubCollection,
   onMoveCollection,
   onDeleteCollection,
+  selectedSectionIds = null,
+  onToggleSectionSelected = null,
+  sectionSelectionDisabled = false,
 }) {
   const roots = buildSectionTree(sections);
   if (roots.length === 0) return null;
@@ -463,6 +489,9 @@ export default function WorksheetCollectionTree({
           onAddSubCollection={onAddSubCollection}
           onMoveCollection={onMoveCollection}
           onDeleteCollection={onDeleteCollection}
+          selectedSectionIds={selectedSectionIds}
+          onToggleSectionSelected={onToggleSectionSelected}
+          sectionSelectionDisabled={sectionSelectionDisabled}
         />
       ))}
     </div>

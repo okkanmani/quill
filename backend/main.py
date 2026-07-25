@@ -152,6 +152,7 @@ from worksheets import (
     upsert_worksheet_from_data,
     validate_worksheet_data,
     strip_reference_answers_for_student,
+    restore_worksheet,
 )
 from worksheet_sections import (
     assign_worksheet_section,
@@ -160,6 +161,7 @@ from worksheet_sections import (
     move_section,
     organize_unassigned_worksheets,
     delete_section,
+    restore_sections,
 )
 
 
@@ -783,6 +785,63 @@ def remove_worksheet(worksheet_id: str, authorization: str = Header(...)):
     if not delete_worksheet(worksheet_id, admin_id=_admin_id(payload)):
         raise HTTPException(status_code=404, detail="Worksheet not found")
     return {"message": "Worksheet deleted"}
+
+
+class RestoreWorksheetRequest(BaseModel):
+    data: dict
+    admin_section_id: str | None = None
+    sort_ts: int | None = None
+
+
+@app.post("/admin/worksheets/{worksheet_id}/restore")
+async def admin_restore_worksheet(
+    worksheet_id: str,
+    req: RestoreWorksheetRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    if not isinstance(req.data, dict):
+        raise HTTPException(status_code=400, detail="Worksheet data must be an object.")
+    try:
+        return restore_worksheet(
+            worksheet_id,
+            req.data,
+            admin_id=_admin_id(payload),
+            admin_section_id=req.admin_section_id,
+            sort_ts=req.sort_ts,
+        )
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid worksheet data."]
+        if isinstance(errors, list):
+            detail = errors
+        else:
+            detail = [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
+
+
+class RestoreWorksheetSectionsRequest(BaseModel):
+    sections: list[dict]
+    assignments: list[dict] | None = None
+
+
+@app.post("/admin/worksheet-sections/restore")
+def admin_restore_worksheet_sections(
+    req: RestoreWorksheetSectionsRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return restore_sections(
+            admin_id=_admin_id(payload),
+            sections=req.sections,
+            assignments=req.assignments,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.post("/admin/worksheets/upload")

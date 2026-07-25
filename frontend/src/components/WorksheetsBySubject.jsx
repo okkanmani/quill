@@ -88,11 +88,11 @@ function WorksheetRow({
   return (
     <div
       className={`flex flex-row items-start min-w-0 ${
-        compact ? "gap-1.5 sm:gap-2" : "gap-2 sm:gap-3"
+        compact ? "gap-1" : "gap-2 sm:gap-3"
       }`}
     >
       {renderLeadingAction ? (
-        <div className={`shrink-0 self-start ${compact ? "pt-3" : "pt-5"}`}>
+        <div className={`shrink-0 self-start ${compact ? "pt-1.5" : "pt-5"}`}>
           {renderLeadingAction(ws)}
         </div>
       ) : null}
@@ -112,7 +112,7 @@ function WorksheetRow({
           onClick={handleOpen}
           disabled={accessLocked || timedBlocked}
           className={`flex-1 text-left ${
-            compact ? "p-3 pb-2" : "p-5 pb-3"
+            compact ? "p-1.5 pb-1" : "p-5 pb-3"
           } ${accessLocked || timedBlocked ? "cursor-not-allowed" : ""}`}
         >
           <div className="flex items-start justify-between gap-3">
@@ -153,7 +153,7 @@ function WorksheetRow({
         </button>
         <div
           className={`flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-slate-100 bg-slate-50/50 ${
-            compact ? "px-3 py-2" : "px-5 py-3"
+            compact ? "px-1.5 py-1" : "px-5 py-3"
           }`}
         >
           <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
@@ -255,7 +255,7 @@ export default function WorksheetsBySubject({
           showSort ? ungroupedSort : SECTION_SORT_STATUS,
         );
     return (
-      <div className={`flex flex-col ${renderLeadingAction ? "gap-3" : "gap-4"}`}>
+      <div className={`flex flex-col ${renderLeadingAction ? "gap-1.5" : "gap-4"}`}>
         {showSort ? (
           <div className="flex items-center justify-end gap-2 px-1">
             <label

@@ -8,6 +8,9 @@ export default function TimedAckDialog({
   onClose,
   autoCloseMs = DEFAULT_AUTO_CLOSE_MS,
   okLabel = "OK",
+  onUndo,
+  undoLabel = "Undo",
+  undoDisabled = false,
 }) {
   const titleId = useId();
   const onCloseRef = useRef(onClose);
@@ -56,13 +59,25 @@ export default function TimedAckDialog({
           <p className="text-xs text-slate-500 m-0 tabular-nums">
             Closes in {secondsLeft}s
           </p>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-xl border border-indigo-600 bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700"
-          >
-            {okLabel}
-          </button>
+          <div className="flex items-center gap-2">
+            {onUndo ? (
+              <button
+                type="button"
+                onClick={onUndo}
+                disabled={undoDisabled}
+                className="rounded-xl border border-slate-300 bg-white px-4 py-1.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 disabled:opacity-50"
+              >
+                {undoLabel}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-indigo-600 bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700"
+            >
+              {okLabel}
+            </button>
+          </div>
         </div>
       </div>
     </>

@@ -594,6 +594,99 @@ def organize_unassigned_worksheets(*, admin_id: int) -> dict:
 BUILTIN_ROOT_SECTION_IDS = frozenset(ROOT_SECTION_BY_KIND.values())
 
 
+def restore_sections(
+    *,
+    admin_id: int,
+    sections: list[dict],
+    assignments: list[dict] | None = None,
+) -> dict:
+    """Restore sections removed by delete_section and re-assign worksheets."""
+    if not sections:
+        raise ValueError("No sections to restore.")
+
+    by_id: dict[str, dict] = {}
+    for raw in sections:
+        sid = (raw.get("id") or "").strip()
+        if sid:
+            by_id[sid] = raw
+
+    ordered: list[dict] = []
+    seen: set[str] = set()
+    visiting: set[str] = set()
+
+    def visit(sid: str) -> None:
+        if sid in seen or sid not in by_id:
+            return
+        if sid in visiting:
+            return
+        visiting.add(sid)
+        parent = by_id[sid].get("parent_id")
+        if parent and str(parent).strip() and str(parent) in by_id:
+            visit(str(parent))
+        visiting.discard(sid)
+        seen.add(sid)
+        ordered.append(by_id[sid])
+
+    for sid in by_id:
+        visit(sid)
+
+    conn = db.connect()
+    try:
+        ensure_worksheet_section_schema(conn)
+        restored = 0
+        for s in ordered:
+            sid = (s.get("id") or "").strip()
+            if not sid or sid in BUILTIN_ROOT_SECTION_IDS:
+                continue
+            if _fetch_section(conn, admin_id, sid):
+                continue
+            parent_id = _normalize_parent_id(s.get("parent_id"))
+            if parent_id:
+                _validate_parent(conn, admin_id, parent_id)
+            created_at = s.get("created_at") or datetime.now(timezone.utc).isoformat()
+            conn.execute(
+                """
+                INSERT INTO admin_worksheet_sections
+                    (id, admin_id, mode_key, title, sort_order, created_at, parent_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    sid,
+                    admin_id,
+                    s.get("mode_key") or "",
+                    (s.get("title") or sid).strip(),
+                    int(s.get("sort_order") or 0),
+                    created_at,
+                    parent_id,
+                ),
+            )
+            restored += 1
+        conn.commit()
+    finally:
+        conn.close()
+
+    reassigned = 0
+    for raw in assignments or []:
+        worksheet_id = (raw.get("worksheet_id") or "").strip()
+        section_id = (raw.get("section_id") or "").strip()
+        if not worksheet_id or not section_id:
+            continue
+        try:
+            assign_worksheet_section(
+                admin_id=admin_id,
+                worksheet_id=worksheet_id,
+                section_id=section_id,
+            )
+            reassigned += 1
+        except ValueError:
+            continue
+
+    return {
+        "restored_sections": restored,
+        "reassigned_worksheets": reassigned,
+    }
+
+
 def delete_section(*, admin_id: int, section_id: str) -> dict:
     section_id = (section_id or "").strip()
     if not section_id:

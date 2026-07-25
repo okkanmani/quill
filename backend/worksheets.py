@@ -2110,6 +2110,36 @@ def upsert_worksheet_from_data(
     }
 
 
+def restore_worksheet(
+    worksheet_id: str,
+    data: dict,
+    *,
+    admin_id: int,
+    admin_section_id: str | None = None,
+    sort_ts: int | None = None,
+) -> dict:
+    """Re-insert a worksheet deleted moments ago (same id, preserved sort order)."""
+    payload = dict(data)
+    if sort_ts is not None:
+        payload["sort_ts"] = int(sort_ts)
+    elif "sort_ts" in payload and payload["sort_ts"] is not None:
+        payload["sort_ts"] = int(payload["sort_ts"])
+    result = upsert_worksheet_from_data(
+        worksheet_id, payload, refresh_sort_ts=False, admin_id=admin_id
+    )
+    section_id = (admin_section_id or "").strip() or None
+    if section_id:
+        from worksheet_sections import assign_worksheet_section
+
+        assign_worksheet_section(
+            admin_id=admin_id,
+            worksheet_id=worksheet_id,
+            section_id=section_id,
+        )
+        result["admin_section_id"] = section_id
+    return result
+
+
 def delete_worksheet(worksheet_id: str, *, admin_id: int) -> bool:
     """Remove worksheet from DB (questions cascade) for one admin."""
     conn = db.connect()
