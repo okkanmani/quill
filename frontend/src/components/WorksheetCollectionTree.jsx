@@ -66,6 +66,10 @@ function CollectionAdminToolbar({
           label={`Move section ${displayTitle}`}
           onClick={() => onMoveCollection(node)}
         />
+        <AddSectionButton
+          label={`Add section inside ${displayTitle}`}
+          onClick={() => onAddSubCollection(node.id)}
+        />
         {collectionDeletable(node) ? (
           <RecycleBinButton
             label={`Delete section ${displayTitle}`}
@@ -356,7 +360,7 @@ function CollectionNode({
         <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-4 text-center">
           <p className="text-sm text-slate-600 m-0">
             No worksheets here yet. Use <strong>Move</strong> from Unassigned,
-            or add a subsection from the + on the parent section.
+            or add a subsection with the <strong>+</strong> on this section.
           </p>
         </div>
       ) : null}
