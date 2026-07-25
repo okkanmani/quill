@@ -13,16 +13,15 @@ import QuillLoading from "../components/QuillLoading";
 import WorksheetPassageContent from "../components/WorksheetPassageContent";
 import { QuestionDifficultyStars } from "../components/DifficultyStars";
 import { ScratchpadIcon, TextAnswerIcon } from "../components/ResponseModeIcons";
+import {
+  ICON_ACTION_ACTIVE_CLASS,
+  ICON_ACTION_BUTTON_CLASS,
+  ICON_ACTION_IDLE_CLASS,
+} from "../components/rowActionButtonStyles";
 import { useStudentNavLinks } from "../useStudentNavLinks";
 import { useAutoDismissToast } from "../useAutoDismissToast";
 
 function NotesModeToggle({ mode, onChange, disabled }) {
-  const baseBtn =
-    "inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 transition disabled:opacity-40";
-  const active = "bg-indigo-100 text-indigo-900 border-indigo-300";
-  const idle =
-    "bg-white text-slate-600 border-slate-200 hover:border-indigo-200 hover:text-indigo-800";
-
   return (
     <div className="flex items-center gap-2" role="group" aria-label="Notes mode">
       <button
@@ -30,7 +29,9 @@ function NotesModeToggle({ mode, onChange, disabled }) {
         disabled={disabled}
         onClick={() => onChange("text")}
         aria-pressed={mode === "text"}
-        className={`${baseBtn} ${mode === "text" ? active : idle}`}
+        className={`${ICON_ACTION_BUTTON_CLASS} ${
+          mode === "text" ? ICON_ACTION_ACTIVE_CLASS : ICON_ACTION_IDLE_CLASS
+        }`}
       >
         <TextAnswerIcon />
       </button>
@@ -39,7 +40,9 @@ function NotesModeToggle({ mode, onChange, disabled }) {
         disabled={disabled}
         onClick={() => onChange("scratchpad")}
         aria-pressed={mode === "scratchpad"}
-        className={`${baseBtn} ${mode === "scratchpad" ? active : idle}`}
+        className={`${ICON_ACTION_BUTTON_CLASS} ${
+          mode === "scratchpad" ? ICON_ACTION_ACTIVE_CLASS : ICON_ACTION_IDLE_CLASS
+        }`}
       >
         <ScratchpadIcon />
       </button>

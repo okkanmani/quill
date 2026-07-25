@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-const ROSTER_COLLAPSED_LIMIT = 4;
+const ROSTER_COLLAPSED_LIMIT = 5;
 
 const SORT_OPTIONS = [
   { value: "attention", label: "Needs attention first" },
@@ -32,6 +32,7 @@ export default function AdminStudentRoster({
   selectedName,
   onSelectStudent,
   switchingStudent = "",
+  plainRows = false,
 }) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
@@ -119,8 +120,65 @@ export default function AdminStudentRoster({
       </div>
 
       {visibleStudents.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
+        <div className="rounded-xl px-4 py-8 text-center text-sm text-slate-500">
           No students match your search or filter.
+        </div>
+      ) : plainRows ? (
+        <div className="flex flex-col gap-0.5">
+          {displayedStudents.map((student) => {
+            const selected = student.name === selectedName;
+            const caughtUp = !studentNeedsAttention(student);
+            return (
+              <button
+                key={student.id}
+                type="button"
+                onClick={() => onSelectStudent(student.name)}
+                disabled={Boolean(switchingStudent)}
+                title={selected ? "Click again to view all students" : undefined}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-left rounded-xl transition-colors disabled:opacity-60 ${
+                  selected
+                    ? "bg-slate-100/90"
+                    : "hover:bg-slate-100/90"
+                } ${caughtUp && !selected ? "opacity-60 hover:opacity-80" : ""}`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span
+                    className={`shrink-0 w-2 h-2 rounded-full ${statusDotClass(student)}`}
+                    aria-hidden
+                  />
+                  <span className="font-medium text-slate-900 truncate">{student.name}</span>
+                  {student.grade != null ? (
+                    <span className="text-sm text-slate-500 shrink-0">Gr. {student.grade}</span>
+                  ) : null}
+                  {selected ? (
+                    <span className="inline-flex shrink-0 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-900">
+                      Selected
+                    </span>
+                  ) : null}
+                </div>
+              </button>
+            );
+          })}
+
+          {hiddenCount > 0 ? (
+            <button
+              type="button"
+              onClick={() => setExpanded(true)}
+              className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-500 hover:bg-slate-100/90 hover:text-slate-700 transition-colors"
+            >
+              + {hiddenCount} more
+            </button>
+          ) : null}
+
+          {expanded && visibleStudents.length > ROSTER_COLLAPSED_LIMIT ? (
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-500 hover:bg-slate-100/90 hover:text-slate-700 transition-colors"
+            >
+              Show less
+            </button>
+          ) : null}
         </div>
       ) : (
         <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">

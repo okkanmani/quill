@@ -1,6 +1,6 @@
 /** Icons for typed vs scratchpad answer modes on manual worksheets. */
 
-export function TextAnswerIcon({ className = "w-[18px] h-[18px]" }) {
+export function TextAnswerIcon({ className = "w-[14px] h-[14px]" }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -21,7 +21,7 @@ export function TextAnswerIcon({ className = "w-[18px] h-[18px]" }) {
   );
 }
 
-export function ScratchpadIcon({ className = "w-[18px] h-[18px]" }) {
+export function ScratchpadIcon({ className = "w-[14px] h-[14px]" }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

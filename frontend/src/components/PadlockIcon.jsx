@@ -1,5 +1,5 @@
 /** Closed or open padlock SVG for worksheet lock controls. */
-export default function PadlockIcon({ open = false, className = "w-[17px] h-[17px]" }) {
+export default function PadlockIcon({ open = false, className = "w-[14px] h-[14px]" }) {
   if (open) {
     return (
       <svg

@@ -1,4 +1,5 @@
 import PadlockIcon from "./PadlockIcon";
+import { ICON_ACTION_BUTTON_CLASS } from "./rowActionButtonStyles";
 
 /**
  * Admin toggle: open padlock = unlocked, closed padlock = locked.
@@ -26,8 +27,8 @@ export default function WorksheetLockButton({
       title={label}
       aria-label={label}
       aria-pressed={locked}
-      className={`inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 transition disabled:opacity-40 disabled:pointer-events-none ${
-        locked ? lockedStyles : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+      className={`${ICON_ACTION_BUTTON_CLASS} ${
+        locked ? lockedStyles : "hover:bg-slate-100"
       }`}
     >
       <PadlockIcon open={!locked} />

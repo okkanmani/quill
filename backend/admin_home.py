@@ -5,6 +5,9 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 import db
+
+# Max rows returned per home section (Quick actions on the client is uncapped).
+HOME_SECTION_LIST_LIMIT = 5
 from auth_users import list_students_for_admin
 from focus_analysis import build_admin_focus_chip_preview
 from focus_discussion import list_focus_areas_discussed
@@ -252,7 +255,7 @@ def build_admin_home(admin_id: int, selected_student: str | None = None) -> dict
             admin_id,
             student_name=selected_student if selected_student else None,
         )
-        activity_limit = 12 if selected_student else 8
+        activity_limit = HOME_SECTION_LIST_LIMIT
 
         for student in students_raw:
             name = student["name"]
@@ -285,12 +288,19 @@ def build_admin_home(admin_id: int, selected_student: str | None = None) -> dict
         )
         focus_chips = build_admin_focus_chip_preview(chip_students)
 
+        recent_total = len(all_activity)
+        pending_total = len(all_pending)
+        scheduled_total = len(scheduled_tests)
+
         return {
             "students": student_cards,
             "selected_student": selected_student,
-            "recent_activity": all_activity[:12],
-            "pending": all_pending[:8],
-            "scheduled_tests": scheduled_tests[:12],
+            "recent_activity": all_activity[:HOME_SECTION_LIST_LIMIT],
+            "recent_activity_total": recent_total,
+            "pending": all_pending[:HOME_SECTION_LIST_LIMIT],
+            "pending_total": pending_total,
+            "scheduled_tests": scheduled_tests[:HOME_SECTION_LIST_LIMIT],
+            "scheduled_tests_total": scheduled_total,
             "focus_chips": focus_chips,
         }
     finally:

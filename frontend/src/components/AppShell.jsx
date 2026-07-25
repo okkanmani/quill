@@ -6,31 +6,57 @@ import {
   getStoredSidebarCollapsed,
   setStoredSidebarCollapsed,
 } from "../sidebarUtils";
+import { NavItemIcon } from "./navIcons";
+
+const navItemInnerClass = "flex items-center gap-2.5 min-w-0";
+
+function NavItemLabel({ to, label }) {
+  return (
+    <span className={navItemInnerClass}>
+      <NavItemIcon to={to} className="w-[18px] h-[18px] shrink-0 opacity-90" />
+      <span className="truncate">{label}</span>
+    </span>
+  );
+}
 
 const backPillClass =
   "inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-bold bg-indigo-700 text-white hover:bg-indigo-800 border border-indigo-800 shadow-sm transition";
 
 const SIDEBAR_WIDTH_CLASS = "w-52";
-const SIDEBAR_COLLAPSED_WIDTH_CLASS = "w-5";
+const SIDEBAR_COLLAPSED_WIDTH_CLASS = "w-14";
 
-function SidebarNav({ navLinks, collapsed }) {
+function SidebarNav({ navLinks, compact = false }) {
   const { pathname } = useLocation();
 
-  if (collapsed) return null;
+  const itemPad = compact ? "p-2" : "px-3 py-2.5";
+  const iconWrap = compact
+    ? "flex items-center justify-center w-10 h-10 mx-auto rounded-lg"
+    : "block rounded-lg";
 
   return (
     <nav className="flex flex-col gap-0.5" aria-label="Main sections">
       {navLinks.map(({ to, label, end, disabled }) => {
         const isActive = matchPath({ path: to, end: end ?? false }, pathname);
+        const disabledTitle =
+          "No new worksheets in the last 14 days (or all are done)";
+
         if (disabled) {
           return (
             <span
               key={to}
               aria-disabled="true"
-              className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 cursor-not-allowed select-none"
-              title="No new worksheets in the last 14 days (or all are done)"
+              aria-label={compact ? label : undefined}
+              title={disabledTitle}
+              className={`${iconWrap} ${itemPad} text-sm font-medium text-slate-400 cursor-not-allowed select-none`}
             >
-              {label}
+              {compact ? (
+                <NavItemIcon
+                  to={to}
+                  className="w-[18px] h-[18px] shrink-0 opacity-50"
+                />
+              ) : (
+                <NavItemLabel to={to} label={label} />
+              )}
             </span>
           );
         }
@@ -38,10 +64,16 @@ function SidebarNav({ navLinks, collapsed }) {
           return (
             <span
               key={to}
-              className="block rounded-lg px-3 py-2.5 text-sm font-semibold bg-indigo-50 text-indigo-900 border border-indigo-100"
+              title={compact ? label : undefined}
+              aria-label={compact ? label : undefined}
+              className={`${iconWrap} ${itemPad} text-sm font-semibold bg-indigo-50 text-indigo-900 border border-indigo-100`}
               aria-current="page"
             >
-              {label}
+              {compact ? (
+                <NavItemIcon to={to} className="w-[18px] h-[18px] shrink-0" />
+              ) : (
+                <NavItemLabel to={to} label={label} />
+              )}
             </span>
           );
         }
@@ -50,9 +82,15 @@ function SidebarNav({ navLinks, collapsed }) {
             key={to}
             to={to}
             end={end ?? false}
-            className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-950 transition"
+            title={compact ? label : undefined}
+            aria-label={compact ? label : undefined}
+            className={`${iconWrap} ${itemPad} text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-950 transition`}
           >
-            {label}
+            {compact ? (
+              <NavItemIcon to={to} className="w-[18px] h-[18px] shrink-0 opacity-90" />
+            ) : (
+              <NavItemLabel to={to} label={label} />
+            )}
           </NavLink>
         );
       })}
@@ -100,11 +138,52 @@ export default function AppShell({
         <div
           className={`relative shrink-0 sticky top-0 z-20 h-screen border-r border-slate-200 bg-white transition-[width] duration-200 ease-out ${sidebarWidthClass}`}
         >
-          <aside
-            className={`h-full overflow-hidden ${sidebarWidthClass}`}
-            aria-hidden={sidebarCollapsed}
-          >
-            {!sidebarCollapsed ? (
+          <aside className={`h-full overflow-hidden ${sidebarWidthClass}`}>
+            {sidebarCollapsed ? (
+              <div
+                className={`${SIDEBAR_COLLAPSED_WIDTH_CLASS} h-full flex flex-col`}
+              >
+                <div
+                  className="shrink-0 py-4 flex justify-center border-b border-slate-100 text-lg"
+                  title="Quill"
+                >
+                  <span aria-hidden>🪶</span>
+                </div>
+
+                <div className="flex-1 overflow-y-auto py-3">
+                  {navLinks.length > 0 ? (
+                    <SidebarNav navLinks={navLinks} compact />
+                  ) : null}
+                </div>
+
+                {onLogout ? (
+                  <div className="shrink-0 py-3 border-t border-slate-100 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={onLogout}
+                      title="Log out"
+                      aria-label="Log out"
+                      className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 hover:text-indigo-700 transition"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="w-[18px] h-[18px]"
+                        aria-hidden
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <path d="M16 17l5-5-5-5" />
+                        <path d="M21 12H9" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
               <div className={`${SIDEBAR_WIDTH_CLASS} h-full flex flex-col`}>
                 <div className="px-4 pt-5 pb-4 border-b border-slate-100">
                   <h1 className="text-xl font-bold text-slate-800 tracking-tight">
@@ -114,7 +193,7 @@ export default function AppShell({
 
                 <div className="flex-1 overflow-y-auto px-3 py-4">
                   {navLinks.length > 0 ? (
-                    <SidebarNav navLinks={navLinks} collapsed={sidebarCollapsed} />
+                    <SidebarNav navLinks={navLinks} />
                   ) : null}
                 </div>
 
@@ -140,7 +219,7 @@ export default function AppShell({
                   ) : null}
                 </div>
               </div>
-            ) : null}
+            )}
           </aside>
 
           <button
@@ -148,7 +227,7 @@ export default function AppShell({
             onClick={toggleSidebar}
             aria-label={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
             title={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
-            className="absolute top-1/2 left-full z-30 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-slate-300 bg-white text-sm font-bold text-slate-600 shadow-md hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 transition"
+            className="absolute top-1/2 left-full z-30 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-slate-300 bg-white text-xs font-bold text-slate-600 shadow-md hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 transition"
           >
             {sidebarCollapsed ? "›" : "‹"}
           </button>

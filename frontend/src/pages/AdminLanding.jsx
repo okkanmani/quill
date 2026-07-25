@@ -30,6 +30,17 @@ import QuillLoading from "../components/QuillLoading";
 import WorksheetLockButton from "../components/WorksheetLockButton";
 import PadlockIcon from "../components/PadlockIcon";
 import { AdminFocusChipSection } from "../adminFocusChipUtils";
+import {
+  ROW_ACTION_BUTTON_CLASS,
+} from "../components/rowActionButtonStyles";
+
+/** Max list rows per home section (Quick actions excluded). */
+const HOME_SECTION_ITEM_LIMIT = 5;
+
+/** List row on admin home (Focus areas keep their own bordered chips). */
+const HOME_ROW_CLASS =
+  "rounded-xl px-3.5 py-2.5 transition-colors hover:bg-slate-100/90";
+const HOME_ROW_BUTTON_CLASS = `${HOME_ROW_CLASS} w-full text-left disabled:opacity-60`;
 
 function formatRelativeTime(iso) {
   if (!iso) return "No activity yet";
@@ -77,7 +88,7 @@ function ActivityRow({ item, onNavigate, switchingStudent, showStudentName = tru
 
   if (!destination) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2">
+      <div className={`${HOME_ROW_CLASS} flex flex-wrap items-center justify-between gap-2`}>
         {content}
       </div>
     );
@@ -88,7 +99,7 @@ function ActivityRow({ item, onNavigate, switchingStudent, showStudentName = tru
       type="button"
       disabled={Boolean(switchingStudent)}
       onClick={() => onNavigate(item.student_name, destination)}
-      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-left hover:bg-slate-50 hover:border-slate-300 transition disabled:opacity-60"
+      className={`${HOME_ROW_BUTTON_CLASS} flex flex-wrap items-center justify-between gap-2`}
     >
       {content}
     </button>
@@ -99,6 +110,15 @@ function SectionLabel({ children }) {
   return (
     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2.5">
       {children}
+    </p>
+  );
+}
+
+function SectionMoreHint({ shown, total, noun }) {
+  if (total <= shown) return null;
+  return (
+    <p className="text-xs text-slate-500 mt-2">
+      Showing {shown} of {total} {noun}.
     </p>
   );
 }
@@ -155,7 +175,7 @@ function CalendarTimeIcon() {
       strokeWidth="1.75"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="w-4 h-4"
+      className="w-[14px] h-[14px]"
       aria-hidden
     >
       <path d="M16 2v4" />
@@ -236,7 +256,7 @@ function ScheduledTestsSection({
     return (
       <section>
         <SectionLabel>{label}</SectionLabel>
-        <div className="rounded-xl border border-dashed border-slate-200 px-3.5 py-4 text-sm text-slate-500">
+        <div className="rounded-xl px-3.5 py-4 text-sm text-slate-500">
           {scopedToStudent
             ? `No scheduled test unlocks for this student.`
             : "No scheduled test unlocks."}
@@ -248,7 +268,7 @@ function ScheduledTestsSection({
   return (
     <section>
       <SectionLabel>{label}</SectionLabel>
-      <div className="rounded-xl border border-slate-200 overflow-hidden">
+      <div className="flex flex-col gap-0.5">
         {items.map((item) => {
           const itemKey = scheduledItemKey(item);
           const busy = unlockingKey === itemKey || savingKey === itemKey;
@@ -259,11 +279,11 @@ function ScheduledTestsSection({
           return (
             <div
               key={itemKey}
-              className={`border-b border-slate-100 last:border-b-0 ${
-                dimRow ? "opacity-50" : ""
+              className={`rounded-xl transition-colors ${dimRow ? "opacity-50" : ""} ${
+                isRescheduling ? "bg-slate-50/80" : "hover:bg-slate-100/90"
               }`}
             >
-              <div className="flex items-center justify-between gap-3 px-4 py-3 bg-white">
+              <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-slate-900">{item.title}</p>
                   <p className="text-xs text-slate-500 mt-0.5">
@@ -278,9 +298,9 @@ function ScheduledTestsSection({
                     onClick={() => onUnlockNow(item)}
                     title="Unlock now"
                     aria-label="Unlock now"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-violet-200 bg-violet-50 text-violet-800 hover:bg-violet-100 disabled:opacity-60 transition"
+                    className={`${ROW_ACTION_BUTTON_CLASS} border-violet-200 bg-violet-50 text-violet-800 hover:bg-violet-100 disabled:opacity-60`}
                   >
-                    <PadlockIcon open={false} className="w-4 h-4" />
+                    <PadlockIcon open={false} />
                   </button>
                   <button
                     type="button"
@@ -289,10 +309,10 @@ function ScheduledTestsSection({
                     aria-label={isRescheduling ? "Close reschedule" : "Reschedule unlock"}
                     aria-pressed={isRescheduling}
                     title={isRescheduling ? "Close reschedule" : "Reschedule"}
-                    className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border disabled:opacity-60 transition ${
+                    className={`${ROW_ACTION_BUTTON_CLASS} disabled:opacity-60 ${
                       isRescheduling
                         ? "border-indigo-200 bg-indigo-50 text-indigo-700"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        : "hover:bg-slate-50 hover:text-slate-900"
                     }`}
                   >
                     <CalendarTimeIcon />
@@ -303,7 +323,7 @@ function ScheduledTestsSection({
               {isRescheduling ? (
                 <form
                   onSubmit={(e) => handleSaveReschedule(e, item)}
-                  className="px-4 py-3.5 border-t border-slate-100 bg-slate-50 flex flex-wrap items-end gap-2.5"
+                  className="px-3.5 py-3.5 mx-1 mb-1 rounded-lg bg-slate-50 flex flex-wrap items-end gap-2.5"
                 >
                   <div>
                     <p className="text-xs text-slate-500 mb-1">Date</p>
@@ -497,8 +517,13 @@ export default function AdminLanding() {
 
   const students = data?.students || [];
   const recentActivity = data?.recent_activity || [];
+  const recentActivityTotal =
+    data?.recent_activity_total ?? recentActivity.length;
   const pending = data?.pending || [];
+  const pendingTotal = data?.pending_total ?? pending.length;
   const scheduledTests = data?.scheduled_tests || [];
+  const scheduledTestsTotal =
+    data?.scheduled_tests_total ?? scheduledTests.length;
   const focusChips = data?.focus_chips || {};
   const selectedStudent = data?.selected_student || localStorage.getItem("studentName") || "";
   const scopedToStudent = Boolean(selectedStudent);
@@ -511,6 +536,10 @@ export default function AdminLanding() {
   const scheduledSectionLabel = scopedToStudent
     ? `Scheduled tests · ${selectedStudent}`
     : "Scheduled tests";
+
+  const scheduledVisible = scheduledTests.slice(0, HOME_SECTION_ITEM_LIMIT);
+  const activityVisible = recentActivity.slice(0, HOME_SECTION_ITEM_LIMIT);
+  const pendingVisible = pending.slice(0, HOME_SECTION_ITEM_LIMIT);
 
   return (
     <AppShell navLinks={ADMIN_MAIN_NAV} onLogout={handleLogout}>
@@ -551,32 +580,48 @@ export default function AdminLanding() {
                 selectedName={selectedStudent}
                 onSelectStudent={handleSelectStudent}
                 switchingStudent={switchingStudent}
+                plainRows
               />
             </section>
 
             <div className="grid lg:grid-cols-[1.4fr_1fr] gap-5 items-start">
               <div className="flex flex-col gap-5 min-w-0">
-                <ScheduledTestsSection
-                  label={scheduledSectionLabel}
-                  items={scheduledTests}
-                  scopedToStudent={scopedToStudent}
-                  unlockingKey={unlockingKey}
-                  onUnlockNow={handleUnlockScheduledNow}
-                  onScheduleUpdated={refreshHome}
-                  onScheduleError={setError}
+                <div>
+                  <ScheduledTestsSection
+                    label={scheduledSectionLabel}
+                    items={scheduledVisible}
+                    scopedToStudent={scopedToStudent}
+                    unlockingKey={unlockingKey}
+                    onUnlockNow={handleUnlockScheduledNow}
+                    onScheduleUpdated={refreshHome}
+                    onScheduleError={setError}
+                  />
+                  <SectionMoreHint
+                    shown={scheduledVisible.length}
+                    total={scheduledTestsTotal}
+                    noun="scheduled tests"
+                  />
+                </div>
+
+                <AdminFocusChipSection
+                  chips={focusChips.preview || []}
+                  totalCount={focusChips.total_count || 0}
+                  showStudentName={!scopedToStudent}
+                  onNavigate={handleNavigateForStudent}
+                  switchingStudent={switchingStudent}
                 />
 
                 <section>
                 <SectionLabel>{activitySectionLabel}</SectionLabel>
-                {recentActivity.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
+                {activityVisible.length === 0 ? (
+                  <div className="rounded-xl px-4 py-8 text-center text-sm text-slate-500">
                     {scopedToStudent
                       ? `No recent activity for ${selectedStudent} yet.`
                       : "No recent activity yet."}
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-2">
-                    {recentActivity.map((item, index) => (
+                  <div className="flex flex-col gap-0.5">
+                    {activityVisible.map((item, index) => (
                       <ActivityRow
                         key={`${item.kind}-${item.student_name}-${item.at}-${index}`}
                         item={item}
@@ -587,36 +632,33 @@ export default function AdminLanding() {
                     ))}
                   </div>
                 )}
+                <SectionMoreHint
+                  shown={activityVisible.length}
+                  total={recentActivityTotal}
+                  noun="items"
+                />
               </section>
               </div>
 
               <div className="flex flex-col gap-5">
-                <AdminFocusChipSection
-                  chips={focusChips.preview || []}
-                  totalCount={focusChips.total_count || 0}
-                  showStudentName={!scopedToStudent}
-                  onNavigate={handleNavigateForStudent}
-                  switchingStudent={switchingStudent}
-                />
-
                 <section>
                   <SectionLabel>Quick actions</SectionLabel>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-0.5">
                     <Link
                       to="/admin/create/worksheet"
-                      className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
+                      className={`${HOME_ROW_CLASS} text-sm font-semibold text-slate-800 block`}
                     >
                       + New worksheet
                     </Link>
                     <Link
                       to="/admin/create/learn"
-                      className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
+                      className={`${HOME_ROW_CLASS} text-sm font-semibold text-slate-800 block`}
                     >
                       + New learning resource
                     </Link>
                     <Link
                       to="/admin/create/test"
-                      className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
+                      className={`${HOME_ROW_CLASS} text-sm font-semibold text-slate-800 block`}
                     >
                       + New test
                     </Link>
@@ -625,20 +667,20 @@ export default function AdminLanding() {
 
                 <section>
                   <SectionLabel>{pendingSectionLabel}</SectionLabel>
-                  {pending.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-slate-200 px-3.5 py-4 text-sm text-slate-500">
+                  {pendingVisible.length === 0 ? (
+                    <div className="rounded-xl px-3.5 py-4 text-sm text-slate-500">
                       {scopedToStudent
                         ? `Nothing waiting for unlock for ${selectedStudent}.`
                         : "Nothing waiting for unlock."}
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-2">
-                      {pending.map((item) => {
+                    <div className="flex flex-col gap-0.5">
+                      {pendingVisible.map((item) => {
                         const itemKey = `${item.student_name}-${item.worksheet_id}`;
                         return (
                           <div
                             key={itemKey}
-                            className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-3.5 py-2.5 flex items-start justify-between gap-3"
+                            className={`${HOME_ROW_CLASS} flex items-start justify-between gap-3`}
                           >
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -663,6 +705,11 @@ export default function AdminLanding() {
                       })}
                     </div>
                   )}
+                  <SectionMoreHint
+                    shown={pendingVisible.length}
+                    total={pendingTotal}
+                    noun="pending items"
+                  />
                 </section>
               </div>
             </div>

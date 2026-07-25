@@ -1,3 +1,8 @@
+import {
+  ROW_ACTION_BUTTON_CLASS,
+  ROW_ACTION_ICON_CLASS,
+} from "./rowActionButtonStyles";
+
 /** Auto-organize / layout action — icon only. */
 export default function OrganizeActionButton({
   onClick,
@@ -11,7 +16,7 @@ export default function OrganizeActionButton({
       disabled={disabled}
       title={label}
       aria-label={label}
-      className="inline-flex shrink-0 items-center justify-center rounded-lg border w-7 h-7 bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 disabled:opacity-40 disabled:pointer-events-none transition"
+      className={`${ROW_ACTION_BUTTON_CLASS} bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -21,7 +26,7 @@ export default function OrganizeActionButton({
         strokeWidth="1.75"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="w-[14px] h-[14px]"
+        className={ROW_ACTION_ICON_CLASS}
         aria-hidden
       >
         <rect x="3" y="3" width="7" height="7" rx="1" />

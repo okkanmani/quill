@@ -8,6 +8,7 @@ import {
   isFocusPracticeQuestionComplete,
   validateFocusPracticeBuilder,
 } from "../focusPracticeBuilderUtils";
+import { QUESTION_INDEX_BUTTON_CLASS } from "./rowActionButtonStyles";
 
 function McqChoices({ question, index, onChange }) {
   return (
@@ -22,7 +23,7 @@ function McqChoices({ question, index, onChange }) {
             <button
               type="button"
               onClick={() => onChange(index, { correctIndex: choiceIndex })}
-              className={`shrink-0 w-9 h-9 rounded-full border text-sm font-bold transition ${
+              className={`${QUESTION_INDEX_BUTTON_CLASS} ${
                 selected
                   ? "bg-emerald-600 border-emerald-700 text-white"
                   : "bg-white border-slate-300 text-slate-500 hover:border-emerald-400"

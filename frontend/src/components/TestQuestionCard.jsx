@@ -5,6 +5,7 @@ import {
   TEST_TIERS,
   isTestQuestionComplete,
 } from "../testBuilderUtils";
+import { QUESTION_INDEX_BUTTON_CLASS } from "./rowActionButtonStyles";
 
 export default function TestQuestionCard({
   question,
@@ -168,7 +169,7 @@ export default function TestQuestionCard({
                   <button
                     type="button"
                     onClick={() => onChange({ correctIndex: choiceIndex })}
-                    className={`shrink-0 w-9 h-9 rounded-full border text-sm font-bold transition ${
+                    className={`${QUESTION_INDEX_BUTTON_CLASS} ${
                       selected
                         ? "bg-teal-600 border-teal-700 text-white"
                         : "bg-white border-slate-300 text-slate-500 hover:border-teal-400"

@@ -18,6 +18,11 @@ import {
   ScratchpadIcon,
   TextAnswerIcon,
 } from "../components/ResponseModeIcons";
+import {
+  ICON_ACTION_ACTIVE_CLASS,
+  ICON_ACTION_BUTTON_CLASS,
+  ICON_ACTION_IDLE_CLASS,
+} from "../components/rowActionButtonStyles";
 import { useStudentNavLinks } from "../useStudentNavLinks";
 import { formatTestTimer, formatWeightedTestScore } from "../testUtils";
 import {
@@ -416,11 +421,6 @@ export default function StudentTestTake() {
   ]);
 
   function renderWorkModeToggle() {
-    const baseBtn =
-      "inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 transition disabled:opacity-40 disabled:pointer-events-none";
-    const active = "bg-indigo-100 text-indigo-900 border-indigo-300";
-    const idle =
-      "bg-white text-slate-600 border-slate-200 hover:border-indigo-200 hover:text-indigo-800";
     const locked = submitting || timedOut;
 
     return (
@@ -432,7 +432,9 @@ export default function StudentTestTake() {
           title="Text notes"
           aria-label="Text notes"
           aria-pressed={workMode === "text"}
-          className={`${baseBtn} ${workMode === "text" ? active : idle}`}
+          className={`${ICON_ACTION_BUTTON_CLASS} ${
+            workMode === "text" ? ICON_ACTION_ACTIVE_CLASS : ICON_ACTION_IDLE_CLASS
+          }`}
         >
           <TextAnswerIcon />
         </button>
@@ -443,7 +445,9 @@ export default function StudentTestTake() {
           title="Scratchpad"
           aria-label="Scratchpad"
           aria-pressed={workMode === "scratchpad"}
-          className={`${baseBtn} ${workMode === "scratchpad" ? active : idle}`}
+          className={`${ICON_ACTION_BUTTON_CLASS} ${
+            workMode === "scratchpad" ? ICON_ACTION_ACTIVE_CLASS : ICON_ACTION_IDLE_CLASS
+          }`}
         >
           <ScratchpadIcon />
         </button>

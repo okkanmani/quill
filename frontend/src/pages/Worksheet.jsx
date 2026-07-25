@@ -24,6 +24,12 @@ import {
   ScratchpadIcon,
   TextAnswerIcon,
 } from "../components/ResponseModeIcons";
+import {
+  ICON_ACTION_ACTIVE_CLASS,
+  ICON_ACTION_BUTTON_CLASS,
+  ICON_ACTION_IDLE_CLASS,
+  QUESTION_INDEX_BUTTON_CLASS,
+} from "../components/rowActionButtonStyles";
 import { normalizeSubjectKey } from "../subjectUtils";
 import {
   criticalReasoningDisplayQuestions,
@@ -434,11 +440,6 @@ export default function Worksheet() {
 
   function renderResponseModeToggle(q, locked) {
     const mode = responseModes[q.id] || "text";
-    const baseBtn =
-      "inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 transition disabled:opacity-40 disabled:pointer-events-none";
-    const active = "bg-indigo-100 text-indigo-900 border-indigo-300";
-    const idle =
-      "bg-white text-slate-600 border-slate-200 hover:border-indigo-200 hover:text-indigo-800";
 
     return (
       <div className="flex flex-col gap-2 shrink-0" role="group" aria-label="Answer mode">
@@ -449,7 +450,9 @@ export default function Worksheet() {
           title="Type answer"
           aria-label="Type answer"
           aria-pressed={mode === "text"}
-          className={`${baseBtn} ${mode === "text" ? active : idle}`}
+          className={`${ICON_ACTION_BUTTON_CLASS} ${
+            mode === "text" ? ICON_ACTION_ACTIVE_CLASS : ICON_ACTION_IDLE_CLASS
+          }`}
         >
           <TextAnswerIcon />
         </button>
@@ -460,7 +463,9 @@ export default function Worksheet() {
           title="Use scratchpad"
           aria-label="Use scratchpad"
           aria-pressed={mode === "scratchpad"}
-          className={`${baseBtn} ${mode === "scratchpad" ? active : idle}`}
+          className={`${ICON_ACTION_BUTTON_CLASS} ${
+            mode === "scratchpad" ? ICON_ACTION_ACTIVE_CLASS : ICON_ACTION_IDLE_CLASS
+          }`}
         >
           <ScratchpadIcon />
         </button>
@@ -668,7 +673,7 @@ export default function Worksheet() {
                     : "This question is not ready to save to the bank"
                 }
                 aria-label="Save question to question bank"
-                className={`w-8 h-8 rounded-lg border text-sm font-bold transition ${
+                className={`${QUESTION_INDEX_BUTTON_CLASS} ${
                   isMcqBankReady(q) && savingToBankQuestionId !== q.id
                     ? "border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100"
                     : "border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed"
@@ -939,7 +944,7 @@ export default function Worksheet() {
                       : "Complete the passage/data set and its MCQ questions before saving"
                   }
                   aria-label="Save passage to question bank"
-                  className={`w-9 h-9 rounded-lg border text-sm font-bold transition ${
+                  className={`${QUESTION_INDEX_BUTTON_CLASS} ${
                     bankReady && savingToBankPassageId !== passage.id
                       ? "border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100"
                       : "border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed"

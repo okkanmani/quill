@@ -11,6 +11,7 @@ import {
 } from "../api";
 import QuillLoading from "./QuillLoading";
 import WorksheetBuilderPreview from "./WorksheetBuilderPreview";
+import { QUESTION_INDEX_BUTTON_CLASS, ROW_ACTION_BUTTON_CLASS } from "./rowActionButtonStyles";
 import { useShellLayout } from "./ShellLayoutContext";
 import {
   BUILDER_SUBJECTS,
@@ -58,7 +59,7 @@ function McqChoices({ question, index, onChange }) {
             <button
               type="button"
               onClick={() => onChange(index, { correctIndex: choiceIndex })}
-              className={`shrink-0 w-9 h-9 rounded-full border text-sm font-bold transition ${
+              className={`${QUESTION_INDEX_BUTTON_CLASS} ${
                 selected
                   ? "bg-emerald-600 border-emerald-700 text-white"
                   : "bg-white border-slate-300 text-slate-500 hover:border-emerald-400"
@@ -1341,7 +1342,7 @@ export default function QuestionBuilderPanel() {
                 type="button"
                 onClick={() => handleRemovePassage(passages.length - 1)}
                 disabled={passages.length <= 1}
-                className="w-9 h-9 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                className={`${ROW_ACTION_BUTTON_CLASS} bg-white text-slate-700 font-bold text-xs hover:bg-slate-50 disabled:cursor-not-allowed`}
                 aria-label="Remove last passage"
               >
                 −
@@ -1349,7 +1350,7 @@ export default function QuestionBuilderPanel() {
               <button
                 type="button"
                 onClick={handleAddPassage}
-                className="w-9 h-9 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold hover:bg-slate-50"
+                className={`${ROW_ACTION_BUTTON_CLASS} bg-white text-slate-700 font-bold text-xs hover:bg-slate-50`}
                 aria-label="Add passage"
               >
                 +

@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import AnswerResponseView from "./AnswerResponseView";
 import AdminResultGrader from "./AdminResultGrader";
 import RecycleBinButton from "./RecycleBinButton";
+import {
+  ROW_ACTION_BUTTON_CLASS,
+  ROW_ACTION_ICON_CLASS,
+} from "./rowActionButtonStyles";
 import { getWorksheet, analyzeResultForFocus } from "../api";
 import { downloadResultJson } from "../resultExportUtils";
 import { formatSubjectLabel } from "../subjectUtils";
@@ -297,7 +301,7 @@ export default function ResultsBySubject({
                         ) : null}
                       </div>
                       {onDeleteResult ? (
-                        <div className="flex shrink-0 self-center sm:self-stretch sm:items-stretch sm:flex-col sm:justify-center gap-2 sm:w-9">
+                        <div className="flex shrink-0 self-center sm:self-stretch sm:items-stretch sm:flex-col sm:justify-center gap-2 sm:w-7">
                           {isAdmin && !isPending ? (
                             <button
                               type="button"
@@ -315,7 +319,7 @@ export default function ResultsBySubject({
                                   ? `Already analyzed: ${r.title || r.worksheet_id}`
                                   : `Analyze focus areas for ${r.title || r.worksheet_id}`
                               }
-                              className="inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 bg-slate-50 border-slate-200 text-slate-500 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 disabled:opacity-40 disabled:pointer-events-none transition"
+                              className={`${ROW_ACTION_BUTTON_CLASS} hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700`}
                             >
                               <svg
                                 viewBox="0 0 24 24"
@@ -324,7 +328,7 @@ export default function ResultsBySubject({
                                 strokeWidth="1.75"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                className="w-[17px] h-[17px]"
+                                className={ROW_ACTION_ICON_CLASS}
                                 aria-hidden="true"
                               >
                                 <path d="M4 20V10" />
@@ -341,7 +345,7 @@ export default function ResultsBySubject({
                               disabled={downloadingResultId === r.id}
                               title="Download result"
                               aria-label={`Download result for ${r.title || r.worksheet_id}`}
-                              className="inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 hover:border-slate-300 hover:text-slate-700 disabled:opacity-40 disabled:pointer-events-none transition"
+                              className={`${ROW_ACTION_BUTTON_CLASS} hover:bg-slate-100 hover:border-slate-300 hover:text-slate-700`}
                             >
                               <svg
                                 viewBox="0 0 24 24"
@@ -350,7 +354,7 @@ export default function ResultsBySubject({
                                 strokeWidth="1.75"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                className="w-[17px] h-[17px]"
+                                className={ROW_ACTION_ICON_CLASS}
                                 aria-hidden="true"
                               >
                                 <path d="M12 3v12m0 0l4-4m-4 4l-4-4" />

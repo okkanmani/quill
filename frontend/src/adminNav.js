@@ -4,20 +4,20 @@ export const ADMIN_MAIN_NAV = [
   { to: "/admin/results", label: "Results", end: true },
   { to: "/admin/analysis", label: "Analysis", end: true },
   { to: "/admin/worksheets", label: "Worksheets", end: false },
+  { to: "/student/learn", label: "Learn", end: false },
   { to: "/admin/question-bank", label: "Question bank", end: true },
   { to: "/admin/create", label: "Create", end: false },
   { to: "/admin/students", label: "Students", end: true },
   { to: "/admin/settings", label: "Settings", end: true },
-  { to: "/student/learn", label: "Learn", end: false },
 ];
 
 /** Student home + learn shell — same visual group as admin nav in AppHeader. */
 export const STUDENT_MAIN_NAV = [
   { to: "/student", label: "Home", end: true },
   { to: "/student/worksheets", label: "Your Worksheets", end: true },
+  { to: "/student/learn", label: "Learning Resources", end: false },
   { to: "/student/writing", label: "Writing", end: true },
   { to: "/student/results", label: "Your Results", end: true },
-  { to: "/student/learn", label: "Learning Resources", end: false },
   { to: "/student/settings", label: "Settings", end: true },
 ];
 
@@ -26,6 +26,7 @@ export function buildStudentNavLinks(hasLatest, hasRevision = false, hasTests = 
   return [
     { to: "/student", label: "Home", end: true },
     { to: "/student/worksheets", label: "Your Worksheets", end: true },
+    { to: "/student/learn", label: "Learning Resources", end: false },
     { to: "/student/writing", label: "Writing", end: true },
     { to: "/student/results", label: "Your Results", end: true },
     {
@@ -46,7 +47,6 @@ export function buildStudentNavLinks(hasLatest, hasRevision = false, hasTests = 
       end: true,
       disabled: !hasTests,
     },
-    { to: "/student/learn", label: "Learning Resources", end: false },
     { to: "/student/settings", label: "Settings", end: true },
   ];
 }

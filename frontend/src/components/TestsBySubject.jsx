@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import SubjectBadge from "./SubjectBadge";
 import ContentBadge from "./ContentBadge";
 import PadlockIcon from "./PadlockIcon";
+import { LOCK_STATUS_BADGE_CLASS } from "./rowActionButtonStyles";
 import { formatDurationSeconds } from "../worksheetUtils";
 import { formatWeightedTestScore } from "../testUtils";
 
@@ -63,10 +64,10 @@ function TestRow({ item, onOpenTest, onOpenReview }) {
             <span className="shrink-0 flex items-center gap-2">
               {lock ? (
                 <span
-                  className="inline-flex items-center justify-center rounded-full border w-9 h-9 bg-violet-100 border-violet-200 text-violet-700"
+                  className={`${LOCK_STATUS_BADGE_CLASS} bg-violet-100 border-violet-200 text-violet-700`}
                   title={lockLabel(lock)}
                 >
-                  <PadlockIcon className="w-[18px] h-[18px]" />
+                  <PadlockIcon />
                 </span>
               ) : null}
               {item.done ? (

@@ -3,6 +3,42 @@ import {
   ScratchpadIcon,
   TextAnswerIcon,
 } from "./ResponseModeIcons";
+import {
+  ICON_ACTION_ACTIVE_CLASS,
+  ICON_ACTION_BUTTON_CLASS,
+  ICON_ACTION_IDLE_CLASS,
+} from "./rowActionButtonStyles";
+
+function ResponseReviewToggle({ mode, onChange }) {
+  return (
+    <div className="flex flex-col gap-2 shrink-0" role="group" aria-label="Response view">
+      <button
+        type="button"
+        onClick={() => onChange("text")}
+        title="View typed answer"
+        aria-label="View typed answer"
+        aria-pressed={mode === "text"}
+        className={`${ICON_ACTION_BUTTON_CLASS} ${
+          mode === "text" ? ICON_ACTION_ACTIVE_CLASS : ICON_ACTION_IDLE_CLASS
+        }`}
+      >
+        <TextAnswerIcon />
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange("scratchpad")}
+        title="View scratchpad"
+        aria-label="View scratchpad"
+        aria-pressed={mode === "scratchpad"}
+        className={`${ICON_ACTION_BUTTON_CLASS} ${
+          mode === "scratchpad" ? ICON_ACTION_ACTIVE_CLASS : ICON_ACTION_IDLE_CLASS
+        }`}
+      >
+        <ScratchpadIcon />
+      </button>
+    </div>
+  );
+}
 
 function hasTextAnswer(answer) {
   return answer?.given != null && String(answer.given).trim() !== "";
@@ -21,39 +57,6 @@ function defaultViewMode(answer) {
   }
   if (hasScratchpadAnswer(answer)) return "scratchpad";
   return "text";
-}
-
-function ResponseReviewToggle({ mode, onChange }) {
-  const baseBtn =
-    "inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 transition";
-  const active = "bg-indigo-100 text-indigo-900 border-indigo-300";
-  const idle =
-    "bg-white text-slate-600 border-slate-200 hover:border-indigo-200 hover:text-indigo-800";
-
-  return (
-    <div className="flex flex-col gap-2 shrink-0" role="group" aria-label="Response view">
-      <button
-        type="button"
-        onClick={() => onChange("text")}
-        title="View typed answer"
-        aria-label="View typed answer"
-        aria-pressed={mode === "text"}
-        className={`${baseBtn} ${mode === "text" ? active : idle}`}
-      >
-        <TextAnswerIcon />
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange("scratchpad")}
-        title="View scratchpad work"
-        aria-label="View scratchpad work"
-        aria-pressed={mode === "scratchpad"}
-        className={`${baseBtn} ${mode === "scratchpad" ? active : idle}`}
-      >
-        <ScratchpadIcon />
-      </button>
-    </div>
-  );
 }
 
 function TextAnswerDisplay({ given }) {

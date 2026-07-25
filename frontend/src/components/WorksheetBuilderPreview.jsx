@@ -64,8 +64,8 @@ function PreviewQuestionCard({
         <div className="mt-3 flex items-start gap-3">
           {manual && scratchpadAllowed ? (
             <div className="flex flex-col gap-2 shrink-0 opacity-60">
-              <div className="w-9 h-9 rounded-xl border border-slate-300 bg-slate-50" />
-              <div className="w-9 h-9 rounded-xl border border-slate-300 bg-slate-50" />
+              <div className="w-7 h-7 rounded-lg border border-slate-300 bg-slate-50" />
+              <div className="w-7 h-7 rounded-lg border border-slate-300 bg-slate-50" />
             </div>
           ) : null}
           <div className="min-w-0 flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-400 bg-slate-50 min-h-[6rem]">

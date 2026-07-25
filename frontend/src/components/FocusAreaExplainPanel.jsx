@@ -3,6 +3,11 @@ import { Link } from "react-router-dom";
 import { generateFocusDiscussionReference } from "../api";
 import Drawpad from "./Drawpad";
 import { ScratchpadIcon, TextAnswerIcon } from "./ResponseModeIcons";
+import {
+  ICON_ACTION_ACTIVE_CLASS,
+  ICON_ACTION_BUTTON_CLASS,
+  ICON_ACTION_IDLE_CLASS,
+} from "./rowActionButtonStyles";
 
 const DEFAULT_NOTES = { mode: "text", text: "", scratchpad: "" };
 
@@ -17,12 +22,6 @@ function updateNotes(setByKey, selectionKey, patch) {
 }
 
 function ExplainModeToggle({ mode, onChange }) {
-  const baseBtn =
-    "inline-flex shrink-0 items-center justify-center rounded-xl border w-9 h-9 transition";
-  const active = "bg-indigo-100 text-indigo-900 border-indigo-300";
-  const idle =
-    "bg-white text-slate-600 border-slate-200 hover:border-indigo-200 hover:text-indigo-800";
-
   return (
     <div className="flex items-center gap-2" role="group" aria-label="Explanation mode">
       <button
@@ -31,7 +30,9 @@ function ExplainModeToggle({ mode, onChange }) {
         title="Type explanation"
         aria-label="Type explanation"
         aria-pressed={mode === "text"}
-        className={`${baseBtn} ${mode === "text" ? active : idle}`}
+        className={`${ICON_ACTION_BUTTON_CLASS} ${
+          mode === "text" ? ICON_ACTION_ACTIVE_CLASS : ICON_ACTION_IDLE_CLASS
+        }`}
       >
         <TextAnswerIcon />
       </button>
@@ -41,7 +42,9 @@ function ExplainModeToggle({ mode, onChange }) {
         title="Use scratchpad"
         aria-label="Use scratchpad"
         aria-pressed={mode === "scratchpad"}
-        className={`${baseBtn} ${mode === "scratchpad" ? active : idle}`}
+        className={`${ICON_ACTION_BUTTON_CLASS} ${
+          mode === "scratchpad" ? ICON_ACTION_ACTIVE_CLASS : ICON_ACTION_IDLE_CLASS
+        }`}
       >
         <ScratchpadIcon />
       </button>

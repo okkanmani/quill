@@ -12,6 +12,7 @@ import {
 } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
 import PadlockIcon from "./PadlockIcon";
+import { LOCK_STATUS_BADGE_CLASS } from "./rowActionButtonStyles";
 import SectionSortSelect from "./SectionSortSelect";
 import {
   SECTION_SORT_STATUS,
@@ -51,7 +52,7 @@ function LockedPadlockBadge({ state }) {
   const accessStyle = state.kind === "access";
   return (
     <span
-      className={`shrink-0 inline-flex items-center justify-center rounded-full border w-9 h-9 ${
+      className={`${LOCK_STATUS_BADGE_CLASS} ${
         accessStyle
           ? "bg-violet-100 border-violet-200 text-violet-700"
           : "bg-amber-100 border-amber-200 text-amber-800"
@@ -59,7 +60,7 @@ function LockedPadlockBadge({ state }) {
       title={label}
       aria-label={label}
     >
-      <PadlockIcon className="w-[18px] h-[18px]" />
+      <PadlockIcon className="w-[14px] h-[14px]" />
     </span>
   );
 }
