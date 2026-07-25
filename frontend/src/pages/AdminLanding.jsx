@@ -9,7 +9,14 @@ import {
   unlockTimedWorksheet,
   setWorksheetAccessLock,
   clearWorksheetAccessLock,
+  scheduleTestUnlock,
 } from "../api";
+import {
+  formatScheduledUnlockLabel,
+  isoToLocalDateInput,
+  isoToLocalTimeInput,
+  localDateAndTimeToIso,
+} from "../testSchedulingUtils";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import {
   activityDestination,
@@ -21,6 +28,7 @@ import AppShell from "../components/AppShell";
 import AdminStudentRoster from "../components/AdminStudentRoster";
 import QuillLoading from "../components/QuillLoading";
 import WorksheetLockButton from "../components/WorksheetLockButton";
+import PadlockIcon from "../components/PadlockIcon";
 import { AdminFocusChipSection } from "../adminFocusChipUtils";
 
 function formatRelativeTime(iso) {
@@ -137,6 +145,211 @@ function pendingLockVariant(item) {
   return "neutral";
 }
 
+function CalendarTimeIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-4 h-4"
+      aria-hidden
+    >
+      <path d="M16 2v4" />
+      <path d="M8 2v4" />
+      <path d="M3 10h18" />
+      <path d="M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2" />
+      <path d="M12 14v3" />
+      <path d="M12 11v.01" />
+    </svg>
+  );
+}
+
+function scheduledItemKey(item) {
+  return `${item.student_name}-${item.worksheet_id}-sched`;
+}
+
+function ScheduledTestsSection({
+  label,
+  items,
+  scopedToStudent,
+  unlockingKey,
+  onUnlockNow,
+  onScheduleUpdated,
+  onScheduleError,
+}) {
+  const [rescheduleKey, setRescheduleKey] = useState(null);
+  const [rescheduleDate, setRescheduleDate] = useState("");
+  const [rescheduleTime, setRescheduleTime] = useState("");
+  const [savingKey, setSavingKey] = useState("");
+
+  function closeReschedule() {
+    setRescheduleKey(null);
+    setRescheduleDate("");
+    setRescheduleTime("");
+  }
+
+  function toggleReschedule(item) {
+    const key = scheduledItemKey(item);
+    if (rescheduleKey === key) {
+      closeReschedule();
+      return;
+    }
+    setRescheduleKey(key);
+    setRescheduleDate(isoToLocalDateInput(item.scheduled_unlock_at));
+    setRescheduleTime(isoToLocalTimeInput(item.scheduled_unlock_at));
+  }
+
+  async function handleSaveReschedule(e, item) {
+    e.preventDefault();
+    const key = scheduledItemKey(item);
+    const unlockAt = localDateAndTimeToIso(rescheduleDate, rescheduleTime);
+    if (!unlockAt) {
+      onScheduleError("Pick a valid date and time.");
+      return;
+    }
+    if (new Date(unlockAt).getTime() <= Date.now()) {
+      onScheduleError("Scheduled unlock must be in the future.");
+      return;
+    }
+
+    setSavingKey(key);
+    onScheduleError("");
+    try {
+      await scheduleTestUnlock(item.worksheet_id, {
+        unlockAt,
+        studentName: item.student_name,
+      });
+      closeReschedule();
+      await onScheduleUpdated();
+    } catch (err) {
+      onScheduleError(err.message || "Could not reschedule.");
+    } finally {
+      setSavingKey("");
+    }
+  }
+
+  if (items.length === 0) {
+    return (
+      <section>
+        <SectionLabel>{label}</SectionLabel>
+        <div className="rounded-xl border border-dashed border-slate-200 px-3.5 py-4 text-sm text-slate-500">
+          {scopedToStudent
+            ? `No scheduled test unlocks for this student.`
+            : "No scheduled test unlocks."}
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section>
+      <SectionLabel>{label}</SectionLabel>
+      <div className="rounded-xl border border-slate-200 overflow-hidden">
+        {items.map((item) => {
+          const itemKey = scheduledItemKey(item);
+          const busy = unlockingKey === itemKey || savingKey === itemKey;
+          const isRescheduling = rescheduleKey === itemKey;
+          const dimRow =
+            rescheduleKey !== null && rescheduleKey !== itemKey && !isRescheduling;
+
+          return (
+            <div
+              key={itemKey}
+              className={`border-b border-slate-100 last:border-b-0 ${
+                dimRow ? "opacity-50" : ""
+              }`}
+            >
+              <div className="flex items-center justify-between gap-3 px-4 py-3 bg-white">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-900">{item.title}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {!scopedToStudent ? `${item.student_name} · ` : ""}
+                    Unlocks {formatScheduledUnlockLabel(item.scheduled_unlock_at)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => onUnlockNow(item)}
+                    title="Unlock now"
+                    aria-label="Unlock now"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-violet-200 bg-violet-50 text-violet-800 hover:bg-violet-100 disabled:opacity-60 transition"
+                  >
+                    <PadlockIcon open={false} className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => toggleReschedule(item)}
+                    aria-label={isRescheduling ? "Close reschedule" : "Reschedule unlock"}
+                    aria-pressed={isRescheduling}
+                    title={isRescheduling ? "Close reschedule" : "Reschedule"}
+                    className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border disabled:opacity-60 transition ${
+                      isRescheduling
+                        ? "border-indigo-200 bg-indigo-50 text-indigo-700"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    }`}
+                  >
+                    <CalendarTimeIcon />
+                  </button>
+                </div>
+              </div>
+
+              {isRescheduling ? (
+                <form
+                  onSubmit={(e) => handleSaveReschedule(e, item)}
+                  className="px-4 py-3.5 border-t border-slate-100 bg-slate-50 flex flex-wrap items-end gap-2.5"
+                >
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Date</p>
+                    <input
+                      type="date"
+                      required
+                      value={rescheduleDate}
+                      onChange={(e) => setRescheduleDate(e.target.value)}
+                      className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 w-[8.75rem] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Time</p>
+                    <input
+                      type="time"
+                      required
+                      value={rescheduleTime}
+                      onChange={(e) => setRescheduleTime(e.target.value)}
+                      className="rounded-lg border border-slate-300 bg-white pl-2.5 pr-2 py-1.5 text-sm text-slate-900 min-w-[6.85rem] w-[6.85rem] max-w-none box-border focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 [color-scheme:light]"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={busy}
+                    className="rounded-lg bg-indigo-50 hover:bg-indigo-100 disabled:opacity-60 text-indigo-800 border-0 px-3.5 py-2 text-[13px] font-semibold"
+                  >
+                    {savingKey === itemKey ? "Saving…" : "Save"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={closeReschedule}
+                    className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-700 hover:bg-white/80 disabled:opacity-60"
+                  >
+                    Cancel
+                  </button>
+                </form>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default function AdminLanding() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
@@ -195,6 +408,29 @@ export default function AdminLanding() {
     } catch {
       setError("Could not switch student.");
       setSwitchingStudent("");
+    }
+  }
+
+  async function handleUnlockScheduledNow(item) {
+    const key = `${item.student_name}-${item.worksheet_id}-sched`;
+    const ok = window.confirm(
+      `Unlock “${item.title}” for ${item.student_name} now?`,
+    );
+    if (!ok) return;
+
+    setUnlockingKey(key);
+    setError("");
+    const current = localStorage.getItem("studentName") || "";
+    try {
+      if (item.student_name && item.student_name !== current) {
+        await handleSelectStudentWithoutReload(item.student_name);
+      }
+      await clearWorksheetAccessLock(item.worksheet_id);
+      await refreshHome();
+    } catch (err) {
+      setError(err.message || "Could not unlock test.");
+    } finally {
+      setUnlockingKey("");
     }
   }
 
@@ -262,6 +498,7 @@ export default function AdminLanding() {
   const students = data?.students || [];
   const recentActivity = data?.recent_activity || [];
   const pending = data?.pending || [];
+  const scheduledTests = data?.scheduled_tests || [];
   const focusChips = data?.focus_chips || {};
   const selectedStudent = data?.selected_student || localStorage.getItem("studentName") || "";
   const scopedToStudent = Boolean(selectedStudent);
@@ -271,6 +508,9 @@ export default function AdminLanding() {
   const pendingSectionLabel = scopedToStudent
     ? `Pending · ${selectedStudent}`
     : "Pending";
+  const scheduledSectionLabel = scopedToStudent
+    ? `Scheduled tests · ${selectedStudent}`
+    : "Scheduled tests";
 
   return (
     <AppShell navLinks={ADMIN_MAIN_NAV} onLogout={handleLogout}>
@@ -315,7 +555,18 @@ export default function AdminLanding() {
             </section>
 
             <div className="grid lg:grid-cols-[1.4fr_1fr] gap-5 items-start">
-              <section>
+              <div className="flex flex-col gap-5 min-w-0">
+                <ScheduledTestsSection
+                  label={scheduledSectionLabel}
+                  items={scheduledTests}
+                  scopedToStudent={scopedToStudent}
+                  unlockingKey={unlockingKey}
+                  onUnlockNow={handleUnlockScheduledNow}
+                  onScheduleUpdated={refreshHome}
+                  onScheduleError={setError}
+                />
+
+                <section>
                 <SectionLabel>{activitySectionLabel}</SectionLabel>
                 {recentActivity.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
@@ -337,6 +588,7 @@ export default function AdminLanding() {
                   </div>
                 )}
               </section>
+              </div>
 
               <div className="flex flex-col gap-5">
                 <AdminFocusChipSection

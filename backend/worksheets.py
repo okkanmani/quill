@@ -368,10 +368,15 @@ def compute_worksheet_access_lock(
     unlocked_through_week: int,
     lock_overrides: dict[str, int],
     locked_weeks: set[int] | None = None,
+    scheduled_unlock_at: str | None = None,
 ) -> tuple[bool, str | None]:
     if worksheet_id in lock_overrides:
         override = lock_overrides[worksheet_id]
         if override == 0:
+            return False, None
+        from test_scheduling import scheduled_unlock_is_due
+
+        if scheduled_unlock_at and scheduled_unlock_is_due(scheduled_unlock_at):
             return False, None
         return True, "admin"
     if gifted_track and gifted_track_week is not None:
@@ -395,8 +400,13 @@ def assert_worksheet_accessible(
         raise ValueError("Worksheet not found.")
     conn = db.connect()
     try:
+        from test_scheduling import get_scheduled_unlock_map, materialize_due_scheduled_unlocks
+
+        materialize_due_scheduled_unlocks(conn, student_name)
+        conn.commit()
         unlocked_through = get_gifted_track_unlocked_through_week(conn, student_name)
         overrides = get_worksheet_lock_overrides(conn, student_name)
+        scheduled_map = get_scheduled_unlock_map(conn, student_name)
         locked_weeks = get_gifted_track_locked_weeks(conn, student_name)
         locked, reason = compute_worksheet_access_lock(
             worksheet_id,
@@ -405,6 +415,7 @@ def assert_worksheet_accessible(
             unlocked_through,
             overrides,
             locked_weeks,
+            scheduled_map.get(worksheet_id),
         )
     finally:
         conn.close()
@@ -470,32 +481,45 @@ def lock_gifted_track_week(student_name: str, week: int) -> None:
 
 
 def set_worksheet_access_lock(
-    student_name: str, worksheet_id: str, *, locked: bool
+    student_name: str,
+    worksheet_id: str,
+    *,
+    locked: bool,
+    scheduled_unlock_at: str | None = None,
 ) -> None:
     if not get_worksheet(worksheet_id):
         raise ValueError("Worksheet not found.")
     updated_at = datetime.now(timezone.utc).isoformat()
+    schedule_value = None
+    if locked and scheduled_unlock_at:
+        from test_scheduling import validate_future_unlock_at
+
+        schedule_value = validate_future_unlock_at(scheduled_unlock_at)
     conn = db.connect()
     try:
         if locked:
             conn.execute(
                 """
-                INSERT INTO student_worksheet_locks (student, worksheet_id, locked, updated_at)
-                VALUES (?, ?, 1, ?)
+                INSERT INTO student_worksheet_locks
+                  (student, worksheet_id, locked, updated_at, scheduled_unlock_at)
+                VALUES (?, ?, 1, ?, ?)
                 ON CONFLICT(student, worksheet_id) DO UPDATE SET
                   locked = 1,
-                  updated_at = excluded.updated_at
+                  updated_at = excluded.updated_at,
+                  scheduled_unlock_at = excluded.scheduled_unlock_at
                 """,
-                (student_name, worksheet_id, updated_at),
+                (student_name, worksheet_id, updated_at, schedule_value),
             )
         else:
             conn.execute(
                 """
-                INSERT INTO student_worksheet_locks (student, worksheet_id, locked, updated_at)
-                VALUES (?, ?, 0, ?)
+                INSERT INTO student_worksheet_locks
+                  (student, worksheet_id, locked, updated_at, scheduled_unlock_at)
+                VALUES (?, ?, 0, ?, NULL)
                 ON CONFLICT(student, worksheet_id) DO UPDATE SET
                   locked = 0,
-                  updated_at = excluded.updated_at
+                  updated_at = excluded.updated_at,
+                  scheduled_unlock_at = NULL
                 """,
                 (student_name, worksheet_id, updated_at),
             )
@@ -508,13 +532,22 @@ def set_worksheet_access_lock(
 
 
 def set_worksheet_access_lock_for_admin_students(
-    admin_id: int, worksheet_id: str, *, locked: bool
+    admin_id: int,
+    worksheet_id: str,
+    *,
+    locked: bool,
+    scheduled_unlock_at: str | None = None,
 ) -> int:
     from auth_users import list_students_for_admin
 
     students = list_students_for_admin(admin_id)
     for row in students:
-        set_worksheet_access_lock(row["name"], worksheet_id, locked=locked)
+        set_worksheet_access_lock(
+            row["name"],
+            worksheet_id,
+            locked=locked,
+            scheduled_unlock_at=scheduled_unlock_at,
+        )
     return len(students)
 
 
@@ -1252,11 +1285,18 @@ def list_worksheets(
         lock_overrides: dict[str, int] = {}
         locked_weeks: set[int] = set()
         if student_name is not None:
+            from test_scheduling import get_scheduled_unlock_map, materialize_due_scheduled_unlocks
+
+            materialize_due_scheduled_unlocks(conn, student_name)
+            conn.commit()
             unlocked_through_week = get_gifted_track_unlocked_through_week(
                 conn, student_name
             )
             lock_overrides = get_worksheet_lock_overrides(conn, student_name)
+            scheduled_unlocks = get_scheduled_unlock_map(conn, student_name)
             locked_weeks = get_gifted_track_locked_weeks(conn, student_name)
+        else:
+            scheduled_unlocks = {}
         for r in rows:
             item = {
                 "id": r["id"],
@@ -1333,11 +1373,15 @@ def list_worksheets(
                     unlocked_through_week,
                     lock_overrides,
                     locked_weeks,
+                    scheduled_unlocks.get(r["id"]),
                 )
                 if access_locked:
                     item["access_locked"] = True
                     item["lock_reason"] = lock_reason
             out_list.append(item)
+        from worksheet_sections import enrich_worksheets_with_section_ids
+
+        enrich_worksheets_with_section_ids(conn, admin_id, out_list)
         return out_list
     finally:
         conn.close()

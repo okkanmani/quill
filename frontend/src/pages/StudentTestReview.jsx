@@ -7,12 +7,14 @@ import {
   saveTestReviewNotes,
 } from "../api";
 import AppShell from "../components/AppShell";
+import StatusToast from "../components/StatusToast";
 import Drawpad from "../components/Drawpad";
 import QuillLoading from "../components/QuillLoading";
 import WorksheetPassageContent from "../components/WorksheetPassageContent";
 import { QuestionDifficultyStars } from "../components/DifficultyStars";
 import { ScratchpadIcon, TextAnswerIcon } from "../components/ResponseModeIcons";
 import { useStudentNavLinks } from "../useStudentNavLinks";
+import { useAutoDismissToast } from "../useAutoDismissToast";
 
 function NotesModeToggle({ mode, onChange, disabled }) {
   const baseBtn =
@@ -57,6 +59,7 @@ export default function StudentTestReview() {
   const [saving, setSaving] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [message, setMessage] = useState("");
+  useAutoDismissToast(message, setMessage);
 
   useEffect(() => {
     setLoading(true);
@@ -129,7 +132,6 @@ export default function StudentTestReview() {
 
         {loading && <QuillLoading label="Loading review…" />}
         {error && <p className="text-red-500">{error}</p>}
-        {message && <p className="text-green-700 text-sm mb-3">{message}</p>}
 
         {!loading && review ? (
           <>
@@ -240,6 +242,8 @@ export default function StudentTestReview() {
           </>
         ) : null}
       </div>
+
+      <StatusToast message={message} />
     </AppShell>
   );
 }

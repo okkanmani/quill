@@ -3,10 +3,10 @@ import {
   ROW_ACTION_ICON_CLASS,
 } from "./rowActionButtonStyles";
 
-/** Compact delete control — icon only, sized to match worksheet row actions. */
-export default function RecycleBinButton({
+/** Compact move control — icon only, sized to match EditActionButton. */
+export default function MoveActionButton({
   onClick,
-  label = "Delete worksheet",
+  label = "Move to section",
   disabled = false,
 }) {
   return (
@@ -16,7 +16,7 @@ export default function RecycleBinButton({
       disabled={disabled}
       title={label}
       aria-label={label}
-      className={`${ROW_ACTION_BUTTON_CLASS} hover:bg-red-50 hover:border-red-200 hover:text-red-700`}
+      className={`${ROW_ACTION_BUTTON_CLASS} hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -29,11 +29,9 @@ export default function RecycleBinButton({
         className={ROW_ACTION_ICON_CLASS}
         aria-hidden
       >
-        <path d="M3 6h18" />
-        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-        <path d="M10 11v6" />
-        <path d="M14 11v6" />
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+        <path d="M2 12h7" />
+        <path d="M5 9l3 3-3 3" />
       </svg>
     </button>
   );

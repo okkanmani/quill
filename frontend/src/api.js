@@ -163,6 +163,107 @@ export async function deleteWorksheet(id) {
   return res.json();
 }
 
+export async function getWorksheetCollections() {
+  const res = await apiFetch(`${BASE_URL}/worksheet-collections`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch worksheet collections");
+  return res.json();
+}
+
+export async function getAdminWorksheetSections() {
+  const res = await apiFetch(`${BASE_URL}/admin/worksheet-sections`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch worksheet sections");
+  return res.json();
+}
+
+export async function createAdminWorksheetSection({ title, parentId = null }) {
+  const res = await apiFetch(`${BASE_URL}/admin/worksheet-sections`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ title, parent_id: parentId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to create section");
+  }
+  return res.json();
+}
+
+export async function deleteWorksheetCollection(sectionId) {
+  const res = await apiFetch(
+    `${BASE_URL}/admin/worksheet-sections/${encodeURIComponent(sectionId)}`,
+    {
+      method: "DELETE",
+      headers: authHeaders(),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to delete section");
+  }
+  return res.json();
+}
+
+export async function organizeUnassignedWorksheets() {
+  const res = await apiFetch(
+    `${BASE_URL}/admin/worksheet-sections/organize-unassigned`,
+    {
+      method: "POST",
+      headers: authHeaders(),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to organize worksheets");
+  }
+  return res.json();
+}
+
+export async function moveWorksheetCollection(sectionId, parentId) {
+  const res = await apiFetch(
+    `${BASE_URL}/admin/worksheet-sections/${encodeURIComponent(sectionId)}/parent`,
+    {
+      method: "PUT",
+      headers: {
+        ...authHeaders(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ parent_id: parentId }),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to move section");
+  }
+  return res.json();
+}
+
+export async function assignWorksheetSection(worksheetId, payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/worksheets/${worksheetId}/section`, {
+    method: "PUT",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      section_id: payload.sectionId ?? null,
+      new_section_title: payload.newSectionTitle ?? null,
+      new_section_parent_id: payload.newSectionParentId ?? null,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to move worksheet");
+  }
+  return res.json();
+}
+
 export async function uploadWorksheet(file) {
   const form = new FormData();
   form.append("file", file);
@@ -661,6 +762,25 @@ export async function createTestFromBuilder(payload) {
     const err = await res.json().catch(() => ({}));
     const d = err.detail;
     let msg = "Failed to publish test";
+    if (typeof d === "string") msg = d;
+    else if (Array.isArray(d)) msg = d.join(" ");
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function scheduleTestUnlock(worksheetId, { unlockAt, studentName }) {
+  const body = { unlock_at: unlockAt };
+  if (studentName) body.student_name = studentName;
+  const res = await apiFetch(`${BASE_URL}/admin/tests/${worksheetId}/schedule-unlock`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to schedule unlock";
     if (typeof d === "string") msg = d;
     else if (Array.isArray(d)) msg = d.join(" ");
     throw new Error(msg);

@@ -17,6 +17,7 @@ import AppShell from "../components/AppShell";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import AdminStudentGate from "../components/AdminStudentGate";
 import QuillLoading from "../components/QuillLoading";
+import StatusToast from "../components/StatusToast";
 import FocusAreaExplainPanel from "../components/FocusAreaExplainPanel";
 import FocusPracticeBuilder from "../components/FocusPracticeBuilder";
 import FocusPracticeWorksheet from "../components/FocusPracticeWorksheet";
@@ -41,6 +42,7 @@ import {
   readJsonFile,
   resolveResultForEvaluationUpload,
 } from "../resultExportUtils";
+import { useAutoDismissToast } from "../useAutoDismissToast";
 import AdminTestAnalysisView from "./AdminTestAnalysisView";
 
 const NEEDS_DISCUSSION_VISIBLE_COUNT = 6;
@@ -774,6 +776,7 @@ export default function AdminAnalysis() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [uploadMessage, setUploadMessage] = useState("");
+  useAutoDismissToast(uploadMessage, setUploadMessage);
   const [uploading, setUploading] = useState(false);
   const [selectedKey, setSelectedKey] = useState("");
   const [markingDiscussed, setMarkingDiscussed] = useState(false);
@@ -1188,20 +1191,6 @@ export default function AdminAnalysis() {
             generatingPractice={generatingPractice}
           />
 
-          {uploadMessage && (
-            <p className="text-green-700 text-sm mb-4">
-              {uploadMessage}
-              {uploadMessage.includes("Admin → Settings") ? (
-                <>
-                  {" "}
-                  <Link to="/admin/settings" className="font-semibold underline">
-                    Open Settings
-                  </Link>
-                </>
-              ) : null}
-            </p>
-          )}
-
           {loading && <QuillLoading label="Loading analysis…" />}
           {error && <p className="text-red-600 text-sm">{error}</p>}
 
@@ -1289,6 +1278,22 @@ export default function AdminAnalysis() {
       </div>
       )}
       </AdminStudentGate>
+
+      <StatusToast message={uploadMessage}>
+        {uploadMessage ? (
+          <>
+            {uploadMessage}
+            {uploadMessage.includes("Admin → Settings") ? (
+              <>
+                {" "}
+                <Link to="/admin/settings" className="font-semibold underline">
+                  Open Settings
+                </Link>
+              </>
+            ) : null}
+          </>
+        ) : null}
+      </StatusToast>
     </AppShell>
   );
 }

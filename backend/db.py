@@ -173,6 +173,13 @@ def init_schema() -> None:
             conn.execute(
                 "ALTER TABLE admins ADD COLUMN expert_json_warning_enabled INTEGER NOT NULL DEFAULT 1"
             )
+        lock_cols = {
+            row[1] for row in conn.execute("PRAGMA table_info(student_worksheet_locks)")
+        }
+        if "scheduled_unlock_at" not in lock_cols:
+            conn.execute(
+                "ALTER TABLE student_worksheet_locks ADD COLUMN scheduled_unlock_at TEXT"
+            )
         orphans = conn.execute(
             """
             SELECT id FROM admins
@@ -470,6 +477,10 @@ def init_schema() -> None:
 
         ensure_question_bank_schema(conn)
         ensure_question_bank_passage_schema(conn)
+
+        from worksheet_sections import ensure_worksheet_section_schema
+
+        ensure_worksheet_section_schema(conn)
 
         conn.commit()
     finally:

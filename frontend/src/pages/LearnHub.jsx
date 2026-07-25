@@ -29,8 +29,11 @@ import {
   sortedGradesFromSubjects,
   subjectMatchesCurriculum,
 } from "../learnHubGrades";
+
+import { useAutoDismissToast } from "../useAutoDismissToast";
 import LearnChrome from "../components/LearnChrome";
 import QuillLoading from "../components/QuillLoading";
+import StatusToast from "../components/StatusToast";
 import RecycleBinButton from "../components/RecycleBinButton";
 
 function EditableSectionTitle({ section, learnUrl, saving, onSave, trailing = null }) {
@@ -662,6 +665,7 @@ export default function LearnHub() {
   const [error, setError] = useState("");
   const [adminSectionsError, setAdminSectionsError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  useAutoDismissToast(statusMessage, setStatusMessage);
   const [deleting, setDeleting] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
   const [titleSavingKey, setTitleSavingKey] = useState(null);
@@ -1079,10 +1083,6 @@ export default function LearnHub() {
           />
         ) : null}
 
-        {statusMessage ? (
-          <p className="text-green-700 text-sm mb-4">{statusMessage}</p>
-        ) : null}
-
         {loading && <QuillLoading label="Loading resources…" />}
         {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
         {adminSectionsError ? (
@@ -1233,6 +1233,8 @@ export default function LearnHub() {
         }}
         onConfirm={confirmDeleteSection}
       />
+
+      <StatusToast message={statusMessage} />
     </LearnChrome>
   );
 }

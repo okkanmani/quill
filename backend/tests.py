@@ -1493,8 +1493,13 @@ def list_tests(student_name: str, *, admin_id: int) -> list[dict]:
             (student_name, admin_id, admin_id, default_admin_id),
         ).fetchall()
 
+        from test_scheduling import get_scheduled_unlock_map, materialize_due_scheduled_unlocks
+
+        materialize_due_scheduled_unlocks(conn, student_name)
+        conn.commit()
         unlocked = get_gifted_track_unlocked_through_week(conn, student_name)
         overrides = get_worksheet_lock_overrides(conn, student_name)
+        scheduled_unlocks = get_scheduled_unlock_map(conn, student_name)
         locked_weeks = get_gifted_track_locked_weeks(conn, student_name)
     finally:
         conn.close()
@@ -1528,6 +1533,7 @@ def list_tests(student_name: str, *, admin_id: int) -> list[dict]:
             unlocked,
             overrides,
             locked_weeks,
+            scheduled_unlocks.get(r["id"]),
         )
         if access_locked:
             item["access_locked"] = True

@@ -9,6 +9,7 @@ from auth_users import list_students_for_admin
 from focus_analysis import build_admin_focus_chip_preview
 from focus_discussion import list_focus_areas_discussed
 from revision import list_revision_analysis_records
+from test_scheduling import list_scheduled_test_unlocks, scheduled_unlock_is_future
 from worksheets import list_results, list_worksheets
 
 
@@ -191,6 +192,24 @@ def _pending_locked_for_student(
 
         lock_type = None
         if ws.get("access_locked"):
+            conn = db.connect()
+            try:
+                row = conn.execute(
+                    """
+                    SELECT scheduled_unlock_at FROM student_worksheet_locks
+                    WHERE student = ? AND worksheet_id = ? AND locked = 1
+                    """,
+                    (student_name, ws["id"]),
+                ).fetchone()
+                sched = (
+                    row["scheduled_unlock_at"]
+                    if row and row["scheduled_unlock_at"]
+                    else None
+                )
+            finally:
+                conn.close()
+            if sched and scheduled_unlock_is_future(sched):
+                continue
             lock_type = "access"
         elif ws.get("is_test") and (
             ws.get("attempt_locked") or ws.get("attempt_started")
@@ -229,6 +248,10 @@ def build_admin_home(admin_id: int, selected_student: str | None = None) -> dict
         student_cards = []
         all_activity: list[dict] = []
         all_pending: list[dict] = []
+        scheduled_tests = list_scheduled_test_unlocks(
+            admin_id,
+            student_name=selected_student if selected_student else None,
+        )
         activity_limit = 12 if selected_student else 8
 
         for student in students_raw:
@@ -267,6 +290,7 @@ def build_admin_home(admin_id: int, selected_student: str | None = None) -> dict
             "selected_student": selected_student,
             "recent_activity": all_activity[:12],
             "pending": all_pending[:8],
+            "scheduled_tests": scheduled_tests[:12],
             "focus_chips": focus_chips,
         }
     finally:

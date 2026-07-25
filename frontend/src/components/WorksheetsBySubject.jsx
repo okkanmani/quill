@@ -64,10 +64,17 @@ function LockedPadlockBadge({ state }) {
   );
 }
 
-function WorksheetRow({ ws, onOpenWorksheet, onOpenTest, renderSideAction }) {
+function WorksheetRow({
+  ws,
+  onOpenWorksheet,
+  onOpenTest,
+  renderSideAction,
+  renderLeadingAction,
+}) {
   const lockState = worksheetLockState(ws);
   const accessLocked = Boolean(ws.access_locked) && !isWorksheetDone(ws);
   const timedBlocked = Boolean(ws.timed && ws.timed_locked && !isWorksheetDone(ws));
+  const compact = Boolean(renderLeadingAction);
 
   function handleOpen() {
     if (accessLocked || timedBlocked) return;
@@ -79,9 +86,18 @@ function WorksheetRow({ ws, onOpenWorksheet, onOpenTest, renderSideAction }) {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4">
+    <div
+      className={`flex flex-row items-start min-w-0 ${
+        compact ? "gap-1.5 sm:gap-2" : "gap-2 sm:gap-3"
+      }`}
+    >
+      {renderLeadingAction ? (
+        <div className={`shrink-0 self-start ${compact ? "pt-3" : "pt-5"}`}>
+          {renderLeadingAction(ws)}
+        </div>
+      ) : null}
       <div
-        className={`flex-1 flex flex-col bg-white border rounded-2xl shadow-sm transition overflow-hidden ${
+        className={`flex-1 min-w-0 flex flex-col bg-white border rounded-2xl shadow-sm transition overflow-hidden ${
           accessLocked
             ? "border-violet-300 opacity-90"
             : timedBlocked
@@ -95,9 +111,9 @@ function WorksheetRow({ ws, onOpenWorksheet, onOpenTest, renderSideAction }) {
           type="button"
           onClick={handleOpen}
           disabled={accessLocked || timedBlocked}
-          className={`flex-1 p-5 text-left pb-3 ${
-            accessLocked || timedBlocked ? "cursor-not-allowed" : ""
-          }`}
+          className={`flex-1 text-left ${
+            compact ? "p-3 pb-2" : "p-5 pb-3"
+          } ${accessLocked || timedBlocked ? "cursor-not-allowed" : ""}`}
         >
           <div className="flex items-start justify-between gap-3">
             <p className="text-slate-900 font-semibold text-lg">{ws.title}</p>
@@ -135,40 +151,54 @@ function WorksheetRow({ ws, onOpenWorksheet, onOpenTest, renderSideAction }) {
             ) : null}
           </div>
         </button>
-        <div className="px-5 pb-4 flex flex-wrap items-center gap-2 border-t border-slate-100 bg-slate-50/50 pt-3">
-          <ContentBadge label={ws.content_badge} />
-          <SubjectBadge subject={ws.subject} />
-          <DifficultyStars min={ws.difficulty_min} max={ws.difficulty_max} />
-          {ws.timed && ws.time_limit_minutes ? (
-            <span className="text-rose-700 text-xs font-semibold rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5">
-              {ws.time_limit_minutes} min limit
+        <div
+          className={`flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-slate-100 bg-slate-50/50 ${
+            compact ? "px-3 py-2" : "px-5 py-3"
+          }`}
+        >
+          <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
+            <ContentBadge label={ws.content_badge} />
+            <SubjectBadge subject={ws.subject} />
+            <DifficultyStars min={ws.difficulty_min} max={ws.difficulty_max} />
+            {ws.timed && ws.time_limit_minutes ? (
+              <span className="text-rose-700 text-xs font-semibold rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5">
+                {ws.time_limit_minutes} min limit
+              </span>
+            ) : null}
+            {ws.timed && ws.last_duration_seconds != null ? (
+              <span className="text-sky-800 text-xs font-semibold rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 tabular-nums">
+                Completed in {formatDurationSeconds(ws.last_duration_seconds)}
+              </span>
+            ) : null}
+            <span className="text-indigo-500 text-sm">
+              {ws.question_count} questions
             </span>
-          ) : null}
-          {ws.timed && ws.last_duration_seconds != null ? (
-            <span className="text-sky-800 text-xs font-semibold rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 tabular-nums">
-              Completed in {formatDurationSeconds(ws.last_duration_seconds)}
-            </span>
-          ) : null}
-          <span className="text-indigo-500 text-sm">
-            {ws.question_count} questions
-          </span>
-          {ws.learn_subject ? (
-            <Link
-              to={`/student/learn/${encodeURIComponent(ws.learn_subject)}${
-                ws.learn_section
-                  ? `#${encodeURIComponent(ws.learn_section)}`
-                  : ""
-              }`}
-              className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-900 border border-slate-200 hover:bg-slate-200/80 transition"
+            {ws.learn_subject ? (
+              <Link
+                to={`/student/learn/${encodeURIComponent(ws.learn_subject)}${
+                  ws.learn_section
+                    ? `#${encodeURIComponent(ws.learn_section)}`
+                    : ""
+                }`}
+                className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-900 border border-slate-200 hover:bg-slate-200/80 transition"
+              >
+                {ws.learn_section_title
+                  ? `Open: ${ws.learn_section_title}`
+                  : "Open Resource"}
+              </Link>
+            ) : null}
+          </div>
+          {renderSideAction ? (
+            <div
+              className="flex items-center gap-1.5 shrink-0 ml-auto"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
             >
-              {ws.learn_section_title
-                ? `Open: ${ws.learn_section_title}`
-                : "Open Resource"}
-            </Link>
+              {renderSideAction(ws)}
+            </div>
           ) : null}
         </div>
       </div>
-      {renderSideAction ? renderSideAction(ws) : null}
     </div>
   );
 }
@@ -196,11 +226,16 @@ export default function WorksheetsBySubject({
   onOpenWorksheet,
   onOpenTest,
   renderSideAction,
+  renderLeadingAction,
   ungrouped = false,
+  showSort = false,
+  sortSelectId = "worksheets-sort-ungrouped",
+  preserveOrder = false,
 }) {
   const groups = useMemo(() => groupWorksheets(worksheets), [worksheets]);
   const [open, setOpen] = useState(() => new Set());
   const [sortBySubject, setSortBySubject] = useState({});
+  const [ungroupedSort, setUngroupedSort] = useState(SECTION_SORT_STATUS);
 
   function toggle(subjectKey) {
     setOpen((prev) => {
@@ -213,9 +248,30 @@ export default function WorksheetsBySubject({
 
   if (ungrouped) {
     if (worksheets.length === 0) return null;
-    const sortedWorksheets = sortWorksheetItems(worksheets);
+    const sortedWorksheets = preserveOrder
+      ? worksheets
+      : sortWorksheetItems(
+          worksheets,
+          showSort ? ungroupedSort : SECTION_SORT_STATUS,
+        );
     return (
-      <div className="flex flex-col gap-4">
+      <div className={`flex flex-col ${renderLeadingAction ? "gap-3" : "gap-4"}`}>
+        {showSort ? (
+          <div className="flex items-center justify-end gap-2 px-1">
+            <label
+              htmlFor={sortSelectId}
+              className="text-xs font-medium text-slate-600"
+            >
+              Sort
+            </label>
+            <SectionSortSelect
+              id={sortSelectId}
+              value={ungroupedSort}
+              options={WORKSHEET_SORT_OPTIONS}
+              onChange={setUngroupedSort}
+            />
+          </div>
+        ) : null}
         {sortedWorksheets.map((ws) => (
           <WorksheetRow
             key={ws.id}
@@ -223,6 +279,7 @@ export default function WorksheetsBySubject({
             onOpenWorksheet={onOpenWorksheet}
             onOpenTest={onOpenTest}
             renderSideAction={renderSideAction}
+            renderLeadingAction={renderLeadingAction}
           />
         ))}
       </div>
@@ -305,6 +362,7 @@ export default function WorksheetsBySubject({
                     onOpenWorksheet={onOpenWorksheet}
                     onOpenTest={onOpenTest}
                     renderSideAction={renderSideAction}
+                    renderLeadingAction={renderLeadingAction}
                   />
                 ))}
               </div>

@@ -153,6 +153,14 @@ from worksheets import (
     validate_worksheet_data,
     strip_reference_answers_for_student,
 )
+from worksheet_sections import (
+    assign_worksheet_section,
+    create_section,
+    list_sections_for_admin,
+    move_section,
+    organize_unassigned_worksheets,
+    delete_section,
+)
 
 
 class SubmitResultRequest(BaseModel):
@@ -320,6 +328,13 @@ class CreateTestBuilderRequest(BaseModel):
     test_rc_questions_per_passage: int | None = None
     content_badge: str | None = "Test"
     lock_on_create: bool = False
+    scheduled_unlock_at: str | None = None
+    unlock_students_now: bool = False
+
+
+class TestScheduleUnlockRequest(BaseModel):
+    unlock_at: str
+    student_name: str | None = None
 
 
 class QuestionBankItemRequest(BaseModel):
@@ -704,8 +719,14 @@ def update_admin_account_route(
 @app.get("/worksheets")
 def get_worksheets(authorization: str = Header(...)):
     payload = _payload(authorization)
-    who = _student_context_name(payload)
-    return list_worksheets(student_name=who, admin_id=_admin_id(payload))
+    admin_id = _admin_id(payload)
+    if payload.get("role") == "student":
+        who = payload["name"]
+    elif payload.get("role") == "admin":
+        who = payload.get("student_name") or None
+    else:
+        raise HTTPException(status_code=403, detail="Invalid role")
+    return list_worksheets(student_name=who, admin_id=admin_id)
 
 
 @app.get("/worksheets/{worksheet_id}")
@@ -727,6 +748,12 @@ def get_worksheet_by_id(worksheet_id: str, authorization: str = Header(...)):
         )
     if payload.get("role") == "student":
         worksheet = strip_reference_answers_for_student(worksheet)
+    elif worksheet.get("is_test"):
+        from test_scheduling import summarize_test_unlock_schedule
+
+        worksheet["unlock_schedule"] = summarize_test_unlock_schedule(
+            admin_id, worksheet_id
+        )
     return worksheet
 
 
@@ -938,6 +965,7 @@ def admin_create_test_from_builder(
         raise HTTPException(status_code=403, detail="Admin only")
     body = req.model_dump()
     lock_on_create = bool(body.pop("lock_on_create", False))
+    scheduled_unlock_at = body.pop("scheduled_unlock_at", None)
     try:
         result = create_test_from_builder(body, admin_id=_admin_id(payload))
     except ValueError as exc:
@@ -947,7 +975,20 @@ def admin_create_test_from_builder(
         else:
             detail = [str(errors)]
         raise HTTPException(status_code=400, detail=detail)
-    if lock_on_create:
+    if scheduled_unlock_at:
+        from test_scheduling import schedule_test_unlock_for_admin
+
+        try:
+            locked_count = schedule_test_unlock_for_admin(
+                payload["admin_id"],
+                result["id"],
+                scheduled_unlock_at,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        result["locked_for_students"] = locked_count
+        result["scheduled_unlock_at"] = scheduled_unlock_at
+    elif lock_on_create:
         locked_count = set_worksheet_access_lock_for_admin_students(
             payload["admin_id"],
             result["id"],
@@ -955,6 +996,33 @@ def admin_create_test_from_builder(
         )
         result["locked_for_students"] = locked_count
     return result
+
+
+@app.post("/admin/tests/{worksheet_id}/schedule-unlock")
+def admin_schedule_test_unlock(
+    worksheet_id: str,
+    req: TestScheduleUnlockRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    from test_scheduling import schedule_test_unlock_for_admin
+
+    try:
+        count = schedule_test_unlock_for_admin(
+            _admin_id(payload),
+            worksheet_id,
+            req.unlock_at,
+            student_name=req.student_name,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {
+        "message": "Scheduled unlock updated.",
+        "students_affected": count,
+        "unlock_at": req.unlock_at,
+    }
 
 
 @app.put("/admin/tests/{worksheet_id}")
@@ -968,8 +1036,10 @@ def admin_update_test_from_builder(
         raise HTTPException(status_code=403, detail="Admin only")
     body = req.model_dump()
     body.pop("lock_on_create", None)
+    scheduled_unlock_at = body.pop("scheduled_unlock_at", None)
+    unlock_students_now = bool(body.pop("unlock_students_now", False))
     try:
-        return update_test_from_builder(
+        result = update_test_from_builder(
             worksheet_id, body, admin_id=_admin_id(payload)
         )
     except ValueError as exc:
@@ -979,6 +1049,28 @@ def admin_update_test_from_builder(
         else:
             detail = [str(errors)]
         raise HTTPException(status_code=400, detail=detail)
+    admin_id = _admin_id(payload)
+    if scheduled_unlock_at:
+        from test_scheduling import schedule_test_unlock_for_admin
+
+        try:
+            count = schedule_test_unlock_for_admin(
+                admin_id,
+                worksheet_id,
+                scheduled_unlock_at,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        result["locked_for_students"] = count
+        result["scheduled_unlock_at"] = scheduled_unlock_at
+    elif unlock_students_now:
+        count = set_worksheet_access_lock_for_admin_students(
+            admin_id,
+            worksheet_id,
+            locked=False,
+        )
+        result["unlocked_for_students"] = count
+    return result
 
 
 @app.post("/admin/tests/generate-draft")
@@ -1774,6 +1866,122 @@ def admin_clear_worksheet_access_lock(
         _raise_if_worksheet_not_found(exc)
     clear_worksheet_access_lock(who, worksheet_id)
     return {"message": "Access override cleared"}
+
+
+class CreateWorksheetSectionRequest(BaseModel):
+    title: str
+    parent_id: str | None = None
+
+
+class AssignWorksheetSectionRequest(BaseModel):
+    section_id: str | None = None
+    new_section_title: str | None = None
+    new_section_parent_id: str | None = None
+    mode_key: str | None = None
+
+
+@app.get("/worksheet-collections")
+def get_worksheet_collections(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    role = payload.get("role")
+    if role not in ("admin", "student"):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return list_sections_for_admin(_admin_id(payload))
+
+
+@app.get("/admin/worksheet-sections")
+def admin_list_worksheet_sections(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    return list_sections_for_admin(_admin_id(payload))
+
+
+@app.post("/admin/worksheet-sections")
+def admin_create_worksheet_section(
+    req: CreateWorksheetSectionRequest, authorization: str = Header(...)
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return create_section(
+            admin_id=_admin_id(payload),
+            title=req.title,
+            parent_id=req.parent_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.delete("/admin/worksheet-sections/{section_id}")
+def admin_delete_worksheet_section(
+    section_id: str, authorization: str = Header(...)
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return delete_section(admin_id=_admin_id(payload), section_id=section_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/admin/worksheet-sections/organize-unassigned")
+def admin_organize_unassigned_worksheets(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    return organize_unassigned_worksheets(admin_id=_admin_id(payload))
+
+
+class MoveWorksheetSectionRequest(BaseModel):
+    parent_id: str | None = None
+
+
+@app.put("/admin/worksheet-sections/{section_id}/parent")
+def admin_move_worksheet_section(
+    section_id: str,
+    req: MoveWorksheetSectionRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return move_section(
+            admin_id=_admin_id(payload),
+            section_id=section_id,
+            parent_id=req.parent_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.put("/admin/worksheets/{worksheet_id}/section")
+def admin_assign_worksheet_section(
+    worksheet_id: str,
+    req: AssignWorksheetSectionRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        assert_worksheet_owned_by_admin(worksheet_id, _admin_id(payload))
+    except ValueError as exc:
+        _raise_if_worksheet_not_found(exc)
+    try:
+        return assign_worksheet_section(
+            admin_id=_admin_id(payload),
+            worksheet_id=worksheet_id,
+            section_id=req.section_id,
+            new_section_title=req.new_section_title,
+            new_section_parent_id=req.new_section_parent_id,
+            mode_key=req.mode_key,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.post("/results")

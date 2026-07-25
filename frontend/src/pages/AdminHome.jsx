@@ -13,6 +13,7 @@ import {
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import { resultIdsMatch } from "../adminHomeUtils";
 import AppShell from "../components/AppShell";
+import StatusToast from "../components/StatusToast";
 import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import AdminStudentGate from "../components/AdminStudentGate";
 import QuillLoading from "../components/QuillLoading";
@@ -22,6 +23,7 @@ import PracticeResultsSection from "../components/PracticeResultsSection";
 import TestResultsSection from "../components/TestResultsSection";
 import WritingResultsSection from "../components/WritingResultsSection";
 import { normalizeSubjectKey } from "../subjectUtils";
+import { useAutoDismissToast } from "../useAutoDismissToast";
 
 function ResultsViewTabs({ activeView }) {
   const worksheetClass =
@@ -73,6 +75,7 @@ export default function AdminHome() {
   const [gradingWritingId, setGradingWritingId] = useState(null);
   const [savingWritingFeedbackId, setSavingWritingFeedbackId] = useState(null);
   const [message, setMessage] = useState("");
+  useAutoDismissToast(message, setMessage);
   const selectedStudent = localStorage.getItem("studentName") || "";
 
   useEffect(() => {
@@ -265,10 +268,6 @@ export default function AdminHome() {
             : "Main worksheet, writing, and revision practice results for the selected student."}
         </p>
 
-        {message && (
-          <p className="text-green-700 text-sm mb-4">{message}</p>
-        )}
-
         {loading && <QuillLoading label="Loading results…" />}
         {error && <p className="text-red-500">{error}</p>}
 
@@ -338,6 +337,8 @@ export default function AdminHome() {
         ) : null}
       </div>
       </AdminStudentGate>
+
+      <StatusToast message={message} />
     </AppShell>
   );
 }

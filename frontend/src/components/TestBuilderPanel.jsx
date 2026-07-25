@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { generateTestDraft, getAdminSettings, getWorksheet, createTestFromBuilder, updateTestFromBuilder, bulkSaveQuestionBank, saveWorksheetContextToBank, getQuestionBankPassage } from "../api";
+import {
+  defaultScheduledUnlockLocalInput,
+  formatScheduledUnlockLabel,
+  isoToLocalDatetimeInput,
+  localDatetimeInputToIso,
+} from "../testSchedulingUtils";
 import QuillLoading from "./QuillLoading";
 import { QuestionDifficultyStars } from "./DifficultyStars";
 import TestQuestionCard from "./TestQuestionCard";
@@ -147,7 +153,10 @@ export default function TestBuilderPanel() {
   const [loadingEdit, setLoadingEdit] = useState(Boolean(editId));
   const [generating, setGenerating] = useState(false);
   const [publishing, setPublishing] = useState(false);
-  const [lockOnPublish, setLockOnPublish] = useState(true);
+  const [availabilityMode, setAvailabilityMode] = useState("scheduled");
+  const [scheduledUnlockLocal, setScheduledUnlockLocal] = useState(
+    defaultScheduledUnlockLocalInput,
+  );
   const [questions, setQuestions] = useState(() => [
     emptyTestQuestion(1),
     emptyTestQuestion(2),
@@ -209,6 +218,18 @@ export default function TestBuilderPanel() {
         setExpandedPassageIds(
           new Set((state.passages || []).slice(0, 1).map((passage) => passage.id)),
         );
+        const schedule = worksheet.unlock_schedule;
+        if (schedule?.mode === "scheduled" && schedule.scheduled_unlock_at) {
+          setAvailabilityMode("scheduled");
+          setScheduledUnlockLocal(
+            isoToLocalDatetimeInput(schedule.scheduled_unlock_at),
+          );
+        } else if (schedule?.mode === "locked") {
+          setAvailabilityMode("scheduled");
+          setScheduledUnlockLocal(defaultScheduledUnlockLocalInput());
+        } else {
+          setAvailabilityMode("now");
+        }
       })
       .catch((err) => {
         if (!cancelled) {
@@ -491,6 +512,20 @@ export default function TestBuilderPanel() {
         adaptiveEnabled,
       );
       const trimmedCount = questions.length - publishQuestions.length;
+      let scheduledUnlockAt = null;
+      if (availabilityMode === "scheduled") {
+        scheduledUnlockAt = localDatetimeInputToIso(scheduledUnlockLocal);
+        if (!scheduledUnlockAt) {
+          setErrors(["Pick a valid date and time for scheduled unlock."]);
+          setPublishing(false);
+          return;
+        }
+        if (new Date(scheduledUnlockAt).getTime() <= Date.now()) {
+          setErrors(["Scheduled unlock must be in the future."]);
+          setPublishing(false);
+          return;
+        }
+      }
       const payload = {
         ...buildTestBuilderPreview({
           title,
@@ -505,21 +540,33 @@ export default function TestBuilderPanel() {
           passageMode,
           questionsPerPassage,
         }),
-        lock_on_create: lockOnPublish,
       };
+      if (scheduledUnlockAt) {
+        payload.scheduled_unlock_at = scheduledUnlockAt;
+      } else if (availabilityMode === "now" && editId) {
+        payload.unlock_students_now = true;
+      }
       const result = editId
         ? await updateTestFromBuilder(editId, payload)
         : await createTestFromBuilder(payload);
       const lockNote =
-        !editId &&
-        lockOnPublish &&
-        typeof result.locked_for_students === "number"
-          ? ` Locked for ${result.locked_for_students} student${
-              result.locked_for_students === 1 ? "" : "s"
+        scheduledUnlockAt
+          ? ` Scheduled unlock ${formatScheduledUnlockLabel(scheduledUnlockAt)} for ${
+              typeof result.locked_for_students === "number"
+                ? `${result.locked_for_students} student${
+                    result.locked_for_students === 1 ? "" : "s"
+                  }`
+                : "your students"
             }.`
-          : !editId && lockOnPublish
-            ? " Locked for your students."
-            : "";
+          : availabilityMode === "now" && typeof result.unlocked_for_students === "number"
+            ? ` Unlocked for ${result.unlocked_for_students} student${
+                result.unlocked_for_students === 1 ? "" : "s"
+              }.`
+            : availabilityMode === "now" && !editId
+              ? " Unlocked for students now."
+              : availabilityMode === "now" && editId
+                ? " Student access updated to unlocked."
+                : "";
       setNotice(
         editId
           ? `Saved changes to ${result.id} — “${result.title}”.`
@@ -1073,16 +1120,45 @@ export default function TestBuilderPanel() {
           </label>
         ) : null}
 
-        <label className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-          <input
-            type="checkbox"
-            checked={lockOnPublish}
-            onChange={(e) => setLockOnPublish(e.target.checked)}
-            className="rounded border-slate-300"
-          />
-          Lock test for students after publishing
-          <span className="font-normal text-slate-500">(unlock from Worksheets → Tests)</span>
-        </label>
+        <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 space-y-3">
+            <p className="font-semibold text-sm text-slate-900">Availability</p>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 text-sm text-slate-800">
+                <input
+                  type="radio"
+                  name="test-availability"
+                  checked={availabilityMode === "now"}
+                  onChange={() => setAvailabilityMode("now")}
+                  className="text-indigo-600"
+                />
+                {editId ? "Unlock for students now" : "Publish and unlock now"}
+              </label>
+              <label className="flex items-center gap-2 text-sm text-slate-800">
+                <input
+                  type="radio"
+                  name="test-availability"
+                  checked={availabilityMode === "scheduled"}
+                  onChange={() => setAvailabilityMode("scheduled")}
+                  className="text-indigo-600"
+                />
+                Schedule unlock for later
+              </label>
+            </div>
+            {availabilityMode === "scheduled" ? (
+              <div className="ml-6">
+                <input
+                  type="datetime-local"
+                  value={scheduledUnlockLocal}
+                  onChange={(e) => setScheduledUnlockLocal(e.target.value)}
+                  className="w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                />
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                  Test stays locked until this time — you can still edit it before then.
+                  {editId ? " Saving applies this schedule for all your students." : ""}
+                </p>
+              </div>
+            ) : null}
+          </div>
       </section>
 
       {passageWindowEnabled ? (

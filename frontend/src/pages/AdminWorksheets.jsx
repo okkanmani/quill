@@ -1,45 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { deleteWorksheet, getWorksheets, logout, unlockTestAttempt, unlockTimedWorksheet, unlockGiftedTrackWeek, lockGiftedTrackWeek, setWorksheetAccessLock, clearWorksheetAccessLock } from "../api";
+import {
+  deleteWorksheet,
+  getWorksheets,
+  logout,
+  getAdminWorksheetSections,
+  createAdminWorksheetSection,
+  assignWorksheetSection,
+  moveWorksheetCollection,
+  organizeUnassignedWorksheets,
+  deleteWorksheetCollection,
+} from "../api";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
-import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
-import AdminStudentGate from "../components/AdminStudentGate";
 import QuillLoading from "../components/QuillLoading";
 import EditActionButton from "../components/EditActionButton";
 import RecycleBinButton from "../components/RecycleBinButton";
-import WorksheetLockButton from "../components/WorksheetLockButton";
-import WorksheetsByMode from "../components/WorksheetsByMode";
-
-function adminWorksheetLockInfo(ws) {
-  if (ws.done) return null;
-  if (ws.access_locked) {
-    return {
-      locked: true,
-      variant: "access",
-      label: "Unlock worksheet access",
-    };
-  }
-  if (ws.is_test && (ws.attempt_locked || ws.attempt_started)) {
-    return {
-      locked: true,
-      variant: "timed",
-      label: "Reset test sitting",
-    };
-  }
-  if (ws.timed && (ws.timed_locked || ws.timed_started)) {
-    return {
-      locked: true,
-      variant: "timed",
-      label: "Reset timed attempt",
-    };
-  }
-  return {
-    locked: false,
-    variant: "neutral",
-    label: `Lock ${ws.title}`,
-  };
-}
+import WorksheetsBySubject from "../components/WorksheetsBySubject";
+import ThinkingQuestByWeek from "../components/ThinkingQuestByWeek";
+import MoveActionButton from "../components/MoveActionButton";
+import OrganizeActionButton from "../components/OrganizeActionButton";
+import WorksheetMoveDialog from "../components/WorksheetMoveDialog";
+import AddWorksheetCollectionDialog from "../components/AddWorksheetCollectionDialog";
+import CollectionMoveDialog from "../components/CollectionMoveDialog";
+import TimedAckDialog from "../components/TimedAckDialog";
+import StatusToast from "../components/StatusToast";
+import AdminWorksheetCollectionTree from "../components/AdminWorksheetCollectionTree";
+import { unassignedWorksheets, descendantSectionIds } from "../worksheetCollectionTree";
+import { useAutoDismissToast } from "../useAutoDismissToast";
 
 export default function AdminWorksheets() {
   const navigate = useNavigate();
@@ -50,26 +38,33 @@ export default function AdminWorksheets() {
   const [statusMessage, setStatusMessage] = useState("");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [deleting, setDeleting] = useState(false);
-  const selectedStudent = localStorage.getItem("studentName") || "";
+  const [worksheetSections, setWorksheetSections] = useState({ sections: [] });
+  const [moveTarget, setMoveTarget] = useState(null);
+  const [moveSaving, setMoveSaving] = useState(false);
+  const [moveCollectionTarget, setMoveCollectionTarget] = useState(null);
+  const [moveCollectionSaving, setMoveCollectionSaving] = useState(false);
+  const [addCollection, setAddCollection] = useState(null);
+  const [addCollectionSaving, setAddCollectionSaving] = useState(false);
+  const [organizing, setOrganizing] = useState(false);
+  const [sectionDeleteAck, setSectionDeleteAck] = useState(null);
+
+  useAutoDismissToast(statusMessage, setStatusMessage);
 
   function loadWorksheets({ preserveError = false } = {}) {
     setLoading(true);
-    getWorksheets()
-      .then((data) => {
+    Promise.all([getWorksheets(), getAdminWorksheetSections()])
+      .then(([data, sectionPayload]) => {
         if (!preserveError) setError("");
         setWorksheets(data);
+        setWorksheetSections(sectionPayload);
       })
       .catch(() => setError("Could not load worksheets."))
       .finally(() => setLoading(false));
   }
 
   useEffect(() => {
-    if (!selectedStudent) {
-      setLoading(false);
-      return;
-    }
     loadWorksheets();
-  }, [location.key, selectedStudent]);
+  }, [location.key]);
 
   function toggleSelected(id) {
     setSelectedIds((prev) => {
@@ -151,139 +146,159 @@ export default function AdminWorksheets() {
     navigate("/");
   }
 
-  async function handleUnlock(ws) {
-    const ok = window.confirm(
-      ws.is_test
-        ? `Reset test sitting for “${ws.title}”? The student can start again from scratch.`
-        : `Unlock “${ws.title}”? The student will be able to start this timed worksheet again from scratch.`,
-    );
-    if (!ok) return;
-    try {
-      if (ws.is_test) {
-        await unlockTestAttempt(ws.id);
-      } else {
-        await unlockTimedWorksheet(ws.id);
-      }
-      setStatusMessage(`Unlocked ${ws.id} — “${ws.title}”.`);
-      loadWorksheets();
-    } catch (err) {
-      setError(err.message || "Could not unlock worksheet.");
-    }
-  }
+  const worksheetsNotInCollections = useMemo(
+    () => unassignedWorksheets(worksheets),
+    [worksheets],
+  );
 
-  async function handleUnlockWeek(week) {
-    const ok = window.confirm(
-      `Unlock Week ${week} for this student? They will be able to start all Thinking Quest worksheets in this week.`,
-    );
-    if (!ok) return;
-    try {
-      await unlockGiftedTrackWeek(week);
-      setStatusMessage(`Unlocked Thinking Quest Week ${week}.`);
-      loadWorksheets();
-    } catch (err) {
-      setError(err.message || "Could not unlock week.");
-    }
-  }
+  const unassignedThinkingQuest = useMemo(
+    () => worksheetsNotInCollections.filter((ws) => ws.gifted_track),
+    [worksheetsNotInCollections],
+  );
 
-  async function handleLockWeek(week) {
-    const ok = window.confirm(
-      `Lock Week ${week} for this student? They will not be able to open worksheets in this week until you unlock it.`,
-    );
-    if (!ok) return;
-    try {
-      await lockGiftedTrackWeek(week);
-      setStatusMessage(`Locked Thinking Quest Week ${week}.`);
-      loadWorksheets();
-    } catch (err) {
-      setError(err.message || "Could not lock week.");
-    }
-  }
-
-  async function handleToggleWeekLock(week, locked) {
-    if (locked) await handleUnlockWeek(week);
-    else await handleLockWeek(week);
-  }
-
-  async function handleAllowAccess(ws) {
-    try {
-      if (ws.lock_reason === "admin") {
-        await clearWorksheetAccessLock(ws.id);
-      } else {
-        await setWorksheetAccessLock(ws.id, false);
-      }
-      setStatusMessage(`Unlocked access to “${ws.title}”.`);
-      loadWorksheets();
-    } catch (err) {
-      setError(err.message || "Could not unlock worksheet access.");
-    }
-  }
-
-  async function handleLockAccess(ws) {
-    const ok = window.confirm(
-      `Lock “${ws.title}” for this student? They will not be able to open it until you unlock it.`,
-    );
-    if (!ok) return;
-    try {
-      await setWorksheetAccessLock(ws.id, true);
-      setStatusMessage(`Locked “${ws.title}”.`);
-      loadWorksheets();
-    } catch (err) {
-      setError(err.message || "Could not lock worksheet.");
-    }
-  }
-
-  async function handleToggleLock(ws) {
-    const info = adminWorksheetLockInfo(ws);
-    if (!info) return;
-    if (info.locked) {
-      if (ws.is_test && (ws.attempt_locked || ws.attempt_started)) {
-        await handleUnlock(ws);
-      } else if (ws.timed && (ws.timed_locked || ws.timed_started)) {
-        await handleUnlock(ws);
-      } else if (ws.access_locked) {
-        await handleAllowAccess(ws);
-      }
-      return;
-    }
-    await handleLockAccess(ws);
-  }
-
-  const giftedTrackUnlockedThroughWeek = useMemo(() => {
-    const gifted = worksheets.find((ws) => ws.gifted_track);
-    return gifted?.gifted_track_unlocked_through_week ?? null;
-  }, [worksheets]);
+  const unassignedOther = useMemo(
+    () => worksheetsNotInCollections.filter((ws) => !ws.gifted_track),
+    [worksheetsNotInCollections],
+  );
 
   const selectedCount = selectedIds.size;
 
+  async function handleAddCollection({ title, parentId }) {
+    setAddCollectionSaving(true);
+    setError("");
+    try {
+      await createAdminWorksheetSection({ title, parentId });
+      setAddCollection(null);
+      loadWorksheets({ preserveError: true });
+    } catch (err) {
+      setError(err.message || "Could not add section.");
+    } finally {
+      setAddCollectionSaving(false);
+    }
+  }
+
+  async function handleDeleteCollection(section) {
+    const childCount = section.children?.length ?? 0;
+    const subtreeIds = new Set([
+      section.id,
+      ...descendantSectionIds(worksheetSections.sections, section.id),
+    ]);
+    const worksheetCount = worksheets.filter((ws) =>
+      subtreeIds.has(ws.admin_section_id),
+    ).length;
+    const extra =
+      childCount > 0
+        ? ` This also removes ${childCount} section(s).`
+        : "";
+    const wsNote =
+      worksheetCount > 0
+        ? ` ${worksheetCount} worksheet(s) in this folder will become unassigned.`
+        : "";
+    const ok = window.confirm(
+      `Delete section “${section.title}”?${extra}${wsNote}`,
+    );
+    if (!ok) return;
+    setError("");
+    try {
+      await deleteWorksheetCollection(section.id);
+      setSectionDeleteAck(section.title);
+      loadWorksheets({ preserveError: true });
+    } catch (err) {
+      setError(err.message || "Could not delete section.");
+    }
+  }
+
+  async function handleOrganizeUnassigned() {
+    const count = worksheetsNotInCollections.length;
+    if (count === 0) return;
+    const ok = window.confirm(
+      `Create sub-sections under Practice, Timed, and other top-level folders from ${count} unassigned worksheet(s)?\n\n` +
+        "Worksheets are grouped by type and subject (Thinking Quest by week). You can move folders or worksheets afterward.",
+    );
+    if (!ok) return;
+    setOrganizing(true);
+    setError("");
+    try {
+      const result = await organizeUnassignedWorksheets();
+      setStatusMessage(
+        `Organized ${result.assigned_count} worksheet(s) into ${result.sections_created} new sub-section(s).`,
+      );
+      loadWorksheets({ preserveError: true });
+    } catch (err) {
+      setError(err.message || "Could not organize worksheets.");
+    } finally {
+      setOrganizing(false);
+    }
+  }
+
+  async function handleMoveCollectionConfirm(payload) {
+    if (!moveCollectionTarget) return;
+    setMoveCollectionSaving(true);
+    setError("");
+    try {
+      await moveWorksheetCollection(
+        moveCollectionTarget.id,
+        payload.parentId ?? null,
+      );
+      setStatusMessage(`Moved section “${moveCollectionTarget.title}”.`);
+      setMoveCollectionTarget(null);
+      loadWorksheets({ preserveError: true });
+    } catch (err) {
+      setError(err.message || "Could not move section.");
+    } finally {
+      setMoveCollectionSaving(false);
+    }
+  }
+
+  async function handleMoveConfirm(payload) {
+    if (!moveTarget) return;
+    setMoveSaving(true);
+    setError("");
+    try {
+      const result = await assignWorksheetSection(moveTarget.id, payload);
+      setWorksheets((prev) =>
+        prev.map((row) =>
+          row.id === moveTarget.id
+            ? { ...row, admin_section_id: result.admin_section_id ?? undefined }
+            : row,
+        ),
+      );
+      setStatusMessage(`Moved “${moveTarget.title}”.`);
+      setMoveTarget(null);
+      loadWorksheets({ preserveError: true });
+    } catch (err) {
+      setError(err.message || "Could not move worksheet.");
+    } finally {
+      setMoveSaving(false);
+    }
+  }
+
+  function renderWorksheetLeadingAction(ws) {
+    return (
+      <label
+        className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition"
+        title={`Select ${ws.title}`}
+      >
+        <input
+          type="checkbox"
+          checked={selectedIds.has(ws.id)}
+          onChange={() => toggleSelected(ws.id)}
+          disabled={deleting}
+          aria-label={`Select ${ws.title}`}
+          className="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+        />
+      </label>
+    );
+  }
+
   function renderWorksheetSideAction(ws) {
     return (
-      <div className="flex flex-row sm:flex-col shrink-0 gap-2 self-center sm:self-stretch items-center sm:items-stretch sm:w-11">
-        <label
-          className="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition"
-          title={`Select ${ws.title}`}
-        >
-          <input
-            type="checkbox"
-            checked={selectedIds.has(ws.id)}
-            onChange={() => toggleSelected(ws.id)}
-            disabled={deleting}
-            aria-label={`Select ${ws.title}`}
-            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-          />
-        </label>
-        {(() => {
-          const lockInfo = adminWorksheetLockInfo(ws);
-          if (!lockInfo) return null;
-          return (
-            <WorksheetLockButton
-              locked={lockInfo.locked}
-              variant={lockInfo.variant}
-              label={lockInfo.label}
-              disabled={deleting}
-              onClick={() => handleToggleLock(ws)}
-            />
-          );
-        })()}
+      <>
+        <MoveActionButton
+          label={`Move ${ws.title}`}
+          disabled={deleting}
+          onClick={() => setMoveTarget(ws)}
+        />
         <EditActionButton
           to={
             ws.is_test
@@ -298,7 +313,7 @@ export default function AdminWorksheets() {
           label={`Delete ${ws.title}`}
           disabled={deleting}
         />
-      </div>
+      </>
     );
   }
 
@@ -307,38 +322,50 @@ export default function AdminWorksheets() {
       navLinks={ADMIN_MAIN_NAV}
       onLogout={handleLogout}
     >
-      <AdminStudentGate context="worksheets">
       <div className="max-w-3xl">
-        <AdminStudentSwitcher />
+        <h1 className="text-2xl font-bold text-slate-950 mb-4">Worksheets</h1>
 
-        <h1 className="text-2xl font-bold text-slate-950 mb-1">Worksheets</h1>
-        <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-          Open, lock, or remove worksheets for the selected student.
-        </p>
-
-        {statusMessage && (
-          <p className="text-green-700 text-sm mb-4">{statusMessage}</p>
-        )}
+        {!loading && !error ? (
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={() => setAddCollection({ variant: "root" })}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-100 transition"
+            >
+              <span className="text-base leading-none" aria-hidden>
+                +
+              </span>
+              Add section
+            </button>
+          </div>
+        ) : null}
 
         {loading && <QuillLoading label="Loading worksheets…" />}
         {error && <p className="text-red-500">{error}</p>}
 
-        {!loading && !error && worksheets.length === 0 && (
+        {!loading && !error && worksheets.length === 0 && !worksheetSections.sections?.length && (
           <p className="text-slate-600">No worksheets.</p>
         )}
 
-        {!loading && !error && worksheets.length > 0 && (
+        {!loading && !error && (worksheets.length > 0 || worksheetSections.sections?.length > 0) && (
           <>
             {selectedCount > 0 ? (
               <div className="sticky top-0 z-30 -mx-1 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-3 shadow-md">
                 <span className="text-sm font-semibold text-slate-800 tabular-nums">
                   {selectedCount} selected
                 </span>
+                <RecycleBinButton
+                  label={deleting ? "Deleting selected worksheets…" : "Delete selected worksheets"}
+                  disabled={deleting}
+                  onClick={handleDeleteSelected}
+                />
                 <button
                   type="button"
-                  onClick={handleDeleteSelected}
+                  onClick={clearSelection}
                   disabled={deleting}
-                  className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-800 hover:bg-red-100 disabled:opacity-50 transition"
+                  title="Clear selection"
+                  aria-label="Clear selection"
+                  className="inline-flex shrink-0 items-center justify-center rounded-lg border w-7 h-7 bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800 disabled:opacity-50 transition"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -348,51 +375,117 @@ export default function AdminWorksheets() {
                     strokeWidth="1.75"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="w-4 h-4"
+                    className="w-[14px] h-[14px]"
                     aria-hidden
                   >
-                    <path d="M3 6h18" />
-                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                    <path d="M10 11v6" />
-                    <path d="M14 11v6" />
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
                   </svg>
-                  {deleting ? "Deleting…" : "Delete selected"}
-                </button>
-                <button
-                  type="button"
-                  onClick={clearSelection}
-                  disabled={deleting}
-                  className="text-sm font-semibold text-slate-600 hover:text-slate-900 disabled:opacity-50"
-                >
-                  Clear
                 </button>
               </div>
             ) : null}
 
-            <WorksheetsByMode
+            <AdminWorksheetCollectionTree
+              sections={worksheetSections.sections}
               worksheets={worksheets}
               onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
               onOpenTest={(id) => navigate(`/student/tests/${id}`)}
-              giftedTrackUnlockedThroughWeek={giftedTrackUnlockedThroughWeek}
-              renderWeekAction={(week, _items, info) => (
-                <WorksheetLockButton
-                  locked={info.weekLockedForAdmin}
-                  variant="access"
-                  label={
-                    info.weekLockedForAdmin
-                      ? `Unlock Week ${week} for this student`
-                      : `Lock Week ${week} for this student`
-                  }
-                  onClick={() => handleToggleWeekLock(week, info.weekLockedForAdmin)}
-                />
-              )}
               renderSideAction={renderWorksheetSideAction}
+              renderLeadingAction={renderWorksheetLeadingAction}
+              onAddSubCollection={(parentId) =>
+                setAddCollection({ variant: "nested", fixedParentId: parentId })
+              }
+              onMoveCollection={(section) => setMoveCollectionTarget(section)}
+              onDeleteCollection={handleDeleteCollection}
             />
+
+            {worksheetsNotInCollections.length > 0 ? (
+              <div className="mt-2">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+                    Unassigned
+                  </h2>
+                  <OrganizeActionButton
+                    label={
+                      organizing
+                        ? "Organizing worksheets…"
+                        : "Organize unassigned worksheets into sections"
+                    }
+                    disabled={organizing || deleting}
+                    onClick={handleOrganizeUnassigned}
+                  />
+                </div>
+                {unassignedThinkingQuest.length > 0 ? (
+                  <div className="mb-4 rounded-2xl border border-slate-300 bg-white shadow-sm overflow-hidden p-3 bg-slate-50/40">
+                    <ThinkingQuestByWeek
+                      worksheets={unassignedThinkingQuest}
+                      onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
+                      renderSideAction={renderWorksheetSideAction}
+              renderLeadingAction={renderWorksheetLeadingAction}
+                    />
+                  </div>
+                ) : null}
+                {unassignedOther.length > 0 ? (
+                  <WorksheetsBySubject
+                    worksheets={unassignedOther}
+                    onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
+                    onOpenTest={(id) => navigate(`/student/tests/${id}`)}
+                    renderSideAction={renderWorksheetSideAction}
+              renderLeadingAction={renderWorksheetLeadingAction}
+                    ungrouped
+                  />
+                ) : null}
+              </div>
+            ) : null}
           </>
         )}
       </div>
-      </AdminStudentGate>
+
+      <StatusToast message={statusMessage} />
+
+      <CollectionMoveDialog
+        open={Boolean(moveCollectionTarget)}
+        collection={moveCollectionTarget}
+        sections={worksheetSections.sections}
+        saving={moveCollectionSaving}
+        onCancel={() => {
+          if (!moveCollectionSaving) setMoveCollectionTarget(null);
+        }}
+        onConfirm={handleMoveCollectionConfirm}
+      />
+
+      <AddWorksheetCollectionDialog
+        open={Boolean(addCollection)}
+        sections={worksheetSections.sections}
+        variant={addCollection?.variant ?? "root"}
+        fixedParentId={addCollection?.fixedParentId ?? null}
+        saving={addCollectionSaving}
+        onCancel={() => {
+          if (!addCollectionSaving) setAddCollection(null);
+        }}
+        onConfirm={handleAddCollection}
+      />
+
+      <WorksheetMoveDialog
+        open={Boolean(moveTarget)}
+        worksheet={moveTarget}
+        sections={worksheetSections.sections}
+        saving={moveSaving}
+        onCancel={() => {
+          if (!moveSaving) setMoveTarget(null);
+        }}
+        onConfirm={handleMoveConfirm}
+      />
+
+      <TimedAckDialog
+        open={Boolean(sectionDeleteAck)}
+        message={
+          sectionDeleteAck
+            ? `Section “${sectionDeleteAck}” was deleted.`
+            : ""
+        }
+        onClose={() => setSectionDeleteAck(null)}
+      />
     </AppShell>
   );
 }
