@@ -1,5 +1,13 @@
 import { useState } from "react";
 import { updateAdminAccount } from "../api";
+import {
+  ADMIN_HUB_ALERT_ERROR,
+  ADMIN_HUB_ALERT_SUCCESS,
+  CREATE_FIELD_LABEL,
+  CREATE_PUBLISH_BUTTON,
+  WS_BODY,
+  WS_SECTION_TITLE,
+} from "../adminHubTypography";
 
 export default function AccountSettings() {
   const initialName = localStorage.getItem("adminName") || "";
@@ -67,25 +75,21 @@ export default function AccountSettings() {
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-950">Account</h2>
-      <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+      <h2 className={WS_SECTION_TITLE}>Account</h2>
+      <p className={`${WS_BODY} mt-1 leading-relaxed`}>
         Update your admin login username or password. Your current password is
         required to save any changes.
       </p>
 
       {message ? (
-        <p className="text-emerald-800 text-sm mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-          {message}
-        </p>
+        <p className={`${ADMIN_HUB_ALERT_SUCCESS} mt-4 mb-0`}>{message}</p>
       ) : null}
       {error ? (
-        <p className="text-red-600 text-sm mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-          {error}
-        </p>
+        <p className={`${ADMIN_HUB_ALERT_ERROR} mt-4 mb-0`}>{error}</p>
       ) : null}
 
       <form onSubmit={handleSubmit} className="mt-4 space-y-3">
-        <label className="block text-sm font-semibold text-slate-800">
+        <label className={CREATE_FIELD_LABEL}>
           Username
           <input
             type="text"
@@ -97,7 +101,7 @@ export default function AccountSettings() {
           />
         </label>
 
-        <label className="block text-sm font-semibold text-slate-800">
+        <label className={CREATE_FIELD_LABEL}>
           Current password
           <input
             type="password"
@@ -109,7 +113,7 @@ export default function AccountSettings() {
           />
         </label>
 
-        <label className="block text-sm font-semibold text-slate-800">
+        <label className={CREATE_FIELD_LABEL}>
           New password
           <input
             type="password"
@@ -121,7 +125,7 @@ export default function AccountSettings() {
           />
         </label>
 
-        <label className="block text-sm font-semibold text-slate-800">
+        <label className={CREATE_FIELD_LABEL}>
           Confirm new password
           <input
             type="password"
@@ -133,11 +137,7 @@ export default function AccountSettings() {
           />
         </label>
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl px-5 py-2.5 text-sm"
-        >
+        <button type="submit" disabled={saving} className={CREATE_PUBLISH_BUTTON}>
           {saving ? "Updating…" : "Update"}
         </button>
       </form>

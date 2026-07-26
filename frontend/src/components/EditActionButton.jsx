@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import {
   ROW_ACTION_BUTTON_CLASS,
   ROW_ACTION_ICON_CLASS,
+  ICON_ACTION_ACTIVE_CLASS,
 } from "./rowActionButtonStyles";
 
 /** Compact edit control — icon only, sized to match RecycleBinButton. */
@@ -9,9 +10,14 @@ export default function EditActionButton({
   onClick,
   label = "Edit",
   disabled = false,
+  active = false,
   to,
 }) {
-  const className = `${ROW_ACTION_BUTTON_CLASS} hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700`;
+  const className = `${ROW_ACTION_BUTTON_CLASS} ${
+    active
+      ? ICON_ACTION_ACTIVE_CLASS
+      : "hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700"
+  }`;
 
   const icon = (
     <svg

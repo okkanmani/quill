@@ -5,6 +5,12 @@ import {
   getStoredFont,
   setStoredFont,
 } from "../fontUtils";
+import {
+  CREATE_FIELD_LABEL,
+  WS_BODY,
+  WS_BODY_MUTED,
+  WS_SECTION_TITLE,
+} from "../adminHubTypography";
 
 function FontPreview({ stack, className = "" }) {
   return (
@@ -53,14 +59,14 @@ export default function FontSettings() {
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-950">Font</h2>
-      <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+      <h2 className={WS_SECTION_TITLE}>Font</h2>
+      <p className={`${WS_BODY} mt-1 leading-relaxed`}>
         Choose the typeface for Quill on this device. Saved in your browser for
         student and teacher views.
       </p>
 
       <div ref={rootRef} className="relative mt-4">
-        <span id="font-label" className="block text-sm font-semibold text-slate-800">
+        <span id="font-label" className={CREATE_FIELD_LABEL}>
           Typeface
         </span>
         <button
@@ -113,7 +119,7 @@ export default function FontSettings() {
 
       {activeFont?.description ? (
         <p
-          className="text-xs text-slate-500 mt-2 leading-relaxed"
+          className={`${WS_BODY_MUTED} mt-2 leading-relaxed`}
           style={{ fontFamily: activeFont.stack }}
         >
           {activeFont.description}

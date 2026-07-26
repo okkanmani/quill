@@ -16,6 +16,12 @@ export const CREATE_FIELD_LABEL = "block text-sm font-semibold text-slate-800";
 export const CREATE_FIELD_HINT =
   "mt-1 block text-xs font-normal text-slate-500 leading-relaxed";
 
+export const CREATE_FIELD_INPUT =
+  "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
+
+export const CREATE_FIELD_SELECT =
+  "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
+
 export const CREATE_BODY = "text-sm text-slate-600 leading-relaxed";
 
 export const CREATE_EYEBROW = "text-xs font-semibold text-slate-600";

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getAdminSettings, saveAdminPreferences } from "../api";
+import { ADMIN_HUB_INLINE_ERROR, WS_BODY, WS_SECTION_TITLE } from "../adminHubTypography";
 
 export default function ExpertJsonWarningSettings() {
   const [loading, setLoading] = useState(true);
@@ -34,13 +35,13 @@ export default function ExpertJsonWarningSettings() {
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <h2 className="text-lg font-semibold text-slate-950">Expert mode warning</h2>
-          <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+          <h2 className={WS_SECTION_TITLE}>Expert mode warning</h2>
+          <p className={`${WS_BODY} mt-1 leading-relaxed`}>
             When enabled, opening Create → Upload JSON shows a reminder that the JSON tool
             is for expert use and skips some builder safeguards.
           </p>
           {error ? (
-            <p className="text-sm text-red-700 mt-2">{error}</p>
+            <p className={`${ADMIN_HUB_INLINE_ERROR} mt-2 mb-0`}>{error}</p>
           ) : null}
         </div>
         <button

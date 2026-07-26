@@ -13,6 +13,16 @@ import ColorThemeSettings from "../components/ColorThemeSettings";
 import FontSettings from "../components/FontSettings";
 import ExpertJsonWarningSettings from "../components/ExpertJsonWarningSettings";
 import QuillLoading from "../components/QuillLoading";
+import {
+  ADMIN_HUB_ALERT_ERROR,
+  ADMIN_HUB_ALERT_SUCCESS,
+  ADMIN_HUB_PAGE_INTRO,
+  WS_PAGE_HEADING,
+  WS_SECTION_TITLE,
+  WS_BODY,
+  CREATE_FIELD_LABEL,
+  CREATE_PUBLISH_BUTTON,
+} from "../adminHubTypography";
 
 export default function AdminSettings() {
   const navigate = useNavigate();
@@ -82,22 +92,14 @@ export default function AdminSettings() {
       onLogout={handleLogout}
     >
       <div className="max-w-2xl">
-        <h1 className="text-2xl font-bold text-slate-950 mb-1">Settings</h1>
-        <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+        <h1 className={`${WS_PAGE_HEADING} mb-1`}>Settings</h1>
+        <p className={`${ADMIN_HUB_PAGE_INTRO} mb-6`}>
           Manage your account, appearance, expert tools, and OpenAI API key for AI generation.
         </p>
 
         {loading ? <QuillLoading label="Loading settings…" /> : null}
-        {message ? (
-          <p className="text-emerald-800 text-sm mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-            {message}
-          </p>
-        ) : null}
-        {error ? (
-          <p className="text-red-600 text-sm mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-            {error}
-          </p>
-        ) : null}
+        {message ? <p className={ADMIN_HUB_ALERT_SUCCESS}>{message}</p> : null}
+        {error ? <p className={ADMIN_HUB_ALERT_ERROR}>{error}</p> : null}
 
         {!loading ? (
           <div className="space-y-6">
@@ -107,7 +109,7 @@ export default function AdminSettings() {
 
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-semibold text-slate-950">OpenAI API key</h2>
+                <h2 className={WS_SECTION_TITLE}>OpenAI API key</h2>
                 <span
                   className={`text-xs font-semibold rounded-full px-2.5 py-0.5 border ${
                     configured
@@ -120,19 +122,19 @@ export default function AdminSettings() {
               </div>
 
               {!aiEnabled ? (
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className={`${WS_BODY} leading-relaxed`}>
                   AI worksheet generation is disabled on this server (set{" "}
                   <code className="text-xs bg-slate-100 px-1 rounded">QUILL_AI_ENABLED=0</code>{" "}
                   to turn off).
                 </p>
               ) : (
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className={`${WS_BODY} leading-relaxed`}>
                   Once saved, use Create → Worksheet builder or Learning resource to
                   generate worksheets and learning content with AI.
                 </p>
               )}
 
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className={`${WS_BODY} leading-relaxed`}>
                 Create a key at{" "}
                 <a
                   href="https://platform.openai.com/api-keys"
@@ -157,7 +159,7 @@ export default function AdminSettings() {
               </p>
 
               <form onSubmit={handleSave} className="space-y-3">
-                <label className="block text-sm font-semibold text-slate-800">
+                <label className={CREATE_FIELD_LABEL}>
                   {configured ? "Replace API key" : "API key"}
                   <input
                     type="password"
@@ -173,7 +175,7 @@ export default function AdminSettings() {
                   <button
                     type="submit"
                     disabled={saving || !apiKey.trim()}
-                    className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl px-5 py-2.5 text-sm"
+                    className={CREATE_PUBLISH_BUTTON}
                   >
                     {saving ? "Saving…" : configured ? "Replace key" : "Save key"}
                   </button>

@@ -4,6 +4,12 @@ import {
   getStoredColorTheme,
   setStoredColorTheme,
 } from "../themeUtils";
+import {
+  CREATE_FIELD_LABEL,
+  WS_BODY,
+  WS_BODY_MUTED,
+  WS_SECTION_TITLE,
+} from "../adminHubTypography";
 
 function ThemeColorSwatch({ swatch, className = "" }) {
   return (
@@ -55,14 +61,14 @@ export default function ColorThemeSettings() {
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-950">Color theme</h2>
-      <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+      <h2 className={WS_SECTION_TITLE}>Color theme</h2>
+      <p className={`${WS_BODY} mt-1 leading-relaxed`}>
         Choose how Quill looks on this device. Saved in your browser for student
         and teacher views.
       </p>
 
       <div ref={rootRef} className="relative mt-4">
-        <span id="color-theme-label" className="block text-sm font-semibold text-slate-800">
+        <span id="color-theme-label" className={CREATE_FIELD_LABEL}>
           Theme
         </span>
         <button
@@ -112,7 +118,7 @@ export default function ColorThemeSettings() {
       </div>
 
       {activeTheme?.description ? (
-        <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+        <p className={`${WS_BODY_MUTED} mt-2 leading-relaxed`}>
           {activeTheme.description}
         </p>
       ) : null}

@@ -11,7 +11,23 @@ import {
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
+import EditActionButton from "../components/EditActionButton";
+import RecycleBinButton from "../components/RecycleBinButton";
 import { GRADE_OPTIONS } from "../questionBuilderUtils";
+import {
+  ADMIN_HUB_INLINE_ERROR,
+  ADMIN_HUB_PAGE_INTRO,
+  CREATE_FIELD_LABEL,
+  CREATE_FIELD_INPUT,
+  CREATE_FIELD_SELECT,
+  CREATE_OUTLINE_BUTTON,
+  CREATE_PUBLISH_BUTTON,
+  WS_BODY,
+  WS_CARD_DETAIL,
+  WS_CARD_TITLE,
+  WS_EYEBROW,
+  WS_PAGE_HEADING,
+} from "../adminHubTypography";
 
 function StudentEditForm({ student, onCancel, onSaved, onError }) {
   const [name, setName] = useState(student.name);
@@ -86,23 +102,23 @@ function StudentEditForm({ student, onCancel, onSaved, onError }) {
 
   return (
     <form onSubmit={handleSubmit} className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-      <label className="block text-sm font-semibold text-slate-800">
+      <label className={CREATE_FIELD_LABEL}>
         Name
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className={CREATE_FIELD_INPUT}
         />
       </label>
 
-      <label className="block text-sm font-semibold text-slate-800">
+      <label className={CREATE_FIELD_LABEL}>
         Grade
         <select
           value={grade}
           onChange={(e) => setGrade(Number(e.target.value))}
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className={CREATE_FIELD_SELECT}
         >
           {GRADE_OPTIONS.map((g) => (
             <option key={g.value} value={g.value}>
@@ -112,7 +128,7 @@ function StudentEditForm({ student, onCancel, onSaved, onError }) {
         </select>
       </label>
 
-      <label className="block text-sm font-semibold text-slate-800">
+      <label className={CREATE_FIELD_LABEL}>
         New password
         <input
           type="password"
@@ -120,11 +136,11 @@ function StudentEditForm({ student, onCancel, onSaved, onError }) {
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="new-password"
           placeholder="Leave blank to keep current"
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className={CREATE_FIELD_INPUT}
         />
       </label>
 
-      <label className="block text-sm font-semibold text-slate-800">
+      <label className={CREATE_FIELD_LABEL}>
         Confirm new password
         <input
           type="password"
@@ -132,23 +148,15 @@ function StudentEditForm({ student, onCancel, onSaved, onError }) {
           onChange={(e) => setConfirmPassword(e.target.value)}
           autoComplete="new-password"
           placeholder="Leave blank to keep current"
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className={CREATE_FIELD_INPUT}
         />
       </label>
 
-      <div className="flex flex-wrap gap-2 pt-1">
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl px-4 py-2 text-sm"
-        >
+      <div className="flex flex-wrap gap-3 pt-1">
+        <button type="submit" disabled={saving} className={CREATE_PUBLISH_BUTTON}>
           {saving ? "Updating…" : "Update"}
         </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-semibold rounded-xl px-4 py-2 text-sm"
-        >
+        <button type="button" onClick={onCancel} className={CREATE_OUTLINE_BUTTON}>
           Cancel
         </button>
       </div>
@@ -255,64 +263,74 @@ export default function AdminStudents() {
       onLogout={handleLogout}
     >
       <div className="max-w-3xl">
-        <h1 className="text-2xl font-bold text-slate-950 mb-1">Students</h1>
-        <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+        <h1 className={`${WS_PAGE_HEADING} mb-1`}>Students</h1>
+        <p className={`${ADMIN_HUB_PAGE_INTRO} mb-6`}>
           Each student belongs to your admin account. They log in with their name and
           password on the home page. Names must be unique among your students.
         </p>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-8">
-          <h2 className="text-lg font-semibold text-slate-950 mb-3">Add a student</h2>
-          <form onSubmit={handleCreate} className="flex flex-col sm:flex-row flex-wrap gap-3">
-            <input
-              type="text"
-              placeholder="Student name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="flex-1 min-w-[10rem] border border-slate-300 rounded-xl px-4 py-2.5 text-sm"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="new-password"
-              className="flex-1 min-w-[10rem] border border-slate-300 rounded-xl px-4 py-2.5 text-sm"
-            />
-            <select
-              value={grade}
-              onChange={(e) => setGrade(Number(e.target.value))}
-              className="border border-slate-300 rounded-xl px-4 py-2.5 text-sm bg-white"
-            >
-              {GRADE_OPTIONS.map((g) => (
-                <option key={g.value} value={g.value}>
-                  {g.label}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              disabled={creating}
-              className="bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl px-5 py-2.5 text-sm disabled:opacity-50"
-            >
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden mb-8">
+          <div className="bg-slate-100/80 px-4 py-2 border-b border-slate-200">
+            <h2 className={WS_EYEBROW}>Add a student</h2>
+          </div>
+          <form onSubmit={handleCreate} className="space-y-3 p-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <label className={CREATE_FIELD_LABEL}>
+                Name
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  autoComplete="off"
+                  placeholder="Student name"
+                  className={CREATE_FIELD_INPUT}
+                />
+              </label>
+              <label className={CREATE_FIELD_LABEL}>
+                Password
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                  placeholder="Login password"
+                  className={CREATE_FIELD_INPUT}
+                />
+              </label>
+              <label className={CREATE_FIELD_LABEL}>
+                Grade
+                <select
+                  value={grade}
+                  onChange={(e) => setGrade(Number(e.target.value))}
+                  className={CREATE_FIELD_SELECT}
+                >
+                  {GRADE_OPTIONS.map((g) => (
+                    <option key={g.value} value={g.value}>
+                      {g.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <button type="submit" disabled={creating} className={CREATE_PUBLISH_BUTTON}>
               {creating ? "Adding…" : "Add student"}
             </button>
           </form>
         </div>
 
         {loading && <QuillLoading label="Loading students…" />}
-        {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+        {error && <p className={ADMIN_HUB_INLINE_ERROR}>{error}</p>}
 
         {!loading && students.length === 0 && !error && (
-          <p className="text-slate-600">No students yet. Add one above.</p>
+          <p className={WS_BODY}>No students yet. Add one above.</p>
         )}
 
         {!loading && students.length > 0 && (
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div className="bg-slate-100/80 px-4 py-2 border-b border-slate-200">
-              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+              <h2 className={WS_EYEBROW}>
                 Your students ({students.length})
               </h2>
             </div>
@@ -321,31 +339,30 @@ export default function AdminStudents() {
                 <li key={s.id} className="px-4 py-3 text-slate-900">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-medium truncate">{s.name}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className={`${WS_CARD_TITLE} truncate`}>{s.name}</p>
+                      <p className={`${WS_CARD_DETAIL} mt-0.5`}>
                         Grade {s.grade ?? "—"}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                    <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
                       {s.name === localStorage.getItem("studentName") ? (
                         <span className="text-xs font-semibold text-emerald-800 bg-emerald-100 border border-emerald-200 rounded-full px-2 py-0.5">
                           Current view
                         </span>
                       ) : null}
-                      <button
-                        type="button"
+                      <EditActionButton
+                        active={editingId === s.id}
                         onClick={() => setEditingId(editingId === s.id ? null : s.id)}
-                        className="bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-xl px-3 py-1.5 transition"
-                      >
-                        {editingId === s.id ? "Close" : "Edit"}
-                      </button>
-                      <button
-                        type="button"
+                        label={
+                          editingId === s.id
+                            ? `Close editor for ${s.name}`
+                            : `Edit ${s.name}`
+                        }
+                      />
+                      <RecycleBinButton
                         onClick={() => handleDelete(s)}
-                        className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 text-sm font-semibold rounded-xl px-3 py-1.5 transition"
-                      >
-                        Delete
-                      </button>
+                        label={`Delete ${s.name}`}
+                      />
                     </div>
                   </div>
 
