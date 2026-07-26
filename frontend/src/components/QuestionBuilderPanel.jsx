@@ -10,6 +10,24 @@ import {
   updateWorksheetFromBuilder,
 } from "../api";
 import QuillLoading from "./QuillLoading";
+import {
+  CREATE_ACCORDION_SUMMARY,
+  CREATE_ACCORDION_TITLE,
+  CREATE_BODY,
+  CREATE_CHEVRON,
+  CREATE_EYEBROW,
+  CREATE_FIELD_HINT,
+  CREATE_FIELD_LABEL,
+  CREATE_FOOTER_STATUS,
+  CREATE_FOOTER_STATUS_EMPHASIS,
+  CREATE_INLINE_EMPHASIS,
+  CREATE_PUBLISH_BUTTON,
+  CREATE_SECTION_TITLE,
+  CREATE_STICKY_ACTION_BAR,
+  CREATE_STICKY_ACTION_LINK,
+  CREATE_SECTION_TITLE_ACCENT,
+  CREATE_SUBSECTION_TITLE,
+} from "../createTypography";
 import WorksheetBuilderPreview from "./WorksheetBuilderPreview";
 import { QUESTION_INDEX_BUTTON_CLASS, ROW_ACTION_BUTTON_CLASS } from "./rowActionButtonStyles";
 import { useShellLayout } from "./ShellLayoutContext";
@@ -49,7 +67,7 @@ import { usePreviewScrollSync } from "../usePreviewScrollSync";
 function McqChoices({ question, index, onChange }) {
   return (
     <div className="mt-3 space-y-2">
-      <p className="text-xs font-semibold text-slate-600">
+      <p className={CREATE_EYEBROW}>
         Choices — mark the correct answer
       </p>
       {CHOICE_LABELS.map((label, choiceIndex) => {
@@ -134,10 +152,10 @@ function PassageCard({
         className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left bg-sky-50 hover:bg-sky-100 transition"
       >
         <span className="min-w-0">
-          <span className="font-semibold text-slate-900">
+          <span className={CREATE_ACCORDION_TITLE}>
             {isDataMode ? "Data set" : "Passage"} {index + 1}
           </span>
-          <span className="block text-sm text-slate-600 truncate mt-0.5">
+          <span className={CREATE_ACCORDION_SUMMARY}>
             {summary}
             {passage.questionCount
               ? ` · ${passage.questionCount} question${passage.questionCount === 1 ? "" : "s"}`
@@ -154,7 +172,7 @@ function PassageCard({
           >
             {complete ? "Complete" : "Incomplete"}
           </span>
-          <span className="text-slate-700 font-bold text-sm">{expanded ? "▼" : "▶"}</span>
+          <span className={CREATE_CHEVRON}>{expanded ? "▼" : "▶"}</span>
         </span>
       </button>
       {expanded ? (
@@ -253,7 +271,7 @@ function PassageCard({
           )}
           {showQuestions ? (
             <div className="space-y-3 pt-3 border-t border-slate-100">
-              <h3 className="text-sm font-bold text-slate-800">
+              <h3 className={CREATE_SUBSECTION_TITLE}>
                 Questions ({passageQuestions.length})
               </h3>
               {passageQuestions.map(({ question, globalIndex, localIndex }) => (
@@ -311,10 +329,12 @@ function QuestionCard({
         className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left bg-slate-50 hover:bg-slate-100 transition"
       >
         <span className="min-w-0">
-          <span className="font-semibold text-slate-900">
+          <span className={CREATE_ACCORDION_TITLE}>
             {passageLabel ? `${passageLabel} · ` : ""}Question {index + 1}
           </span>
-          <span className="block text-sm text-slate-600 truncate mt-0.5">{summary}</span>
+          <span className={CREATE_ACCORDION_SUMMARY}>
+            {summary}
+          </span>
         </span>
         <span className="shrink-0 flex items-center gap-2">
           <span
@@ -326,12 +346,12 @@ function QuestionCard({
           >
             {complete ? "Complete" : "Incomplete"}
           </span>
-          <span className="text-slate-700 font-bold text-sm">{expanded ? "▼" : "▶"}</span>
+          <span className={CREATE_CHEVRON}>{expanded ? "▼" : "▶"}</span>
         </span>
       </button>
       {expanded ? (
         <div className="p-4 border-t border-slate-100">
-          <label className="block text-sm font-semibold text-slate-800">
+          <label className={CREATE_FIELD_LABEL}>
             Prompt
             <textarea
               value={question.prompt}
@@ -342,7 +362,7 @@ function QuestionCard({
               placeholder="Enter the question text"
             />
           </label>
-          <label className="block mt-3 text-sm font-semibold text-slate-800">
+          <label className={`mt-3 ${CREATE_FIELD_LABEL}`}>
             Area
             <input
               type="text"
@@ -351,14 +371,14 @@ function QuestionCard({
               className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               placeholder="e.g. vocabulary, inference, main idea"
             />
-            <span className="mt-1 block text-xs font-normal text-slate-500 leading-relaxed">
+            <span className={CREATE_FIELD_HINT}>
               Be specific — use a narrow skill label (not just “reading”).
             </span>
           </label>
           {format === "multiple_choice" ? (
             <McqChoices question={question} index={index} onChange={onChange} />
           ) : (
-            <label className="block mt-3 text-sm font-semibold text-slate-800">
+            <label className={`mt-3 ${CREATE_FIELD_LABEL}`}>
               Reference answer (for grading; hidden from students)
               <input
                 type="text"
@@ -557,7 +577,6 @@ export default function QuestionBuilderPanel() {
       buildUsingAi,
     ],
   );
-  const footerSidebarClass = sidebarCollapsed ? "md:left-5" : "md:left-52";
 
   const scrollSyncResyncKey = useMemo(
     () =>
@@ -982,7 +1001,7 @@ export default function QuestionBuilderPanel() {
             previewOpen && mobilePane === "preview" ? "hidden lg:block" : ""
           }`}
         >
-      <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+      <p className={`${CREATE_BODY} mb-6`}>
         {editId
           ? `Editing ${editId}. Mark the correct MCQ answer with ✓ — choices are shuffled on save.`
           : "Create a worksheet without JSON. Mark the correct MCQ answer with ✓ — choices are shuffled on publish."}
@@ -1004,7 +1023,7 @@ export default function QuestionBuilderPanel() {
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6 space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <h2 className="font-bold text-slate-900">Worksheet details</h2>
+          <h2 className={CREATE_SECTION_TITLE}>Worksheet details</h2>
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
@@ -1208,7 +1227,7 @@ export default function QuestionBuilderPanel() {
                 className="mt-1"
               />
               <span>
-                <span className="block text-sm font-semibold text-slate-900">
+                <span className={`block ${CREATE_INLINE_EMPHASIS}`}>
                   Multiple choice
                 </span>
                 <span className="block text-xs text-slate-600">
@@ -1232,7 +1251,7 @@ export default function QuestionBuilderPanel() {
                 className="mt-1"
               />
               <span>
-                <span className="block text-sm font-semibold text-slate-900">
+                <span className={`block ${CREATE_INLINE_EMPHASIS}`}>
                   Short answer
                 </span>
                 <span className="block text-xs text-slate-600">
@@ -1332,9 +1351,9 @@ export default function QuestionBuilderPanel() {
       </section>
 
       {isPassageWorksheet ? (
-        <section className={`space-y-3 ${!buildUsingAi ? "mb-24" : "mb-6"}`}>
+        <section className="space-y-3 mb-6">
           <div className="flex flex-wrap items-center justify-between gap-3 px-1">
-            <h2 className="font-bold text-slate-900">
+            <h2 className={CREATE_SECTION_TITLE}>
               {isDataPassageWorksheet ? "Data sets" : "Passages"} ({passages.length})
             </h2>
             <div className="flex items-center gap-2">
@@ -1382,7 +1401,7 @@ export default function QuestionBuilderPanel() {
 
       {buildUsingAi && !editId ? (
         <section className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 mb-6">
-          <h2 className="font-bold text-indigo-950 mb-2">AI generation</h2>
+          <h2 className={`${CREATE_SECTION_TITLE_ACCENT} mb-2`}>AI generation</h2>
           <p className="text-sm text-indigo-900 leading-relaxed">
             {isPassageWorksheet
               ? isDataPassageWorksheet
@@ -1416,8 +1435,8 @@ export default function QuestionBuilderPanel() {
           </p>
         </section>
       ) : !buildUsingAi && !isPassageWorksheet ? (
-        <section className="space-y-3 mb-24">
-          <h2 className="font-bold text-slate-900 px-1">
+        <section className="space-y-3 mb-6">
+          <h2 className={`${CREATE_SECTION_TITLE} px-1`}>
             Questions ({questions.length})
           </h2>
           {questions.map((q, i) => (
@@ -1436,7 +1455,7 @@ export default function QuestionBuilderPanel() {
           ))}
         </section>
       ) : (
-        <div className="mb-24" />
+        <div className="mb-6" />
       )}
         </div>
 
@@ -1455,50 +1474,47 @@ export default function QuestionBuilderPanel() {
         ) : null}
       </div>
 
-      <div
-        className={`fixed bottom-0 inset-x-0 ${footerSidebarClass} border-t border-slate-200 bg-white/95 backdrop-blur px-6 py-4 z-30`}
-      >
-        <div
-          className={`mx-auto flex flex-wrap items-center justify-between gap-3 ${
-            previewOpen ? "max-w-none" : "max-w-3xl"
-          }`}
+      <div className={CREATE_STICKY_ACTION_BAR}>
+        <button
+          type="button"
+          onClick={handlePublish}
+          disabled={
+            publishing ||
+            (buildUsingAi && (!aiEnabled || !canPublishWithAi))
+          }
+          className={CREATE_PUBLISH_BUTTON}
         >
-          {buildUsingAi ? (
-            <p className="text-sm text-slate-600">
-              {aiDraftNeedsReferenceAnswers
-                ? `Generate ${isPassageWorksheet ? rcQuestionTotal : questionCount} short-answer question${
-                    (isPassageWorksheet ? rcQuestionTotal : questionCount) === 1 ? "" : "s"
-                  } with AI — then add reference answers and publish`
-                : `Generate ${isPassageWorksheet ? rcQuestionTotal : questionCount} ${
-                    format === "multiple_choice" ? "multiple-choice" : "short-answer"
-                  } question${
-                    (isPassageWorksheet ? rcQuestionTotal : questionCount) === 1 ? "" : "s"
-                  } with AI${
-                    isPassageWorksheet
-                      ? isDataPassageWorksheet
-                        ? ` across ${passages.length} data sets`
-                        : ` across ${passages.length} passages`
-                      : ""
-                  } — review, then publish`}
-            </p>
-          ) : (
-            <p className="text-sm text-slate-600">
-              {questions.filter((q) => q.prompt.trim()).length}/{questions.length}{" "}
-              prompts filled
-            </p>
-          )}
-          <button
-            type="button"
-            onClick={handlePublish}
-            disabled={
-              publishing ||
-              (buildUsingAi && (!aiEnabled || !canPublishWithAi))
-            }
-            className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold px-6 py-3 transition"
-          >
-            {publishLabel}
-          </button>
-        </div>
+          {publishLabel}
+        </button>
+        {buildUsingAi ? (
+          <p className={CREATE_FOOTER_STATUS}>
+            {aiDraftNeedsReferenceAnswers
+              ? `Generate ${isPassageWorksheet ? rcQuestionTotal : questionCount} short-answer question${
+                  (isPassageWorksheet ? rcQuestionTotal : questionCount) === 1 ? "" : "s"
+                } with AI — then add reference answers and publish`
+              : `Generate ${isPassageWorksheet ? rcQuestionTotal : questionCount} ${
+                  format === "multiple_choice" ? "multiple-choice" : "short-answer"
+                } question${
+                  (isPassageWorksheet ? rcQuestionTotal : questionCount) === 1 ? "" : "s"
+                } with AI${
+                  isPassageWorksheet
+                    ? isDataPassageWorksheet
+                      ? ` across ${passages.length} data sets`
+                      : ` across ${passages.length} passages`
+                    : ""
+                } — review, then publish`}
+          </p>
+        ) : (
+          <p className={CREATE_FOOTER_STATUS}>
+            <span className={CREATE_FOOTER_STATUS_EMPHASIS}>
+              {questions.filter((q) => q.prompt.trim()).length}/{questions.length}
+            </span>{" "}
+            prompts filled
+          </p>
+        )}
+        <Link to="/admin/worksheets" className={CREATE_STICKY_ACTION_LINK}>
+          View worksheets →
+        </Link>
       </div>
     </>
   );

@@ -249,6 +249,8 @@ function CollectionNode({
   onOpenTest,
   renderSideAction,
   renderLeadingAction,
+  onTitleSave,
+  titleSavingId,
   adminMode,
   onAddSubCollection,
   onMoveCollection,
@@ -388,6 +390,8 @@ function CollectionNode({
           onOpenTest={onOpenTest}
           renderSideAction={renderSideAction}
           renderLeadingAction={renderLeadingAction}
+          onTitleSave={onTitleSave}
+          titleSavingId={titleSavingId}
           adminMode={adminMode}
           onAddSubCollection={onAddSubCollection}
           onMoveCollection={onMoveCollection}
@@ -405,6 +409,8 @@ function CollectionNode({
           onOpenTest={onOpenTest}
           renderSideAction={renderSideAction}
           renderLeadingAction={renderLeadingAction}
+          onTitleSave={onTitleSave}
+          titleSavingId={titleSavingId}
           ungrouped
           preserveOrder
         />
@@ -485,6 +491,8 @@ export default function WorksheetCollectionTree({
   onOpenTest,
   renderSideAction,
   renderLeadingAction,
+  onTitleSave,
+  titleSavingId,
   adminMode = false,
   onAddSubCollection,
   onMoveCollection,
@@ -508,6 +516,8 @@ export default function WorksheetCollectionTree({
           onOpenTest={onOpenTest}
           renderSideAction={renderSideAction}
           renderLeadingAction={renderLeadingAction}
+          onTitleSave={onTitleSave}
+          titleSavingId={titleSavingId}
           adminMode={adminMode}
           onAddSubCollection={onAddSubCollection}
           onMoveCollection={onMoveCollection}

@@ -1,6 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import RecycleBinButton from "./RecycleBinButton";
 import SectionSortSelect from "./SectionSortSelect";
+import CollapsibleSectionHeader from "./CollapsibleSectionHeader";
+import { HUB_TOP_BODY, HUB_TOP_HEADER, HUB_TOP_SHELL } from "../hubSectionStyles";
+import {
+  RESULTS_ITEM_HEADER,
+  RESULTS_ITEM_SHELL,
+  RESULTS_ITEM_SHELL_PENDING,
+  RESULTS_ITEM_TOGGLE,
+  RESULTS_PENDING_BANNER,
+  RESULTS_ROW_DETAIL,
+  RESULTS_ROW_TITLE,
+  RESULTS_SORT_LABEL,
+  RESULTS_SCORE_BADGE,
+} from "../resultsTypography";
+import { CREATE_FIELD_LABEL } from "../createTypography";
 import {
   formatWordCount,
   formatWritingGradeLine,
@@ -75,36 +89,25 @@ export default function WritingResultsSection({
   if (submissions.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-slate-300 bg-white shadow-sm overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setIsOpen((v) => !v)}
-        aria-expanded={isOpen}
-        className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left bg-slate-200/90 hover:bg-slate-200 border-b border-slate-300/80 transition"
-      >
-        <span className="min-w-0 flex-1 font-bold text-slate-950 text-base">
-          Writing
-          <span className="font-semibold text-slate-800/90 text-sm ml-2">
-            ({submissions.length})
-          </span>
-        </span>
-        <span className="text-slate-900 text-sm font-bold tabular-nums shrink-0">
-          {isOpen ? "▼" : "▶"}
-        </span>
-      </button>
+    <div className={HUB_TOP_SHELL}>
+      <div className={HUB_TOP_HEADER}>
+        <CollapsibleSectionHeader
+          title="Writing"
+          meta={`${submissions.length} submission${submissions.length === 1 ? "" : "s"}`}
+          open={isOpen}
+          onToggle={() => setIsOpen((v) => !v)}
+        />
+      </div>
       {isOpen ? (
-        <div className="p-3 flex flex-col gap-4 bg-slate-50/40">
+        <div className={`${HUB_TOP_BODY} gap-3`}>
           {isAdmin && pendingCount > 0 ? (
-            <p className="text-sm font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2">
+            <p className={RESULTS_PENDING_BANNER}>
               {pendingCount} writing submission{pendingCount === 1 ? "" : "s"}{" "}
               awaiting your grade
             </p>
           ) : null}
-          <div className="flex items-center justify-end gap-2 px-1">
-            <label
-              htmlFor="writing-results-sort"
-              className="text-xs font-medium text-slate-600"
-            >
+          <div className="flex items-center justify-end gap-2 px-0.5">
+            <label htmlFor="writing-results-sort" className={RESULTS_SORT_LABEL}>
               Sort
             </label>
             <SectionSortSelect
@@ -124,43 +127,41 @@ export default function WritingResultsSection({
                 className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4"
               >
                 <div
-                  className={`flex-1 bg-white border rounded-2xl shadow-sm overflow-hidden ${
-                    isPending ? "border-amber-300" : "border-slate-200"
-                  }`}
+                  className={
+                    isPending ? RESULTS_ITEM_SHELL_PENDING : RESULTS_ITEM_SHELL
+                  }
                 >
                   <button
                     type="button"
                     onClick={() => toggleOpen(item.id)}
                     aria-expanded={expanded}
-                    className="w-full text-left p-5 hover:bg-slate-50/60 transition flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start sm:gap-4"
+                    className={RESULTS_ITEM_HEADER}
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-slate-900 font-semibold text-lg">
-                        {item.title}
-                      </p>
+                      <p className={RESULTS_ROW_TITLE}>{item.title}</p>
                       {isAdmin && item.student ? (
-                        <p className="text-slate-600 text-sm mt-1">{item.student}</p>
+                        <p className="text-sm text-slate-600 mt-0.5">{item.student}</p>
                       ) : null}
-                      <p className="text-slate-400 text-xs mt-2">
+                      <p className={`${RESULTS_ROW_DETAIL} mt-1.5`}>
                         Submitted: {new Date(item.submitted_at).toLocaleString()}
                       </p>
                     </div>
-                    <div className="flex shrink-0 flex-col items-start sm:items-end gap-2">
-                      <span className="inline-flex text-xs font-semibold px-2.5 py-1 rounded-full bg-violet-50 text-violet-900 border border-violet-200 tabular-nums">
+                    <div className="flex shrink-0 flex-col items-start sm:items-end gap-1.5">
+                      <span className="inline-flex text-xs font-semibold px-2 py-0.5 rounded-full bg-violet-50 text-violet-900 border border-violet-200 tabular-nums">
                         {formatWordCount(item.word_count)}
                       </span>
                       <span
-                        className={`inline-flex text-sm font-semibold px-3 py-1 rounded-full tabular-nums ${writingBadgeClass(item)}`}
+                        className={`${RESULTS_SCORE_BADGE} px-2.5 ${writingBadgeClass(item)}`}
                       >
                         {isPending ? "Pending review" : gradeLine}
                       </span>
-                      <span className="text-slate-600 text-xs font-semibold underline underline-offset-2">
+                      <span className={RESULTS_ITEM_TOGGLE}>
                         {expanded ? "Hide writing" : "Show writing"}
                       </span>
                     </div>
                   </button>
                   {expanded ? (
-                    <div className="border-t border-slate-100 px-5 pb-5 pt-4 bg-slate-50/30 space-y-4">
+                    <div className="border-t border-slate-100 px-4 pb-4 pt-3 bg-slate-50/30 space-y-4">
                       <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
                         {item.body}
                       </p>
@@ -178,7 +179,7 @@ export default function WritingResultsSection({
                       ) : null}
                       {isAdmin && onGrade ? (
                         <div className="space-y-4 max-w-xl">
-                          <label className="block text-sm font-semibold text-slate-800">
+                          <label className={CREATE_FIELD_LABEL}>
                             Grade
                             <select
                               value={item.grade || ""}
@@ -196,7 +197,7 @@ export default function WritingResultsSection({
                               ))}
                             </select>
                           </label>
-                          <label className="block text-sm font-semibold text-slate-800">
+                          <label className={CREATE_FIELD_LABEL}>
                             Feedback
                             <textarea
                               value={feedbackFor(item)}

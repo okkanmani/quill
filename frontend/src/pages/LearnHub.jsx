@@ -35,8 +35,37 @@ import LearnChrome from "../components/LearnChrome";
 import QuillLoading from "../components/QuillLoading";
 import StatusToast from "../components/StatusToast";
 import RecycleBinButton from "../components/RecycleBinButton";
+import CollapsibleSectionHeader from "../components/CollapsibleSectionHeader";
+import {
+  HUB_ROW_CARD,
+  HUB_ROW_CARD_INTERACTIVE,
+  HUB_ROW_FOOTER,
+  HUB_ROW_TITLE_BLOCK,
+  HUB_TOP_BODY,
+  HUB_TOP_HEADER,
+  HUB_TOP_SHELL,
+} from "../hubSectionStyles";
+import {
+  WS_CARD_DETAIL,
+  WS_CARD_TITLE,
+  WS_SECTION_TITLE,
+} from "../worksheetAdminTypography";
+import {
+  LEARN_BODY,
+  LEARN_BODY_RELAXED,
+  LEARN_DIALOG_TITLE,
+  LEARN_ERROR,
+  LEARN_EYEBROW_STRONG,
+  LEARN_FILTER_LABEL,
+  LEARN_HINT,
+  LEARN_LINK,
+  LEARN_PAGE_HEADING,
+  LEARN_PAGE_INTRO,
+  LEARN_ROW_META,
+  LEARN_ROW_META_MUTED,
+} from "../learnTypography";
 
-function EditableSectionTitle({ section, learnUrl, saving, onSave, trailing = null }) {
+function EditableSectionTitleInput({ section, saving, onSave }) {
   const [value, setValue] = useState(section.title || "");
 
   useEffect(() => {
@@ -55,38 +84,27 @@ function EditableSectionTitle({ section, learnUrl, saving, onSave, trailing = nu
   }
 
   return (
-    <div className="flex items-center justify-between gap-3">
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={() => {
-          commit();
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            e.currentTarget.blur();
-          }
-          if (e.key === "Escape") {
-            setValue(section.title || "");
-            e.currentTarget.blur();
-          }
-        }}
-        disabled={saving}
-        aria-label={`Section title for ${section.title}`}
-        className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-0 py-0.5 text-sm font-semibold text-slate-900 hover:border-slate-200 hover:bg-white focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60 transition"
-      />
-      <div className="flex items-center gap-2 shrink-0">
-        <Link
-          to={learnUrl}
-          className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:underline whitespace-nowrap"
-        >
-          View resource
-        </Link>
-        {trailing}
-      </div>
-    </div>
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={() => {
+        commit();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          e.currentTarget.blur();
+        }
+        if (e.key === "Escape") {
+          setValue(section.title || "");
+          e.currentTarget.blur();
+        }
+      }}
+      disabled={saving}
+      aria-label={`Section title for ${section.title}`}
+      className={`w-full min-w-0 rounded-lg border border-transparent bg-transparent px-0 py-0.5 ${WS_CARD_TITLE} hover:border-slate-200 hover:bg-white focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60 transition`}
+    />
   );
 }
 
@@ -107,10 +125,10 @@ function DeleteConfirmDialog({ section, deleting, onCancel, onConfirm }) {
         aria-labelledby="delete-learn-title"
         className="fixed left-1/2 top-1/2 z-50 w-[min(24rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white p-5 shadow-xl"
       >
-        <h2 id="delete-learn-title" className="text-lg font-bold text-slate-950">
+        <h2 id="delete-learn-title" className={LEARN_DIALOG_TITLE}>
           Delete learning resource?
         </h2>
-        <p className="text-sm text-slate-700 mt-2 leading-relaxed">
+        <p className={`${LEARN_BODY_RELAXED} mt-2`}>
           Delete “{section.title}” from {section.subject_title}? This cannot be
           undone.
         </p>
@@ -150,7 +168,6 @@ function PublishedResourceRow({
   const isAdmin = Boolean(onTitleSave);
   const savingTitle =
     titleSavingKey === `${section.subject_key}:${section.section_id}`;
-  const pad = compact ? "p-3.5" : "p-4";
   const collectionBlurb = learnHubCollectionBlurb(section.subject_description);
 
   const adminActions = isAdmin ? (
@@ -169,37 +186,59 @@ function PublishedResourceRow({
   ) : null;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div className={`${HUB_ROW_CARD} ${!isAdmin ? HUB_ROW_CARD_INTERACTIVE : ""}`}>
       {isAdmin ? (
-        <div className={pad}>
-          <EditableSectionTitle
-            section={section}
-            learnUrl={learnUrl}
-            saving={savingTitle}
-            onSave={onTitleSave}
-            trailing={adminActions}
-          />
+        <>
+          <div className={HUB_ROW_TITLE_BLOCK}>
+            <EditableSectionTitleInput
+              section={section}
+              saving={savingTitle}
+              onSave={onTitleSave}
+            />
             {!compact && section.subject_title ? (
-              <p className="text-slate-600 text-xs mt-1.5">{section.subject_title}</p>
+              <p className={`${LEARN_ROW_META} mt-1`}>{section.subject_title}</p>
             ) : null}
             {!compact && collectionBlurb ? (
-              <p className="text-slate-500 text-xs mt-1">{collectionBlurb}</p>
+              <p className={`${LEARN_ROW_META_MUTED} mt-0.5`}>{collectionBlurb}</p>
             ) : null}
           </div>
-        ) : (
-          <Link
-            to={learnUrl}
-            className={`block ${pad} hover:bg-slate-50/60 transition`}
-          >
-            <p className="text-slate-900 font-semibold text-sm leading-snug">{section.title}</p>
+          <div className={HUB_ROW_FOOTER}>
+            <Link to={learnUrl} className={LEARN_LINK}>
+              View resource
+            </Link>
+            {adminActions ? (
+              <div
+                className="flex items-center gap-1.5 shrink-0 ml-auto"
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+              >
+                {adminActions}
+              </div>
+            ) : null}
+          </div>
+        </>
+      ) : (
+        <>
+          <Link to={learnUrl} className={`block ${HUB_ROW_TITLE_BLOCK}`}>
+            <p className={WS_CARD_TITLE}>{section.title}</p>
             {!compact && section.subject_title ? (
-              <p className="text-slate-600 text-xs mt-1">{section.subject_title}</p>
+              <p className={`${LEARN_ROW_META} mt-1`}>{section.subject_title}</p>
             ) : null}
             {!compact && collectionBlurb ? (
-              <p className="text-slate-500 text-xs mt-1">{collectionBlurb}</p>
+              <p className={`${LEARN_ROW_META_MUTED} mt-0.5`}>{collectionBlurb}</p>
             ) : null}
           </Link>
-        )}
+          {!compact && section.subject_title ? (
+            <div className={HUB_ROW_FOOTER}>
+              <span className={WS_CARD_DETAIL}>Learning resource</span>
+            </div>
+          ) : compact ? (
+            <div className={HUB_ROW_FOOTER}>
+              <span className={WS_CARD_DETAIL}>Open to read</span>
+            </div>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }
@@ -374,23 +413,23 @@ function SortableSubjectList({
 }
 
 function TopicGroupShell({ subjectKey, group, collapsed, onToggle, children }) {
+  const open = !collapsed;
+  const meta = `${group.sections.length} resource${
+    group.sections.length === 1 ? "" : "s"
+  }`;
+
   return (
-    <div>
-      <button
-        type="button"
-        onClick={() => onToggle(subjectKey, group.id)}
-        aria-expanded={!collapsed}
-        className="flex w-full items-center gap-2 text-left mb-2 rounded-lg py-0.5 hover:bg-slate-50/80 -mx-0.5 px-1 transition"
-      >
-        <span className="text-slate-500 text-xs w-3 shrink-0" aria-hidden>
-          {collapsed ? "▸" : "▾"}
-        </span>
-        <span className="text-sm font-semibold text-slate-800">{group.label}</span>
-        <span className="text-xs font-normal text-slate-500 tabular-nums">
-          ({group.sections.length})
-        </span>
-      </button>
-      {!collapsed ? children : null}
+    <div className="min-w-0">
+      <CollapsibleSectionHeader
+        title={group.label}
+        meta={meta}
+        open={open}
+        onToggle={() => onToggle(subjectKey, group.id)}
+        smallChevron
+      />
+      {open ? (
+        <div className="flex flex-col gap-1.5 pt-1">{children}</div>
+      ) : null}
     </div>
   );
 }
@@ -423,19 +462,24 @@ function SubjectCard({
   );
 
   if (publishedSections.length > 0) {
+    const sectionMeta = `${publishedSections.length} resource${
+      publishedSections.length === 1 ? "" : "s"
+    }`;
+
     return (
-      <div className="rounded-xl border border-slate-200 bg-slate-50/80 overflow-hidden">
-        <div className="p-4 bg-slate-50/80">
-          <p className="text-base font-semibold text-slate-900">{subject.title}</p>
+      <div className={HUB_TOP_SHELL}>
+        <div className={HUB_TOP_HEADER}>
+          <p className={WS_SECTION_TITLE}>{subject.title}</p>
           {collectionBlurb ? (
-            <p className="text-slate-600 text-sm mt-1.5 leading-relaxed line-clamp-3">
+            <p className={`${LEARN_BODY} mt-1 leading-relaxed line-clamp-3`}>
               {collectionBlurb}
             </p>
           ) : null}
+          <p className={`${WS_CARD_DETAIL} mt-1 tabular-nums`}>{sectionMeta}</p>
         </div>
-        <div className="border-t border-slate-200 bg-white px-4 py-4 flex flex-col gap-3">
+        <div className={`${HUB_TOP_BODY} gap-3`}>
           {isAdmin && publishedSections.length >= 2 ? (
-            <p className="text-xs font-medium text-slate-500 -mb-0.5">
+            <p className={`${LEARN_HINT} -mb-0.5`}>
               Drag ⋮⋮ to reorder sections within each topic
             </p>
           ) : null}
@@ -449,7 +493,7 @@ function SubjectCard({
                 collapsed={collapsed}
                 onToggle={onToggleTopic}
               >
-                <div className="flex flex-col gap-3 pl-1 border-l-2 border-slate-100 ml-0.5">
+                <div className="flex flex-col gap-1.5">
                   {isAdmin && group.sections.length >= 2 ? (
                     <SortableSectionList
                       subjectKey={subject.key}
@@ -473,13 +517,15 @@ function SubjectCard({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
-      <p className="text-base font-semibold text-slate-900">{subject.title}</p>
-      {collectionBlurb ? (
-        <p className="text-slate-600 text-sm mt-1.5 leading-relaxed line-clamp-3">
-          {collectionBlurb}
-        </p>
-      ) : null}
+    <div className={HUB_TOP_SHELL}>
+      <div className={HUB_TOP_HEADER}>
+        <p className={WS_SECTION_TITLE}>{subject.title}</p>
+        {collectionBlurb ? (
+          <p className={`${LEARN_BODY} mt-1 leading-relaxed line-clamp-3`}>
+            {collectionBlurb}
+          </p>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -562,7 +608,7 @@ function HubFilterDropdown({
 
   return (
     <div className="block w-full max-w-[9rem] text-xs">
-      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+      <span className={LEARN_FILTER_LABEL}>
         {label}
       </span>
       <div ref={rootRef} className="relative">
@@ -1067,8 +1113,8 @@ export default function LearnHub() {
   return (
     <LearnChrome>
       <div className="max-w-3xl">
-        <h1 className="text-2xl font-bold text-slate-950 mb-2">Learning resources</h1>
-        <p className="text-slate-700 text-sm mb-4 leading-relaxed">
+        <h1 className={`${LEARN_PAGE_HEADING} mb-2`}>Learning resources</h1>
+        <p className={`${LEARN_PAGE_INTRO} mb-4`}>
           Reference pages you can read before worksheets.
         </p>
 
@@ -1084,23 +1130,23 @@ export default function LearnHub() {
         ) : null}
 
         {loading && <QuillLoading label="Loading resources…" />}
-        {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+        {error && <p className={`${LEARN_ERROR} mb-4`}>{error}</p>}
         {adminSectionsError ? (
           <p className="text-amber-800 text-sm mb-4">{adminSectionsError}</p>
         ) : null}
 
         {isAdmin && !loading && filteredOrphanGroups.length > 0 ? (
           <section className="mb-8">
-            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">
+            <h2 className={`${LEARN_EYEBROW_STRONG} mb-3`}>
               Published resources
             </h2>
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
               {filteredOrphanGroups.map((group) => (
-                <div key={group.subjectKey}>
-                  <p className="text-base font-semibold text-slate-900 mb-3">
-                    {group.subjectTitle}
-                  </p>
-                  <div className="flex flex-col gap-4">
+                <div key={group.subjectKey} className={HUB_TOP_SHELL}>
+                  <div className={HUB_TOP_HEADER}>
+                    <p className={WS_SECTION_TITLE}>{group.subjectTitle}</p>
+                  </div>
+                  <div className={`${HUB_TOP_BODY} gap-3`}>
                     {groupSectionsByTopic(group.sections).map((topicGroup) => {
                       const collapsed = !expandedTopics.has(
                         `${group.subjectKey}:${topicGroup.id}`,
@@ -1113,10 +1159,10 @@ export default function LearnHub() {
                           collapsed={collapsed}
                           onToggle={toggleTopicCollapse}
                         >
-                          <div className="flex flex-col gap-3 pl-1 border-l-2 border-slate-100">
+                          <div className="flex flex-col gap-1.5">
                             {topicGroup.sections.length >= 2 ? (
                               <>
-                                <p className="text-xs font-medium text-slate-500">
+                                <p className={LEARN_HINT}>
                                   Drag ⋮⋮ to reorder within this topic
                                 </p>
                                 <SortableSectionList
@@ -1162,7 +1208,7 @@ export default function LearnHub() {
         ) : null}
 
         {!loading && !error && filteredEntries.length === 0 && (
-          <p className="text-slate-600 text-sm">
+          <p className={LEARN_BODY}>
             {activeGrade != null || activeCurriculum
               ? `No learning resources${
                   activeGrade != null ? ` for grade ${activeGrade}` : ""
@@ -1178,34 +1224,29 @@ export default function LearnHub() {
             }
 
             const open = expandedGroups.has(entry.id);
+            const collectionMeta =
+              entry.subjects?.length > 0
+                ? `${entry.subjects.length} collection${
+                    entry.subjects.length === 1 ? "" : "s"
+                  }`
+                : null;
             return (
-              <div
-                key={entry.id}
-                className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden"
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(entry.id)}
-                  aria-expanded={open}
-                  className="w-full text-left px-5 py-4 flex items-start justify-between gap-3 hover:bg-slate-50/80 transition"
-                >
-                  <div className="min-w-0">
-                    <p className="text-base font-semibold text-slate-900">{entry.title}</p>
-                    {entry.description ? (
-                      <p className="text-slate-600 text-sm mt-1 leading-relaxed">
-                        {entry.description}
-                      </p>
-                    ) : null}
-                  </div>
-                  <span
-                    className="text-slate-500 text-base leading-none shrink-0 pt-0.5"
-                    aria-hidden
-                  >
-                    {open ? "−" : "+"}
-                  </span>
-                </button>
+              <div key={entry.id} className={HUB_TOP_SHELL}>
+                <div className={HUB_TOP_HEADER}>
+                  <CollapsibleSectionHeader
+                    title={entry.title}
+                    meta={collectionMeta}
+                    open={open}
+                    onToggle={() => toggleGroup(entry.id)}
+                  />
+                  {entry.description ? (
+                    <p className={`${LEARN_BODY} mt-1 leading-relaxed`}>
+                      {entry.description}
+                    </p>
+                  ) : null}
+                </div>
                 {open ? (
-                  <div className="px-5 pb-5 pt-4 flex flex-col gap-3 border-t border-slate-100">
+                  <div className={`${HUB_TOP_BODY} gap-3`}>
                     {isAdmin && (entry.subjects?.length || 0) > 1 ? (
                       <SortableSubjectList
                         scope={entry.id}

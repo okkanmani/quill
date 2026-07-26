@@ -24,28 +24,32 @@ import TestResultsSection from "../components/TestResultsSection";
 import WritingResultsSection from "../components/WritingResultsSection";
 import { normalizeSubjectKey } from "../subjectUtils";
 import { useAutoDismissToast } from "../useAutoDismissToast";
+import {
+  RESULTS_EMPTY,
+  RESULTS_ERROR,
+  RESULTS_PAGE_HEADING,
+  RESULTS_PAGE_INTRO,
+  RESULTS_VIEW_TAB,
+  RESULTS_VIEW_TAB_ACTIVE,
+  RESULTS_VIEW_TAB_IDLE,
+} from "../resultsTypography";
 
 function ResultsViewTabs({ activeView }) {
-  const worksheetClass =
-    activeView === "worksheets"
-      ? "bg-slate-900 text-white border-slate-900"
-      : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50";
-  const testClass =
-    activeView === "tests"
-      ? "bg-slate-900 text-white border-slate-900"
-      : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50";
-
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div className="flex flex-wrap gap-2 mb-4">
       <Link
         to="/admin/results"
-        className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${worksheetClass}`}
+        className={`${RESULTS_VIEW_TAB} ${
+          activeView === "worksheets" ? RESULTS_VIEW_TAB_ACTIVE : RESULTS_VIEW_TAB_IDLE
+        }`}
       >
         Worksheet results
       </Link>
       <Link
         to="/admin/results?view=tests"
-        className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${testClass}`}
+        className={`${RESULTS_VIEW_TAB} ${
+          activeView === "tests" ? RESULTS_VIEW_TAB_ACTIVE : RESULTS_VIEW_TAB_IDLE
+        }`}
       >
         Test results
       </Link>
@@ -260,27 +264,27 @@ export default function AdminHome() {
       <div className="max-w-3xl">
         <AdminStudentSwitcher />
 
-        <h1 className="text-2xl font-bold text-slate-950 mb-1">Results</h1>
+        <h1 className={`${RESULTS_PAGE_HEADING} mb-1`}>Results</h1>
         <ResultsViewTabs activeView={resultsView} />
-        <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+        <p className={`${RESULTS_PAGE_INTRO} mb-6`}>
           {resultsView === "tests"
             ? "Adaptive test sittings for the selected student — weighted scores and answer review."
             : "Main worksheet, writing, and revision practice results for the selected student."}
         </p>
 
         {loading && <QuillLoading label="Loading results…" />}
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <p className={RESULTS_ERROR}>{error}</p>}
 
         {!loading && !error && resultsView === "worksheets" && !hasWorksheetResults ? (
-          <p className="text-slate-600">No worksheet or revision results yet.</p>
+          <p className={RESULTS_EMPTY}>No worksheet or revision results yet.</p>
         ) : null}
 
         {!loading && !error && resultsView === "tests" && !hasTests ? (
-          <p className="text-slate-600">No test results yet.</p>
+          <p className={RESULTS_EMPTY}>No test results yet.</p>
         ) : null}
 
         {!loading && !error && resultsView === "worksheets" && hasWorksheetResults ? (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-6">
             {hasMainWorksheets ? (
               <ResultsPageCategory title="Main Worksheets">
                 {results.length > 0 ? (

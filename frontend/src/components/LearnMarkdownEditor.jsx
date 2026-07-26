@@ -3,6 +3,11 @@ import LearnMarkdown from "./LearnMarkdown";
 import LearnMarkdownToolbar from "./LearnMarkdownToolbar";
 import { pasteImageIntoMarkdown, prepareLearnImagePaste } from "../learnImageMarkdown";
 import { normalizeLearnImageOptions } from "../learnImagePresets";
+import {
+  CREATE_FIELD_HINT,
+  CREATE_FIELD_LABEL,
+  CREATE_SECTION_TITLE,
+} from "../createTypography";
 
 export default function LearnMarkdownEditor({
   title,
@@ -68,15 +73,15 @@ export default function LearnMarkdownEditor({
       {!hideTitle ? (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <label className="block text-sm font-semibold text-slate-800">
+            <label className={CREATE_FIELD_LABEL}>
               {titleLabel}
               <input
                 type="text"
                 value={title}
                 onChange={(e) => onTitleChange(e.target.value)}
-                className="mt-1 w-full max-w-xl rounded-xl border border-slate-300 px-3 py-2 text-lg font-bold text-slate-950 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="mt-1 w-full max-w-xl rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-950 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               />
-              <span className="mt-1 block text-xs font-normal text-slate-500">
+              <span className={CREATE_FIELD_HINT}>
                 {titleHint}
               </span>
             </label>
@@ -163,7 +168,7 @@ export default function LearnMarkdownEditor({
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
             <div className="learn-md rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="text-xl font-bold text-slate-950 mb-4 pb-2 border-b border-slate-100">
+              <h2 className={`${CREATE_SECTION_TITLE} mb-4 pb-2 border-b border-slate-100`}>
                 {title.trim() || "Section title"}
               </h2>
               <LearnMarkdown markdown={markdown || "_Nothing to preview yet._"} />

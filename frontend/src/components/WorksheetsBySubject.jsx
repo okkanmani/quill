@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import SubjectBadge from "./SubjectBadge";
 import { formatSubjectLabel } from "../subjectUtils";
@@ -26,9 +26,53 @@ import {
   WS_CARD_DETAIL_LOOSE,
   WS_CARD_TITLE,
   WS_CARD_TITLE_LOOSE,
+  WS_CHEVRON,
   WS_SECTION_META,
   WS_SECTION_TITLE,
 } from "../worksheetAdminTypography";
+
+function EditableWorksheetTitleInput({ worksheet, saving, onSave }) {
+  const [value, setValue] = useState(worksheet.title || "");
+
+  useEffect(() => {
+    setValue(worksheet.title || "");
+  }, [worksheet.title, worksheet.id]);
+
+  async function commit() {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setValue(worksheet.title || "");
+      return;
+    }
+    if (trimmed !== worksheet.title) {
+      await onSave(worksheet, trimmed);
+    }
+  }
+
+  return (
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={() => {
+        commit();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          e.currentTarget.blur();
+        }
+        if (e.key === "Escape") {
+          setValue(worksheet.title || "");
+          e.currentTarget.blur();
+        }
+      }}
+      disabled={saving}
+      aria-label={`Worksheet title for ${worksheet.title}`}
+      className={`w-full min-w-0 rounded-lg border border-transparent bg-transparent px-0 py-0.5 ${WS_CARD_TITLE} hover:border-slate-200 hover:bg-white focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60 transition`}
+    />
+  );
+}
 
 function worksheetLockState(ws) {
   if (isWorksheetDone(ws)) return null;
@@ -81,11 +125,15 @@ function WorksheetRow({
   onOpenTest,
   renderSideAction,
   renderLeadingAction,
+  onTitleSave,
+  titleSavingId,
 }) {
   const lockState = worksheetLockState(ws);
   const accessLocked = Boolean(ws.access_locked) && !isWorksheetDone(ws);
   const timedBlocked = Boolean(ws.timed && ws.timed_locked && !isWorksheetDone(ws));
   const compact = Boolean(renderLeadingAction);
+  const adminEditable = Boolean(onTitleSave);
+  const savingTitle = titleSavingId === ws.id;
 
   function handleOpen() {
     if (accessLocked || timedBlocked) return;
@@ -95,6 +143,76 @@ function WorksheetRow({
     }
     onOpenWorksheet(ws.id);
   }
+
+  const statusBadges = (
+    <>
+      {isWorksheetDone(ws) ? (
+        <span className="shrink-0 inline-flex items-center gap-2 flex-wrap justify-end">
+          {ws.last_status === "pending" ? (
+            <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900 border border-amber-200">
+              Awaiting review
+            </span>
+          ) : null}
+          {typeof ws.last_score === "number" &&
+          typeof ws.last_total === "number" &&
+          ws.last_total > 0 &&
+          ws.last_status !== "pending" ? (
+            <span
+              className={
+                compact
+                  ? "inline-flex items-baseline gap-x-3 text-xs font-semibold text-emerald-950 tabular-nums"
+                  : "inline-flex items-baseline gap-x-4 text-sm font-bold text-emerald-950 tabular-nums"
+              }
+            >
+              <span className="shrink-0">Score:</span>
+              <span>
+                {ws.last_score}/{ws.last_total}
+              </span>
+              <span>
+                {Math.round((ws.last_score / ws.last_total) * 100)}%
+              </span>
+            </span>
+          ) : null}
+          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-200">
+            Done
+          </span>
+        </span>
+      ) : lockState ? (
+        <LockedPadlockBadge state={lockState} />
+      ) : ws.has_draft ? (
+        <span className="shrink-0 inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-semibold text-sky-900 border border-sky-200">
+          Saved progress
+        </span>
+      ) : null}
+    </>
+  );
+
+  const titleBlock = adminEditable ? (
+    <div className={`min-w-0 flex-1 ${compact ? "p-1.5 pb-1" : "p-5 pb-3"}`}>
+      <div className="flex items-start justify-between gap-3">
+        <EditableWorksheetTitleInput
+          worksheet={ws}
+          saving={savingTitle}
+          onSave={onTitleSave}
+        />
+        {statusBadges}
+      </div>
+    </div>
+  ) : (
+    <button
+      type="button"
+      onClick={handleOpen}
+      disabled={accessLocked || timedBlocked}
+      className={`flex-1 text-left w-full ${
+        compact ? "p-1.5 pb-1" : "p-5 pb-3"
+      } ${accessLocked || timedBlocked ? "cursor-not-allowed" : ""}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <p className={compact ? WS_CARD_TITLE : WS_CARD_TITLE_LOOSE}>{ws.title}</p>
+        {statusBadges}
+      </div>
+    </button>
+  );
 
   return (
     <div
@@ -118,65 +236,43 @@ function WorksheetRow({
                 : "border-slate-200 hover:shadow-md hover:border-indigo-400"
         }`}
       >
-        <button
-          type="button"
-          onClick={handleOpen}
-          disabled={accessLocked || timedBlocked}
-          className={`flex-1 text-left ${
-            compact ? "p-1.5 pb-1" : "p-5 pb-3"
-          } ${accessLocked || timedBlocked ? "cursor-not-allowed" : ""}`}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <p
-              className={
-                compact ? WS_CARD_TITLE : WS_CARD_TITLE_LOOSE
-              }
-            >
-              {ws.title}
-            </p>
-            {isWorksheetDone(ws) ? (
-              <span className="shrink-0 inline-flex items-center gap-2 flex-wrap justify-end">
-                {ws.last_status === "pending" ? (
-                  <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900 border border-amber-200">
-                    Awaiting review
-                  </span>
-                ) : null}
-                {typeof ws.last_score === "number" &&
-                typeof ws.last_total === "number" &&
-                ws.last_total > 0 &&
-                ws.last_status !== "pending" ? (
-                  <span
-                    className={
-                      compact
-                        ? "inline-flex items-baseline gap-x-3 text-xs font-semibold text-emerald-950 tabular-nums"
-                        : "inline-flex items-baseline gap-x-4 text-sm font-bold text-emerald-950 tabular-nums"
-                    }
-                  >
-                    <span className="shrink-0">Score:</span>
-                    <span>
-                      {ws.last_score}/{ws.last_total}
-                    </span>
-                    <span>
-                      {Math.round((ws.last_score / ws.last_total) * 100)}%
-                    </span>
-                  </span>
-                ) : null}
-                <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-200">
-                  Done
-                </span>
-              </span>
-            ) : lockState ? (
-              <LockedPadlockBadge state={lockState} />
-            ) : ws.has_draft ? (
-              <span className="shrink-0 inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-semibold text-sky-900 border border-sky-200">
-                Saved progress
-              </span>
-            ) : null}
-          </div>
-        </button>
+        {titleBlock}
         <div
+          role={adminEditable ? "button" : undefined}
+          tabIndex={adminEditable && !accessLocked && !timedBlocked ? 0 : undefined}
+          onClick={
+            adminEditable
+              ? (e) => {
+                  if (e.target.closest("a")) return;
+                  handleOpen();
+                }
+              : undefined
+          }
+          onKeyDown={
+            adminEditable
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    if (!accessLocked && !timedBlocked) handleOpen();
+                  }
+                }
+              : undefined
+          }
+          aria-label={
+            adminEditable
+              ? ws.is_test
+                ? `Preview test: ${ws.title}`
+                : `Preview worksheet: ${ws.title}`
+              : undefined
+          }
           className={`flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-slate-100 bg-slate-50/50 ${
             compact ? "px-1.5 py-1" : "px-5 py-3"
+          } ${
+            adminEditable && !accessLocked && !timedBlocked
+              ? "cursor-pointer hover:bg-slate-100/90 transition"
+              : adminEditable
+                ? "cursor-not-allowed opacity-90"
+                : ""
           }`}
         >
           <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
@@ -203,6 +299,7 @@ function WorksheetRow({
                     ? `#${encodeURIComponent(ws.learn_section)}`
                     : ""
                 }`}
+                onClick={(e) => e.stopPropagation()}
                 className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-900 border border-slate-200 hover:bg-slate-200/80 transition"
               >
                 {ws.learn_section_title
@@ -250,6 +347,8 @@ export default function WorksheetsBySubject({
   onOpenTest,
   renderSideAction,
   renderLeadingAction,
+  onTitleSave,
+  titleSavingId,
   ungrouped = false,
   showSort = false,
   sortSelectId = "worksheets-sort-ungrouped",
@@ -307,6 +406,8 @@ export default function WorksheetsBySubject({
             onOpenTest={onOpenTest}
             renderSideAction={renderSideAction}
             renderLeadingAction={renderLeadingAction}
+            onTitleSave={onTitleSave}
+            titleSavingId={titleSavingId}
           />
         ))}
       </div>
@@ -396,6 +497,8 @@ export default function WorksheetsBySubject({
                     onOpenTest={onOpenTest}
                     renderSideAction={renderSideAction}
                     renderLeadingAction={renderLeadingAction}
+                    onTitleSave={onTitleSave}
+                    titleSavingId={titleSavingId}
                   />
                 ))}
               </div>

@@ -44,6 +44,19 @@ import {
   topicLabelFromGroups,
 } from "../learnTopics";
 import { scrollToLearnHashTarget } from "../learnReaderScroll";
+import {
+  LEARN_BODY,
+  LEARN_BODY_RELAXED,
+  LEARN_ERROR,
+  LEARN_READER_H1,
+  LEARN_READER_H2,
+  LEARN_TOC_CHIP,
+  LEARN_TOC_LABEL,
+  LEARN_TOC_LINK,
+  LEARN_TOPIC_EYEBROW,
+} from "../learnTypography";
+import { HUB_TOP_HEADER, HUB_TOP_SHELL } from "../hubSectionStyles";
+import { WS_SECTION_TITLE } from "../worksheetAdminTypography";
 
 /* Sticky TOC sits below the page top padding in the sidebar layout. */
 
@@ -432,7 +445,7 @@ export default function LearnSubject() {
     <LearnChrome onBack={() => navigate("/student/learn")}>
       <div className={contentWidthClass}>
         {loading && <QuillLoading label="Loading topic…" />}
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && <p className={LEARN_ERROR}>{error}</p>}
 
         {data && !loading && (
           <div
@@ -442,7 +455,7 @@ export default function LearnSubject() {
             }`}
           >
             <aside className={`hidden lg:block ${LEARN_TOC_STICKY_CLASS}`}>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+              <p className={`${LEARN_TOC_LABEL} mb-2`}>
                 Contents
               </p>
               <nav className="flex flex-col gap-0.5 border-l border-slate-200 pl-2 pb-2 text-sm">
@@ -450,7 +463,7 @@ export default function LearnSubject() {
                   <div key={g.id || `toc-${gi}`}>
                     {g.title && !scopedToTopic ? (
                       <p
-                        className={`text-xs font-semibold uppercase tracking-wide text-indigo-700 mb-1 leading-tight ${
+                        className={`${LEARN_TOPIC_EYEBROW} mb-1 leading-tight ${
                           gi > 0 ? "mt-2.5" : ""
                         }`}
                       >
@@ -461,7 +474,7 @@ export default function LearnSubject() {
                         <a
                           key={sec.id}
                           href={`#${sec.id}`}
-                          className="flex items-baseline gap-1.5 text-sm leading-snug text-slate-700 hover:text-slate-950 py-0.5"
+                          className={`flex items-baseline gap-1.5 ${LEARN_TOC_LINK} py-0.5`}
                         >
                           <span className="min-w-0">{sec.title}</span>
                         </a>
@@ -476,7 +489,7 @@ export default function LearnSubject() {
 
               <h1
                 id={soloSectionDomId}
-                className="text-2xl font-bold text-slate-950 mb-3 scroll-mt-48"
+                className={`${LEARN_READER_H1} mb-3 scroll-mt-48`}
               >
                 {soloSectionId && soloSectionTitle
                   ? soloSectionTitle
@@ -485,7 +498,7 @@ export default function LearnSubject() {
                     : data.title}
               </h1>
               {readerScoped ? (
-                <p className="text-sm text-slate-600 mb-3">
+                <p className={`${LEARN_BODY} mb-3`}>
                   {data.title}
                   {" · "}
                   <Link
@@ -497,7 +510,7 @@ export default function LearnSubject() {
                 </p>
               ) : null}
               {!readerScoped && data.description ? (
-                <p className="text-slate-700 text-sm mb-3 leading-relaxed">{data.description}</p>
+                <p className={`${LEARN_BODY_RELAXED} mb-3`}>{data.description}</p>
               ) : null}
               {!readerScoped && fullCollectionSectionCount > 1 ? (
                 <p className="text-xs text-slate-500 mb-8 pb-8 border-b border-slate-200">
@@ -527,14 +540,14 @@ export default function LearnSubject() {
               )}
 
               <div className="lg:hidden sticky top-44 z-30 mb-8 rounded-xl border border-slate-200 bg-slate-50/95 backdrop-blur-sm shadow-sm p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+                <p className={`${LEARN_TOC_LABEL} mb-2`}>
                   Contents
                 </p>
                 <div className="flex flex-col gap-3 text-sm">
                   {displayGroups.map((g, gi) => (
                     <div key={g.id || `mob-${gi}`}>
                       {g.title && !scopedToTopic ? (
-                        <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700 mb-1.5">
+                        <p className={`${LEARN_TOPIC_EYEBROW} mb-1.5`}>
                           {g.title}
                         </p>
                       ) : null}
@@ -543,7 +556,7 @@ export default function LearnSubject() {
                             <a
                               key={sec.id}
                               href={`#${sec.id}`}
-                              className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg"
+                              className={`inline-flex items-center gap-1.5 ${LEARN_TOC_CHIP}`}
                             >
                               {sec.title}
                             </a>
@@ -578,7 +591,7 @@ export default function LearnSubject() {
                   const sectionHeading = soloSectionId ? null : (
                     <h2
                       id={block.section.id}
-                      className="text-lg font-bold text-slate-950 scroll-mt-48 min-w-0 flex-1"
+                      className={`${LEARN_READER_H2} scroll-mt-48 min-w-0 flex-1`}
                     >
                       {block.section.title}
                     </h2>
@@ -634,13 +647,11 @@ export default function LearnSubject() {
                   return (
                     <article
                       key={block.section.id}
-                      className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden scroll-mt-44"
+                      className={`${HUB_TOP_SHELL} scroll-mt-44`}
                     >
                       {showGroupHeader ? (
-                        <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-2 border-b border-slate-100">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
-                            {block.group.title}
-                          </p>
+                        <div className={`${HUB_TOP_HEADER} border-b-0 pb-2`}>
+                          <p className={WS_SECTION_TITLE}>{block.group.title}</p>
                         </div>
                       ) : null}
 

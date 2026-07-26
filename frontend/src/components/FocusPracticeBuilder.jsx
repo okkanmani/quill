@@ -8,6 +8,11 @@ import {
   isFocusPracticeQuestionComplete,
   validateFocusPracticeBuilder,
 } from "../focusPracticeBuilderUtils";
+import {
+  CREATE_DASHED_ADD_BUTTON,
+  CREATE_OUTLINE_BUTTON,
+  CREATE_PUBLISH_BUTTON,
+} from "../analysisTypography";
 import { QUESTION_INDEX_BUTTON_CLASS } from "./rowActionButtonStyles";
 
 function McqChoices({ question, index, onChange }) {
@@ -262,7 +267,7 @@ export default function FocusPracticeBuilder({
         <button
           type="button"
           onClick={handleAddQuestion}
-          className="w-full rounded-2xl border-2 border-dashed border-slate-300 bg-white px-4 py-4 text-sm font-semibold text-slate-700 hover:border-indigo-400 hover:text-indigo-800 hover:bg-indigo-50/40 transition flex items-center justify-center gap-2"
+          className={CREATE_DASHED_ADD_BUTTON}
         >
           <span
             className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-800 text-lg leading-none"
@@ -287,7 +292,7 @@ export default function FocusPracticeBuilder({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold px-5 py-2.5 text-sm transition"
+            className={CREATE_PUBLISH_BUTTON}
           >
             {saving ? "Saving…" : "Save to Revision"}
           </button>
@@ -296,7 +301,7 @@ export default function FocusPracticeBuilder({
               type="button"
               onClick={onCancel}
               disabled={saving}
-              className="rounded-xl border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-800 font-semibold px-5 py-2.5 text-sm transition"
+              className={CREATE_OUTLINE_BUTTON}
             >
               Cancel
             </button>

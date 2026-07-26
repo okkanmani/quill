@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { uploadWorksheet, validateWorksheetJson } from "../api";
 import { WORKSHEET_EDITOR_TABS } from "../worksheetUploadFormatExamples";
+import { CREATE_BODY, CREATE_SECTION_TITLE } from "../createTypography";
 
 function initialEditorTexts() {
   return Object.fromEntries(
@@ -178,7 +179,7 @@ export default function WorksheetUploadPanel() {
         </div>
       ) : null}
 
-      <p className="mb-8 text-sm text-slate-600 leading-relaxed inline-flex flex-wrap items-center gap-x-1 gap-y-1">
+      <p className={`${CREATE_BODY} mb-8 inline-flex flex-wrap items-center gap-x-1 gap-y-1`}>
         Upload{" "}
         <label
           className={`inline-flex shrink-0 items-center justify-center rounded-lg border w-7 h-7 align-middle transition ${
@@ -218,7 +219,7 @@ export default function WorksheetUploadPanel() {
 
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         <div className="px-4 pt-4 pb-3 border-b border-slate-100">
-          <h2 className="text-sm font-bold text-slate-900">JSON editor</h2>
+          <h2 className={CREATE_SECTION_TITLE}>JSON editor</h2>
           <p className="text-xs text-slate-600 mt-1 leading-relaxed">
             Pick a template tab, paste or edit JSON, then upload. Each tab keeps its
             own draft until you reset it.

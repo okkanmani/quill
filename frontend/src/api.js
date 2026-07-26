@@ -348,6 +348,26 @@ export async function validateWorksheetJson(data) {
   return res.json();
 }
 
+export async function updateWorksheetTitle(worksheetId, title) {
+  const res = await apiFetch(
+    `${BASE_URL}/admin/worksheets/${encodeURIComponent(worksheetId)}/title`,
+    {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify({ title }),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    let msg = "Failed to rename worksheet";
+    if (typeof d === "string") msg = d;
+    else if (Array.isArray(d)) msg = d.join(" ");
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export async function updateWorksheetFromBuilder(worksheetId, payload) {
   const res = await apiFetch(`${BASE_URL}/admin/worksheets/${worksheetId}`, {
     method: "PUT",

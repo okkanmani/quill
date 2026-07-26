@@ -17,6 +17,22 @@ import {
   weightedGradeSummary,
 } from "../gradeUtils";
 import SectionSortSelect from "./SectionSortSelect";
+import CollapsibleSectionHeader from "./CollapsibleSectionHeader";
+import { HUB_TOP_BODY, HUB_TOP_HEADER, HUB_TOP_SHELL } from "../hubSectionStyles";
+import {
+  RESULTS_ANSWER_BODY,
+  RESULTS_ANSWER_PROMPT,
+  RESULTS_ITEM_HEADER,
+  RESULTS_ITEM_SHELL,
+  RESULTS_ITEM_SHELL_PENDING,
+  RESULTS_ITEM_TOGGLE,
+  RESULTS_PENDING_BANNER,
+  RESULTS_ROW_DETAIL,
+  RESULTS_ROW_TITLE,
+  RESULTS_SORT_LABEL,
+  RESULTS_STATUS_OK,
+  RESULTS_SCORE_BADGE,
+} from "../resultsTypography";
 import {
   SECTION_SORT_TIME,
   sortResultItems,
@@ -128,9 +144,9 @@ export default function ResultsBySubject({
   if (groups.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       {pendingCount > 0 ? (
-        <p className="text-sm font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2">
+        <p className={RESULTS_PENDING_BANNER}>
           {isAdmin
             ? `${pendingCount} submission${pendingCount === 1 ? "" : "s"} awaiting your review`
             : `${pendingCount} submission${pendingCount === 1 ? "" : "s"} awaiting teacher review`}
@@ -141,40 +157,28 @@ export default function ResultsBySubject({
         const sortMode = sortBySubject[subjectKey] || SECTION_SORT_TIME;
         const sortedItems = sortResultItems(items, sortMode);
         const subjectGrade = weightedGradeSummary(items);
+        const metaParts = [
+          `${items.length} result${items.length === 1 ? "" : "s"}`,
+        ];
+        if (subjectGrade) {
+          metaParts.push(formatGradeSummary(subjectGrade));
+        }
         return (
-          <div
-            key={subjectKey}
-            className="rounded-2xl border border-slate-300 bg-white shadow-sm overflow-hidden"
-          >
-            <button
-              type="button"
-              onClick={() => toggleSubject(subjectKey)}
-              aria-expanded={isOpen}
-              className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left bg-slate-200/90 hover:bg-slate-200 border-b border-slate-300/80 transition"
-            >
-              <span className="min-w-0 flex-1 font-bold text-slate-950 text-base">
-                {formatSubjectLabel(subjectKey)}
-                <span className="font-semibold text-slate-800/90 text-sm ml-2">
-                  ({items.length})
-                </span>
-              </span>
-              <span className="flex items-center gap-3 shrink-0">
-                {subjectGrade ? (
-                  <span className="font-bold text-slate-950 text-base tabular-nums">
-                    {formatGradeSummary(subjectGrade)}
-                  </span>
-                ) : null}
-                <span className="text-slate-900 text-sm font-bold tabular-nums">
-                  {isOpen ? "▼" : "▶"}
-                </span>
-              </span>
-            </button>
+          <div key={subjectKey} className={HUB_TOP_SHELL}>
+            <div className={HUB_TOP_HEADER}>
+              <CollapsibleSectionHeader
+                title={formatSubjectLabel(subjectKey)}
+                meta={metaParts.join(" · ")}
+                open={isOpen}
+                onToggle={() => toggleSubject(subjectKey)}
+              />
+            </div>
             {isOpen ? (
-              <div className="p-3 flex flex-col gap-4 bg-slate-50/40">
-                <div className="flex items-center justify-end gap-2 px-1">
+              <div className={`${HUB_TOP_BODY} gap-3`}>
+                <div className="flex items-center justify-end gap-2 px-0.5">
                   <label
                     htmlFor={`results-sort-${subjectKey}`}
-                    className="text-xs font-medium text-slate-600"
+                    className={RESULTS_SORT_LABEL}
                   >
                     Sort
                   </label>
@@ -200,48 +204,46 @@ export default function ResultsBySubject({
                       className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4"
                     >
                       <div
-                        className={`flex-1 bg-white border rounded-2xl shadow-sm overflow-hidden ${
-                          isPending ? "border-amber-300" : "border-slate-200"
-                        }`}
+                        className={
+                          isPending ? RESULTS_ITEM_SHELL_PENDING : RESULTS_ITEM_SHELL
+                        }
                       >
                         <button
                           type="button"
                           onClick={() => toggleAnswers(r.id)}
                           aria-expanded={expanded}
-                          className="w-full text-left p-5 hover:bg-slate-50/60 transition flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start sm:gap-4"
+                          className={RESULTS_ITEM_HEADER}
                         >
                           <div className="min-w-0 flex-1">
-                            <p className="text-slate-900 font-semibold text-lg">
+                            <p className={RESULTS_ROW_TITLE}>
                               {r.title || r.worksheet_id}
                             </p>
                             {isAdmin && r.student ? (
-                              <p className="text-slate-600 text-sm mt-1">
+                              <p className={`${RESULTS_ANSWER_BODY} mt-0.5`}>
                                 {r.student}
                               </p>
                             ) : null}
-                            <p className="text-slate-400 text-xs mt-2">
+                            <p className={`${RESULTS_ROW_DETAIL} mt-1.5`}>
                               Submitted:{" "}
                               {new Date(r.submitted_at).toLocaleString()}
                             </p>
                             {isAdmin && r.focus_evaluation ? (
-                              <p className="text-emerald-700 text-xs mt-1 font-medium">
-                                Analyzed
-                              </p>
+                              <p className={RESULTS_STATUS_OK}>Analyzed</p>
                             ) : null}
                           </div>
-                          <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end sm:gap-2">
+                          <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-end sm:gap-1.5">
                             {r.timed && r.duration_seconds != null ? (
-                              <span className="inline-flex text-xs font-semibold px-2.5 py-1 rounded-full bg-sky-50 text-sky-900 border border-sky-200 tabular-nums">
+                              <span className="inline-flex text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-900 border border-sky-200 tabular-nums">
                                 Completed in{" "}
                                 {formatDurationSeconds(r.duration_seconds)}
                               </span>
                             ) : null}
                             <span
-                              className={`inline-flex text-sm font-semibold px-3 py-1 rounded-full tabular-nums ${scoreBadgeClass(r)}`}
+                              className={`${RESULTS_SCORE_BADGE} px-2.5 ${scoreBadgeClass(r)}`}
                             >
                               {isPending ? "Pending review" : scoreLine}
                             </span>
-                            <span className="text-slate-600 text-xs font-semibold underline underline-offset-2">
+                            <span className={RESULTS_ITEM_TOGGLE}>
                               {expanded
                                 ? isPending
                                   ? "Hide"
@@ -264,21 +266,21 @@ export default function ResultsBySubject({
                         ) : null}
 
                         {expanded && !isAdmin ? (
-                          <div className="border-t border-slate-100 px-5 pb-5 pt-4 bg-slate-50/30">
-                            <ul className="flex flex-col gap-4">
+                          <div className="border-t border-slate-100 px-4 pb-4 pt-3 bg-slate-50/30">
+                            <ul className="flex flex-col gap-3">
                               {r.answers.map((a, index) => (
                                 <li
                                   key={a.question_id}
-                                  className="rounded-xl bg-white border border-slate-100 p-4 shadow-sm"
+                                  className="rounded-xl bg-white border border-slate-100 p-3 shadow-sm"
                                 >
-                                  <p className="text-slate-800 text-sm font-medium leading-snug">
-                                    <span className="text-indigo-500 font-normal">
+                                  <p className={RESULTS_ANSWER_PROMPT}>
+                                    <span className="text-indigo-600 font-normal">
                                       {index + 1}.{" "}
                                     </span>
                                     {a.prompt}
                                   </p>
-                                  <div className="mt-3 flex flex-col gap-1.5 text-sm">
-                                    <span className="text-slate-600 shrink-0">
+                                  <div className="mt-2 flex flex-col gap-1.5 text-sm">
+                                    <span className={RESULTS_ANSWER_BODY}>
                                       Response:
                                     </span>
                                     <AnswerResponseView answer={a} />

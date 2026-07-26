@@ -7,6 +7,12 @@ import QuillLoading from "../components/QuillLoading";
 import ResultsBySubject from "../components/ResultsBySubject";
 import WritingResultsSection from "../components/WritingResultsSection";
 import { filterLatestUndoneWorksheets } from "../worksheetUtils";
+import {
+  RESULTS_EMPTY,
+  RESULTS_ERROR,
+  RESULTS_PAGE_HEADING,
+  RESULTS_PAGE_INTRO,
+} from "../resultsTypography";
 
 export default function StudentResults() {
   const navigate = useNavigate();
@@ -70,16 +76,16 @@ export default function StudentResults() {
       onLogout={handleLogout}
     >
       <div className="max-w-3xl">
-        <h1 className="text-2xl font-bold text-slate-950 mb-1">Your results</h1>
-        <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+        <h1 className={`${RESULTS_PAGE_HEADING} mb-1`}>Your results</h1>
+        <p className={`${RESULTS_PAGE_INTRO} mb-6`}>
           Scores and feedback from completed worksheets and writing assignments.
         </p>
 
         {loading && <QuillLoading label="Loading results…" />}
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <p className={RESULTS_ERROR}>{error}</p>}
 
         {!loading && !error && !hasAny && (
-          <p className="text-slate-600">No results yet.</p>
+          <p className={RESULTS_EMPTY}>No results yet.</p>
         )}
 
         {!loading && !error && hasAny ? (

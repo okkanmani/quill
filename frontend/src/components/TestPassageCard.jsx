@@ -1,3 +1,11 @@
+import {
+  CREATE_ACCORDION_SUMMARY,
+  CREATE_ACCORDION_TITLE,
+  CREATE_BODY,
+  CREATE_CHEVRON,
+  CREATE_SUBSECTION_TITLE,
+  CREATE_TOOLBAR_ADD,
+} from "../createTypography";
 import { QuestionDifficultyStars } from "./DifficultyStars";
 import WorksheetPassageContent from "./WorksheetPassageContent";
 import TestQuestionCard from "./TestQuestionCard";
@@ -61,10 +69,10 @@ export default function TestPassageCard({
         className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left bg-sky-50 hover:bg-sky-100 transition"
       >
         <span className="min-w-0">
-          <span className="font-semibold text-slate-900">
+          <span className={CREATE_ACCORDION_TITLE}>
             {unitLabel} {index + 1}
           </span>
-          <span className="block text-sm text-slate-600 truncate mt-0.5">
+          <span className={CREATE_ACCORDION_SUMMARY}>
             {summary}
             {tierLabel ? ` · ${tierLabel}` : ""}
             {passageQuestions.length
@@ -87,7 +95,7 @@ export default function TestPassageCard({
           >
             {complete ? "Complete" : "Incomplete"}
           </span>
-          <span className="text-slate-700 font-bold text-sm">{expanded ? "▼" : "▶"}</span>
+          <span className={CREATE_CHEVRON}>{expanded ? "▼" : "▶"}</span>
         </span>
       </button>
 
@@ -166,10 +174,10 @@ export default function TestPassageCard({
           <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-slate-900">
+                <p className={CREATE_SUBSECTION_TITLE}>
                   Questions for this {isDataMode ? "data set" : "passage"}
                 </p>
-                <p className="text-xs text-slate-600 mt-0.5">
+                <p className={`${CREATE_BODY} mt-0.5 text-xs`}>
                   {rcAdaptiveMode
                     ? `Bank of ${targetCount} questions — students see ${questionsShownPerPassage} at random. ${
                         Number(passage.tier) === 1
@@ -185,7 +193,7 @@ export default function TestPassageCard({
                 <button
                   type="button"
                   onClick={() => onAddQuestion?.()}
-                  className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-900 hover:bg-teal-100 transition"
+                  className={CREATE_TOOLBAR_ADD}
                 >
                   + Add question
                 </button>

@@ -5,6 +5,15 @@ import {
   criticalReasoningDisplayQuestions,
   isCriticalReasoningWorksheetLayout,
 } from "../worksheetUtils";
+import {
+  CREATE_BODY,
+  CREATE_PREVIEW_CHOICE,
+  CREATE_PREVIEW_CHOICE_EMPTY,
+  CREATE_PREVIEW_EYEBROW,
+  CREATE_PREVIEW_PROMPT,
+  CREATE_PREVIEW_PROMPT_PLACEHOLDER,
+} from "../createTypography";
+import { WS_CARD_TITLE } from "../worksheetAdminTypography";
 
 function scrollWithinContainer(container, element, offset = 12) {
   if (!container || !element) return;
@@ -24,20 +33,20 @@ function PreviewQuestionCard({
   isFocused = false,
 }) {
   const promptClass = question.promptPlaceholder
-    ? "text-slate-400 italic"
-    : "text-slate-900";
+    ? CREATE_PREVIEW_PROMPT_PLACEHOLDER
+    : CREATE_PREVIEW_PROMPT;
 
   return (
     <div
       ref={innerRef}
-      className={`bg-white border rounded-2xl p-5 shadow-sm transition-shadow ${
+      className={`bg-white border rounded-xl p-4 shadow-sm transition-shadow ${
         isFocused
           ? "border-indigo-300 ring-2 ring-indigo-200 ring-offset-2 ring-offset-slate-50"
           : "border-slate-200"
       }`}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
-        <p className={`font-medium flex-1 whitespace-pre-line ${promptClass}`}>
+        <p className={promptClass}>
           {index + 1}. {question.prompt}
         </p>
         <QuestionDifficultyStars stars={question.stars} />
@@ -51,14 +60,17 @@ function PreviewQuestionCard({
 
       {question.type === "multiple_choice" ? (
         <div className="flex flex-col gap-2 mt-3">
-          {(question.choices || []).map((choice) => (
-            <div
-              key={choice}
-              className="border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 bg-white"
-            >
-              {choice}
-            </div>
-          ))}
+          {(question.choices || []).map((choice, choiceIndex) => {
+            const empty = !(choice || "").trim() || /^Choice [A-D]$/i.test(choice.trim());
+            return (
+              <div
+                key={`${choiceIndex}-${choice}`}
+                className={empty ? CREATE_PREVIEW_CHOICE_EMPTY : CREATE_PREVIEW_CHOICE}
+              >
+                {choice}
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="mt-3 flex items-start gap-3">
@@ -68,7 +80,9 @@ function PreviewQuestionCard({
               <div className="w-7 h-7 rounded-lg border border-slate-300 bg-slate-50" />
             </div>
           ) : null}
-          <div className="min-w-0 flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-400 bg-slate-50 min-h-[6rem]">
+          <div
+            className={`min-w-0 flex-1 ${CREATE_PREVIEW_CHOICE_EMPTY} min-h-[5.5rem] italic`}
+          >
             Type your answer and show your reasoning…
           </div>
         </div>
@@ -131,9 +145,7 @@ export default function WorksheetBuilderPreview({
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-50/80 shadow-sm overflow-hidden flex flex-col max-h-[calc(100vh-8rem)]">
       <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Student preview
-        </p>
+        <p className={CREATE_PREVIEW_EYEBROW}>Student preview</p>
         {model.buildUsingAi ? (
           <p className="text-xs text-amber-900 mt-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 leading-relaxed">
             AI placeholders show where content will appear after generation.
@@ -142,9 +154,9 @@ export default function WorksheetBuilderPreview({
       </div>
 
       <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
-        <h2 className="text-lg font-semibold text-slate-900 mb-1">{model.title}</h2>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-          <p className="text-indigo-500 capitalize">
+        <h2 className={`${WS_CARD_TITLE} mb-1`}>{model.title}</h2>
+        <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${CREATE_BODY}`}>
+          <p className="text-indigo-600 capitalize text-sm">
             {model.subject} · {model.questions.length} question
             {model.questions.length === 1 ? "" : "s"}
           </p>
@@ -197,7 +209,7 @@ export default function WorksheetBuilderPreview({
                   >
                     {passage.bodyPlaceholder && !passage.aiPlaceholder ? (
                       <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-5">
-                        <p className="text-slate-800 font-semibold text-base mb-3">
+                        <p className="text-slate-800 font-semibold text-sm mb-3">
                           📖 {passage.title}
                         </p>
                         <p className="text-sm text-slate-400 italic leading-relaxed whitespace-pre-line">

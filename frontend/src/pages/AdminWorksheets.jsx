@@ -13,6 +13,7 @@ import {
   deleteWorksheetCollection,
   restoreWorksheet,
   restoreWorksheetSections,
+  updateWorksheetTitle,
 } from "../api";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
@@ -114,6 +115,7 @@ export default function AdminWorksheets() {
   const [addCollection, setAddCollection] = useState(null);
   const [addCollectionSaving, setAddCollectionSaving] = useState(false);
   const [organizing, setOrganizing] = useState(false);
+  const [titleSavingId, setTitleSavingId] = useState(null);
   const [sectionDeleteAck, setSectionDeleteAck] = useState(null);
 
   useAutoDismissToast(
@@ -202,6 +204,24 @@ export default function AdminWorksheets() {
       else next.add(id);
       return next;
     });
+  }
+
+  async function handleWorksheetTitleSave(worksheet, nextTitle) {
+    setTitleSavingId(worksheet.id);
+    setError("");
+    try {
+      await updateWorksheetTitle(worksheet.id, nextTitle);
+      setWorksheets((prev) =>
+        prev.map((row) =>
+          row.id === worksheet.id ? { ...row, title: nextTitle } : row,
+        ),
+      );
+      showToast(`Saved title “${nextTitle}”.`);
+    } catch (err) {
+      setError(err.message || "Could not save this title.");
+    } finally {
+      setTitleSavingId(null);
+    }
   }
 
   function clearSelection() {
@@ -820,6 +840,8 @@ export default function AdminWorksheets() {
               onOpenTest={(id) => navigate(`/student/tests/${id}`)}
               renderSideAction={renderWorksheetSideAction}
               renderLeadingAction={renderWorksheetLeadingAction}
+              onTitleSave={handleWorksheetTitleSave}
+              titleSavingId={titleSavingId}
               onAddSubCollection={(parentId) =>
                 setAddCollection({ variant: "nested", fixedParentId: parentId })
               }
@@ -850,7 +872,9 @@ export default function AdminWorksheets() {
                       worksheets={unassignedThinkingQuest}
                       onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
                       renderSideAction={renderWorksheetSideAction}
-              renderLeadingAction={renderWorksheetLeadingAction}
+                      renderLeadingAction={renderWorksheetLeadingAction}
+                      onTitleSave={handleWorksheetTitleSave}
+                      titleSavingId={titleSavingId}
                     />
                   </div>
                 ) : null}
@@ -860,7 +884,9 @@ export default function AdminWorksheets() {
                     onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}
                     onOpenTest={(id) => navigate(`/student/tests/${id}`)}
                     renderSideAction={renderWorksheetSideAction}
-              renderLeadingAction={renderWorksheetLeadingAction}
+                    renderLeadingAction={renderWorksheetLeadingAction}
+                    onTitleSave={handleWorksheetTitleSave}
+                    titleSavingId={titleSavingId}
                     ungrouped
                   />
                 ) : null}

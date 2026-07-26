@@ -125,6 +125,7 @@ from worksheets import (
     create_test_from_builder,
     set_worksheet_access_lock_for_admin_students,
     update_worksheet_from_builder,
+    update_worksheet_title,
     update_test_from_builder,
     delete_worksheet,
     delete_result,
@@ -240,6 +241,10 @@ class CreateWorksheetBuilderRequest(BaseModel):
     lock_on_create: bool = False
     scratchpad: bool | None = None
     questions: list[WorksheetBuilderQuestionRequest]
+
+
+class WorksheetTitlePatchRequest(BaseModel):
+    title: str
 
 
 class StudentLoginRequest(BaseModel):
@@ -971,6 +976,30 @@ def admin_update_worksheet_from_builder(
         )
     except ValueError as exc:
         errors = exc.args[0] if exc.args else ["Invalid worksheet data."]
+        if isinstance(errors, list):
+            detail = errors
+        else:
+            detail = [str(errors)]
+        raise HTTPException(status_code=400, detail=detail)
+
+
+@app.patch("/admin/worksheets/{worksheet_id}/title")
+def admin_patch_worksheet_title(
+    worksheet_id: str,
+    req: WorksheetTitlePatchRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return update_worksheet_title(
+            worksheet_id,
+            req.title,
+            admin_id=_admin_id(payload),
+        )
+    except ValueError as exc:
+        errors = exc.args[0] if exc.args else ["Invalid title."]
         if isinstance(errors, list):
             detail = errors
         else:

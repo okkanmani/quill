@@ -21,6 +21,8 @@ export default function ThinkingQuestByWeek({
   renderSideAction,
   renderWeekAction,
   renderLeadingAction,
+  onTitleSave,
+  titleSavingId,
   giftedTrackUnlockedThroughWeek,
 }) {
   const weeks = useMemo(
@@ -129,6 +131,8 @@ export default function ThinkingQuestByWeek({
                   onOpenWorksheet={onOpenWorksheet}
                   renderSideAction={renderSideAction}
                   renderLeadingAction={renderLeadingAction}
+                  onTitleSave={onTitleSave}
+                  titleSavingId={titleSavingId}
                   ungrouped
                 />
               </div>

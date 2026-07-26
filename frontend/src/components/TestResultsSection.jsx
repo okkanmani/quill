@@ -1,6 +1,19 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import SectionSortSelect from "./SectionSortSelect";
+import {
+  RESULTS_ANSWER_BODY,
+  RESULTS_ITEM_HEADER,
+  RESULTS_ITEM_SHELL,
+  RESULTS_ROW_DETAIL,
+  RESULTS_ROW_TITLE,
+  RESULTS_SORT_LABEL,
+  RESULTS_STATUS_OK,
+  RESULTS_SUBTITLE_TEAL,
+  RESULTS_SCORE_BADGE,
+  RESULTS_BODY_MUTED,
+} from "../resultsTypography";
+import { HUB_TOP_BODY } from "../hubSectionStyles";
 import { formatSubjectLabel } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
 import { formatWeightedTestScore } from "../testUtils";
@@ -47,7 +60,6 @@ export default function TestResultsSection({
   toggleOpen,
   embedded = false,
 }) {
-  const [isOpen, setIsOpen] = useState(false);
   const [sortMode, setSortMode] = useState(SECTION_SORT_TIME);
 
   const sortedItems = useMemo(
@@ -58,9 +70,9 @@ export default function TestResultsSection({
   if (results.length === 0) return null;
 
   const listContent = (
-    <div className={embedded ? "flex flex-col gap-4" : "p-3 flex flex-col gap-4 bg-slate-50/40"}>
-      <div className="flex items-center justify-end gap-2 px-1">
-        <label htmlFor="test-results-sort" className="text-xs font-medium text-slate-600">
+    <div className={embedded ? "flex flex-col gap-3" : `${HUB_TOP_BODY} gap-3`}>
+      <div className="flex items-center justify-end gap-2 px-0.5">
+        <label htmlFor="test-results-sort" className={RESULTS_SORT_LABEL}>
           Sort
         </label>
         <SectionSortSelect
@@ -74,41 +86,38 @@ export default function TestResultsSection({
         const expanded = openIds.has(item.id);
         const analyzed = Boolean(item.analyzed_at);
         return (
-          <div
-            key={item.id}
-            className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
-          >
+          <div key={item.id} className={RESULTS_ITEM_SHELL}>
             <button
               type="button"
               onClick={() => toggleOpen(item.id)}
               aria-expanded={expanded}
-              className="w-full text-left p-5 hover:bg-slate-50/60 transition flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start"
+              className={RESULTS_ITEM_HEADER}
             >
               <div className="min-w-0 flex-1">
-                <p className="text-slate-900 font-semibold text-lg">{item.title}</p>
-                <p className="text-teal-700 text-sm mt-1 capitalize">
+                <p className={RESULTS_ROW_TITLE}>{item.title}</p>
+                <p className={RESULTS_SUBTITLE_TEAL}>
                   {formatSubjectLabel(item.subject)} · Test
                 </p>
                 {item.completed_at ? (
-                  <p className="text-slate-500 text-xs mt-1">
+                  <p className={`${RESULTS_ROW_DETAIL} mt-1`}>
                     {new Date(item.completed_at).toLocaleString()}
                   </p>
                 ) : null}
                 {analyzed ? (
-                  <p className="text-emerald-700 text-xs mt-1 font-medium">Analyzed</p>
+                  <p className={RESULTS_STATUS_OK}>Analyzed</p>
                 ) : null}
               </div>
-              <div className="shrink-0 text-right flex flex-col items-end gap-2">
-                <span className="inline-flex rounded-full bg-teal-100 text-teal-900 border border-teal-200 px-3 py-1 text-sm font-bold tabular-nums">
+              <div className="shrink-0 text-right flex flex-col items-end gap-1.5">
+                <span className={`${RESULTS_SCORE_BADGE} px-2.5 bg-teal-100 text-teal-900 border border-teal-200 font-bold`}>
                   {formatWeightedTestScore(item.weighted_score, item.max_weighted_score)}
                 </span>
                 {typeof item.correct_count === "number" ? (
-                  <p className="text-xs text-slate-500 tabular-nums">
+                  <p className={`${RESULTS_ROW_DETAIL} tabular-nums`}>
                     {item.correct_count}/{item.total_count} correct
                   </p>
                 ) : null}
                 {item.duration_seconds != null ? (
-                  <p className="text-xs text-slate-500 tabular-nums">
+                  <p className={`${RESULTS_ROW_DETAIL} tabular-nums`}>
                     {formatDurationSeconds(item.duration_seconds)}
                   </p>
                 ) : null}
@@ -122,7 +131,7 @@ export default function TestResultsSection({
               </div>
             </button>
             {expanded ? (
-              <div className="border-t border-slate-100 px-5 py-4 bg-slate-50/50 text-sm space-y-3">
+              <div className="border-t border-slate-100 px-4 py-3 bg-slate-50/50 text-sm space-y-3">
                 {(item.answers || []).map((a, i) => (
                   <div
                     key={a.question_id || i}
@@ -132,8 +141,10 @@ export default function TestResultsSection({
                         : "border-red-200 bg-red-50/50"
                     }`}
                   >
-                    <p className="font-medium text-slate-900">{a.prompt || "Question"}</p>
-                    <p className="mt-1 text-slate-700">
+                    <p className="text-sm font-semibold text-slate-900">
+                      {a.prompt || "Question"}
+                    </p>
+                    <p className={`mt-1 ${RESULTS_ANSWER_BODY}`}>
                       Answer: {a.given || "—"}
                       {!a.correct && a.expected ? (
                         <span className="block text-emerald-800 mt-0.5">
@@ -142,7 +153,7 @@ export default function TestResultsSection({
                       ) : null}
                     </p>
                     {a.tier ? (
-                      <p className="text-xs text-slate-500 mt-1">Tier {a.tier}</p>
+                      <p className={`${RESULTS_ROW_DETAIL} mt-1`}>Tier {a.tier}</p>
                     ) : null}
                   </div>
                 ))}
@@ -166,29 +177,15 @@ export default function TestResultsSection({
   if (embedded) return listContent;
 
   return (
-    <div className="rounded-2xl border border-slate-300 bg-white shadow-sm overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setIsOpen((v) => !v)}
-        aria-expanded={isOpen}
-        className="w-full text-left px-4 py-4 border-b transition bg-teal-100/90 hover:bg-teal-100 border-teal-200/80"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="font-bold text-slate-950 text-lg">Tests</p>
-            <p className="text-slate-700 text-sm mt-0.5">
-              Adaptive test sittings — weighted scores, separate from regular worksheets.
-            </p>
-            <p className="text-slate-600 text-xs font-semibold mt-1 tabular-nums">
-              {results.length} result{results.length === 1 ? "" : "s"}
-            </p>
-          </div>
-          <span className="text-slate-900 text-sm font-bold shrink-0 pt-1">
-            {isOpen ? "▼" : "▶"}
-          </span>
-        </div>
-      </button>
-      {isOpen ? listContent : null}
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden p-4">
+      <p className="text-sm font-bold text-slate-900">Tests</p>
+      <p className={`${RESULTS_BODY_MUTED} mt-0.5`}>
+        Adaptive test sittings — weighted scores, separate from regular worksheets.
+      </p>
+      <p className={`${RESULTS_ROW_DETAIL} font-semibold mt-1 tabular-nums`}>
+        {results.length} result{results.length === 1 ? "" : "s"}
+      </p>
+      <div className="mt-3">{listContent}</div>
     </div>
   );
 }

@@ -1800,6 +1800,35 @@ def update_worksheet_from_builder(ws_id: str, body: dict, *, admin_id: int) -> d
     return upsert_worksheet_from_data(ws_id, data, refresh_sort_ts=False, admin_id=admin_id)
 
 
+def update_worksheet_title(ws_id: str, title: str, *, admin_id: int) -> dict:
+    """Rename a worksheet in place (admin Worksheets list)."""
+    ws_id = (ws_id or "").strip()
+    cleaned = (title or "").strip()
+    if not ws_id:
+        raise ValueError(["Worksheet id is required."])
+    if not cleaned:
+        raise ValueError(["Title is required."])
+    if get_worksheet(ws_id, admin_id=admin_id) is None:
+        raise ValueError([f"Worksheet {ws_id} not found."])
+    conn = db.connect()
+    try:
+        conn.execute(
+            "UPDATE worksheets SET title = ? WHERE id = ?",
+            (cleaned, ws_id),
+        )
+        conn.execute(
+            "UPDATE results SET title = ? WHERE worksheet_id = ?",
+            (cleaned, ws_id),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+    return {"id": ws_id, "title": cleaned}
+
+
 def test_data_from_builder(body: dict) -> dict:
     """Turn test builder / preview payload into worksheet JSON for upsert."""
     errors: list[str] = []

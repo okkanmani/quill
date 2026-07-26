@@ -4,6 +4,10 @@ import { getAdminSettings, logout, saveAdminPreferences } from "../api";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import ExpertJsonWarningDialog from "../components/ExpertJsonWarningDialog";
+import {
+  CREATE_PAGE_HEADING,
+  CREATE_PAGE_INTRO,
+} from "../createTypography";
 
 const CREATE_TABS = [
   { to: "/admin/create/worksheet", label: "Worksheet builder" },
@@ -100,8 +104,8 @@ export default function AdminCreate() {
       />
 
       <div className={isWideBuilder ? "max-w-none" : "max-w-3xl mx-auto"}>
-        <h1 className="text-2xl font-bold text-slate-950 mb-1">Create</h1>
-        <p className="text-slate-600 text-sm mb-5 leading-relaxed">
+        <h1 className={`${CREATE_PAGE_HEADING} mb-1`}>Create</h1>
+        <p className={`${CREATE_PAGE_INTRO} mb-5`}>
           Build worksheets and adaptive tests, upload JSON, or generate learning resources for students.
         </p>
 

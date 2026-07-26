@@ -14,6 +14,14 @@ import {
 import { forgetPendingLearnImagesInMarkdown } from "../learnPendingImages";
 import { learnSectionReaderUrl, sectionForReaderUrl } from "../learnTopics";
 import { BUILDER_SUBJECTS, GRADE_OPTIONS } from "../questionBuilderUtils";
+import {
+  CREATE_BODY,
+  CREATE_FIELD_LABEL,
+  CREATE_PUBLISH_BUTTON,
+  CREATE_SECTION_TITLE,
+  CREATE_STICKY_ACTION_BAR,
+  CREATE_STICKY_ACTION_LINK,
+} from "../createTypography";
 
 export default function LearnResourceCreator() {
   const initialGrade = Number(localStorage.getItem("studentGrade")) || 5;
@@ -143,7 +151,7 @@ export default function LearnResourceCreator() {
 
   return (
     <div className="min-w-0">
-      <p className="text-slate-600 text-sm mb-4 leading-relaxed">
+      <p className={`${CREATE_BODY} mb-4`}>
         Publish one learning section at a time — a focused sub-topic students read in one
         sitting. Optional topic groups sections (e.g. Calculus → Limits). Leave topic blank
         to place the section under Miscellaneous. This is not a course generator.
@@ -192,7 +200,7 @@ export default function LearnResourceCreator() {
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6 space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <h2 className="font-bold text-slate-900">Resource details</h2>
+          <h2 className={CREATE_SECTION_TITLE}>Resource details</h2>
           <label
             className={`flex items-center gap-2 text-sm font-semibold ${
               canUseAi ? "text-slate-800 cursor-pointer" : "text-slate-500"
@@ -225,7 +233,7 @@ export default function LearnResourceCreator() {
           </p>
         ) : null}
 
-        <label className="block text-sm font-semibold text-slate-800">
+        <label className={CREATE_FIELD_LABEL}>
           Topic{" "}
           <span className="font-normal text-slate-500">(optional)</span>
           <input
@@ -240,7 +248,7 @@ export default function LearnResourceCreator() {
           </span>
         </label>
 
-        <label className="block text-sm font-semibold text-slate-800">
+        <label className={CREATE_FIELD_LABEL}>
           Sub-topic{" "}
           <span className="font-normal text-slate-500">(required)</span>
           <input
@@ -263,7 +271,7 @@ export default function LearnResourceCreator() {
         ) : null}
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <label className="block text-sm font-semibold text-slate-800">
+          <label className={CREATE_FIELD_LABEL}>
             Subject
             <select
               value={subject}
@@ -278,7 +286,7 @@ export default function LearnResourceCreator() {
             </select>
           </label>
 
-          <label className="block text-sm font-semibold text-slate-800">
+          <label className={CREATE_FIELD_LABEL}>
             Target grade
             <select
               value={grade}
@@ -293,7 +301,7 @@ export default function LearnResourceCreator() {
             </select>
           </label>
 
-          <label className="block text-sm font-semibold text-slate-800 sm:col-span-2 lg:col-span-1">
+          <label className={`${CREATE_FIELD_LABEL} sm:col-span-2 lg:col-span-1`}>
             Curriculum
             <input
               type="text"
@@ -306,7 +314,7 @@ export default function LearnResourceCreator() {
         </div>
 
         {buildUsingAi ? (
-          <label className="block text-sm font-semibold text-slate-800">
+          <label className={CREATE_FIELD_LABEL}>
             AI instructions{" "}
             <span className="font-normal text-slate-500">(optional)</span>
             <textarea
@@ -322,7 +330,7 @@ export default function LearnResourceCreator() {
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6 space-y-4">
-        <h2 className="font-bold text-slate-900">Content</h2>
+        <h2 className={CREATE_SECTION_TITLE}>Content</h2>
         {buildUsingAi ? (
           <p className="text-sm text-slate-500 rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center">
             Use &ldquo;Generate &amp; publish&rdquo; to create content with AI from the
@@ -341,18 +349,18 @@ export default function LearnResourceCreator() {
         )}
       </section>
 
-      <div className="sticky bottom-4 z-10 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur px-4 py-3 shadow-lg flex flex-wrap items-center gap-3">
+      <div className={CREATE_STICKY_ACTION_BAR}>
         <button
           type="button"
           onClick={handlePublish}
           disabled={publishing || (buildUsingAi && !canUseAi)}
-          className="rounded-xl bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-sm font-bold px-5 py-2.5 transition"
+          className={CREATE_PUBLISH_BUTTON}
         >
           {publishLabel}
         </button>
         <Link
           to="/student/learn"
-          className="ml-auto text-sm font-semibold text-indigo-700 hover:text-indigo-900"
+          className={CREATE_STICKY_ACTION_LINK}
         >
           View learning resources →
         </Link>

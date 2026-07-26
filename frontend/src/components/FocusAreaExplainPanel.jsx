@@ -8,6 +8,11 @@ import {
   ICON_ACTION_BUTTON_CLASS,
   ICON_ACTION_IDLE_CLASS,
 } from "./rowActionButtonStyles";
+import {
+  CREATE_ACCENT_OUTLINE_BUTTON_COMPACT,
+  CREATE_LINK_TEXT_BUTTON,
+  CREATE_PUBLISH_BUTTON,
+} from "../analysisTypography";
 
 const DEFAULT_NOTES = { mode: "text", text: "", scratchpad: "" };
 
@@ -155,7 +160,7 @@ export default function FocusAreaExplainPanel({
             type="button"
             onClick={handleGenerateFromAllExamples}
             disabled={!canGenerate || generatingAll}
-            className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-900 hover:bg-indigo-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className={CREATE_ACCENT_OUTLINE_BUTTON_COMPACT}
           >
             {generatingAll
               ? "Generating…"
@@ -164,7 +169,7 @@ export default function FocusAreaExplainPanel({
           {!aiEnabled ? (
             <span className="text-xs text-slate-500">AI disabled on server</span>
           ) : !apiKeyConfigured ? (
-            <Link to="/admin/settings" className="text-xs font-semibold text-indigo-700 underline">
+            <Link to="/admin/settings" className={`${CREATE_LINK_TEXT_BUTTON} underline`}>
               Add API key
             </Link>
           ) : null}
@@ -231,7 +236,7 @@ export default function FocusAreaExplainPanel({
               type="button"
               disabled={markingDiscussed || generatingPractice}
               onClick={onMarkDiscussed}
-              className="mt-4 w-full rounded-xl bg-slate-800 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-900 transition disabled:opacity-50"
+              className={`mt-4 w-full ${CREATE_PUBLISH_BUTTON}`}
             >
               {generatingPractice
                 ? "Generating practice…"

@@ -13,6 +13,7 @@ import {
   learnSectionReaderUrl,
   sectionForReaderUrl,
 } from "../learnTopics";
+import { CREATE_FIELD_LABEL } from "../createTypography";
 
 export default function LearnResourceEditor({ subjectKey, sectionId }) {
   const navigate = useNavigate();
@@ -110,7 +111,7 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
 
   return (
     <div className="space-y-4">
-      <label className="block text-sm font-semibold text-slate-800 max-w-xl">
+      <label className={CREATE_FIELD_LABEL}>
         Topic <span className="font-normal text-slate-500">(optional)</span>
         <input
           type="text"

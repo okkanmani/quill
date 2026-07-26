@@ -8,6 +8,24 @@ import {
   localDatetimeInputToIso,
 } from "../testSchedulingUtils";
 import QuillLoading from "./QuillLoading";
+import {
+  CREATE_BODY,
+  CREATE_METRIC,
+  CREATE_METRIC_SUFFIX,
+  CREATE_SECTION_TITLE,
+  CREATE_SUBSECTION_TITLE,
+  CREATE_ACTION_BUTTON_TEAL,
+  CREATE_PUBLISH_BUTTON,
+  CREATE_STICKY_ACTION_BAR,
+  CREATE_STICKY_ACTION_LINK,
+  CREATE_TOOLBAR_ADD,
+  CREATE_TOOLBAR_ADD_BANK,
+  CREATE_TOOLBAR_ADD_PASSAGE,
+  CREATE_TOOLBAR_CHIP,
+  CREATE_TOOLBAR_CHIP_OFF,
+  CREATE_TOOLBAR_CHIP_ON,
+  CREATE_TOOLBAR_NEUTRAL,
+} from "../createTypography";
 import { QuestionDifficultyStars } from "./DifficultyStars";
 import TestQuestionCard from "./TestQuestionCard";
 import TestPassageCard from "./TestPassageCard";
@@ -76,18 +94,18 @@ function TierBankStatus({
     return (
       <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
         <p className="text-sm font-semibold text-slate-900">Fixed-order bank</p>
-        <p className="text-xs text-slate-600 mt-1">
+        <p className={`${CREATE_BODY} mt-1 text-xs`}>
           Tier labels still affect scoring weight. Publish keeps the first {sittingCount}{" "}
           {unitLabel}
           {aiBankTarget ? ` (AI target ~${aiBankTarget} for review)` : ""}.
         </p>
         <p
-          className={`text-lg font-bold tabular-nums mt-2 ${
+          className={`${CREATE_METRIC} mt-2 ${
             ready ? "text-emerald-800" : "text-amber-900"
           }`}
         >
           {total}
-          <span className="text-sm font-semibold text-slate-500"> / {sittingCount}</span>
+          <span className={CREATE_METRIC_SUFFIX}> / {sittingCount}</span>
         </p>
       </div>
     );
@@ -108,11 +126,11 @@ function TierBankStatus({
             }`}
           >
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-slate-900">{tier.label}</p>
+              <p className={CREATE_SUBSECTION_TITLE}>{tier.label}</p>
               {rcPassageMode ? null : <QuestionDifficultyStars stars={tier.value} />}
             </div>
             {!rcPassageMode ? (
-              <p className="text-xs text-slate-600 mt-1">{tier.weight} scoring weight</p>
+              <p className={`${CREATE_BODY} mt-1 text-xs`}>{tier.weight} scoring weight</p>
             ) : null}
             {passageWindow ? (
               <p className="text-xs text-slate-500 mt-1">
@@ -120,12 +138,12 @@ function TierBankStatus({
               </p>
             ) : null}
             <p
-              className={`text-lg font-bold tabular-nums mt-2 ${
+              className={`${CREATE_METRIC} mt-2 ${
                 ready ? "text-emerald-800" : "text-amber-900"
               }`}
             >
               {count}
-              <span className="text-sm font-semibold text-slate-500"> / {sittingCount}</span>
+              <span className={CREATE_METRIC_SUFFIX}> / {sittingCount}</span>
             </p>
           </div>
         );
@@ -824,7 +842,7 @@ export default function TestBuilderPanel() {
 
   return (
     <div className="min-w-0">
-      <p className="text-slate-600 text-sm mb-4 leading-relaxed">
+      <p className={`${CREATE_BODY} mb-4`}>
         {editId
           ? `Editing ${editId}. Update questions below, then save.`
           : passageWindowEnabled
@@ -933,7 +951,7 @@ export default function TestBuilderPanel() {
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6 space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <h2 className="font-bold text-slate-900">Test details</h2>
+          <h2 className={CREATE_SECTION_TITLE}>Test details</h2>
           <label
             className={`flex items-center gap-2 text-sm font-semibold ${
               canUseAi ? "text-slate-800 cursor-pointer" : "text-slate-500"
@@ -1165,10 +1183,10 @@ export default function TestBuilderPanel() {
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="font-bold text-slate-900">
+              <h2 className={CREATE_SECTION_TITLE}>
                 {isDataPassageTest(subject) ? "Data sets & questions" : "Passages & questions"}
               </h2>
-              <p className="text-sm text-slate-600 mt-0.5">
+              <p className={`${CREATE_BODY} mt-0.5`}>
                 {rcAdaptiveMode
                   ? `Each passage is easy or complex with a bank of ${rcBankSize} tiered questions (${questionsPerPassage} shown per sitting).`
                   : `Set a tier on each ${unitLabels.singular} with exactly ${questionsPerPassage} questions.`}{" "}
@@ -1183,7 +1201,7 @@ export default function TestBuilderPanel() {
               <button
                 type="button"
                 onClick={() => setShowBankPicker(true)}
-                className="rounded-xl border border-teal-300 bg-teal-50 px-3 py-1.5 text-sm font-semibold text-teal-900 hover:bg-teal-100 transition"
+                className={CREATE_TOOLBAR_ADD_BANK}
               >
                 Add from bank
               </button>
@@ -1209,7 +1227,7 @@ export default function TestBuilderPanel() {
                   key={`add-passage-${tier.value}`}
                   type="button"
                   onClick={() => addPassage(tier.value)}
-                  className="rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-900 hover:bg-indigo-100 transition"
+                  className={CREATE_TOOLBAR_ADD_PASSAGE}
                 >
                   + {isReadingComprehension && !isDataPassageTest(subject)
                     ? tier.shortLabel
@@ -1221,7 +1239,7 @@ export default function TestBuilderPanel() {
                 <button
                   type="button"
                   onClick={() => removePassage(passages[passages.length - 1].id)}
-                  className="rounded-xl border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+                  className={CREATE_TOOLBAR_NEUTRAL}
                 >
                   Remove last
                 </button>
@@ -1243,10 +1261,10 @@ export default function TestBuilderPanel() {
             <button
               type="button"
               onClick={() => setActiveTierFilter("all")}
-              className={`rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
+              className={`${CREATE_TOOLBAR_CHIP} ${
                 activeTierFilter === "all"
-                  ? "bg-teal-600 text-white"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  ? CREATE_TOOLBAR_CHIP_ON
+                  : CREATE_TOOLBAR_CHIP_OFF
               }`}
             >
               All {unitLabels.plural} ({passages.length})
@@ -1256,10 +1274,10 @@ export default function TestBuilderPanel() {
                 key={tier.value}
                 type="button"
                 onClick={() => setActiveTierFilter(String(tier.value))}
-                className={`rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
+                className={`${CREATE_TOOLBAR_CHIP} ${
                   activeTierFilter === String(tier.value)
-                    ? "bg-teal-600 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    ? CREATE_TOOLBAR_CHIP_ON
+                    : CREATE_TOOLBAR_CHIP_OFF
                 }`}
               >
                 {rcAdaptiveMode ? tier.shortLabel : tier.label} ({tierCounts[tier.value] || 0}{" "}
@@ -1359,8 +1377,8 @@ export default function TestBuilderPanel() {
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="font-bold text-slate-900">Question bank</h2>
-            <p className="text-sm text-slate-600 mt-0.5">
+            <h2 className={CREATE_SECTION_TITLE}>Question bank</h2>
+            <p className={`${CREATE_BODY} mt-0.5`}>
               {adaptiveEnabled
                 ? `Add at least ${sittingCount} questions per tier (${bankMinimum} total minimum).`
                 : buildUsingAi
@@ -1372,7 +1390,7 @@ export default function TestBuilderPanel() {
             <button
               type="button"
               onClick={() => setShowBankPicker(true)}
-              className="rounded-xl border border-teal-300 bg-teal-50 px-3 py-1.5 text-sm font-semibold text-teal-900 hover:bg-teal-100 transition"
+              className={CREATE_TOOLBAR_ADD_BANK}
             >
               Add from bank
             </button>
@@ -1389,7 +1407,7 @@ export default function TestBuilderPanel() {
             <button
             type="button"
             onClick={() => setShowJsonPreview((open) => !open)}
-            className="rounded-xl border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
+            className={CREATE_TOOLBAR_NEUTRAL}
           >
             {showJsonPreview ? "Hide JSON preview" : "Preview JSON"}
           </button>
@@ -1409,10 +1427,10 @@ export default function TestBuilderPanel() {
           <button
             type="button"
             onClick={() => setActiveTierFilter("all")}
-            className={`rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
+            className={`${CREATE_TOOLBAR_CHIP} ${
               activeTierFilter === "all"
-                ? "bg-teal-600 text-white"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                ? CREATE_TOOLBAR_CHIP_ON
+                : CREATE_TOOLBAR_CHIP_OFF
             }`}
           >
             All tiers ({questions.length})
@@ -1422,10 +1440,10 @@ export default function TestBuilderPanel() {
               key={tier.value}
               type="button"
               onClick={() => setActiveTierFilter(String(tier.value))}
-              className={`rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
+              className={`${CREATE_TOOLBAR_CHIP} ${
                 activeTierFilter === String(tier.value)
-                  ? "bg-teal-600 text-white"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  ? CREATE_TOOLBAR_CHIP_ON
+                  : CREATE_TOOLBAR_CHIP_OFF
               }`}
             >
               {tier.label} ({tierCounts[tier.value] || 0})
@@ -1439,7 +1457,7 @@ export default function TestBuilderPanel() {
               key={`add-${tier.value}`}
               type="button"
               onClick={() => addQuestion(tier.value)}
-              className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-sm font-semibold text-teal-900 hover:bg-teal-100 transition"
+              className={CREATE_TOOLBAR_ADD}
             >
               + Tier {tier.value} question
             </button>
@@ -1510,11 +1528,11 @@ export default function TestBuilderPanel() {
         </section>
       ) : null}
 
-      <div className="sticky bottom-4 z-10 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur px-4 py-3 shadow-lg flex flex-wrap items-center gap-3">
+      <div className={CREATE_STICKY_ACTION_BAR}>
         <button
           type="button"
           onClick={handleValidate}
-          className="rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold px-5 py-2.5 transition"
+          className={CREATE_ACTION_BUTTON_TEAL}
         >
           Validate &amp; preview publish
         </button>
@@ -1522,7 +1540,7 @@ export default function TestBuilderPanel() {
           type="button"
           onClick={handlePublish}
           disabled={publishing || generating}
-          className="rounded-xl bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-sm font-bold px-5 py-2.5 transition"
+          className={CREATE_PUBLISH_BUTTON}
         >
           {publishing ? "Publishing…" : editId ? "Save test" : "Publish test"}
         </button>
@@ -1538,7 +1556,7 @@ export default function TestBuilderPanel() {
         ) : null}
         <Link
           to="/admin/worksheets"
-          className="ml-auto text-sm font-semibold text-indigo-700 hover:text-indigo-900"
+          className={CREATE_STICKY_ACTION_LINK}
         >
           View worksheets →
         </Link>

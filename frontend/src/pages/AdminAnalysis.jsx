@@ -44,30 +44,36 @@ import {
 } from "../resultExportUtils";
 import { useAutoDismissToast } from "../useAutoDismissToast";
 import AdminTestAnalysisView from "./AdminTestAnalysisView";
+import {
+  CREATE_ACCENT_OUTLINE_BUTTON,
+  CREATE_GHOST_BUTTON_BLOCK,
+  CREATE_LINK_TEXT_BUTTON,
+  CREATE_LINK_TEXT_BUTTON_UNDERLINE,
+  CREATE_OUTLINE_BUTTON,
+  CREATE_OUTLINE_BUTTON_SHADOW,
+  RESULTS_VIEW_TAB,
+  RESULTS_VIEW_TAB_ACTIVE,
+  RESULTS_VIEW_TAB_IDLE,
+} from "../analysisTypography";
 
 const NEEDS_DISCUSSION_VISIBLE_COUNT = 6;
 
 function AnalysisViewTabs({ activeView }) {
-  const worksheetClass =
-    activeView === "worksheets"
-      ? "bg-slate-900 text-white border-slate-900"
-      : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50";
-  const testClass =
-    activeView === "tests"
-      ? "bg-slate-900 text-white border-slate-900"
-      : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50";
-
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div className="flex flex-wrap gap-2 mb-4">
       <Link
         to="/admin/analysis"
-        className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${worksheetClass}`}
+        className={`${RESULTS_VIEW_TAB} ${
+          activeView === "worksheets" ? RESULTS_VIEW_TAB_ACTIVE : RESULTS_VIEW_TAB_IDLE
+        }`}
       >
         Worksheet analysis
       </Link>
       <Link
         to="/admin/analysis?view=tests"
-        className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${testClass}`}
+        className={`${RESULTS_VIEW_TAB} ${
+          activeView === "tests" ? RESULTS_VIEW_TAB_ACTIVE : RESULTS_VIEW_TAB_IDLE
+        }`}
       >
         Test analysis
       </Link>
@@ -256,7 +262,7 @@ function GroupedNeedsDiscussionChips({
           type="button"
           onClick={() => setExpanded((value) => !value)}
           aria-expanded={expanded}
-          className="mt-4 w-full rounded-xl bg-slate-100 hover:bg-slate-200 text-sm font-semibold text-slate-800 py-2.5 transition"
+          className={`mt-4 ${CREATE_GHOST_BUTTON_BLOCK}`}
         >
           {expanded
             ? "Show less"
@@ -319,7 +325,7 @@ function FocusAreaChips({
           type="button"
           onClick={() => setExpanded((value) => !value)}
           aria-expanded={expanded}
-          className="mt-3 w-full rounded-xl bg-slate-100 hover:bg-slate-200 text-sm font-semibold text-slate-800 py-2.5 transition"
+          className={`mt-3 ${CREATE_GHOST_BUTTON_BLOCK}`}
         >
           {expanded
             ? "Show less"
@@ -389,7 +395,7 @@ function FocusPracticeQuestionCard({ question, index, total }) {
           <button
             type="button"
             onClick={() => setRevealed((v) => !v)}
-            className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 underline underline-offset-2"
+            className={CREATE_LINK_TEXT_BUTTON_UNDERLINE}
             aria-pressed={revealed}
           >
             {revealed ? "Hide" : "Show"}
@@ -442,7 +448,7 @@ function FocusExampleCard({ example, index, total }) {
           <button
             type="button"
             onClick={() => setRevealed((v) => !v)}
-            className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 underline underline-offset-2"
+            className={CREATE_LINK_TEXT_BUTTON_UNDERLINE}
             aria-pressed={revealed}
           >
             {revealed ? "Hide" : "Show"}
@@ -528,7 +534,7 @@ function PracticeNoticeBanner({
               type="button"
               onClick={onGeneratePractice}
               disabled={generatingPractice}
-              className="rounded-xl border border-indigo-200 bg-white px-4 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-50 transition disabled:opacity-50"
+              className={CREATE_ACCENT_OUTLINE_BUTTON}
             >
               {generatingPractice ? "Generating…" : "Generate AI practice worksheet"}
             </button>
@@ -538,7 +544,7 @@ function PracticeNoticeBanner({
               type="button"
               onClick={onCreateManual}
               disabled={generatingPractice}
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition disabled:opacity-50"
+              className={CREATE_OUTLINE_BUTTON}
             >
               Create practice manually
             </button>
@@ -742,7 +748,7 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
                 type="button"
                 onClick={() => setDiscussedExpanded(false)}
                 aria-expanded
-                className="mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:underline"
+                className={`mt-2 ${CREATE_LINK_TEXT_BUTTON}`}
               >
                 Hide discussed
               </button>
@@ -752,7 +758,7 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
               type="button"
               onClick={() => setDiscussedExpanded(true)}
               aria-expanded={false}
-              className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:underline"
+              className={CREATE_LINK_TEXT_BUTTON}
             >
               View discussed ({discussed.length})
             </button>
@@ -1095,7 +1101,7 @@ export default function AdminAnalysis() {
           <button
             type="button"
             onClick={scrollToAnalysisPanel}
-            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
+            className={CREATE_OUTLINE_BUTTON}
           >
             ← Back to analysis
           </button>
@@ -1107,7 +1113,7 @@ export default function AdminAnalysis() {
             <button
               type="button"
               onClick={scrollToPracticePanel}
-              className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-100 transition"
+              className={CREATE_ACCENT_OUTLINE_BUTTON}
             >
               View practice worksheet →
             </button>
@@ -1116,7 +1122,7 @@ export default function AdminAnalysis() {
             <button
               type="button"
               onClick={handleOpenManualBuilder}
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
+              className={CREATE_OUTLINE_BUTTON}
             >
               Create manually
             </button>
@@ -1163,7 +1169,7 @@ export default function AdminAnalysis() {
                   type="button"
                   onClick={() => uploadInputRef.current?.click()}
                   disabled={uploading}
-                  className="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 transition disabled:opacity-50"
+                  className={`shrink-0 inline-flex items-center justify-center gap-2 ${CREATE_OUTLINE_BUTTON_SHADOW}`}
                 >
                   <svg
                     viewBox="0 0 24 24"

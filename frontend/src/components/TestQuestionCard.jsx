@@ -1,4 +1,9 @@
 import { QuestionDifficultyStars } from "./DifficultyStars";
+import {
+  CREATE_ACCORDION_SUMMARY,
+  CREATE_ACCORDION_TITLE,
+  CREATE_CHEVRON,
+} from "../createTypography";
 import AreaCombobox from "./AreaCombobox";
 import {
   CHOICE_LABELS,
@@ -35,8 +40,8 @@ export default function TestQuestionCard({
         className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left bg-slate-50 hover:bg-slate-100 transition"
       >
         <span className="min-w-0">
-          <span className="font-semibold text-slate-900">Question {index + 1}</span>
-          <span className="block text-sm text-slate-600 truncate mt-0.5">
+          <span className={CREATE_ACCORDION_TITLE}>Question {index + 1}</span>
+          <span className={CREATE_ACCORDION_SUMMARY}>
             {question.prompt.trim() || "No prompt yet"}
             {!hideTier && tierLabel ? (
               <>
@@ -57,7 +62,7 @@ export default function TestQuestionCard({
           >
             {complete ? "Complete" : "Incomplete"}
           </span>
-          <span className="text-slate-700 font-bold text-sm">{expanded ? "▼" : "▶"}</span>
+          <span className={CREATE_CHEVRON}>{expanded ? "▼" : "▶"}</span>
         </span>
       </button>
 
