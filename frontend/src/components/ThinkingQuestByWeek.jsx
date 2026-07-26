@@ -6,6 +6,11 @@ import {
 } from "../subjectUtils";
 import { groupGiftedTrackByWeek } from "../worksheetUtils";
 import PadlockIcon from "./PadlockIcon";
+import {
+  WS_CHEVRON,
+  WS_SECTION_META,
+  WS_SECTION_TITLE,
+} from "../worksheetAdminTypography";
 
 /**
  * Thinking Quest sub-accordions: Week 1, Week 2, … each with one or more worksheets.
@@ -15,6 +20,7 @@ export default function ThinkingQuestByWeek({
   onOpenWorksheet,
   renderSideAction,
   renderWeekAction,
+  renderLeadingAction,
   giftedTrackUnlockedThroughWeek,
 }) {
   const weeks = useMemo(
@@ -71,10 +77,10 @@ export default function ThinkingQuestByWeek({
                 type="button"
                 onClick={() => toggle(week)}
                 aria-expanded={isOpen}
-                className="flex-1 flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-violet-50 transition"
+                className="flex-1 flex items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-violet-50 transition"
               >
-                <span className="min-w-0 flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2">
-                  <span className="font-bold text-violet-950 text-base inline-flex items-center gap-2">
+                <span className="min-w-0 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span className={`${WS_SECTION_TITLE} text-violet-950 inline-flex items-center gap-2`}>
                     Week {week}
                     {weekLocked ? (
                       <span
@@ -86,23 +92,23 @@ export default function ThinkingQuestByWeek({
                       </span>
                     ) : null}
                   </span>
-                <span className="font-semibold text-violet-900/90 text-sm tabular-nums">
+                <span className={`${WS_SECTION_META} text-violet-800/90`}>
                   {done}/{total} done
                   {total > 0 ? (
-                    <span className="text-violet-800/85 font-medium">
+                    <span className="text-violet-700/85 font-normal">
                       {" "}
                       · {pct}%
                     </span>
                   ) : null}
                   {avgScore ? (
-                    <span className="text-violet-900 font-semibold">
+                    <span className="text-violet-900 font-medium">
                       {" "}
                       · avg {avgScore.avgPct}%
                     </span>
                   ) : null}
                 </span>
               </span>
-              <span className="text-violet-950 text-sm font-bold shrink-0 tabular-nums">
+              <span className={`${WS_CHEVRON} text-violet-900 shrink-0`}>
                 {isOpen ? "▼" : "▶"}
               </span>
             </button>
@@ -113,11 +119,16 @@ export default function ThinkingQuestByWeek({
             ) : null}
             </div>
             {isOpen ? (
-              <div className="p-3 flex flex-col gap-4 bg-violet-50/20">
+              <div
+                className={`flex flex-col gap-1.5 bg-violet-50/20 ${
+                  renderLeadingAction ? "py-2 sm:py-2.5" : "p-2 sm:p-2.5"
+                }`}
+              >
                 <WorksheetsBySubject
                   worksheets={items}
                   onOpenWorksheet={onOpenWorksheet}
                   renderSideAction={renderSideAction}
+                  renderLeadingAction={renderLeadingAction}
                   ungrouped
                 />
               </div>

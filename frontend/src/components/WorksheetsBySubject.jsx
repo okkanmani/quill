@@ -19,6 +19,16 @@ import {
   sortWorksheetItems,
   WORKSHEET_SORT_OPTIONS,
 } from "../sectionSortUtils";
+import {
+  WS_ADMIN_WORKSHEET_INSET,
+  WS_ADMIN_WORKSHEET_ROW,
+  WS_CARD_DETAIL,
+  WS_CARD_DETAIL_LOOSE,
+  WS_CARD_TITLE,
+  WS_CARD_TITLE_LOOSE,
+  WS_SECTION_META,
+  WS_SECTION_TITLE,
+} from "../worksheetAdminTypography";
 
 function worksheetLockState(ws) {
   if (isWorksheetDone(ws)) return null;
@@ -89,7 +99,7 @@ function WorksheetRow({
   return (
     <div
       className={`flex flex-row items-start min-w-0 ${
-        compact ? "gap-1" : "gap-2 sm:gap-3"
+        compact ? WS_ADMIN_WORKSHEET_ROW : "gap-2 sm:gap-3"
       }`}
     >
       {renderLeadingAction ? (
@@ -117,7 +127,13 @@ function WorksheetRow({
           } ${accessLocked || timedBlocked ? "cursor-not-allowed" : ""}`}
         >
           <div className="flex items-start justify-between gap-3">
-            <p className="text-slate-900 font-semibold text-lg">{ws.title}</p>
+            <p
+              className={
+                compact ? WS_CARD_TITLE : WS_CARD_TITLE_LOOSE
+              }
+            >
+              {ws.title}
+            </p>
             {isWorksheetDone(ws) ? (
               <span className="shrink-0 inline-flex items-center gap-2 flex-wrap justify-end">
                 {ws.last_status === "pending" ? (
@@ -129,7 +145,13 @@ function WorksheetRow({
                 typeof ws.last_total === "number" &&
                 ws.last_total > 0 &&
                 ws.last_status !== "pending" ? (
-                  <span className="inline-flex items-baseline gap-x-4 text-sm font-bold text-emerald-950 tabular-nums">
+                  <span
+                    className={
+                      compact
+                        ? "inline-flex items-baseline gap-x-3 text-xs font-semibold text-emerald-950 tabular-nums"
+                        : "inline-flex items-baseline gap-x-4 text-sm font-bold text-emerald-950 tabular-nums"
+                    }
+                  >
                     <span className="shrink-0">Score:</span>
                     <span>
                       {ws.last_score}/{ws.last_total}
@@ -171,7 +193,7 @@ function WorksheetRow({
                 Completed in {formatDurationSeconds(ws.last_duration_seconds)}
               </span>
             ) : null}
-            <span className="text-indigo-500 text-sm">
+            <span className={compact ? WS_CARD_DETAIL : WS_CARD_DETAIL_LOOSE}>
               {ws.question_count} questions
             </span>
             {ws.learn_subject ? (
@@ -256,7 +278,11 @@ export default function WorksheetsBySubject({
           showSort ? ungroupedSort : SECTION_SORT_STATUS,
         );
     return (
-      <div className={`flex flex-col ${renderLeadingAction ? "gap-1.5" : "gap-4"}`}>
+      <div
+        className={`flex flex-col ${
+          renderLeadingAction ? `gap-1.5 ${WS_ADMIN_WORKSHEET_INSET}` : "gap-4"
+        }`}
+      >
         {showSort ? (
           <div className="flex items-center justify-end gap-2 px-1">
             <label
@@ -309,34 +335,40 @@ export default function WorksheetsBySubject({
               type="button"
               onClick={() => toggle(subjectKey)}
               aria-expanded={isOpen}
-              className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left bg-slate-200/90 hover:bg-slate-200 border-b border-slate-300/80 transition"
+              className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left bg-slate-200/90 hover:bg-slate-200 border-b border-slate-300/80 transition"
             >
-              <span className="min-w-0 flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2">
-                <span className="font-bold text-slate-950 text-base">
+              <span className="min-w-0 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                <span className={WS_SECTION_TITLE}>
                   {formatSubjectLabel(subjectKey)}
                 </span>
-                <span className="font-semibold text-slate-800/90 text-sm tabular-nums">
+                <span className={WS_SECTION_META}>
                   {done}/{total} done
                   {total > 0 ? (
-                    <span className="text-slate-700/85 font-medium">
+                    <span className="text-slate-500 font-normal">
                       {" "}
                       · {pct}%
                     </span>
                   ) : null}
                   {avgScore ? (
-                    <span className="text-slate-800 font-semibold">
+                    <span className="text-slate-600 font-medium">
                       {" "}
                       · avg {avgScore.avgPct}%
                     </span>
                   ) : null}
                 </span>
               </span>
-              <span className="text-slate-900 text-sm font-bold shrink-0 tabular-nums">
+              <span className={`${WS_CHEVRON} shrink-0`}>
                 {isOpen ? "▼" : "▶"}
               </span>
             </button>
             {isOpen ? (
-              <div className="p-3 flex flex-col gap-4 bg-slate-50/40">
+              <div
+                className={`flex flex-col bg-slate-50/40 ${
+                  renderLeadingAction
+                    ? `gap-1.5 py-2 ${WS_ADMIN_WORKSHEET_INSET}`
+                    : "gap-4 p-3"
+                }`}
+              >
                 <div className="flex items-center justify-end gap-2 px-1">
                   <label
                     htmlFor={`worksheets-sort-${subjectKey}`}

@@ -31,6 +31,7 @@ import StatusToast from "../components/StatusToast";
 import AdminWorksheetCollectionTree from "../components/AdminWorksheetCollectionTree";
 import { unassignedWorksheets, descendantSectionIds } from "../worksheetCollectionTree";
 import { useAutoDismissToast, TOAST_AUTO_DISMISS_MS } from "../useAutoDismissToast";
+import { WS_EYEBROW, WS_PAGE_HEADING, WS_BODY, WS_CARD_TITLE } from "../worksheetAdminTypography";
 
 const TOAST_UNDO_MS = 8000;
 
@@ -50,6 +51,29 @@ function collectSectionDeleteSnapshot(rootIds, sections, worksheets) {
       section_id: ws.admin_section_id,
     }));
   return { sections: sectionRows, assignments };
+}
+
+function sectionIdsRemovedByDelete(rootIds, sections) {
+  const removeIds = new Set();
+  for (const id of rootIds) {
+    removeIds.add(id);
+    for (const descId of descendantSectionIds(sections, id)) {
+      removeIds.add(descId);
+    }
+  }
+  return removeIds;
+}
+
+function localStateAfterSectionDeletes(rootIds, sections, worksheets) {
+  const removeIds = sectionIdsRemovedByDelete(rootIds, sections);
+  return {
+    sections: sections.filter((s) => !removeIds.has(s.id)),
+    worksheets: worksheets.map((ws) =>
+      ws.admin_section_id && removeIds.has(ws.admin_section_id)
+        ? { ...ws, admin_section_id: null }
+        : ws,
+    ),
+  };
 }
 
 async function snapshotWorksheetsForRestore(ids, worksheets) {
@@ -109,7 +133,7 @@ export default function AdminWorksheets() {
     try {
       await toast.onUndo();
       setToast(null);
-      loadWorksheets({ preserveError: true });
+      await refreshWorksheetsQuietly();
       showToast("Restored.");
     } catch (err) {
       setError(err.message || "Could not undo.");
@@ -125,13 +149,25 @@ export default function AdminWorksheets() {
     try {
       await sectionDeleteAck.onUndo();
       setSectionDeleteAck(null);
-      loadWorksheets({ preserveError: true });
+      await refreshWorksheetsQuietly();
       showToast("Section restored.");
     } catch (err) {
       setError(err.message || "Could not undo.");
     } finally {
       setUndoing(false);
     }
+  }
+
+  function refreshWorksheetsQuietly() {
+    return Promise.all([getWorksheets(), getAdminWorksheetSections()])
+      .then(([data, sectionPayload]) => {
+        setWorksheets(data);
+        setWorksheetSections(sectionPayload);
+      })
+      .catch(() => {
+        setError("Could not refresh worksheets.");
+        throw new Error("Could not refresh worksheets.");
+      });
   }
 
   function loadWorksheets({ preserveError = false } = {}) {
@@ -310,9 +346,19 @@ export default function AdminWorksheets() {
     setAddCollectionSaving(true);
     setError("");
     try {
-      await createAdminWorksheetSection({ title, parentId });
+      const created = await createAdminWorksheetSection({ title, parentId });
+      const parent_id = created.parent_id ?? parentId ?? null;
+      const sectionRow = {
+        ...created,
+        parent_id,
+        is_top_level: parent_id == null || String(parent_id).trim() === "",
+      };
+      setWorksheetSections((prev) => ({
+        ...prev,
+        sections: [...prev.sections, sectionRow],
+      }));
       setAddCollection(null);
-      loadWorksheets({ preserveError: true });
+      showToast(`Added section “${title}”.`);
     } catch (err) {
       setError(err.message || "Could not add section.");
     } finally {
@@ -349,13 +395,19 @@ export default function AdminWorksheets() {
     );
     try {
       await deleteWorksheetCollection(section.id);
+      const next = localStateAfterSectionDeletes(
+        [section.id],
+        worksheetSections.sections,
+        worksheets,
+      );
+      setWorksheetSections({ sections: next.sections });
+      setWorksheets(next.worksheets);
       setSectionDeleteAck({
         title: section.title,
         onUndo: async () => {
           await restoreWorksheetSections(sectionSnapshot);
         },
       });
-      loadWorksheets({ preserveError: true });
     } catch (err) {
       setError(err.message || "Could not delete section.");
     }
@@ -418,10 +470,17 @@ export default function AdminWorksheets() {
       }
 
       if (removed.length > 0) {
+        const next = localStateAfterSectionDeletes(
+          removed,
+          worksheetSections.sections,
+          worksheets,
+        );
+        setWorksheetSections({ sections: next.sections });
+        setWorksheets(next.worksheets);
         setSelectedSectionIds((prev) => {
-          const next = new Set(prev);
-          for (const id of removed) next.delete(id);
-          return next;
+          const nextSel = new Set(prev);
+          for (const id of removed) nextSel.delete(id);
+          return nextSel;
         });
         showToast(
           removed.length === 1
@@ -433,7 +492,6 @@ export default function AdminWorksheets() {
             },
           },
         );
-        loadWorksheets({ preserveError: true });
       }
 
       if (failed.length > 0) {
@@ -452,6 +510,8 @@ export default function AdminWorksheets() {
         : [];
     if (ids.length === 0) return;
 
+    const parentId = payload.parentId ?? null;
+
     setMoveCollectionSaving(true);
     setError("");
     const moved = [];
@@ -460,7 +520,7 @@ export default function AdminWorksheets() {
     try {
       for (const id of ids) {
         try {
-          await moveWorksheetCollection(id, payload.parentId ?? null);
+          await moveWorksheetCollection(id, parentId);
           moved.push(id);
         } catch {
           const row = worksheetSections.sections.find((s) => s.id === id);
@@ -469,11 +529,26 @@ export default function AdminWorksheets() {
       }
 
       if (moved.length > 0) {
+        const movedSet = new Set(moved);
         setSelectedSectionIds((prev) => {
           const next = new Set(prev);
           for (const id of moved) next.delete(id);
           return next;
         });
+        setWorksheetSections((prev) => ({
+          sections: prev.sections.map((s) =>
+            movedSet.has(s.id) ? { ...s, parent_id: parentId } : s,
+          ),
+        }));
+        if (parentId === null) {
+          setWorksheets((prev) =>
+            prev.map((ws) =>
+              ws.admin_section_id && movedSet.has(ws.admin_section_id)
+                ? { ...ws, admin_section_id: null }
+                : ws,
+            ),
+          );
+        }
         if (ids.length === 1) {
           const row = worksheetSections.sections.find((s) => s.id === ids[0]);
           showToast(`Moved section “${row?.title ?? "section"}”.`);
@@ -482,7 +557,6 @@ export default function AdminWorksheets() {
         }
         setMoveCollectionTarget(null);
         setBulkSectionMoveOpen(false);
-        loadWorksheets({ preserveError: true });
       }
 
       if (failed.length > 0) {
@@ -525,8 +599,11 @@ export default function AdminWorksheets() {
     try {
       for (const id of ids) {
         try {
-          await assignWorksheetSection(id, payload);
-          moved.push(id);
+          const result = await assignWorksheetSection(id, payload);
+          moved.push({
+            id,
+            sectionId: result.admin_section_id ?? null,
+          });
         } catch {
           const ws = worksheets.find((w) => w.id === id);
           failed.push(ws?.title || id);
@@ -534,9 +611,17 @@ export default function AdminWorksheets() {
       }
 
       if (moved.length > 0) {
+        const byId = new Map(moved.map((row) => [row.id, row.sectionId]));
+        setWorksheets((prev) =>
+          prev.map((ws) =>
+            byId.has(ws.id)
+              ? { ...ws, admin_section_id: byId.get(ws.id) }
+              : ws,
+          ),
+        );
         setSelectedIds((prev) => {
           const next = new Set(prev);
-          for (const id of moved) next.delete(id);
+          for (const { id } of moved) next.delete(id);
           return next;
         });
         if (ids.length === 1) {
@@ -547,7 +632,6 @@ export default function AdminWorksheets() {
         }
         setMoveTarget(null);
         setBulkMoveOpen(false);
-        loadWorksheets({ preserveError: true });
       }
 
       if (failed.length > 0) {
@@ -577,7 +661,7 @@ export default function AdminWorksheets() {
   function renderWorksheetLeadingAction(ws) {
     return (
       <label
-        className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition"
+        className="inline-flex items-center justify-center w-7 h-7 rounded-lg cursor-pointer hover:bg-slate-100/80 transition shrink-0"
         title={`Select ${ws.title}`}
       >
         <input
@@ -624,7 +708,7 @@ export default function AdminWorksheets() {
       onLogout={handleLogout}
     >
       <div className="max-w-3xl">
-        <h1 className="text-2xl font-bold text-slate-950 mb-4">Worksheets</h1>
+        <h1 className={`${WS_PAGE_HEADING} mb-4`}>Worksheets</h1>
 
         {!loading && !error ? (
           <div className="mb-6">
@@ -645,14 +729,14 @@ export default function AdminWorksheets() {
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && !error && worksheets.length === 0 && !worksheetSections.sections?.length && (
-          <p className="text-slate-600">No worksheets.</p>
+          <p className={WS_BODY}>No worksheets.</p>
         )}
 
         {!loading && !error && (worksheets.length > 0 || worksheetSections.sections?.length > 0) && (
           <>
             {anySelected ? (
               <div className="sticky top-0 z-30 -mx-1 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-3 shadow-md">
-                <span className="text-sm font-semibold text-slate-800 tabular-nums">
+                <span className={`${WS_CARD_TITLE} text-slate-800 tabular-nums`}>
                   {selectedCount > 0 && selectedSectionCount > 0
                     ? `${selectedCount} worksheet${selectedCount === 1 ? "" : "s"}, ${selectedSectionCount} section${selectedSectionCount === 1 ? "" : "s"}`
                     : selectedCount > 0
@@ -749,9 +833,7 @@ export default function AdminWorksheets() {
             {worksheetsNotInCollections.length > 0 ? (
               <div className="mt-2">
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
-                    Unassigned
-                  </h2>
+                  <h2 className={WS_EYEBROW}>Unassigned</h2>
                   <OrganizeActionButton
                     label={
                       organizing
@@ -763,7 +845,7 @@ export default function AdminWorksheets() {
                   />
                 </div>
                 {unassignedThinkingQuest.length > 0 ? (
-                  <div className="mb-4 rounded-2xl border border-slate-300 bg-white shadow-sm overflow-hidden p-2 sm:p-2.5 bg-slate-50/40">
+                  <div className="mb-4 rounded-2xl border border-slate-300 bg-white shadow-sm overflow-hidden py-2 sm:py-2.5 bg-slate-50/40">
                     <ThinkingQuestByWeek
                       worksheets={unassignedThinkingQuest}
                       onOpenWorksheet={(id) => navigate(`/student/worksheet/${id}`)}

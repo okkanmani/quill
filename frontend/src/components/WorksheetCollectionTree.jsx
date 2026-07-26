@@ -18,6 +18,14 @@ import {
   sectionCanHoldWorksheets,
   worksheetsInSection,
 } from "../worksheetCollectionTree";
+import {
+  WS_CHEVRON,
+  WS_SECTION_META,
+  WS_SECTION_TITLE,
+  WS_BODY,
+  WS_BODY_MUTED,
+  WS_ADMIN_WORKSHEET_INSET,
+} from "../worksheetAdminTypography";
 
 function collectionDeletable(node) {
   if (!isRootSection(node)) return true;
@@ -36,7 +44,7 @@ function collectionDisplayTitle(node) {
 function ExpandChevron({ open, className = "" }) {
   return (
     <span
-      className={`text-slate-800 text-sm font-bold shrink-0 tabular-nums ${className}`}
+      className={`${WS_CHEVRON} shrink-0 ${className}`}
       aria-hidden
     >
       {open ? "▼" : "▶"}
@@ -163,7 +171,7 @@ function CollectionRowHeader({
   open,
   onToggle,
   adminInlineActions = null,
-  titleClassName = "text-base",
+  titleClassName = WS_SECTION_TITLE,
   disableHoverHighlight = false,
   smallChevron = false,
 }) {
@@ -182,12 +190,12 @@ function CollectionRowHeader({
         aria-expanded={open}
         className={titleBtnClass}
       >
-        <span className={`font-bold text-slate-950 truncate ${titleClassName}`}>
+        <span className={`truncate ${titleClassName}`}>
           {displayTitle}
         </span>
         <span className="flex-1 min-w-[0.75rem]" aria-hidden />
         {meta ? (
-          <span className="text-xs font-semibold text-slate-700 shrink-0 tabular-nums whitespace-nowrap">
+          <span className={`${WS_SECTION_META} shrink-0 whitespace-nowrap`}>
             {meta}
           </span>
         ) : null}
@@ -218,10 +226,19 @@ function nestedCollectionNestClass(depth) {
   return "pl-0 sm:pl-0.5";
 }
 
-function nestedExpandedBodyClass(depth) {
-  return depth <= 1
-    ? "flex flex-col gap-2 pb-0.5 pt-0 pl-0 sm:pl-0.5"
+function nestedExpandedBodyClass(adminCompact) {
+  return adminCompact
+    ? `flex flex-col gap-2 pb-0.5 pt-0 ${WS_ADMIN_WORKSHEET_INSET}`
     : "flex flex-col gap-2 pb-0.5 pt-0 pl-0";
+}
+
+/** Top-level collections (Practice, Timed, …): extra inset from right border. */
+function rootExpandedBodyClass(adminCompact) {
+  const rightPad = "pr-4 sm:pr-5";
+  if (adminCompact) {
+    return `py-2 flex flex-col gap-2 bg-slate-50/40 ${WS_ADMIN_WORKSHEET_INSET} ${rightPad}`;
+  }
+  return `py-2 pl-1.5 flex flex-col gap-2 bg-slate-50/40 ${rightPad}`;
 }
 
 function CollectionNode({
@@ -240,9 +257,9 @@ function CollectionNode({
   onToggleSectionSelected = null,
   sectionSelectionDisabled = false,
 }) {
-  const [open, setOpen] = useState(false);
-  const [sortMode, setSortMode] = useState(SECTION_SORT_STATUS);
   const isRoot = isRootSection(node);
+  const [open, setOpen] = useState(isRoot);
+  const [sortMode, setSortMode] = useState(SECTION_SORT_STATUS);
   const items = sectionCanHoldWorksheets(node)
     ? worksheetsInSection(worksheets, node.id)
     : [];
@@ -263,7 +280,7 @@ function CollectionNode({
 
   const sectionCheckbox = sectionSelectable ? (
     <label
-      className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition shrink-0 mt-0.5"
+      className="inline-flex items-center justify-center w-7 h-7 rounded-lg cursor-pointer hover:bg-slate-100/80 transition shrink-0 mt-0.5"
       title={`Select section ${displayTitle}`}
       onClick={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
@@ -280,7 +297,9 @@ function CollectionNode({
   ) : null;
 
   const shellClass = isNested
-    ? "overflow-hidden"
+    ? adminMode
+      ? "min-w-0"
+      : "overflow-hidden"
     : "rounded-2xl border border-slate-300 bg-white shadow-sm overflow-hidden";
 
   const toggle = () => setOpen((v) => !v);
@@ -315,10 +334,14 @@ function CollectionNode({
     />
   ) : null;
 
+  const adminCompactWorksheets = adminMode && Boolean(renderLeadingAction);
+
   const expandedBody = open ? (
     <div
       className={
-        isNested ? nestedExpandedBodyClass(depth) : "px-1.5 py-2 sm:px-2 flex flex-col gap-2 bg-slate-50/40"
+        isNested
+          ? nestedExpandedBodyClass(adminCompactWorksheets)
+          : rootExpandedBodyClass(adminCompactWorksheets)
       }
     >
       {adminMode && !isRoot && items.length > 0 ? (
@@ -389,7 +412,7 @@ function CollectionNode({
 
       {adminMode && emptyRoot ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-5 text-center">
-          <p className="text-sm text-slate-600 m-0">
+          <p className={`${WS_BODY} m-0`}>
             Add a section (e.g. Math) using the + button beside this section.
           </p>
         </div>
@@ -397,7 +420,7 @@ function CollectionNode({
 
       {adminMode && emptyNested ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-4 text-center">
-          <p className="text-sm text-slate-600 m-0">
+          <p className={`${WS_BODY} m-0`}>
             No worksheets here yet. Use <strong>Move</strong> from Unassigned,
             or add a subsection with the <strong>+</strong> on this section.
           </p>
@@ -405,7 +428,7 @@ function CollectionNode({
       ) : null}
 
       {!adminMode && emptyNested && childCount === 0 ? (
-        <p className="text-sm text-slate-500 text-center py-2">No worksheets yet.</p>
+        <p className={`${WS_BODY_MUTED} text-center py-2`}>No worksheets yet.</p>
       ) : null}
     </div>
   ) : null;
@@ -417,14 +440,14 @@ function CollectionNode({
       <div className="flex items-start gap-2 min-w-0 w-full">
         <div className={`flex-1 min-w-0 ${shellClass}`}>
           <div
-            className={`px-4 py-3 border-b ${rootCollectionStyle(node)}`}
+            className={`pl-4 pr-5 sm:pr-6 py-3 border-b ${rootCollectionStyle(node)}`}
           >
             <CollectionRowHeader
               displayTitle={displayTitle}
               meta={rootMeta}
               open={open}
               onToggle={toggle}
-              titleClassName="text-lg"
+              titleClassName={WS_SECTION_TITLE}
               disableHoverHighlight
             />
           </div>
