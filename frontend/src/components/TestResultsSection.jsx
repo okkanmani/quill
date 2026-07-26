@@ -14,28 +14,54 @@ import {
   RESULTS_BODY_MUTED,
 } from "../resultsTypography";
 import { HUB_TOP_BODY } from "../hubSectionStyles";
+import {
+  ROW_ACTION_BUTTON_CLASS,
+  ROW_ACTION_ICON_CLASS,
+} from "./rowActionButtonStyles";
 import { formatSubjectLabel } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
 import { formatWeightedTestScore } from "../testUtils";
 import {
   SECTION_SORT_OPTIONS,
   SECTION_SORT_TIME,
-  sortPracticeItems,
+  sortTestResultItems,
 } from "../sectionSortUtils";
 
-function TestAnalyseAction({ attemptId, analyzed, compact = false }) {
-  const className = compact
-    ? "inline-flex rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-900 transition"
-    : "inline-flex rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-900 transition";
+function AnalyseChartIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={ROW_ACTION_ICON_CLASS}
+      aria-hidden="true"
+    >
+      <path d="M4 20V10" />
+      <path d="M10 20V4" />
+      <path d="M16 20v-6" />
+      <path d="M22 20H2" />
+    </svg>
+  );
+}
+
+function TestAnalyseIconLink({ attemptId, analyzed, title }) {
+  const className = `${ROW_ACTION_BUTTON_CLASS} hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700`;
+  const label = analyzed
+    ? `Already analyzed: ${title}`
+    : `Analyse test: ${title}`;
 
   if (analyzed) {
     return (
       <span
         className={`${className} opacity-40 cursor-not-allowed`}
         title="Already analyzed"
+        aria-label={label}
         aria-disabled="true"
       >
-        Analyse
+        <AnalyseChartIcon />
       </span>
     );
   }
@@ -43,10 +69,12 @@ function TestAnalyseAction({ attemptId, analyzed, compact = false }) {
   return (
     <Link
       to={`/admin/analysis?view=tests&attempt=${attemptId}`}
-      className={`${className} hover:bg-indigo-100`}
+      className={className}
+      title="Analyse test"
+      aria-label={label}
       onClick={(event) => event.stopPropagation()}
     >
-      {compact ? "Analyse" : "Analyse test"}
+      <AnalyseChartIcon />
     </Link>
   );
 }
@@ -63,7 +91,7 @@ export default function TestResultsSection({
   const [sortMode, setSortMode] = useState(SECTION_SORT_TIME);
 
   const sortedItems = useMemo(
-    () => sortPracticeItems(results, sortMode),
+    () => sortTestResultItems(results, sortMode),
     [results, sortMode],
   );
 
@@ -85,87 +113,99 @@ export default function TestResultsSection({
       {sortedItems.map((item) => {
         const expanded = openIds.has(item.id);
         const analyzed = Boolean(item.analyzed_at);
+        const showAnalyse = item.test_adaptive !== false;
         return (
-          <div key={item.id} className={RESULTS_ITEM_SHELL}>
-            <button
-              type="button"
-              onClick={() => toggleOpen(item.id)}
-              aria-expanded={expanded}
-              className={RESULTS_ITEM_HEADER}
-            >
-              <div className="min-w-0 flex-1">
-                <p className={RESULTS_ROW_TITLE}>{item.title}</p>
-                <p className={RESULTS_SUBTITLE_TEAL}>
-                  {formatSubjectLabel(item.subject)} · Test
-                </p>
-                {item.completed_at ? (
-                  <p className={`${RESULTS_ROW_DETAIL} mt-1`}>
-                    {new Date(item.completed_at).toLocaleString()}
+          <div
+            key={item.id}
+            className="flex flex-col sm:flex-row gap-2 sm:items-stretch sm:gap-1.5"
+          >
+            <div className={`min-w-0 flex-1 ${RESULTS_ITEM_SHELL}`}>
+              <button
+                type="button"
+                onClick={() => toggleOpen(item.id)}
+                aria-expanded={expanded}
+                className={RESULTS_ITEM_HEADER}
+              >
+                <div className="min-w-0 flex-1">
+                  <p className={RESULTS_ROW_TITLE}>{item.title}</p>
+                  <p className={RESULTS_SUBTITLE_TEAL}>
+                    {formatSubjectLabel(item.subject)} · Test
                   </p>
-                ) : null}
-                {analyzed ? (
-                  <p className={RESULTS_STATUS_OK}>Analyzed</p>
-                ) : null}
-              </div>
-              <div className="shrink-0 text-right flex flex-col items-end gap-1.5">
-                <span className={`${RESULTS_SCORE_BADGE} px-2.5 bg-teal-100 text-teal-900 border border-teal-200 font-bold`}>
-                  {formatWeightedTestScore(item.weighted_score, item.max_weighted_score)}
-                </span>
-                {typeof item.correct_count === "number" ? (
-                  <p className={`${RESULTS_ROW_DETAIL} tabular-nums`}>
-                    {item.correct_count}/{item.total_count} correct
-                  </p>
-                ) : null}
-                {item.duration_seconds != null ? (
-                  <p className={`${RESULTS_ROW_DETAIL} tabular-nums`}>
-                    {formatDurationSeconds(item.duration_seconds)}
-                  </p>
-                ) : null}
-                {item.test_adaptive !== false ? (
-                  <TestAnalyseAction
-                    attemptId={item.id}
-                    analyzed={analyzed}
-                    compact
-                  />
-                ) : null}
-              </div>
-            </button>
-            {expanded ? (
-              <div className="border-t border-slate-100 px-4 py-3 bg-slate-50/50 text-sm space-y-3">
-                {(item.answers || []).map((a, i) => (
-                  <div
-                    key={a.question_id || i}
-                    className={`rounded-xl border p-3 ${
-                      a.correct
-                        ? "border-green-200 bg-green-50/50"
-                        : "border-red-200 bg-red-50/50"
-                    }`}
+                  {item.completed_at ? (
+                    <p className={`${RESULTS_ROW_DETAIL} mt-1`}>
+                      {new Date(item.completed_at).toLocaleString()}
+                    </p>
+                  ) : null}
+                  {analyzed ? (
+                    <p className={RESULTS_STATUS_OK}>Analyzed</p>
+                  ) : null}
+                </div>
+                <div className="shrink-0 text-right flex flex-col items-end gap-1.5">
+                  <span
+                    className={`${RESULTS_SCORE_BADGE} px-2.5 bg-teal-100 text-teal-900 border border-teal-200 font-bold`}
                   >
-                    <p className="text-sm font-semibold text-slate-900">
-                      {a.prompt || "Question"}
+                    {formatWeightedTestScore(
+                      item.weighted_score,
+                      item.max_weighted_score,
+                    )}
+                  </span>
+                  {typeof item.correct_count === "number" ? (
+                    <p className={`${RESULTS_ROW_DETAIL} tabular-nums`}>
+                      {item.correct_count}/{item.total_count} correct
                     </p>
-                    <p className={`mt-1 ${RESULTS_ANSWER_BODY}`}>
-                      Answer: {a.given || "—"}
-                      {!a.correct && a.expected ? (
-                        <span className="block text-emerald-800 mt-0.5">
-                          Correct: {a.expected}
-                        </span>
+                  ) : null}
+                  {item.duration_seconds != null ? (
+                    <p className={`${RESULTS_ROW_DETAIL} tabular-nums`}>
+                      {formatDurationSeconds(item.duration_seconds)}
+                    </p>
+                  ) : null}
+                </div>
+              </button>
+              {expanded ? (
+                <div className="border-t border-slate-100 px-4 py-3 bg-slate-50/50 text-sm space-y-3">
+                  {(item.answers || []).map((a, i) => (
+                    <div
+                      key={a.question_id || i}
+                      className={`rounded-xl border p-3 ${
+                        a.correct
+                          ? "border-green-200 bg-green-50/50"
+                          : "border-red-200 bg-red-50/50"
+                      }`}
+                    >
+                      <p className="text-sm font-semibold text-slate-900">
+                        {a.prompt || "Question"}
+                      </p>
+                      <p className={`mt-1 ${RESULTS_ANSWER_BODY}`}>
+                        Answer: {a.given || "—"}
+                        {!a.correct && a.expected ? (
+                          <span className="block text-emerald-800 mt-0.5">
+                            Correct: {a.expected}
+                          </span>
+                        ) : null}
+                      </p>
+                      {a.tier ? (
+                        <p className={`${RESULTS_ROW_DETAIL} mt-1`}>
+                          Tier {a.tier}
+                        </p>
                       ) : null}
+                    </div>
+                  ))}
+                  {item.review_id ? (
+                    <p className="text-xs text-amber-800 font-medium">
+                      Review session #{item.review_id}
+                      {item.review_completed ? " — completed" : " — pending"}
                     </p>
-                    {a.tier ? (
-                      <p className={`${RESULTS_ROW_DETAIL} mt-1`}>Tier {a.tier}</p>
-                    ) : null}
-                  </div>
-                ))}
-                {item.review_id ? (
-                  <p className="text-xs text-amber-800 font-medium">
-                    Review session #{item.review_id}
-                    {item.review_completed ? " — completed" : " — pending"}
-                  </p>
-                ) : null}
-                {item.test_adaptive !== false ? (
-                  <TestAnalyseAction attemptId={item.id} analyzed={analyzed} />
-                ) : null}
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+            {showAnalyse ? (
+              <div className="flex shrink-0 self-start sm:w-7 pt-3">
+                <TestAnalyseIconLink
+                  attemptId={item.id}
+                  analyzed={analyzed}
+                  title={item.title || "Test"}
+                />
               </div>
             ) : null}
           </div>

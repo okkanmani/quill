@@ -85,6 +85,42 @@ export function sortPracticeItems(items, mode = SECTION_SORT_TIME) {
   });
 }
 
+function testResultGradePercent(item) {
+  if (
+    typeof item?.weighted_score === "number" &&
+    typeof item?.max_weighted_score === "number" &&
+    item.max_weighted_score > 0
+  ) {
+    return (item.weighted_score / item.max_weighted_score) * 100;
+  }
+  if (
+    typeof item?.correct_count === "number" &&
+    typeof item?.total_count === "number" &&
+    item.total_count > 0
+  ) {
+    return (item.correct_count / item.total_count) * 100;
+  }
+  return null;
+}
+
+/** Completed adaptive tests on admin Results → Tests. */
+export function sortTestResultItems(items, mode = SECTION_SORT_TIME) {
+  return [...(items || [])].sort((a, b) => {
+    if (mode === SECTION_SORT_GRADE_ASC || mode === SECTION_SORT_GRADE_DESC) {
+      const missing = mode === SECTION_SORT_GRADE_ASC ? Infinity : -Infinity;
+      const va = testResultGradePercent(a) ?? missing;
+      const vb = testResultGradePercent(b) ?? missing;
+      if (va !== vb) {
+        return mode === SECTION_SORT_GRADE_ASC ? va - vb : vb - va;
+      }
+    }
+
+    const timeDiff = (b.completed_at || "").localeCompare(a.completed_at || "");
+    if (timeDiff !== 0) return timeDiff;
+    return String(b.id || "").localeCompare(String(a.id || ""));
+  });
+}
+
 export function worksheetGradePercent(ws) {
   if (
     typeof ws?.last_score === "number" &&
