@@ -53,10 +53,10 @@ def ensure_worksheet_section_schema(conn: sqlite3.Connection) -> None:
 
 DEFAULT_ROOT_COLLECTIONS: tuple[tuple[str, str, int], ...] = (
     ("Practice", "practice", 0),
-    ("Timed", "timed", 1),
-    ("Math Enrichment", "enrichment", 2),
-    ("Thinking Quest", "gifted", 3),
-    ("Tests", "tests", 4),
+    ("Tests", "tests", 1),
+    ("Timed", "timed", 2),
+    ("Math Enrichment", "enrichment", 3),
+    ("Thinking Quest", "gifted", 4),
 )
 
 
@@ -77,6 +77,16 @@ def ensure_default_root_collections(conn: sqlite3.Connection, admin_id: int) -> 
             VALUES (?, ?, ?, ?, ?, ?, NULL)
             """,
             (section_id, admin_id, mode_key, title, sort_order, created_at),
+        )
+    for _title, mode_key, sort_order in DEFAULT_ROOT_COLLECTIONS:
+        section_id = f"collection-{mode_key}"
+        conn.execute(
+            """
+            UPDATE admin_worksheet_sections
+            SET sort_order = ?
+            WHERE admin_id = ? AND id = ?
+            """,
+            (sort_order, admin_id, section_id),
         )
 
 

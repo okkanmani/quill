@@ -144,7 +144,6 @@ export function buildPracticeResultMap(practiceRecords) {
   return map;
 }
 
-const MAX_EXAMPLES_PER_AREA = 3;
 
 function exampleKey(example) {
   const qid = example?.question_id;
@@ -192,11 +191,10 @@ function addWrongExample(entry, question, result) {
     entry.wrongCount += 1;
   }
 
-  const key = exampleKey(example);
-  if (entry.exampleKeys.has(key)) return;
-  if (entry.examples.length >= MAX_EXAMPLES_PER_AREA) return;
+  const dedupeKey = exampleKey(example);
+  if (entry.exampleKeys.has(dedupeKey)) return;
 
-  entry.exampleKeys.add(key);
+  entry.exampleKeys.add(dedupeKey);
   entry.examples.push(example);
 }
 
@@ -328,7 +326,7 @@ export function sortFocusAreasByUrgency(focusAreas) {
 
 /**
  * Per subject: focus areas from uploaded per-worksheet evaluations (`focus_evaluation`),
- * each with up to 3 sample incorrect questions when available.
+ * each with sample incorrect questions when available (UI shows 3 at a time).
  */
 export function focusAreasAnalysis(
   results,

@@ -19,7 +19,7 @@ function isSpecialTrack(ws) {
 }
 
 /**
- * Practice, Timed, Math Enrichment, Thinking Quest, and Tests.
+ * Practice, Tests, Timed, Math Enrichment, Thinking Quest.
  */
 export default function WorksheetsByMode({
   worksheets,
@@ -69,6 +69,13 @@ export default function WorksheetsByMode({
       items: practice,
     },
     {
+      key: "tests",
+      title: "Tests",
+      description:
+        "Adaptive assessments — unlock access or reset an in-progress sitting.",
+      items: tests,
+    },
+    {
       key: "timed",
       title: "Timed",
       description: "Complete within the time limit. Progress cannot be saved.",
@@ -87,13 +94,6 @@ export default function WorksheetsByMode({
       description:
         "A 12-week brain-building path — patterns, logic, and problem-solving for special-program style challenges.",
       items: thinkingQuest,
-    },
-    {
-      key: "tests",
-      title: "Tests",
-      description:
-        "Adaptive assessments — unlock access or reset an in-progress sitting.",
-      items: tests,
     },
   ];
 

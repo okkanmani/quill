@@ -555,6 +555,76 @@ function PracticeNoticeBanner({
   );
 }
 
+const FOCUS_WRONG_ANSWER_PREVIEW = 3;
+
+function FocusWrongAnswersList({
+  selectionKey,
+  items,
+  usingPractice,
+  focusArea,
+}) {
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    setShowAll(false);
+  }, [selectionKey]);
+
+  const wrongItems = usingPractice
+    ? items.filter((q) => q.correct === false)
+    : items;
+  const visible = showAll
+    ? wrongItems
+    : wrongItems.slice(0, FOCUS_WRONG_ANSWER_PREVIEW);
+  const hiddenCount = Math.max(
+    0,
+    wrongItems.length - FOCUS_WRONG_ANSWER_PREVIEW,
+  );
+
+  if (wrongItems.length === 0) return null;
+
+  return (
+    <>
+      <div className="mt-4 flex flex-col gap-3">
+        {visible.map((item, index) =>
+          usingPractice ? (
+            <FocusPracticeQuestionCard
+              key={`${focusArea}-practice-${item.question_id || index}`}
+              question={item}
+              index={index}
+              total={visible.length}
+            />
+          ) : (
+            <FocusExampleCard
+              key={`${focusArea}-${item.question_id || index}`}
+              example={item}
+              index={index}
+              total={visible.length}
+            />
+          ),
+        )}
+      </div>
+      {hiddenCount > 0 && !showAll ? (
+        <button
+          type="button"
+          onClick={() => setShowAll(true)}
+          className={`mt-3 ${CREATE_LINK_TEXT_BUTTON_UNDERLINE}`}
+        >
+          View {hiddenCount} more wrong answer{hiddenCount === 1 ? "" : "s"}
+        </button>
+      ) : null}
+      {showAll && hiddenCount > 0 ? (
+        <button
+          type="button"
+          onClick={() => setShowAll(false)}
+          className={`mt-3 ${CREATE_LINK_TEXT_BUTTON_UNDERLINE}`}
+        >
+          Show less
+        </button>
+      ) : null}
+    </>
+  );
+}
+
 function FocusAreaDetailPanel({
   selection,
   selectionKey,
@@ -573,6 +643,9 @@ function FocusAreaDetailPanel({
   const examples = focus.examples || [];
   const displayItems = practiceQuestions.length > 0 ? practiceQuestions : examples;
   const usingPractice = practiceQuestions.length > 0;
+  const hasWrongSamples = usingPractice
+    ? practiceQuestions.some((q) => q.correct === false)
+    : examples.length > 0;
   const weightedLabel = practiceResult
     ? formatWeightedTestScore(
         practiceResult.weighted_score,
@@ -632,26 +705,13 @@ function FocusAreaDetailPanel({
           </p>
         </div>
       ) : null}
-      {displayItems.length > 0 ? (
-        <div className="mt-4 flex flex-col gap-3">
-          {displayItems.map((item, index) =>
-            usingPractice ? (
-              <FocusPracticeQuestionCard
-                key={`${focus.area}-practice-${item.question_id || index}`}
-                question={item}
-                index={index}
-                total={displayItems.length}
-              />
-            ) : (
-              <FocusExampleCard
-                key={`${focus.area}-${item.question_id || index}`}
-                example={item}
-                index={index}
-                total={displayItems.length}
-              />
-            ),
-          )}
-        </div>
+      {hasWrongSamples ? (
+        <FocusWrongAnswersList
+          selectionKey={selectionKey}
+          items={displayItems}
+          usingPractice={usingPractice}
+          focusArea={focus.area}
+        />
       ) : (
         <p className="text-sm text-slate-600 mt-4 leading-relaxed">
           No sample wrong answers or practice results recorded for this area yet.
