@@ -5,7 +5,12 @@ import AnswerResponseView from "./AnswerResponseView";
 /**
  * Admin grading panel for pending or already-evaluated submissions.
  */
-export default function AdminResultGrader({ result, onEvaluated, mode = "pending" }) {
+export default function AdminResultGrader({
+  result,
+  onEvaluated,
+  mode = "pending",
+  layout = "stacked",
+}) {
   const isOverride = mode === "override";
   const [marks, setMarks] = useState({});
   const [saving, setSaving] = useState(false);
@@ -55,8 +60,13 @@ export default function AdminResultGrader({ result, onEvaluated, mode = "pending
     (a) => marks[a.question_id] === true || marks[a.question_id] === false,
   );
 
+  const shellClass =
+    layout === "side"
+      ? "px-4 pb-4 pt-4 bg-slate-50/30"
+      : "border-t border-slate-100 px-5 pb-5 pt-4 bg-slate-50/30";
+
   return (
-    <div className="border-t border-slate-100 px-5 pb-5 pt-4 bg-slate-50/30">
+    <div className={shellClass}>
       <p className="text-sm font-semibold text-amber-900 mb-3">
         {isOverride
           ? "Tap Correct or Incorrect to update a mark."

@@ -14,6 +14,8 @@ const SESSION_KEYS = [
   "adminName",
   "grade",
   "studentGrade",
+  "studentCurriculum",
+  "curriculum",
   LAST_ACTIVITY_KEY,
 ];
 

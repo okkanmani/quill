@@ -3,17 +3,23 @@ import { useNavigate } from "react-router-dom";
 import {
   createAdminStudent,
   deleteAdminStudent,
+  getLearnSubjects,
   listAdminStudents,
   logout,
   switchAdminStudent,
   updateAdminStudent,
 } from "../api";
+import { applyStudentSessionPrefs } from "../adminSession";
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import QuillLoading from "../components/QuillLoading";
 import EditActionButton from "../components/EditActionButton";
 import RecycleBinButton from "../components/RecycleBinButton";
 import { GRADE_OPTIONS } from "../questionBuilderUtils";
+import {
+  flattenHubSubjects,
+  sortedCurriculaFromSubjects,
+} from "../learnHubGrades";
 import {
   ADMIN_HUB_INLINE_ERROR,
   ADMIN_HUB_PAGE_INTRO,
@@ -29,9 +35,10 @@ import {
   WS_PAGE_HEADING,
 } from "../adminHubTypography";
 
-function StudentEditForm({ student, onCancel, onSaved, onError }) {
+function StudentEditForm({ student, curriculumOptions, onCancel, onSaved, onError }) {
   const [name, setName] = useState(student.name);
   const [grade, setGrade] = useState(student.grade ?? 5);
+  const [curriculum, setCurriculum] = useState(student.curriculum || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
@@ -39,6 +46,7 @@ function StudentEditForm({ student, onCancel, onSaved, onError }) {
   useEffect(() => {
     setName(student.name);
     setGrade(student.grade ?? 5);
+    setCurriculum(student.curriculum || "");
     setPassword("");
     setConfirmPassword("");
   }, [student]);
@@ -51,14 +59,15 @@ function StudentEditForm({ student, onCancel, onSaved, onError }) {
     const nameChanged = trimmedName !== student.name;
     const gradeChanged =
       student.grade == null || Number(grade) !== Number(student.grade);
+    const curriculumChanged = (student.curriculum || "") !== (curriculum || "");
     const passwordChanged = Boolean(password);
 
     if (!trimmedName) {
       onError("Student name cannot be empty.");
       return;
     }
-    if (!nameChanged && !gradeChanged && !passwordChanged) {
-      onError("Change the name, grade, and/or password to update.");
+    if (!nameChanged && !gradeChanged && !curriculumChanged && !passwordChanged) {
+      onError("Change the name, grade, curriculum, and/or password to update.");
       return;
     }
     if (passwordChanged && password.length < 4) {
@@ -75,6 +84,7 @@ function StudentEditForm({ student, onCancel, onSaved, onError }) {
       const payload = {};
       if (nameChanged) payload.name = trimmedName;
       if (gradeChanged) payload.grade = Number(grade);
+      if (curriculumChanged) payload.curriculum = curriculum.trim();
       if (passwordChanged) payload.password = password;
 
       const updated = await updateAdminStudent(student.id, payload);
@@ -83,14 +93,15 @@ function StudentEditForm({ student, onCancel, onSaved, onError }) {
         if (updated.student_name) {
           localStorage.setItem("studentName", updated.student_name);
         }
-        if (updated.grade != null) {
-          localStorage.setItem("studentGrade", String(updated.grade));
-        }
-      } else if (
-        student.name === localStorage.getItem("studentName") &&
-        updated.grade != null
-      ) {
-        localStorage.setItem("studentGrade", String(updated.grade));
+        applyStudentSessionPrefs({
+          grade: updated.grade,
+          curriculum: updated.curriculum ?? "",
+        });
+      } else if (student.name === localStorage.getItem("studentName")) {
+        applyStudentSessionPrefs({
+          grade: updated.grade,
+          curriculum: updated.curriculum ?? "",
+        });
       }
       onSaved(updated);
     } catch (ex) {
@@ -123,6 +134,22 @@ function StudentEditForm({ student, onCancel, onSaved, onError }) {
           {GRADE_OPTIONS.map((g) => (
             <option key={g.value} value={g.value}>
               {g.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className={CREATE_FIELD_LABEL}>
+        Curriculum
+        <select
+          value={curriculum}
+          onChange={(e) => setCurriculum(e.target.value)}
+          className={CREATE_FIELD_SELECT}
+        >
+          <option value="">No preference</option>
+          {curriculumOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
             </option>
           ))}
         </select>
@@ -172,6 +199,8 @@ export default function AdminStudents() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [grade, setGrade] = useState(5);
+  const [curriculum, setCurriculum] = useState("");
+  const [curriculumOptions, setCurriculumOptions] = useState([]);
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
@@ -188,6 +217,12 @@ export default function AdminStudents() {
 
   useEffect(() => {
     load();
+    getLearnSubjects()
+      .then((data) => {
+        const subjects = flattenHubSubjects(data.entries || []);
+        setCurriculumOptions(sortedCurriculaFromSubjects(subjects));
+      })
+      .catch(() => setCurriculumOptions([]));
   }, []);
 
   async function handleLogout() {
@@ -204,6 +239,7 @@ export default function AdminStudents() {
         name: name.trim(),
         password,
         grade: Number(grade),
+        curriculum: curriculum.trim() || undefined,
       });
       setName("");
       setPassword("");
@@ -214,9 +250,10 @@ export default function AdminStudents() {
         if (sw.admin_name) {
           localStorage.setItem("adminName", sw.admin_name);
         }
-        if (sw.grade != null) {
-          localStorage.setItem("studentGrade", String(sw.grade));
-        }
+        applyStudentSessionPrefs({
+          grade: sw.grade,
+          curriculum: sw.curriculum ?? created.curriculum ?? "",
+        });
       }
       await load();
     } catch (ex) {
@@ -229,7 +266,14 @@ export default function AdminStudents() {
   function handleStudentUpdated(updated) {
     setStudents((prev) =>
       prev.map((s) =>
-        s.id === updated.id ? { ...s, name: updated.name, grade: updated.grade } : s,
+        s.id === updated.id
+          ? {
+              ...s,
+              name: updated.name,
+              grade: updated.grade,
+              curriculum: updated.curriculum || "",
+            }
+          : s,
       ),
     );
     setEditingId(null);
@@ -274,7 +318,7 @@ export default function AdminStudents() {
             <h2 className={WS_EYEBROW}>Add a student</h2>
           </div>
           <form onSubmit={handleCreate} className="space-y-3 p-4">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <label className={CREATE_FIELD_LABEL}>
                 Name
                 <input
@@ -313,6 +357,21 @@ export default function AdminStudents() {
                   ))}
                 </select>
               </label>
+              <label className={CREATE_FIELD_LABEL}>
+                Curriculum
+                <select
+                  value={curriculum}
+                  onChange={(e) => setCurriculum(e.target.value)}
+                  className={CREATE_FIELD_SELECT}
+                >
+                  <option value="">No preference</option>
+                  {curriculumOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
             <button type="submit" disabled={creating} className={CREATE_PUBLISH_BUTTON}>
               {creating ? "Adding…" : "Add student"}
@@ -342,6 +401,7 @@ export default function AdminStudents() {
                       <p className={`${WS_CARD_TITLE} truncate`}>{s.name}</p>
                       <p className={`${WS_CARD_DETAIL} mt-0.5`}>
                         Grade {s.grade ?? "—"}
+                        {s.curriculum ? ` · ${s.curriculum}` : ""}
                       </p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
@@ -369,6 +429,7 @@ export default function AdminStudents() {
                   {editingId === s.id ? (
                     <StudentEditForm
                       student={s}
+                      curriculumOptions={curriculumOptions}
                       onCancel={() => setEditingId(null)}
                       onSaved={handleStudentUpdated}
                       onError={setError}

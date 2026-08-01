@@ -202,6 +202,8 @@ def init_schema() -> None:
             )
         if "home_last_seen_at" not in student_cols:
             conn.execute("ALTER TABLE students ADD COLUMN home_last_seen_at TEXT")
+        if "curriculum" not in student_cols:
+            conn.execute("ALTER TABLE students ADD COLUMN curriculum TEXT")
         conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS student_worksheet_locks (

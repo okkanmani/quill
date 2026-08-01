@@ -23,6 +23,7 @@ import {
   learnHubSearchParams,
   learnSubjectCurriculum,
   learnSubjectGrade,
+  preferredStudentCurriculum,
   resolveLearnHubCurriculum,
   resolveLearnHubGrade,
   sortedCurriculaFromSubjects,
@@ -862,10 +863,13 @@ export default function LearnHub() {
     return [...fromOrphans].sort((a, b) => a - b);
   }, [entries, subjectGradeByKey]);
 
-  const activeGrade = useMemo(
-    () => resolveLearnHubGrade(searchParams.get("grade"), availableGrades),
-    [searchParams, availableGrades],
-  );
+  const activeGrade = useMemo(() => {
+    const param = searchParams.get("grade");
+    if (!param || !String(param).trim()) {
+      return resolveLearnHubGrade(null, availableGrades);
+    }
+    return resolveLearnHubGrade(param, availableGrades);
+  }, [searchParams, availableGrades]);
 
   const gradeFilteredSubjects = useMemo(() => {
     const all = flattenHubSubjects(entries);
@@ -878,10 +882,14 @@ export default function LearnHub() {
     [gradeFilteredSubjects],
   );
 
-  const activeCurriculum = useMemo(
-    () => resolveLearnHubCurriculum(searchParams.get("curriculum"), availableCurricula),
-    [searchParams, availableCurricula],
-  );
+  const activeCurriculum = useMemo(() => {
+    const param = searchParams.get("curriculum");
+    const preferred = preferredStudentCurriculum();
+    if (!param || !String(param).trim()) {
+      return resolveLearnHubCurriculum(null, availableCurricula, preferred);
+    }
+    return resolveLearnHubCurriculum(param, availableCurricula, preferred);
+  }, [searchParams, availableCurricula]);
 
   useEffect(() => {
     if (loading) return;
@@ -889,16 +897,25 @@ export default function LearnHub() {
     let changed = false;
 
     if (availableGrades.length > 0) {
-      const parsed = parseInt(String(next.get("grade") || "").trim(), 10);
-      if (!availableGrades.includes(parsed)) {
-        next.set("grade", String(activeGrade));
+      const paramRaw = next.get("grade");
+      const resolved =
+        paramRaw && String(paramRaw).trim()
+          ? resolveLearnHubGrade(paramRaw, availableGrades)
+          : resolveLearnHubGrade(null, availableGrades);
+      const parsed = parseInt(String(paramRaw || "").trim(), 10);
+      if (parsed !== resolved) {
+        next.set("grade", String(resolved));
         changed = true;
       }
     }
 
     if (availableCurricula.length > 0) {
-      const resolved = resolveLearnHubCurriculum(next.get("curriculum"), availableCurricula);
-      const paramKey = curriculumKey(decodeURIComponent(next.get("curriculum") || ""));
+      const paramRaw = next.get("curriculum");
+      const preferred = preferredStudentCurriculum();
+      const resolved = paramRaw && String(paramRaw).trim()
+        ? resolveLearnHubCurriculum(paramRaw, availableCurricula, preferred)
+        : resolveLearnHubCurriculum(null, availableCurricula, preferred);
+      const paramKey = curriculumKey(decodeURIComponent(String(paramRaw || "")));
       if (curriculumKey(resolved) !== paramKey) {
         next.set("curriculum", resolved);
         changed = true;

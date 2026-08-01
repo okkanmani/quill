@@ -1,3 +1,23 @@
+/** Persist grade/curriculum for Learn hub defaults and admin context. */
+export function applyStudentSessionPrefs({ grade, curriculum } = {}) {
+  if (grade != null && grade !== "") {
+    localStorage.setItem("studentGrade", String(grade));
+    localStorage.setItem("grade", String(grade));
+  } else if (grade === null) {
+    localStorage.removeItem("studentGrade");
+    localStorage.removeItem("grade");
+  }
+
+  const cleanedCurriculum = String(curriculum ?? "").trim();
+  if (cleanedCurriculum) {
+    localStorage.setItem("studentCurriculum", cleanedCurriculum);
+    localStorage.setItem("curriculum", cleanedCurriculum);
+  } else if (curriculum !== undefined) {
+    localStorage.removeItem("studentCurriculum");
+    localStorage.removeItem("curriculum");
+  }
+}
+
 /** Label for admin shell header: account name and viewed student (if any). */
 export function formatAdminHeaderTrail() {
   const admin = localStorage.getItem("adminName");

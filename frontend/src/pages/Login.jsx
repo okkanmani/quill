@@ -9,6 +9,7 @@ import {
   touchActivity,
 } from "../api";
 import QuillLoading from "../components/QuillLoading";
+import { applyStudentSessionPrefs } from "../adminSession";
 
 const TAB_SIGN_IN = "sign-in";
 const TAB_SIGN_UP = "sign-up";
@@ -21,6 +22,8 @@ async function persistAdminSession(data) {
   }
   localStorage.removeItem("studentName");
   localStorage.removeItem("studentGrade");
+  localStorage.removeItem("studentCurriculum");
+  localStorage.removeItem("curriculum");
   localStorage.removeItem("grade");
   localStorage.removeItem("name");
 }
@@ -38,11 +41,10 @@ async function navigateAfterAdminLogin(navigate) {
       localStorage.setItem("token", switched.token);
       localStorage.setItem("studentName", switched.student_name);
       if (switched.admin_name) localStorage.setItem("adminName", switched.admin_name);
-      if (switched.grade != null) {
-        localStorage.setItem("studentGrade", String(switched.grade));
-      } else {
-        localStorage.removeItem("studentGrade");
-      }
+      applyStudentSessionPrefs({
+        grade: switched.grade,
+        curriculum: switched.curriculum ?? "",
+      });
     }
     navigate("/admin");
   } catch {
@@ -85,8 +87,10 @@ export default function Login() {
         localStorage.setItem("name", data.name);
         localStorage.removeItem("studentName");
         localStorage.removeItem("adminName");
-        if (data.grade != null) localStorage.setItem("grade", String(data.grade));
-        else localStorage.removeItem("grade");
+        applyStudentSessionPrefs({
+          grade: data.grade,
+          curriculum: data.curriculum ?? "",
+        });
         touchActivity();
         navigate("/student");
       } else {

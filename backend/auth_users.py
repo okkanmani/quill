@@ -21,10 +21,20 @@ def validate_grade(grade: int | None) -> int:
     return grade
 
 
+def normalize_student_curriculum(curriculum: str | None) -> str | None:
+    cleaned = (curriculum or "").strip()
+    return cleaned or None
+
+
 def _student_row_dict(row) -> dict:
     out = {"id": row["id"], "name": row["name"]}
     if row["grade"] is not None:
         out["grade"] = int(row["grade"])
+    curriculum = None
+    if "curriculum" in row.keys():
+        curriculum = normalize_student_curriculum(row["curriculum"])
+    if curriculum:
+        out["curriculum"] = curriculum
     return out
 
 
@@ -69,7 +79,7 @@ def authenticate_student(admin_name: str, name: str, password: str) -> dict | No
             return None
         row = conn.execute(
             """
-            SELECT id, admin_id, name, password_hash, grade
+            SELECT id, admin_id, name, password_hash, grade, curriculum
             FROM students
             WHERE admin_id = ? AND name = ?
             """,
@@ -83,6 +93,11 @@ def authenticate_student(admin_name: str, name: str, password: str) -> dict | No
         out = {"id": row["id"], "name": row["name"], "admin_id": row["admin_id"]}
         if row["grade"] is not None:
             out["grade"] = int(row["grade"])
+        curriculum = normalize_student_curriculum(
+            row["curriculum"] if "curriculum" in row.keys() else None
+        )
+        if curriculum:
+            out["curriculum"] = curriculum
         return out
     return None
 
@@ -144,7 +159,7 @@ def list_students_for_admin(admin_id: int) -> list[dict]:
     try:
         rows = conn.execute(
             """
-            SELECT id, name, grade FROM students
+            SELECT id, name, grade, curriculum FROM students
             WHERE admin_id = ?
             ORDER BY name COLLATE NOCASE
             """,
@@ -164,7 +179,7 @@ def get_student_by_admin_and_name(admin_id: int, name: str) -> dict | None:
     try:
         row = conn.execute(
             """
-            SELECT id, name, grade FROM students
+            SELECT id, name, grade, curriculum FROM students
             WHERE admin_id = ? AND name = ?
             """,
             (admin_id, name),
@@ -176,15 +191,26 @@ def get_student_by_admin_and_name(admin_id: int, name: str) -> dict | None:
     return _student_row_dict(row)
 
 
-def add_student(admin_id: int, name: str, password: str, grade: int) -> int:
+def add_student(
+    admin_id: int,
+    name: str,
+    password: str,
+    grade: int,
+    *,
+    curriculum: str | None = None,
+) -> int:
     name = name.strip()
     grade = validate_grade(grade)
+    curriculum = normalize_student_curriculum(curriculum)
     h = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
     conn = db.connect()
     try:
         cur = conn.execute(
-            "INSERT INTO students (admin_id, name, password_hash, grade) VALUES (?, ?, ?, ?)",
-            (admin_id, name, h, grade),
+            """
+            INSERT INTO students (admin_id, name, password_hash, grade, curriculum)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (admin_id, name, h, grade, curriculum),
         )
         rid = cur.lastrowid
         conn.commit()
@@ -200,7 +226,7 @@ def get_student_profile(student_id: int) -> dict | None:
     conn = db.connect()
     try:
         row = conn.execute(
-            "SELECT id, name, grade, admin_id FROM students WHERE id = ?",
+            "SELECT id, name, grade, curriculum, admin_id FROM students WHERE id = ?",
             (student_id,),
         ).fetchone()
     finally:
@@ -225,7 +251,7 @@ def get_student_auth_row(student_id: int) -> dict | None:
     try:
         row = conn.execute(
             """
-            SELECT id, admin_id, name, password_hash, grade
+            SELECT id, admin_id, name, password_hash, grade, curriculum
             FROM students WHERE id = ?
             """,
             (student_id,),
@@ -242,6 +268,11 @@ def get_student_auth_row(student_id: int) -> dict | None:
     }
     if row["grade"] is not None:
         out["grade"] = int(row["grade"])
+    curriculum = normalize_student_curriculum(
+        row["curriculum"] if "curriculum" in row.keys() else None
+    )
+    if curriculum:
+        out["curriculum"] = curriculum
     return out
 
 
@@ -432,12 +463,21 @@ def update_student_by_admin(
     name: str | None = None,
     grade: int | None = None,
     password: str | None = None,
+    curriculum: str | None = None,
 ) -> dict | None:
+    if (
+        name is None
+        and grade is None
+        and password is None
+        and curriculum is None
+    ):
+        raise ValueError("No changes to save.")
+
     conn = db.connect()
     try:
         row = conn.execute(
             """
-            SELECT id, name, grade, password_hash
+            SELECT id, name, grade, password_hash, curriculum
             FROM students
             WHERE id = ? AND admin_id = ?
             """,
@@ -448,6 +488,9 @@ def update_student_by_admin(
 
         final_name = row["name"]
         final_grade = int(row["grade"]) if row["grade"] is not None else None
+        final_curriculum = normalize_student_curriculum(
+            row["curriculum"] if "curriculum" in row.keys() else None
+        )
 
         if name is not None:
             next_name = name.strip()
@@ -489,6 +532,13 @@ def update_student_by_admin(
                 (password_hash, student_id, admin_id),
             )
 
+        if curriculum is not None:
+            final_curriculum = normalize_student_curriculum(curriculum)
+            conn.execute(
+                "UPDATE students SET curriculum = ? WHERE id = ? AND admin_id = ?",
+                (final_curriculum, student_id, admin_id),
+            )
+
         conn.commit()
     except sqlite3.IntegrityError as exc:
         conn.rollback()
@@ -499,10 +549,10 @@ def update_student_by_admin(
     finally:
         conn.close()
 
-    if name is None and grade is None and password is None:
-        raise ValueError("No changes to save.")
-
-    return {"id": student_id, "name": final_name, "grade": final_grade}
+    out = {"id": student_id, "name": final_name, "grade": final_grade}
+    if final_curriculum:
+        out["curriculum"] = final_curriculum
+    return out
 
 
 def update_student_grade(admin_id: int, student_id: int, grade: int) -> dict | None:

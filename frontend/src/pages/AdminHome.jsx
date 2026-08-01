@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   deleteResult,
@@ -18,6 +18,7 @@ import AdminStudentSwitcher from "../components/AdminStudentSwitcher";
 import AdminStudentGate from "../components/AdminStudentGate";
 import QuillLoading from "../components/QuillLoading";
 import ResultsBySubject from "../components/ResultsBySubject";
+import ResultsAnswerAside from "../components/ResultsAnswerAside";
 import ResultsPageCategory from "../components/ResultsPageCategory";
 import PracticeResultsSection from "../components/PracticeResultsSection";
 import TestResultsSection from "../components/TestResultsSection";
@@ -33,6 +34,11 @@ import {
   RESULTS_VIEW_TAB_ACTIVE,
   RESULTS_VIEW_TAB_IDLE,
 } from "../resultsTypography";
+import {
+  RESULTS_LIST_WIDTH_CLASS,
+  RESULTS_SPLIT_GRID_CLASS,
+  RESULTS_SPLIT_WIDTH_CLASS,
+} from "../resultsLayout";
 
 function ResultsViewTabs({ activeView }) {
   return (
@@ -105,6 +111,7 @@ export default function AdminHome() {
       resultIdsMatch(result.id, deepLinkResultId),
     );
     if (mainMatch) {
+      setOpenPracticeIds(new Set());
       setOpenIds(new Set([mainMatch.id]));
       setExpandResultSubjectKeys([normalizeSubjectKey(mainMatch.subject)]);
       return;
@@ -114,6 +121,7 @@ export default function AdminHome() {
       resultIdsMatch(result.id, deepLinkResultId),
     );
     if (practiceMatch) {
+      setOpenIds(new Set());
       setOpenPracticeIds(new Set([practiceMatch.id]));
       setExpandResultSubjectKeys([]);
     }
@@ -128,13 +136,18 @@ export default function AdminHome() {
     setOpenTestIds(new Set([target.id]));
   }, [deepLinkAttemptId, testResults]);
 
+  const prevResultsViewRef = useRef(resultsView);
+  useEffect(() => {
+    if (prevResultsViewRef.current === resultsView) return;
+    prevResultsViewRef.current = resultsView;
+    setOpenIds(new Set());
+    setOpenPracticeIds(new Set());
+    setOpenTestIds(new Set());
+  }, [resultsView]);
+
   function toggleAnswers(id) {
-    setOpenIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    setOpenPracticeIds(new Set());
+    setOpenIds((prev) => (prev.has(id) ? new Set() : new Set([id])));
   }
 
   function toggleWriting(id) {
@@ -147,21 +160,12 @@ export default function AdminHome() {
   }
 
   function togglePractice(id) {
-    setOpenPracticeIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    setOpenIds(new Set());
+    setOpenPracticeIds((prev) => (prev.has(id) ? new Set() : new Set([id])));
   }
 
   function toggleTest(id) {
-    setOpenTestIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    setOpenTestIds((prev) => (prev.has(id) ? new Set() : new Set([id])));
   }
 
   async function handleLogout() {
@@ -254,6 +258,53 @@ export default function AdminHome() {
   const hasRevision = practiceResults.length > 0;
   const hasTests = testResults.length > 0;
   const hasWorksheetResults = hasMainWorksheets || hasRevision;
+  const openWorksheetId = openIds.size > 0 ? [...openIds][0] : null;
+  const openPracticeId = openPracticeIds.size > 0 ? [...openPracticeIds][0] : null;
+  const selectedWorksheetResult = openWorksheetId
+    ? results.find((result) => result.id === openWorksheetId) ?? null
+    : null;
+  const selectedPracticeResult = openPracticeId
+    ? practiceResults.find((result) => result.id === openPracticeId) ?? null
+    : null;
+  const openTestId = openTestIds.size > 0 ? [...openTestIds][0] : null;
+  const selectedTestResult = openTestId
+    ? testResults.find((result) => result.id === openTestId) ?? null
+    : null;
+  const hasAnswerSelection = Boolean(
+    selectedWorksheetResult || selectedPracticeResult,
+  );
+  const hasTestAnswerSelection = Boolean(selectedTestResult);
+  const useSplitLayout =
+    (resultsView === "worksheets" && hasAnswerSelection) ||
+    (resultsView === "tests" && hasTestAnswerSelection);
+
+  function closeAnswerPanel() {
+    setOpenIds(new Set());
+    setOpenPracticeIds(new Set());
+  }
+
+  function closeTestAnswerPanel() {
+    setOpenTestIds(new Set());
+  }
+
+  function handleWorksheetSubjectCollapse(subjectKey) {
+    const openId = openIds.size > 0 ? [...openIds][0] : null;
+    if (!openId) return;
+    const match = results.find((result) => result.id === openId);
+    if (match && normalizeSubjectKey(match.subject) === subjectKey) {
+      setOpenIds(new Set());
+    }
+  }
+
+  function handlePracticeSectionCollapse() {
+    setOpenPracticeIds(new Set());
+  }
+
+  function handleResultEvaluated(updated) {
+    setResults((prev) =>
+      prev.map((result) => (result.id === updated.id ? updated : result)),
+    );
+  }
 
   return (
     <AppShell
@@ -261,7 +312,9 @@ export default function AdminHome() {
       onLogout={handleLogout}
     >
       <AdminStudentGate context="results">
-      <div className="max-w-3xl">
+      <div
+        className={useSplitLayout ? RESULTS_SPLIT_WIDTH_CLASS : RESULTS_LIST_WIDTH_CLASS}
+      >
         <AdminStudentSwitcher />
 
         <h1 className={`${RESULTS_PAGE_HEADING} mb-1`}>Results</h1>
@@ -284,60 +337,98 @@ export default function AdminHome() {
         ) : null}
 
         {!loading && !error && resultsView === "worksheets" && hasWorksheetResults ? (
-          <div className="flex flex-col gap-6">
-            {hasMainWorksheets ? (
-              <ResultsPageCategory title="Main Worksheets">
-                {results.length > 0 ? (
-                  <ResultsBySubject
-                    results={results}
-                    openIds={openIds}
-                    expandSubjectKeys={expandResultSubjectKeys}
-                    scrollToOpenResult
-                    toggleAnswers={toggleAnswers}
-                    onDeleteResult={handleDeleteResult}
-                    deletingResultId={deletingResultId}
-                    onResultEvaluated={(updated) =>
-                      setResults((prev) =>
-                        prev.map((r) => (r.id === updated.id ? updated : r)),
-                      )
-                    }
-                    onAnalysisError={setError}
+          <div
+            className={
+              hasAnswerSelection
+                ? RESULTS_SPLIT_GRID_CLASS
+                : "lg:grid lg:grid-cols-1 lg:gap-6 lg:items-start"
+            }
+          >
+            <div className="min-w-0 flex flex-col gap-6">
+              {hasMainWorksheets ? (
+                <ResultsPageCategory title="Main Worksheets">
+                  {results.length > 0 ? (
+                    <ResultsBySubject
+                      results={results}
+                      openIds={openIds}
+                      expandSubjectKeys={expandResultSubjectKeys}
+                      toggleAnswers={toggleAnswers}
+                      onDeleteResult={handleDeleteResult}
+                      deletingResultId={deletingResultId}
+                      onResultEvaluated={handleResultEvaluated}
+                      onAnalysisError={setError}
+                      onSubjectCollapse={handleWorksheetSubjectCollapse}
+                    />
+                  ) : null}
+                  {writing.length > 0 ? (
+                    <WritingResultsSection
+                      submissions={writing}
+                      openIds={openWritingIds}
+                      toggleOpen={toggleWriting}
+                      onDelete={handleDeleteWriting}
+                      onGrade={handleGradeWriting}
+                      deletingId={deletingWritingId}
+                      gradingId={gradingWritingId}
+                      savingFeedbackId={savingWritingFeedbackId}
+                    />
+                  ) : null}
+                </ResultsPageCategory>
+              ) : null}
+              {hasRevision ? (
+                <ResultsPageCategory title="Revision">
+                  <PracticeResultsSection
+                    results={practiceResults}
+                    openIds={openPracticeIds}
+                    toggleOpen={togglePractice}
+                    onSectionCollapse={handlePracticeSectionCollapse}
                   />
-                ) : null}
-                {writing.length > 0 ? (
-                  <WritingResultsSection
-                    submissions={writing}
-                    openIds={openWritingIds}
-                    toggleOpen={toggleWriting}
-                    onDelete={handleDeleteWriting}
-                    onGrade={handleGradeWriting}
-                    deletingId={deletingWritingId}
-                    gradingId={gradingWritingId}
-                    savingFeedbackId={savingWritingFeedbackId}
-                  />
-                ) : null}
-              </ResultsPageCategory>
-            ) : null}
-            {hasRevision ? (
-              <ResultsPageCategory title="Revision">
-                <PracticeResultsSection
-                  results={practiceResults}
-                  openIds={openPracticeIds}
-                  toggleOpen={togglePractice}
-                  scrollToOpenResult
-                />
-              </ResultsPageCategory>
-            ) : null}
+                </ResultsPageCategory>
+              ) : null}
+              <ResultsAnswerAside
+                className="lg:hidden"
+                worksheetResult={selectedWorksheetResult}
+                practiceItem={selectedPracticeResult}
+                onResultEvaluated={handleResultEvaluated}
+                onClose={closeAnswerPanel}
+              />
+            </div>
+            <ResultsAnswerAside
+              className="hidden lg:block"
+              worksheetResult={selectedWorksheetResult}
+              practiceItem={selectedPracticeResult}
+              onResultEvaluated={handleResultEvaluated}
+              onClose={closeAnswerPanel}
+            />
           </div>
         ) : null}
 
         {!loading && !error && resultsView === "tests" && hasTests ? (
-          <TestResultsSection
-            results={testResults}
-            openIds={openTestIds}
-            toggleOpen={toggleTest}
-            embedded
-          />
+          <div
+            className={
+              hasTestAnswerSelection
+                ? RESULTS_SPLIT_GRID_CLASS
+                : "lg:grid lg:grid-cols-1 lg:gap-6 lg:items-start"
+            }
+          >
+            <div className="min-w-0">
+              <TestResultsSection
+                results={testResults}
+                openIds={openTestIds}
+                toggleOpen={toggleTest}
+                embedded
+              />
+              <ResultsAnswerAside
+                className="lg:hidden mt-4"
+                testResult={selectedTestResult}
+                onClose={closeTestAnswerPanel}
+              />
+            </div>
+            <ResultsAnswerAside
+              className="hidden lg:block"
+              testResult={selectedTestResult}
+              onClose={closeTestAnswerPanel}
+            />
+          </div>
         ) : null}
       </div>
       </AdminStudentGate>

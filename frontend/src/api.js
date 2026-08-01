@@ -763,11 +763,13 @@ export async function listAdminStudents() {
   return res.json();
 }
 
-export async function createAdminStudent({ name, password, grade }) {
+export async function createAdminStudent({ name, password, grade, curriculum }) {
+  const body = { name, password, grade };
+  if (curriculum) body.curriculum = curriculum;
   const res = await apiFetch(`${BASE_URL}/admin/students`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({ name, password, grade }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

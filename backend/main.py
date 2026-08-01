@@ -267,12 +267,14 @@ class CreateStudentRequest(BaseModel):
     name: str
     password: str
     grade: int
+    curriculum: str | None = None
 
 
 class UpdateStudentRequest(BaseModel):
     name: str | None = None
     grade: int | None = None
     password: str | None = None
+    curriculum: str | None = None
 
 
 class UpdateAccountRequest(BaseModel):
@@ -620,6 +622,8 @@ def student_login(req: StudentLoginRequest):
     out = {"token": token, "role": "student", "name": row["name"]}
     if row.get("grade") is not None:
         out["grade"] = row["grade"]
+    if row.get("curriculum"):
+        out["curriculum"] = row["curriculum"]
     return out
 
 
@@ -679,6 +683,8 @@ def me(authorization: str = Header(...)):
         profile = get_student_profile(payload.get("student_id"))
         if profile and profile.get("grade") is not None:
             out["grade"] = profile["grade"]
+        if profile and profile.get("curriculum"):
+            out["curriculum"] = profile["curriculum"]
         return out
     an = payload.get("admin_name") or get_admin_name(payload["admin_id"])
     return {
@@ -2807,7 +2813,13 @@ def admin_create_student(req: CreateStudentRequest, authorization: str = Header(
     if not name or not req.password:
         raise HTTPException(status_code=400, detail="Name and password required")
     try:
-        sid = add_student(payload["admin_id"], name, req.password, req.grade)
+        sid = add_student(
+            payload["admin_id"],
+            name,
+            req.password,
+            req.grade,
+            curriculum=req.curriculum,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except sqlite3.IntegrityError:
@@ -2815,7 +2827,11 @@ def admin_create_student(req: CreateStudentRequest, authorization: str = Header(
             status_code=409,
             detail="A student with that name already exists for your account",
         )
-    return {"id": sid, "name": name, "grade": req.grade}
+    out = {"id": sid, "name": name, "grade": req.grade}
+    cleaned_curriculum = (req.curriculum or "").strip()
+    if cleaned_curriculum:
+        out["curriculum"] = cleaned_curriculum
+    return out
 
 
 @app.patch("/admin/students/{student_id}")
@@ -2827,7 +2843,7 @@ def admin_update_student(
     payload = _payload(authorization)
     if payload["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    if req.name is None and req.grade is None and req.password is None:
+    if req.name is None and req.grade is None and req.password is None and req.curriculum is None:
         raise HTTPException(status_code=400, detail="No changes to save.")
     try:
         updated = update_student_by_admin(
@@ -2836,6 +2852,7 @@ def admin_update_student(
             name=req.name,
             grade=req.grade,
             password=req.password,
+            curriculum=req.curriculum,
         )
     except ValueError as exc:
         msg = str(exc)
@@ -2855,6 +2872,8 @@ def admin_update_student(
         out["student_name"] = updated["name"]
         if updated.get("grade") is not None:
             out["grade"] = updated["grade"]
+        if updated.get("curriculum"):
+            out["curriculum"] = updated["curriculum"]
     return out
 
 
@@ -2903,6 +2922,7 @@ def admin_switch_student_context(
         "admin_name": an,
         "needs_student": False,
         "grade": row.get("grade"),
+        "curriculum": row.get("curriculum"),
     }
 
 

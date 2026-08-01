@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import AnswerResponseView from "./AnswerResponseView";
-import AdminResultGrader from "./AdminResultGrader";
 import RecycleBinButton from "./RecycleBinButton";
 import {
   ROW_ACTION_BUTTON_CLASS,
@@ -21,7 +19,6 @@ import CollapsibleSectionHeader from "./CollapsibleSectionHeader";
 import { HUB_TOP_BODY, HUB_TOP_HEADER, HUB_TOP_SHELL } from "../hubSectionStyles";
 import {
   RESULTS_ANSWER_BODY,
-  RESULTS_ANSWER_PROMPT,
   RESULTS_ITEM_HEADER,
   RESULTS_ITEM_SHELL,
   RESULTS_ITEM_SHELL_PENDING,
@@ -71,10 +68,10 @@ export default function ResultsBySubject({
   openIds,
   toggleAnswers,
   expandSubjectKeys = [],
-  scrollToOpenResult = false,
   onResultEvaluated,
   onDeleteResult,
   onAnalysisError,
+  onSubjectCollapse,
   deletingResultId,
   variant = "admin",
 }) {
@@ -94,18 +91,6 @@ export default function ResultsBySubject({
       return next;
     });
   }, [expandSubjectKeys]);
-
-  useEffect(() => {
-    if (!scrollToOpenResult || openIds.size === 0) return;
-    const id = [...openIds][0];
-    const frame = window.requestAnimationFrame(() => {
-      document.getElementById(`result-${id}`)?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [openIds, openSubjects, scrollToOpenResult, expandSubjectKeys]);
 
   async function handleAnalyze(result) {
     setAnalyzingResultId(result.id);
@@ -135,8 +120,12 @@ export default function ResultsBySubject({
   function toggleSubject(subjectKey) {
     setOpenSubjects((prev) => {
       const next = new Set(prev);
-      if (next.has(subjectKey)) next.delete(subjectKey);
-      else next.add(subjectKey);
+      if (next.has(subjectKey)) {
+        next.delete(subjectKey);
+        onSubjectCollapse?.(subjectKey);
+      } else {
+        next.add(subjectKey);
+      }
       return next;
     });
   }
@@ -197,6 +186,9 @@ export default function ResultsBySubject({
                   const expanded = openIds.has(r.id);
                   const isPending = r.status === "pending";
                   const scoreLine = formatResultScoreLine(r);
+                  const shellClass = isPending
+                    ? RESULTS_ITEM_SHELL_PENDING
+                    : RESULTS_ITEM_SHELL;
                   return (
                     <div
                       key={r.id}
@@ -204,9 +196,9 @@ export default function ResultsBySubject({
                       className="flex flex-col sm:flex-row gap-3 sm:items-stretch sm:gap-4"
                     >
                       <div
-                        className={
-                          isPending ? RESULTS_ITEM_SHELL_PENDING : RESULTS_ITEM_SHELL
-                        }
+                        className={`${shellClass} ${
+                          expanded ? "ring-2 ring-indigo-200" : ""
+                        }`}
                       >
                         <button
                           type="button"
@@ -256,52 +248,8 @@ export default function ResultsBySubject({
                             </span>
                           </div>
                         </button>
-
-                        {expanded && isAdmin ? (
-                          <AdminResultGrader
-                            result={r}
-                            mode={isPending ? "pending" : "override"}
-                            onEvaluated={onResultEvaluated}
-                          />
-                        ) : null}
-
-                        {expanded && !isAdmin ? (
-                          <div className="border-t border-slate-100 px-4 pb-4 pt-3 bg-slate-50/30">
-                            <ul className="flex flex-col gap-3">
-                              {r.answers.map((a, index) => (
-                                <li
-                                  key={a.question_id}
-                                  className="rounded-xl bg-white border border-slate-100 p-3 shadow-sm"
-                                >
-                                  <p className={RESULTS_ANSWER_PROMPT}>
-                                    <span className="text-indigo-600 font-normal">
-                                      {index + 1}.{" "}
-                                    </span>
-                                    {a.prompt}
-                                  </p>
-                                  <div className="mt-2 flex flex-col gap-1.5 text-sm">
-                                    <span className={RESULTS_ANSWER_BODY}>
-                                      Response:
-                                    </span>
-                                    <AnswerResponseView answer={a} />
-                                    {typeof a.correct === "boolean" ? (
-                                      <span
-                                        className={`inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
-                                          a.correct
-                                            ? "bg-green-50 text-green-800 border-green-200"
-                                            : "bg-red-50 text-red-800 border-red-200"
-                                        }`}
-                                      >
-                                        {a.correct ? "Correct" : "Incorrect"}
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ) : null}
                       </div>
+
                       {onDeleteResult ? (
                         <div className="flex shrink-0 self-center sm:self-stretch sm:items-stretch sm:flex-col sm:justify-center gap-2 sm:w-7">
                           {isAdmin && !isPending ? (

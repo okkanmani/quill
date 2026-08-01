@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { listAdminStudents, switchAdminStudent } from "../api";
+import { applyStudentSessionPrefs } from "../adminSession";
 
 /**
  * Lets an admin change which student’s worksheets/results they are viewing (same JWT admin_id).
@@ -25,8 +26,10 @@ export default function AdminStudentSwitcher() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("studentName", data.student_name);
       if (data.admin_name) localStorage.setItem("adminName", data.admin_name);
-      if (data.grade != null) localStorage.setItem("studentGrade", String(data.grade));
-      else localStorage.removeItem("studentGrade");
+      applyStudentSessionPrefs({
+        grade: data.grade,
+        curriculum: data.curriculum ?? "",
+      });
       window.location.reload();
     } catch {
       setErr("Could not switch student.");

@@ -58,10 +58,19 @@ export function filterHubEntriesByGrade(entries, grade) {
     .filter(Boolean);
 }
 
-export function resolveLearnHubGrade(gradeParam, availableGrades) {
+export function preferredStudentGrade() {
+  const raw =
+    localStorage.getItem("studentGrade") || localStorage.getItem("grade") || "";
+  const parsed = parseInt(String(raw).trim(), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+export function resolveLearnHubGrade(gradeParam, availableGrades, preferredGrade = null) {
   if (!availableGrades?.length) return null;
   const parsed = parseInt(String(gradeParam || "").trim(), 10);
   if (availableGrades.includes(parsed)) return parsed;
+  const preferred = preferredGrade ?? preferredStudentGrade();
+  if (preferred && availableGrades.includes(preferred)) return preferred;
   return availableGrades[0];
 }
 
@@ -124,13 +133,34 @@ export function filterHubEntriesByGradeAndCurriculum(entries, grade, curriculumL
   return next;
 }
 
-export function resolveLearnHubCurriculum(curriculumParam, availableCurricula) {
+export function resolveLearnHubCurriculum(
+  curriculumParam,
+  availableCurricula,
+  preferredCurriculum = null,
+) {
   if (!availableCurricula?.length) return null;
   const raw = decodeURIComponent(String(curriculumParam || "").trim());
   const key = curriculumKey(raw);
-  if (!key) return availableCurricula[0];
-  const match = availableCurricula.find((c) => curriculumKey(c) === key);
-  return match ?? availableCurricula[0];
+  if (key) {
+    const match = availableCurricula.find((c) => curriculumKey(c) === key);
+    if (match) return match;
+  }
+  const preferred = String(preferredCurriculum || "").trim();
+  if (preferred) {
+    const prefMatch = availableCurricula.find(
+      (c) => curriculumKey(c) === curriculumKey(preferred),
+    );
+    if (prefMatch) return prefMatch;
+  }
+  return availableCurricula[0];
+}
+
+export function preferredStudentCurriculum() {
+  return (
+    localStorage.getItem("studentCurriculum") ||
+    localStorage.getItem("curriculum") ||
+    ""
+  );
 }
 
 export function learnHubSearchParams({ grade, curriculum }) {

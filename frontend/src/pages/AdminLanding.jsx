@@ -11,6 +11,7 @@ import {
   clearWorksheetAccessLock,
   scheduleTestUnlock,
 } from "../api";
+import { applyStudentSessionPrefs } from "../adminSession";
 import {
   formatScheduledUnlockLabel,
   isoToLocalDateInput,
@@ -404,7 +405,7 @@ export default function AdminLanding() {
         const cleared = await clearAdminStudentContext();
         localStorage.setItem("token", cleared.token);
         localStorage.removeItem("studentName");
-        localStorage.removeItem("studentGrade");
+        applyStudentSessionPrefs({ grade: null, curriculum: "" });
         window.location.reload();
       } catch {
         setError("Could not clear student selection.");
@@ -419,11 +420,10 @@ export default function AdminLanding() {
       localStorage.setItem("token", switched.token);
       localStorage.setItem("studentName", switched.student_name);
       if (switched.admin_name) localStorage.setItem("adminName", switched.admin_name);
-      if (switched.grade != null) {
-        localStorage.setItem("studentGrade", String(switched.grade));
-      } else {
-        localStorage.removeItem("studentGrade");
-      }
+      applyStudentSessionPrefs({
+        grade: switched.grade,
+        curriculum: switched.curriculum ?? "",
+      });
       window.location.reload();
     } catch {
       setError("Could not switch student.");
@@ -508,11 +508,10 @@ export default function AdminLanding() {
     localStorage.setItem("token", switched.token);
     localStorage.setItem("studentName", switched.student_name);
     if (switched.admin_name) localStorage.setItem("adminName", switched.admin_name);
-    if (switched.grade != null) {
-      localStorage.setItem("studentGrade", String(switched.grade));
-    } else {
-      localStorage.removeItem("studentGrade");
-    }
+    applyStudentSessionPrefs({
+      grade: switched.grade,
+      curriculum: switched.curriculum ?? "",
+    });
   }
 
   const students = data?.students || [];

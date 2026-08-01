@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import SectionSortSelect from "./SectionSortSelect";
 import {
-  RESULTS_ANSWER_BODY,
   RESULTS_ITEM_HEADER,
   RESULTS_ITEM_SHELL,
+  RESULTS_ITEM_TOGGLE,
   RESULTS_ROW_DETAIL,
   RESULTS_ROW_TITLE,
   RESULTS_SORT_LABEL,
@@ -119,7 +119,11 @@ export default function TestResultsSection({
             key={item.id}
             className="flex flex-col sm:flex-row gap-2 sm:items-stretch sm:gap-1.5"
           >
-            <div className={`min-w-0 flex-1 ${RESULTS_ITEM_SHELL}`}>
+            <div
+              className={`min-w-0 flex-1 ${RESULTS_ITEM_SHELL} ${
+                expanded ? "ring-2 ring-indigo-200" : ""
+              }`}
+            >
               <button
                 type="button"
                 onClick={() => toggleOpen(item.id)}
@@ -159,45 +163,11 @@ export default function TestResultsSection({
                       {formatDurationSeconds(item.duration_seconds)}
                     </p>
                   ) : null}
+                  <span className={RESULTS_ITEM_TOGGLE}>
+                    {expanded ? "Hide answers" : "Show answers"}
+                  </span>
                 </div>
               </button>
-              {expanded ? (
-                <div className="border-t border-slate-100 px-4 py-3 bg-slate-50/50 text-sm space-y-3">
-                  {(item.answers || []).map((a, i) => (
-                    <div
-                      key={a.question_id || i}
-                      className={`rounded-xl border p-3 ${
-                        a.correct
-                          ? "border-green-200 bg-green-50/50"
-                          : "border-red-200 bg-red-50/50"
-                      }`}
-                    >
-                      <p className="text-sm font-semibold text-slate-900">
-                        {a.prompt || "Question"}
-                      </p>
-                      <p className={`mt-1 ${RESULTS_ANSWER_BODY}`}>
-                        Answer: {a.given || "—"}
-                        {!a.correct && a.expected ? (
-                          <span className="block text-emerald-800 mt-0.5">
-                            Correct: {a.expected}
-                          </span>
-                        ) : null}
-                      </p>
-                      {a.tier ? (
-                        <p className={`${RESULTS_ROW_DETAIL} mt-1`}>
-                          Tier {a.tier}
-                        </p>
-                      ) : null}
-                    </div>
-                  ))}
-                  {item.review_id ? (
-                    <p className="text-xs text-amber-800 font-medium">
-                      Review session #{item.review_id}
-                      {item.review_completed ? " — completed" : " — pending"}
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
             </div>
             {showAnalyse ? (
               <div className="flex shrink-0 self-start sm:w-7 pt-3">

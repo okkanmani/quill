@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { listAdminStudents, switchAdminStudent } from "../api";
+import { applyStudentSessionPrefs } from "../adminSession";
 import { ADMIN_STUDENT_BANNER_COPY } from "../adminStudentBannerCopy";
 import QuillLoading from "./QuillLoading";
 
@@ -29,7 +30,10 @@ export default function AdminStudentBanner({ context = "results", centered = fal
         localStorage.setItem("token", data.token);
         localStorage.setItem("studentName", data.student_name);
         if (data.admin_name) localStorage.setItem("adminName", data.admin_name);
-        if (data.grade != null) localStorage.setItem("studentGrade", String(data.grade));
+        applyStudentSessionPrefs({
+          grade: data.grade,
+          curriculum: data.curriculum ?? "",
+        });
         window.location.reload();
       })
       .catch(() => setErr("Could not select your student."));
@@ -43,8 +47,10 @@ export default function AdminStudentBanner({ context = "results", centered = fal
       localStorage.setItem("token", data.token);
       localStorage.setItem("studentName", data.student_name);
       if (data.admin_name) localStorage.setItem("adminName", data.admin_name);
-      if (data.grade != null) localStorage.setItem("studentGrade", String(data.grade));
-      else localStorage.removeItem("studentGrade");
+      applyStudentSessionPrefs({
+        grade: data.grade,
+        curriculum: data.curriculum ?? "",
+      });
       window.location.reload();
     } catch {
       setErr("Could not switch student.");
