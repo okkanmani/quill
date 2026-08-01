@@ -482,6 +482,10 @@ def init_schema() -> None:
 
         ensure_worksheet_section_schema(conn)
 
+        from admin_resource_codes import ensure_admin_resource_code_schema
+
+        ensure_admin_resource_code_schema(conn)
+
         conn.commit()
     finally:
         conn.close()

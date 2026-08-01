@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getLearnSubject, updateLearnSection } from "../api";
+import { getAdminLearnSections, getLearnSubject, updateLearnSection } from "../api";
 import LearnMarkdownEditor from "./LearnMarkdownEditor";
 import QuillLoading from "./QuillLoading";
 import {
@@ -21,6 +21,7 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
   const [topic, setTopic] = useState("");
   const [markdown, setMarkdown] = useState("");
   const [collectionTitle, setCollectionTitle] = useState("");
+  const [adminCode, setAdminCode] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -28,18 +29,23 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
   useEffect(() => {
     if (!subjectKey || !sectionId) return;
     setLoading(true);
-    getLearnSubject(subjectKey)
-      .then((data) => {
+    Promise.all([getLearnSubject(subjectKey), getAdminLearnSections()])
+      .then(([data, adminData]) => {
         const section = (data.sections || []).find(
           (sec) => sec.id === sectionId && sec.source === "db",
         );
         if (!section) {
           throw new Error("This learning resource is not editable.");
         }
+        const adminSection = (adminData.sections || []).find(
+          (row) =>
+            row.subject_key === subjectKey && row.section_id === sectionId,
+        );
         setCollectionTitle(data.title || subjectKey);
         setTitle(section.title || "");
         setTopic(authorTopicFromSection(section));
         setMarkdown(section.markdown || "");
+        setAdminCode(adminSection?.admin_code || "");
         setError("");
       })
       .catch((err) => {
@@ -124,6 +130,7 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
       <LearnMarkdownEditor
         title={title}
         markdown={markdown}
+        adminCode={adminCode}
         onTitleChange={setTitle}
         onMarkdownChange={setMarkdown}
         titleLabel="Sub-topic"

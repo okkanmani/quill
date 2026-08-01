@@ -218,7 +218,7 @@ def list_admin_learn_sections(*, admin_id: int) -> list[dict]:
         rows = conn.execute(
             f"""
             SELECT subject_key, section_id, title, group_id, group_title,
-                   subject_title, subject_description, created_at
+                   subject_title, subject_description, created_at, admin_code
             FROM learn_sections
             WHERE {_admin_filter_sql()}
             ORDER BY subject_key ASC, sort_order ASC, id ASC
@@ -236,6 +236,11 @@ def list_admin_learn_sections(*, admin_id: int) -> list[dict]:
                 or row["subject_key"].replace("-", " ").title(),
                 "subject_description": row["subject_description"] or "",
                 "created_at": row["created_at"],
+                "admin_code": (
+                    str(row["admin_code"]).strip()
+                    if row["admin_code"] and str(row["admin_code"]).strip()
+                    else None
+                ),
             }
             for row in rows
         ]
@@ -557,13 +562,18 @@ def publish_learn_section(
             (subject_key, *admin_params),
         ).fetchone()
         sort_order = int(sort_row[0]) + 1
+        from admin_resource_codes import allocate_admin_code
+
+        admin_code = allocate_admin_code(
+            conn, admin_id, subject_key, for_learn=True
+        )
         conn.execute(
             """
             INSERT INTO learn_sections (
                 subject_key, section_id, title, markdown,
                 group_id, group_title, subject_title, subject_description,
-                grade, curriculum, created_at, sort_order, admin_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                grade, curriculum, created_at, sort_order, admin_id, admin_code
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 subject_key,
@@ -579,6 +589,7 @@ def publish_learn_section(
                 created_at,
                 sort_order,
                 admin_id,
+                admin_code,
             ),
         )
         if subject_title or subject_description:
@@ -601,6 +612,7 @@ def publish_learn_section(
         "subject_key": subject_key,
         "section_id": section_id,
         "title": section_title,
+        "admin_code": admin_code,
         "learn_url": f"/student/learn/{subject_key}#{section_id}",
     }
 

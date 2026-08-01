@@ -8,12 +8,14 @@ import {
   CREATE_FIELD_LABEL,
   CREATE_SECTION_TITLE,
 } from "../createTypography";
+import AdminResourceCodeLabel from "./AdminResourceCodeLabel";
 
 export default function LearnMarkdownEditor({
   title,
   markdown,
   onTitleChange,
   onMarkdownChange,
+  adminCode = "",
   titleLabel = "Section title",
   titleHint = "Shown as the heading on the learning resource page.",
   publishLabel = "Publish",
@@ -73,6 +75,9 @@ export default function LearnMarkdownEditor({
       {!hideTitle ? (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
+            {adminCode ? (
+              <AdminResourceCodeLabel code={adminCode} className="mb-1.5" />
+            ) : null}
             <label className={CREATE_FIELD_LABEL}>
               {titleLabel}
               <input

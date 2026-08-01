@@ -1061,7 +1061,13 @@ def init_worksheet_tables() -> None:
 
 
 def _insert_worksheet(
-    conn, ws_id: str, data: dict, path: Path, *, admin_id: int | None = None
+    conn,
+    ws_id: str,
+    data: dict,
+    path: Path,
+    *,
+    admin_id: int | None = None,
+    admin_code: str | None = None,
 ) -> None:
     """Insert one worksheet and its questions (worksheet id must not already exist)."""
     if admin_id is None:
@@ -1084,12 +1090,23 @@ def _insert_worksheet(
     test_adaptive = 1 if _test_adaptive_from_sheet_data(data) else 0
     english_type = _english_type_from_sheet_data(data) or None
     rc_questions_per_passage = _test_rc_questions_per_passage_from_sheet_data(data)
+    if not admin_code or not str(admin_code).strip():
+        from admin_resource_codes import allocate_admin_code
+
+        admin_code = allocate_admin_code(
+            conn,
+            admin_id,
+            subject,
+            is_test=bool(is_test),
+            is_timed=bool(is_timed),
+            english_type=english_type,
+        )
     conn.execute(
         """
-        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, is_test, test_sitting_count, test_adaptive, english_type, test_rc_questions_per_passage, admin_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO worksheets (id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, is_test, test_sitting_count, test_adaptive, english_type, test_rc_questions_per_passage, admin_id, admin_code)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, 1 if is_timed else 0, time_limit, 1 if is_enrichment else 0, 1 if is_gifted else 0, gifted_week, 1 if is_test else 0, test_sitting, test_adaptive, english_type, rc_questions_per_passage, admin_id),
+        (ws_id, title, subject, scratchpad, passages, sort_ts, learn_subject, learn_section, content_badge, evaluation, 1 if is_timed else 0, time_limit, 1 if is_enrichment else 0, 1 if is_gifted else 0, gifted_week, 1 if is_test else 0, test_sitting, test_adaptive, english_type, rc_questions_per_passage, admin_id, admin_code),
     )
     for order, q in enumerate(questions):
         conn.execute(
@@ -1168,8 +1185,23 @@ def merge_worksheets_from_json_files(
             ws_id = path.stem
             # Worksheet ids are globally unique (PRIMARY KEY on id). Replace by id so
             # merge succeeds even when the existing row belongs to another admin_id.
+            existing = conn.execute(
+                "SELECT admin_code FROM worksheets WHERE id = ?", (ws_id,)
+            ).fetchone()
+            preserved_code = (
+                existing["admin_code"]
+                if existing and existing["admin_code"]
+                else None
+            )
             conn.execute("DELETE FROM worksheets WHERE id = ?", (ws_id,))
-            _insert_worksheet(conn, ws_id, data, path, admin_id=admin_id)
+            _insert_worksheet(
+                conn,
+                ws_id,
+                data,
+                path,
+                admin_id=admin_id,
+                admin_code=preserved_code,
+            )
             merged_ids.append(ws_id)
         conn.commit()
     except Exception:
@@ -1210,7 +1242,7 @@ def list_worksheets(
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section, w.content_badge, w.evaluation,
                            w.is_timed, w.time_limit_minutes, w.is_math_enrichment, w.is_gifted_track, w.gifted_track_week,
-                           w.is_test, w.test_sitting_count, w.test_adaptive,
+                           w.is_test, w.test_sitting_count, w.test_adaptive, w.admin_code,
                            (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
                            EXISTS (
                              SELECT 1 FROM results r
@@ -1253,14 +1285,14 @@ def list_worksheets(
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
                        t.learn_subject, t.learn_section, t.content_badge, t.evaluation,
                        t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track, t.gifted_track_week,
-                       t.is_test, t.test_sitting_count, t.test_adaptive,
+                       t.is_test, t.test_sitting_count, t.test_adaptive, t.admin_code,
                        t.last_score, t.last_total, t.last_status, t.draft_saved_at,
                        t.timed_locked, t.timed_started, t.last_duration_seconds
                 FROM (
                     SELECT w.id, w.title, w.subject, w.scratchpad, w.sort_ts,
                            w.learn_subject, w.learn_section, w.content_badge, w.evaluation,
                            w.is_timed, w.time_limit_minutes, w.is_math_enrichment, w.is_gifted_track, w.gifted_track_week,
-                           w.is_test, w.test_sitting_count, w.test_adaptive,
+                           w.is_test, w.test_sitting_count, w.test_adaptive, w.admin_code,
                            (SELECT COUNT(*) FROM worksheet_questions q WHERE q.worksheet_id = w.id) AS question_count,
                            EXISTS (
                              SELECT 1 FROM results r
@@ -1326,6 +1358,10 @@ def list_worksheets(
             item.update(_resolve_gifted_track(r["id"], r["is_gifted_track"]))
             item.update(_resolve_gifted_track_week(r["id"], r["gifted_track_week"]))
             item.update(_resolve_test(r["id"], r["is_test"], r["test_sitting_count"], r["test_adaptive"]))
+            if student_name is None:
+                admin_code = r["admin_code"] if "admin_code" in r.keys() else None
+                if admin_code and str(admin_code).strip():
+                    item["admin_code"] = str(admin_code).strip()
             draft_at = r["draft_saved_at"] if "draft_saved_at" in r.keys() else None
             if draft_at and not item["done"] and not item.get("timed"):
                 item["has_draft"] = True
@@ -1392,7 +1428,7 @@ def get_worksheet(worksheet_id: str, *, admin_id: int | None = None) -> dict | N
     try:
         row = conn.execute(
             """
-            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, is_test, test_sitting_count, test_adaptive, english_type, test_rc_questions_per_passage, admin_id
+            SELECT title, subject, scratchpad, passages, learn_subject, learn_section, content_badge, evaluation, is_timed, time_limit_minutes, is_math_enrichment, is_gifted_track, gifted_track_week, is_test, test_sitting_count, test_adaptive, english_type, test_rc_questions_per_passage, admin_id, admin_code
             FROM worksheets WHERE id = ?
             """,
             (worksheet_id,),
@@ -1450,6 +1486,9 @@ def get_worksheet(worksheet_id: str, *, admin_id: int | None = None) -> dict | N
                 worksheet_id, row["test_rc_questions_per_passage"]
             )
         )
+        admin_code = row["admin_code"] if "admin_code" in row.keys() else None
+        if admin_code and str(admin_code).strip():
+            out["admin_code"] = str(admin_code).strip()
         return out
     finally:
         conn.close()
@@ -2105,10 +2144,11 @@ def upsert_worksheet_from_data(
         )
 
     conn = db.connect()
+    preserved_code = None
     try:
         default_admin = _default_admin_id(conn)
         existing = conn.execute(
-            "SELECT admin_id FROM worksheets WHERE id = ?",
+            "SELECT admin_id, admin_code FROM worksheets WHERE id = ?",
             (ws_id,),
         ).fetchone()
         if existing:
@@ -2117,12 +2157,21 @@ def upsert_worksheet_from_data(
                 owner = default_admin
             if int(owner) != admin_id:
                 raise ValueError([f"Worksheet {ws_id} not found."])
+            if existing["admin_code"] and str(existing["admin_code"]).strip():
+                preserved_code = str(existing["admin_code"]).strip()
         conn.execute(
             "DELETE FROM worksheets WHERE id = ? AND (admin_id = ? OR (admin_id IS NULL AND ? = ?))",
             (ws_id, admin_id, admin_id, default_admin),
         )
         path = WORKSHEETS_DIR / f"{ws_id}.json"
-        _insert_worksheet(conn, ws_id, payload, path, admin_id=admin_id)
+        _insert_worksheet(
+            conn,
+            ws_id,
+            payload,
+            path,
+            admin_id=admin_id,
+            admin_code=preserved_code,
+        )
         conn.commit()
     except Exception:
         conn.rollback()
@@ -2130,13 +2179,28 @@ def upsert_worksheet_from_data(
     finally:
         conn.close()
 
+    row_code = preserved_code
+    if not row_code:
+        conn2 = db.connect()
+        try:
+            code_row = conn2.execute(
+                "SELECT admin_code FROM worksheets WHERE id = ?", (ws_id,)
+            ).fetchone()
+            if code_row and code_row["admin_code"]:
+                row_code = str(code_row["admin_code"]).strip()
+        finally:
+            conn2.close()
+
     questions = data.get("questions") or []
-    return {
+    result = {
         "id": ws_id,
         "title": data.get("title", ws_id),
         "subject": str(data.get("subject", "general")).strip().lower(),
         "question_count": len(questions),
     }
+    if row_code:
+        result["admin_code"] = row_code
+    return result
 
 
 def restore_worksheet(

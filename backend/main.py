@@ -755,6 +755,7 @@ def get_worksheet_by_id(worksheet_id: str, authorization: str = Header(...)):
         )
     if payload.get("role") == "student":
         worksheet = strip_reference_answers_for_student(worksheet)
+        worksheet.pop("admin_code", None)
     elif worksheet.get("is_test"):
         from test_scheduling import summarize_test_unlock_schedule
 
@@ -928,6 +929,37 @@ def admin_learn_link_options(
     if payload.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
     return {"options": list_learn_link_options(worksheet_subject, admin_id=_admin_id(payload))}
+
+
+@app.get("/admin/resource-code/preview")
+def admin_preview_resource_code(
+    subject: str,
+    authorization: str = Header(...),
+    is_test: bool = False,
+    timed: bool = False,
+    for_learn: bool = False,
+    english_type: str | None = None,
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    import db
+    from admin_resource_codes import preview_admin_code
+
+    conn = db.connect()
+    try:
+        preview = preview_admin_code(
+            conn,
+            _admin_id(payload),
+            subject,
+            is_test=is_test,
+            is_timed=timed,
+            for_learn=for_learn,
+            english_type=english_type,
+        )
+    finally:
+        conn.close()
+    return {"preview": preview}
 
 
 @app.post("/admin/worksheets/create")

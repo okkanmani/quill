@@ -385,6 +385,34 @@ export async function updateWorksheetFromBuilder(worksheetId, payload) {
   return res.json();
 }
 
+export async function previewAdminResourceCode({
+  subject,
+  isTest = false,
+  timed = false,
+  forLearn = false,
+  englishType = "",
+} = {}) {
+  const params = new URLSearchParams({
+    subject: subject || "math",
+    is_test: isTest ? "true" : "false",
+    timed: timed ? "true" : "false",
+    for_learn: forLearn ? "true" : "false",
+  });
+  if (englishType) {
+    params.set("english_type", englishType);
+  }
+  const res = await apiFetch(
+    `${BASE_URL}/admin/resource-code/preview?${params.toString()}`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to preview resource code");
+  }
+  return res.json();
+}
+
 export async function createWorksheetFromBuilder(payload) {
   const res = await apiFetch(`${BASE_URL}/admin/worksheets/create`, {
     method: "POST",

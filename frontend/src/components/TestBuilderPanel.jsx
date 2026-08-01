@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { generateTestDraft, getAdminSettings, getWorksheet, createTestFromBuilder, updateTestFromBuilder, bulkSaveQuestionBank, saveWorksheetContextToBank, getQuestionBankPassage } from "../api";
+import { generateTestDraft, getAdminSettings, getWorksheet, createTestFromBuilder, updateTestFromBuilder, bulkSaveQuestionBank, saveWorksheetContextToBank, getQuestionBankPassage, previewAdminResourceCode } from "../api";
 import {
   defaultScheduledUnlockLocalInput,
   formatScheduledUnlockLabel,
@@ -8,6 +8,7 @@ import {
   localDatetimeInputToIso,
 } from "../testSchedulingUtils";
 import QuillLoading from "./QuillLoading";
+import AdminResourceCodeLabel from "./AdminResourceCodeLabel";
 import {
   CREATE_BODY,
   CREATE_METRIC,
@@ -188,6 +189,7 @@ export default function TestBuilderPanel() {
   const [showJsonPreview, setShowJsonPreview] = useState(false);
   const [errors, setErrors] = useState([]);
   const [notice, setNotice] = useState("");
+  const [adminCode, setAdminCode] = useState("");
   const [showBankPicker, setShowBankPicker] = useState(false);
   const [savingToBank, setSavingToBank] = useState(false);
 
@@ -236,6 +238,7 @@ export default function TestBuilderPanel() {
         setExpandedPassageIds(
           new Set((state.passages || []).slice(0, 1).map((passage) => passage.id)),
         );
+        setAdminCode(worksheet.admin_code || "");
         const schedule = worksheet.unlock_schedule;
         if (schedule?.mode === "scheduled" && schedule.scheduled_unlock_at) {
           setAvailabilityMode("scheduled");
@@ -261,6 +264,30 @@ export default function TestBuilderPanel() {
       cancelled = true;
     };
   }, [editId]);
+
+  useEffect(() => {
+    if (editId) return undefined;
+    let cancelled = false;
+    previewAdminResourceCode({
+      subject,
+      isTest: true,
+      englishType:
+        subject === "english"
+          ? readingComprehensionEnabled
+            ? "reading_comprehension"
+            : "critical_reasoning"
+          : "",
+    })
+      .then((data) => {
+        if (!cancelled) setAdminCode(data.preview || "");
+      })
+      .catch(() => {
+        if (!cancelled) setAdminCode("");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [editId, subject, readingComprehensionEnabled]);
 
   const canUseAi = aiEnabled && apiKeyConfigured && !editId;
   const isReadingComprehension =
@@ -594,6 +621,24 @@ export default function TestBuilderPanel() {
                 : ""
             }`,
       );
+      if (editId) {
+        if (result.admin_code) setAdminCode(result.admin_code);
+      } else {
+        previewAdminResourceCode({
+          subject,
+          isTest: true,
+          englishType:
+            subject === "english"
+              ? readingComprehensionEnabled
+                ? "reading_comprehension"
+                : "critical_reasoning"
+              : "",
+        })
+          .then((data) => setAdminCode(data.preview || result.admin_code || ""))
+          .catch(() => {
+            if (result.admin_code) setAdminCode(result.admin_code);
+          });
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setErrors([err.message || "Could not publish test."]);
@@ -982,6 +1027,10 @@ export default function TestBuilderPanel() {
               </>
             )}
           </p>
+        ) : null}
+
+        {adminCode ? (
+          <AdminResourceCodeLabel code={adminCode} className="mb-1.5" />
         ) : null}
 
         <label className="block text-sm font-semibold text-slate-800">

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import SubjectBadge from "./SubjectBadge";
 import { formatSubjectLabel } from "../subjectUtils";
 import ContentBadge from "./ContentBadge";
+import AdminResourceCodeLabel from "./AdminResourceCodeLabel";
 import { DifficultyStars } from "./DifficultyStars";
 import {
   averagePercentAcrossDoneWorksheets,
@@ -189,6 +190,9 @@ function WorksheetRow({
 
   const titleBlock = adminEditable ? (
     <div className={`min-w-0 flex-1 ${compact ? "p-1.5 pb-1" : "p-5 pb-3"}`}>
+      {ws.admin_code ? (
+        <AdminResourceCodeLabel code={ws.admin_code} className="mb-1" />
+      ) : null}
       <div className="flex items-start justify-between gap-3">
         <EditableWorksheetTitleInput
           worksheet={ws}

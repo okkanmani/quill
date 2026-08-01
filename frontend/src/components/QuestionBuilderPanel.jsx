@@ -7,6 +7,7 @@ import {
   getAdminSettings,
   getWorksheet,
   listAdminStudents,
+  previewAdminResourceCode,
   updateWorksheetFromBuilder,
 } from "../api";
 import QuillLoading from "./QuillLoading";
@@ -29,6 +30,7 @@ import {
   CREATE_SUBSECTION_TITLE,
 } from "../createTypography";
 import WorksheetBuilderPreview from "./WorksheetBuilderPreview";
+import AdminResourceCodeLabel from "./AdminResourceCodeLabel";
 import { QUESTION_INDEX_BUTTON_CLASS, ROW_ACTION_BUTTON_CLASS } from "./rowActionButtonStyles";
 import { useShellLayout } from "./ShellLayoutContext";
 import {
@@ -430,6 +432,7 @@ export default function QuestionBuilderPanel() {
   const [publishPhase, setPublishPhase] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [adminCode, setAdminCode] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [mobilePane, setMobilePane] = useState("build");
   const [previewFocusQuestionIndex, setPreviewFocusQuestionIndex] = useState(0);
@@ -477,6 +480,7 @@ export default function QuestionBuilderPanel() {
         if (state.learnSubject && state.learnSection) {
           setLearnResourceKey(`${state.learnSubject}:${state.learnSection}`);
         }
+        setAdminCode(worksheet.admin_code || "");
         setExpanded(new Set([0]));
         setExpandedPassages(new Set([0]));
       })
@@ -485,6 +489,27 @@ export default function QuestionBuilderPanel() {
       })
       .finally(() => setLoadingEdit(false));
   }, [editId]);
+
+  useEffect(() => {
+    if (editId) return undefined;
+    let cancelled = false;
+    previewAdminResourceCode({
+      subject,
+      timed,
+      isTest: false,
+      englishType:
+        subject === "english" ? englishType || "critical_reasoning" : "",
+    })
+      .then((data) => {
+        if (!cancelled) setAdminCode(data.preview || "");
+      })
+      .catch(() => {
+        if (!cancelled) setAdminCode("");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [editId, subject, timed, englishType]);
 
   useEffect(() => {
     listAdminStudents()
@@ -937,6 +962,21 @@ export default function QuestionBuilderPanel() {
           ? `Saved changes to ${result.id} — “${result.title}” (${result.question_count} questions).`
           : `Published ${result.id} — “${result.title}” (${result.question_count} questions).${lockNote}`,
       );
+      if (editId) {
+        if (result.admin_code) setAdminCode(result.admin_code);
+      } else {
+        previewAdminResourceCode({
+          subject,
+          timed,
+          isTest: false,
+          englishType:
+            subject === "english" ? englishType || "critical_reasoning" : "",
+        })
+          .then((data) => setAdminCode(data.preview || result.admin_code || ""))
+          .catch(() => {
+            if (result.admin_code) setAdminCode(result.admin_code);
+          });
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setError(
@@ -1085,6 +1125,10 @@ export default function QuestionBuilderPanel() {
               </>
             )}
           </p>
+        ) : null}
+
+        {adminCode ? (
+          <AdminResourceCodeLabel code={adminCode} className="mb-1.5" />
         ) : null}
 
         <label className="block text-sm font-semibold text-slate-800">
