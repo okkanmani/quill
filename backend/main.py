@@ -91,6 +91,23 @@ from tests import (
     submit_test,
     unlock_test_attempt,
 )
+from composite_tests import (
+    create_composite_test,
+    delete_composite_test,
+    get_composite_hub,
+    get_composite_test,
+    list_composite_test_results,
+    list_composite_tests,
+    list_composites_for_student,
+    list_eligible_section_worksheets,
+    lock_composite_for_admin_students,
+    schedule_composite_unlock_for_admin,
+    start_composite_attempt,
+    submit_composite,
+    unlock_composite_for_admin_students,
+    unlock_composite_sitting,
+    update_composite_test,
+)
 from question_bank_passages import (
     create_question_bank_passage,
     delete_question_bank_passage,
@@ -344,6 +361,30 @@ class CreateTestBuilderRequest(BaseModel):
 class TestScheduleUnlockRequest(BaseModel):
     unlock_at: str
     student_name: str | None = None
+
+
+class CreateCompositeTestRequest(BaseModel):
+    title: str
+    section_worksheet_ids: list[str]
+    lock_on_create: bool = False
+    scheduled_unlock_at: str | None = None
+
+
+class UpdateCompositeTestRequest(BaseModel):
+    title: str
+    section_worksheet_ids: list[str]
+    scheduled_unlock_at: str | None = None
+    unlock_students_now: bool = False
+
+
+class CompositeLockRequest(BaseModel):
+    student_name: str | None = None
+    scheduled_unlock_at: str | None = None
+
+
+class CompositeUnlockSittingRequest(BaseModel):
+    composite_id: str
+    student_name: str
 
 
 class QuestionBankItemRequest(BaseModel):
@@ -1197,6 +1238,166 @@ def admin_update_test_from_builder(
         )
         result["unlocked_for_students"] = count
     return result
+
+
+@app.get("/admin/composite-tests/eligible-worksheets")
+def admin_list_eligible_composite_sections(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    return list_eligible_section_worksheets(_admin_id(payload))
+
+
+@app.get("/admin/composite-tests")
+def admin_list_composite_tests(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    return list_composite_tests(_admin_id(payload))
+
+
+@app.post("/admin/composite-tests")
+def admin_create_composite_test(
+    req: CreateCompositeTestRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return create_composite_test(
+            _admin_id(payload),
+            title=req.title,
+            section_worksheet_ids=req.section_worksheet_ids,
+            scheduled_unlock_at=req.scheduled_unlock_at,
+            lock_on_create=req.lock_on_create,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/admin/composite-tests/{composite_id}")
+def admin_get_composite_test(composite_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return get_composite_test(composite_id, _admin_id(payload))
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+@app.put("/admin/composite-tests/{composite_id}")
+def admin_update_composite_test(
+    composite_id: str,
+    req: UpdateCompositeTestRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        return update_composite_test(
+            composite_id,
+            _admin_id(payload),
+            title=req.title,
+            section_worksheet_ids=req.section_worksheet_ids,
+            scheduled_unlock_at=req.scheduled_unlock_at,
+            unlock_students_now=req.unlock_students_now,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.delete("/admin/composite-tests/{composite_id}")
+def admin_delete_composite_test(composite_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        delete_composite_test(composite_id, _admin_id(payload))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"message": "Composite test deleted."}
+
+
+@app.post("/admin/composite-tests/{composite_id}/lock")
+def admin_lock_composite_test(
+    composite_id: str,
+    req: CompositeLockRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        if req.scheduled_unlock_at:
+            from test_scheduling import validate_future_unlock_at
+
+            count = schedule_composite_unlock_for_admin(
+                _admin_id(payload),
+                composite_id,
+                validate_future_unlock_at(req.scheduled_unlock_at),
+                student_name=req.student_name,
+            )
+        else:
+            count = lock_composite_for_admin_students(
+                _admin_id(payload),
+                composite_id,
+                locked=True,
+                student_name=req.student_name,
+            )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"students_affected": count}
+
+
+@app.post("/admin/composite-tests/{composite_id}/unlock")
+def admin_unlock_composite_test(
+    composite_id: str,
+    req: CompositeLockRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        count = unlock_composite_for_admin_students(
+            _admin_id(payload),
+            composite_id,
+            student_name=req.student_name,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"students_affected": count}
+
+
+@app.post("/admin/composite-attempts/unlock")
+def admin_unlock_composite_sitting(
+    req: CompositeUnlockSittingRequest,
+    authorization: str = Header(...),
+):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    try:
+        unlock_composite_sitting(
+            _admin_id(payload),
+            composite_id=req.composite_id,
+            student_name=req.student_name,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"message": "Composite sitting reset."}
+
+
+@app.get("/admin/composite-test-results")
+def admin_composite_test_results(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    return list_composite_test_results(who)
 
 
 @app.post("/admin/tests/generate-draft")
@@ -2347,6 +2548,10 @@ def _test_context_name(payload: dict) -> str:
     raise HTTPException(status_code=403, detail="Admin or student only")
 
 
+def _composite_context_name(payload: dict) -> str:
+    return _test_context_name(payload)
+
+
 @app.get("/tests")
 def get_tests(authorization: str = Header(...)):
     payload = _payload(authorization)
@@ -2425,6 +2630,46 @@ def complete_test_review_route(review_id: int, authorization: str = Header(...))
         raise HTTPException(status_code=400, detail=str(exc))
 
 
+@app.get("/composites")
+def list_composites_route(authorization: str = Header(...)):
+    payload = _payload(authorization)
+    who = _composite_context_name(payload)
+    return list_composites_for_student(who)
+
+
+@app.get("/composites/{composite_id}/hub")
+def composite_hub_route(composite_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    who = _composite_context_name(payload)
+    try:
+        return get_composite_hub(who, composite_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/composites/{composite_id}/start")
+def start_composite_route(composite_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    who = _composite_context_name(payload)
+    try:
+        return start_composite_attempt(who, composite_id)
+    except ValueError as exc:
+        msg = str(exc)
+        if "locked" in msg.lower():
+            raise HTTPException(status_code=423, detail=msg)
+        raise HTTPException(status_code=400, detail=msg)
+
+
+@app.post("/composites/{composite_id}/submit")
+def submit_composite_route(composite_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    who = _composite_context_name(payload)
+    try:
+        return submit_composite(who, composite_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
 @app.get("/tests/{worksheet_id}/session")
 def get_test_session_route(
     worksheet_id: str,
@@ -2432,6 +2677,7 @@ def get_test_session_route(
     slot: int | None = Query(default=None),
     resume: int = Query(default=1),
     preview: int = Query(default=0),
+    composite_attempt_id: int | None = Query(default=None),
 ):
     payload = _payload(authorization)
     who = _test_context_name(payload)
@@ -2443,6 +2689,7 @@ def get_test_session_route(
             target_slot=slot,
             resume=bool(resume),
             preview=preview_mode,
+            composite_attempt_id=composite_attempt_id,
         )
     except ValueError as exc:
         msg = str(exc)
@@ -2457,6 +2704,7 @@ def start_test_session_route(
     authorization: str = Header(...),
     slot: int | None = Query(default=None),
     resume: int = Query(default=0),
+    composite_attempt_id: int | None = Query(default=None),
 ):
     payload = _payload(authorization)
     who = _test_context_name(payload)
@@ -2466,6 +2714,7 @@ def start_test_session_route(
             worksheet_id,
             target_slot=slot,
             resume=bool(resume),
+            composite_attempt_id=composite_attempt_id,
         )
     except ValueError as exc:
         msg = str(exc)
@@ -2479,6 +2728,7 @@ def save_test_answer_route(
     worksheet_id: str,
     req: TestAnswerRequest,
     authorization: str = Header(...),
+    composite_attempt_id: int | None = Query(default=None),
 ):
     payload = _payload(authorization)
     if payload.get("role") != "student":
@@ -2490,6 +2740,7 @@ def save_test_answer_route(
             slot=req.slot,
             given=req.given,
             responses=req.responses,
+            composite_attempt_id=composite_attempt_id,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -2500,6 +2751,7 @@ def save_test_scratchpad_route(
     worksheet_id: str,
     req: TestScratchpadRequest,
     authorization: str = Header(...),
+    composite_attempt_id: int | None = Query(default=None),
 ):
     payload = _payload(authorization)
     who = _test_context_name(payload)
@@ -2511,28 +2763,45 @@ def save_test_scratchpad_route(
             scratchpad=req.scratchpad,
             work_text=req.work_text,
             work_mode=req.work_mode,
+            composite_attempt_id=composite_attempt_id,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.post("/tests/{worksheet_id}/submit")
-def submit_test_route(worksheet_id: str, authorization: str = Header(...)):
+def submit_test_route(
+    worksheet_id: str,
+    authorization: str = Header(...),
+    composite_attempt_id: int | None = Query(default=None),
+):
     payload = _payload(authorization)
     if payload.get("role") != "student":
         raise HTTPException(status_code=403, detail="Only students can submit tests")
     try:
-        return submit_test(payload["name"], worksheet_id)
+        return submit_test(
+            payload["name"],
+            worksheet_id,
+            composite_attempt_id=composite_attempt_id,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.post("/tests/{worksheet_id}/lock")
-def lock_test_route(worksheet_id: str, authorization: str = Header(...)):
+def lock_test_route(
+    worksheet_id: str,
+    authorization: str = Header(...),
+    composite_attempt_id: int | None = Query(default=None),
+):
     payload = _payload(authorization)
     if payload.get("role") != "student":
         raise HTTPException(status_code=403, detail="Only students can lock tests")
-    lock_test_attempt(payload["name"], worksheet_id)
+    lock_test_attempt(
+        payload["name"],
+        worksheet_id,
+        composite_attempt_id=composite_attempt_id,
+    )
     return {"message": "Test locked"}
 
 

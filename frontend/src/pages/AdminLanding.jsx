@@ -23,6 +23,7 @@ import {
   activityDestination,
   activityKindBadgeClass,
   activityKindLabel,
+  activityScoreLine,
   activityTitle,
 } from "../adminHomeUtils";
 import AppShell from "../components/AppShell";
@@ -69,6 +70,7 @@ function ActivityKindBadge({ item }) {
 
 function ActivityRow({ item, onNavigate, switchingStudent, showStudentName = true }) {
   const destination = activityDestination(item);
+  const scoreLine = activityScoreLine(item);
   const content = (
     <>
       <div className="min-w-0 flex items-center gap-2 flex-wrap">
@@ -81,6 +83,12 @@ function ActivityRow({ item, onNavigate, switchingStudent, showStudentName = tru
             </>
           ) : null}
           <span>{activityTitle(item)}</span>
+          {scoreLine ? (
+            <>
+              <span className="text-slate-500"> · </span>
+              <span className="font-semibold text-teal-900 tabular-nums">{scoreLine}</span>
+            </>
+          ) : null}
         </span>
       </div>
       <span className="text-xs text-slate-500 shrink-0">{formatRelativeTime(item.at)}</span>

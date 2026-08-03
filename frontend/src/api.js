@@ -1229,6 +1229,167 @@ export async function markTestAttemptAnalyzed(attemptId) {
   return res.json();
 }
 
+// --- Composite tests ---
+
+async function readApiError(res, fallback) {
+  const err = await res.json().catch(() => ({}));
+  const d = err.detail;
+  if (typeof d === "string") return d;
+  if (Array.isArray(d)) return d.join(" ");
+  return fallback;
+}
+
+export async function listEligibleCompositeWorksheets() {
+  const res = await apiFetch(`${BASE_URL}/admin/composite-tests/eligible-worksheets`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch eligible subject tests");
+  return res.json();
+}
+
+export async function listCompositeTests() {
+  const res = await apiFetch(`${BASE_URL}/admin/composite-tests`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch composite tests");
+  return res.json();
+}
+
+export async function getCompositeTest(compositeId) {
+  const res = await apiFetch(`${BASE_URL}/admin/composite-tests/${compositeId}`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await readApiError(res, "Composite test not found"));
+  return res.json();
+}
+
+export async function createCompositeTest(payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/composite-tests`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await readApiError(res, "Failed to create composite test"));
+  return res.json();
+}
+
+export async function updateCompositeTest(compositeId, payload) {
+  const res = await apiFetch(`${BASE_URL}/admin/composite-tests/${compositeId}`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await readApiError(res, "Failed to update composite test"));
+  return res.json();
+}
+
+export async function deleteCompositeTest(compositeId) {
+  const res = await apiFetch(`${BASE_URL}/admin/composite-tests/${compositeId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await readApiError(res, "Failed to delete composite test"));
+  return res.json();
+}
+
+export async function lockCompositeTest(compositeId, { studentName, scheduledUnlockAt } = {}) {
+  const body = {};
+  if (studentName) body.student_name = studentName;
+  if (scheduledUnlockAt) body.scheduled_unlock_at = scheduledUnlockAt;
+  const res = await apiFetch(`${BASE_URL}/admin/composite-tests/${compositeId}/lock`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await readApiError(res, "Failed to lock composite test"));
+  return res.json();
+}
+
+export async function unlockCompositeTest(compositeId, { studentName } = {}) {
+  const body = {};
+  if (studentName) body.student_name = studentName;
+  const res = await apiFetch(`${BASE_URL}/admin/composite-tests/${compositeId}/unlock`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await readApiError(res, "Failed to unlock composite test"));
+  return res.json();
+}
+
+export async function unlockCompositeSitting({ compositeId, studentName }) {
+  const res = await apiFetch(`${BASE_URL}/admin/composite-attempts/unlock`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      composite_id: compositeId,
+      student_name: studentName,
+    }),
+  });
+  if (!res.ok) throw new Error(await readApiError(res, "Failed to unlock composite sitting"));
+  return res.json();
+}
+
+export async function getAdminCompositeTestResults() {
+  const res = await apiFetch(`${BASE_URL}/admin/composite-test-results`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch composite test results");
+  return res.json();
+}
+
+// --- Student composite tests ---
+
+export async function getComposites() {
+  const res = await apiFetch(`${BASE_URL}/composites`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch composite tests");
+  return res.json();
+}
+
+export async function getCompositeHub(compositeId) {
+  const res = await apiFetch(`${BASE_URL}/composites/${encodeURIComponent(compositeId)}/hub`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const error = new Error(typeof d === "string" ? d : "Failed to load composite assessment");
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
+
+export async function startCompositeAttempt(compositeId) {
+  const res = await apiFetch(`${BASE_URL}/composites/${encodeURIComponent(compositeId)}/start`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const error = new Error(typeof d === "string" ? d : "Failed to start composite assessment");
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
+
+export async function submitCompositeAttempt(compositeId) {
+  const res = await apiFetch(`${BASE_URL}/composites/${encodeURIComponent(compositeId)}/submit`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to submit composite assessment");
+  }
+  return res.json();
+}
+
 export async function getTestReviews() {
   const res = await apiFetch(`${BASE_URL}/tests/reviews`, {
     headers: authHeaders(),
@@ -1274,11 +1435,17 @@ export async function completeTestReview(reviewId) {
   return res.json();
 }
 
-export async function getTestSession(worksheetId, { slot, resume = true, preview = false } = {}) {
+export async function getTestSession(
+  worksheetId,
+  { slot, resume = true, preview = false, compositeAttemptId } = {},
+) {
   const params = new URLSearchParams();
   if (slot != null) params.set("slot", String(slot));
   params.set("resume", resume ? "1" : "0");
   if (preview) params.set("preview", "1");
+  if (compositeAttemptId != null) {
+    params.set("composite_attempt_id", String(compositeAttemptId));
+  }
   const res = await apiFetch(
     `${BASE_URL}/tests/${worksheetId}/session?${params.toString()}`,
     { headers: authHeaders() },
@@ -1293,10 +1460,16 @@ export async function getTestSession(worksheetId, { slot, resume = true, preview
   return res.json();
 }
 
-export async function startTestSession(worksheetId, { slot, resume = false } = {}) {
+export async function startTestSession(
+  worksheetId,
+  { slot, resume = false, compositeAttemptId } = {},
+) {
   const params = new URLSearchParams();
   if (slot != null) params.set("slot", String(slot));
   params.set("resume", resume ? "1" : "0");
+  if (compositeAttemptId != null) {
+    params.set("composite_attempt_id", String(compositeAttemptId));
+  }
   const res = await apiFetch(
     `${BASE_URL}/tests/${worksheetId}/session?${params.toString()}`,
     { method: "POST", headers: authHeaders() },
@@ -1311,18 +1484,29 @@ export async function startTestSession(worksheetId, { slot, resume = false } = {
   return res.json();
 }
 
-export async function saveTestAnswer(worksheetId, { slot, given, responses }) {
+export async function saveTestAnswer(
+  worksheetId,
+  { slot, given, responses, compositeAttemptId },
+) {
+  const params = new URLSearchParams();
+  if (compositeAttemptId != null) {
+    params.set("composite_attempt_id", String(compositeAttemptId));
+  }
+  const query = params.toString();
   const body = { slot };
   if (responses && typeof responses === "object") {
     body.responses = responses;
   } else {
     body.given = given ?? "";
   }
-  const res = await apiFetch(`${BASE_URL}/tests/${worksheetId}/answer`, {
-    method: "PATCH",
-    headers: authHeaders(),
-    body: JSON.stringify(body),
-  });
+  const res = await apiFetch(
+    `${BASE_URL}/tests/${worksheetId}/answer${query ? `?${query}` : ""}`,
+    {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify(body),
+    },
+  );
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const d = err.detail;
@@ -1333,16 +1517,24 @@ export async function saveTestAnswer(worksheetId, { slot, given, responses }) {
 
 export async function saveTestScratchpad(
   worksheetId,
-  { slot, scratchpad, work_text, work_mode },
+  { slot, scratchpad, work_text, work_mode, compositeAttemptId },
 ) {
+  const params = new URLSearchParams();
+  if (compositeAttemptId != null) {
+    params.set("composite_attempt_id", String(compositeAttemptId));
+  }
+  const query = params.toString();
   const body = { slot, scratchpad };
   if (work_text !== undefined) body.work_text = work_text;
   if (work_mode !== undefined) body.work_mode = work_mode;
-  const res = await apiFetch(`${BASE_URL}/tests/${worksheetId}/scratchpad`, {
-    method: "PATCH",
-    headers: authHeaders(),
-    body: JSON.stringify(body),
-  });
+  const res = await apiFetch(
+    `${BASE_URL}/tests/${worksheetId}/scratchpad${query ? `?${query}` : ""}`,
+    {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify(body),
+    },
+  );
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const d = err.detail;
@@ -1351,11 +1543,19 @@ export async function saveTestScratchpad(
   return res.json();
 }
 
-export async function submitTest(worksheetId) {
-  const res = await apiFetch(`${BASE_URL}/tests/${worksheetId}/submit`, {
-    method: "POST",
-    headers: authHeaders(),
-  });
+export async function submitTest(worksheetId, { compositeAttemptId } = {}) {
+  const params = new URLSearchParams();
+  if (compositeAttemptId != null) {
+    params.set("composite_attempt_id", String(compositeAttemptId));
+  }
+  const query = params.toString();
+  const res = await apiFetch(
+    `${BASE_URL}/tests/${worksheetId}/submit${query ? `?${query}` : ""}`,
+    {
+      method: "POST",
+      headers: authHeaders(),
+    },
+  );
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const d = err.detail;
@@ -1365,11 +1565,19 @@ export async function submitTest(worksheetId) {
   return res.json();
 }
 
-export async function lockTestAttempt(worksheetId) {
-  const res = await apiFetch(`${BASE_URL}/tests/${worksheetId}/lock`, {
-    method: "POST",
-    headers: authHeaders(),
-  });
+export async function lockTestAttempt(worksheetId, { compositeAttemptId } = {}) {
+  const params = new URLSearchParams();
+  if (compositeAttemptId != null) {
+    params.set("composite_attempt_id", String(compositeAttemptId));
+  }
+  const query = params.toString();
+  const res = await apiFetch(
+    `${BASE_URL}/tests/${worksheetId}/lock${query ? `?${query}` : ""}`,
+    {
+      method: "POST",
+      headers: authHeaders(),
+    },
+  );
   if (!res.ok) return;
   return res.json();
 }

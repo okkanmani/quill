@@ -12,6 +12,7 @@ import {
 const CREATE_TABS = [
   { to: "/admin/create/worksheet", label: "Worksheet builder" },
   { to: "/admin/create/test", label: "Test builder" },
+  { to: "/admin/create/composite", label: "Composite test" },
   { to: "/admin/create/learn", label: "Learning resource" },
   { to: "/admin/create/upload", label: "Upload JSON", expertGate: true },
 ];
@@ -19,7 +20,7 @@ const CREATE_TABS = [
 export default function AdminCreate() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isWideBuilder = /\/admin\/create\/(worksheet|test|learn|upload)/.test(
+  const isWideBuilder = /\/admin\/create\/(worksheet|test|composite|learn|upload)/.test(
     location.pathname,
   );
   const onUploadRoute = /\/admin\/create\/upload\/?$/.test(location.pathname);
@@ -106,7 +107,7 @@ export default function AdminCreate() {
       <div className={isWideBuilder ? "max-w-none" : "max-w-3xl mx-auto"}>
         <h1 className={`${CREATE_PAGE_HEADING} mb-1`}>Create</h1>
         <p className={`${CREATE_PAGE_INTRO} mb-5`}>
-          Build worksheets and adaptive tests, upload JSON, or generate learning resources for students.
+          Build worksheets and adaptive tests, composite assessments, upload JSON, or generate learning resources for students.
         </p>
 
         <nav

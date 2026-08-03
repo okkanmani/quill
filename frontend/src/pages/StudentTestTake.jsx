@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   getTestSession,
   lockTestAttempt,
@@ -47,6 +47,10 @@ function dataPanelGridStyle() {
 export default function StudentTestTake() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const compositeAttemptId = searchParams.get("composite_attempt_id");
+  const compositeId = searchParams.get("composite_id");
+  const inComposite = Boolean(compositeAttemptId && compositeId);
   const isAdminPreview = localStorage.getItem("role") === "admin";
   const selectedStudent = localStorage.getItem("studentName") || "";
   const { navLinks } = useStudentNavLinks();
@@ -94,16 +98,32 @@ export default function StudentTestTake() {
     testActiveRef.current = false;
   }, [id]);
 
+  const compositeAttemptIdRef = useRef(compositeAttemptId);
+
+  useEffect(() => {
+    compositeAttemptIdRef.current = compositeAttemptId;
+  }, [compositeAttemptId]);
+
+  function compositeTestOptions() {
+    const value = compositeAttemptIdRef.current;
+    return value ? { compositeAttemptId: value } : {};
+  }
+
   function leaveWithoutSubmit() {
     if (isAdminPreview) return;
     if (testActiveRef.current && !submittedRef.current) {
-      lockTestAttempt(worksheetIdRef.current);
+      lockTestAttempt(worksheetIdRef.current, compositeTestOptions());
     }
   }
 
   const loadSession = useCallback(
     async (slot) => {
-      const data = await getTestSession(id, { slot, resume: true, preview: isAdminPreview });
+      const data = await getTestSession(id, {
+        slot,
+        resume: true,
+        preview: isAdminPreview,
+        compositeAttemptId: compositeAttemptId || undefined,
+      });
       setSession(data);
       if (isAdminPreview) {
         setRemainingSeconds(null);
@@ -118,7 +138,7 @@ export default function StudentTestTake() {
       testActiveRef.current = !data.completed && !data.locked;
       return data;
     },
-    [id, isAdminPreview],
+    [id, isAdminPreview, compositeAttemptId],
   );
 
   useEffect(() => {
@@ -157,7 +177,7 @@ export default function StudentTestTake() {
         }
       })
       .finally(() => setLoading(false));
-  }, [id, loadSession, isAdminPreview, selectedStudent]);
+  }, [id, loadSession, isAdminPreview, selectedStudent, compositeAttemptId]);
 
   useEffect(() => {
     if (isAdminPreview || remainingSeconds == null || submitted) return undefined;
@@ -222,6 +242,7 @@ export default function StudentTestTake() {
           scratchpad: scratchpad || "",
           work_text,
           work_mode,
+          ...compositeTestOptions(),
         });
         setSession(data);
       } catch (err) {
@@ -265,7 +286,7 @@ export default function StudentTestTake() {
     setSubmitError("");
     try {
       await flushWorkSave(currentSlot);
-      const result = await submitTest(id);
+      const result = await submitTest(id, compositeTestOptions());
       testActiveRef.current = false;
       setSubmitted(result);
     } catch (err) {
@@ -311,7 +332,12 @@ export default function StudentTestTake() {
     setSubmitError("");
     try {
       await flushWorkSave(currentSlot);
-      const data = await getTestSession(id, { slot, resume: true, preview: isAdminPreview });
+      const data = await getTestSession(id, {
+        slot,
+        resume: true,
+        preview: isAdminPreview,
+        compositeAttemptId: compositeAttemptId || undefined,
+      });
       setSession(data);
       setCurrentSlot(slot);
     } catch (err) {
@@ -324,7 +350,11 @@ export default function StudentTestTake() {
     setSelected(choice);
     setSubmitError("");
     try {
-      const data = await saveTestAnswer(id, { slot: currentSlot, given: choice });
+      const data = await saveTestAnswer(id, {
+        slot: currentSlot,
+        given: choice,
+        ...compositeTestOptions(),
+      });
       setSession(data);
     } catch (err) {
       setSubmitError(err.message || "Could not save answer.");
@@ -340,6 +370,7 @@ export default function StudentTestTake() {
       const data = await saveTestAnswer(id, {
         slot: currentSlot,
         responses: nextResponses,
+        ...compositeTestOptions(),
       });
       setSession(data);
     } catch (err) {
@@ -347,9 +378,17 @@ export default function StudentTestTake() {
     }
   }
 
+  function compositeHubPath() {
+    return compositeId ? `/student/composites/${compositeId}` : "/student/tests?tab=composite";
+  }
+
   function handleBack() {
     leaveWithoutSubmit();
-    navigate(isAdminPreview ? "/admin/worksheets" : "/student/tests");
+    if (isAdminPreview) {
+      navigate("/admin/tests");
+      return;
+    }
+    navigate(inComposite ? compositeHubPath() : "/student/tests");
   }
 
   async function handleLogout() {
@@ -685,7 +724,7 @@ export default function StudentTestTake() {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col">
         <AppHeader
-          onBack={() => navigate("/admin/worksheets")}
+          onBack={() => navigate("/admin/tests")}
           onLogout={async () => {
             await logout();
             navigate("/");
@@ -752,9 +791,9 @@ export default function StudentTestTake() {
         <AppHeader onBack={handleBack} onLogout={handleLogout} />
         <div className="max-w-3xl mx-auto mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-6">
           <h2 className="text-xl font-bold text-emerald-950 mb-2">
-            {submitted.already ? "Test already submitted" : "Test submitted"}
+            {submitted.already ? "Test already submitted" : "Section complete"}
           </h2>
-          {submitted.weighted_score != null ? (
+          {!inComposite && submitted.weighted_score != null ? (
             <>
               <p className="text-emerald-900 font-semibold tabular-nums">
                 Weighted score:{" "}
@@ -770,7 +809,26 @@ export default function StudentTestTake() {
               ) : null}
             </>
           ) : null}
-          {submitted.review_id ? (
+          {inComposite ? (
+            <>
+              <p className="text-sm text-emerald-800 mt-1">
+                This section is done. Your score will be shown after you submit the full
+                assessment from the hub.
+              </p>
+              <p className="text-sm text-emerald-800 mt-3">
+                Return to the assessment hub to continue other sections or submit the full
+                assessment when every section is complete. Review for missed questions
+                unlocks after the full assessment is submitted.
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate(compositeHubPath())}
+                className="inline-flex mt-4 rounded-xl bg-teal-100 border border-teal-200 px-4 py-2 text-sm font-semibold text-teal-950 hover:bg-teal-200 transition"
+              >
+                Back to assessment hub
+              </button>
+            </>
+          ) : submitted.review_id ? (
             <button
               type="button"
               onClick={() => navigate(`/student/tests/review/${submitted.review_id}`)}

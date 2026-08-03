@@ -176,7 +176,7 @@ def init_schema() -> None:
         lock_cols = {
             row[1] for row in conn.execute("PRAGMA table_info(student_worksheet_locks)")
         }
-        if "scheduled_unlock_at" not in lock_cols:
+        if lock_cols and "scheduled_unlock_at" not in lock_cols:
             conn.execute(
                 "ALTER TABLE student_worksheet_locks ADD COLUMN scheduled_unlock_at TEXT"
             )
@@ -269,10 +269,19 @@ def init_schema() -> None:
                 weighted_score REAL,
                 max_weighted_score REAL,
                 duration_seconds INTEGER,
-                UNIQUE (student, worksheet_id)
+                analyzed_at TEXT,
+                composite_attempt_id INTEGER
             );
             CREATE INDEX IF NOT EXISTS idx_test_attempts_student
                 ON test_attempts (student, completed_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_test_attempts_composite
+                ON test_attempts (composite_attempt_id);
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_test_attempts_standalone
+                ON test_attempts(student, worksheet_id)
+                WHERE composite_attempt_id IS NULL;
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_test_attempts_composite_section
+                ON test_attempts(student, worksheet_id, composite_attempt_id)
+                WHERE composite_attempt_id IS NOT NULL;
             CREATE TABLE IF NOT EXISTS test_review_sessions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 attempt_id INTEGER NOT NULL,
@@ -353,6 +362,13 @@ def init_schema() -> None:
                 ON learn_page_highlights (student, subject_key);
             """
         )
+        lock_cols = {
+            row[1] for row in conn.execute("PRAGMA table_info(student_worksheet_locks)")
+        }
+        if lock_cols and "scheduled_unlock_at" not in lock_cols:
+            conn.execute(
+                "ALTER TABLE student_worksheet_locks ADD COLUMN scheduled_unlock_at TEXT"
+            )
         writing_cols = {
             row[1] for row in conn.execute("PRAGMA table_info(writing_submissions)")
         }
@@ -487,6 +503,10 @@ def init_schema() -> None:
         from admin_resource_codes import ensure_admin_resource_code_schema
 
         ensure_admin_resource_code_schema(conn)
+
+        from composite_tests import ensure_composite_test_schema
+
+        ensure_composite_test_schema(conn)
 
         conn.commit()
     finally:

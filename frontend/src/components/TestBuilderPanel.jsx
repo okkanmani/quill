@@ -1604,7 +1604,7 @@ export default function TestBuilderPanel() {
           </button>
         ) : null}
         <Link
-          to="/admin/worksheets"
+          to="/admin/tests"
           className={CREATE_STICKY_ACTION_LINK}
         >
           View worksheets →

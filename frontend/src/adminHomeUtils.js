@@ -1,4 +1,5 @@
 import { formatAreaLabel } from "./analysisUtils";
+import { formatWeightedTestScore } from "./testUtils";
 import { normalizeSubjectKey } from "./subjectUtils";
 
 export function focusSelectionKey(subject, area) {
@@ -6,6 +7,7 @@ export function focusSelectionKey(subject, area) {
 }
 
 export function activityKindLabel(item) {
+  if (item.kind === "composite_test_completed") return "Composite";
   if (item.kind === "test_completed") return "Test";
   if (item.kind === "worksheet_completed") return "Worksheet";
   if (item.kind === "reinforcement_flagged") return "Reinforcement";
@@ -14,7 +16,11 @@ export function activityKindLabel(item) {
 }
 
 export function activityKindBadgeClass(item) {
-  if (item.kind === "test_completed" || item.kind === "test_locked") {
+  if (
+    item.kind === "test_completed"
+    || item.kind === "test_locked"
+    || item.kind === "composite_test_completed"
+  ) {
     return "bg-violet-100 text-violet-900 border-violet-200";
   }
   if (item.kind === "reinforcement_flagged") {
@@ -37,12 +43,21 @@ export function activityTitle(item) {
   return item.title || "Untitled";
 }
 
+export function activityScoreLine(item) {
+  if (item.kind !== "composite_test_completed") return null;
+  if (item.weighted_score == null || item.max_weighted_score == null) return null;
+  return formatWeightedTestScore(item.weighted_score, item.max_weighted_score);
+}
+
 export function activityDestination(item) {
   if (item.kind === "worksheet_completed" && item.result_id != null) {
     return `/admin/results?result=${encodeURIComponent(item.result_id)}`;
   }
   if (item.kind === "test_completed" && item.attempt_id != null) {
     return `/admin/results?view=tests&attempt=${encodeURIComponent(item.attempt_id)}`;
+  }
+  if (item.kind === "composite_test_completed" && item.attempt_id != null) {
+    return `/admin/results?view=composites&composite=${encodeURIComponent(item.attempt_id)}`;
   }
   if (item.kind === "reinforcement_flagged" && item.subject && item.area) {
     return `/admin/analysis?focus=${encodeURIComponent(focusSelectionKey(item.subject, item.area))}`;

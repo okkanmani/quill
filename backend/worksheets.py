@@ -425,6 +425,10 @@ def assert_worksheet_accessible(
                 "This Thinking Quest week is locked. Complete earlier weeks or ask your teacher to unlock it."
             )
         raise ValueError("This worksheet is locked. Ask your teacher to unlock it.")
+    from composite_tests import is_worksheet_in_locked_composite
+
+    if is_worksheet_in_locked_composite(student_name, worksheet_id):
+        raise ValueError("This test is part of a locked composite assessment.")
 
 
 def unlock_gifted_track_week(student_name: str, week: int) -> int:
@@ -486,6 +490,7 @@ def set_worksheet_access_lock(
     *,
     locked: bool,
     scheduled_unlock_at: str | None = None,
+    lock_source: str | None = None,
 ) -> None:
     if not get_worksheet(worksheet_id):
         raise ValueError("Worksheet not found.")
@@ -501,25 +506,27 @@ def set_worksheet_access_lock(
             conn.execute(
                 """
                 INSERT INTO student_worksheet_locks
-                  (student, worksheet_id, locked, updated_at, scheduled_unlock_at)
-                VALUES (?, ?, 1, ?, ?)
+                  (student, worksheet_id, locked, updated_at, scheduled_unlock_at, lock_source)
+                VALUES (?, ?, 1, ?, ?, ?)
                 ON CONFLICT(student, worksheet_id) DO UPDATE SET
                   locked = 1,
                   updated_at = excluded.updated_at,
-                  scheduled_unlock_at = excluded.scheduled_unlock_at
+                  scheduled_unlock_at = excluded.scheduled_unlock_at,
+                  lock_source = excluded.lock_source
                 """,
-                (student_name, worksheet_id, updated_at, schedule_value),
+                (student_name, worksheet_id, updated_at, schedule_value, lock_source),
             )
         else:
             conn.execute(
                 """
                 INSERT INTO student_worksheet_locks
-                  (student, worksheet_id, locked, updated_at, scheduled_unlock_at)
-                VALUES (?, ?, 0, ?, NULL)
+                  (student, worksheet_id, locked, updated_at, scheduled_unlock_at, lock_source)
+                VALUES (?, ?, 0, ?, NULL, NULL)
                 ON CONFLICT(student, worksheet_id) DO UPDATE SET
                   locked = 0,
                   updated_at = excluded.updated_at,
-                  scheduled_unlock_at = NULL
+                  scheduled_unlock_at = NULL,
+                  lock_source = NULL
                 """,
                 (student_name, worksheet_id, updated_at),
             )
@@ -1268,10 +1275,12 @@ def list_worksheets(
                             WHERE t.worksheet_id = w.id AND t.student = ?) AS timed_started,
                            (SELECT ta.locked FROM test_attempts ta
                             WHERE ta.worksheet_id = w.id AND ta.student = ?
-                              AND ta.completed_at IS NULL) AS attempt_locked,
+                              AND ta.completed_at IS NULL
+                              AND ta.composite_attempt_id IS NULL) AS attempt_locked,
                            (SELECT 1 FROM test_attempts ta
                             WHERE ta.worksheet_id = w.id AND ta.student = ?
-                              AND ta.completed_at IS NULL) AS attempt_started
+                              AND ta.completed_at IS NULL
+                              AND ta.composite_attempt_id IS NULL) AS attempt_started
                     FROM worksheets w
                     {admin_filter}
                 ) t

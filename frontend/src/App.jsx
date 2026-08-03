@@ -6,6 +6,7 @@ import StudentLatest from "./pages/StudentLatest";
 import StudentRevision from "./pages/StudentRevision";
 import StudentRevisionWorksheet from "./pages/StudentRevisionWorksheet";
 import StudentTests from "./pages/StudentTests";
+import StudentCompositeHub from "./pages/StudentCompositeHub";
 import StudentTestTake from "./pages/StudentTestTake";
 import StudentTestReview from "./pages/StudentTestReview";
 import StudentResults from "./pages/StudentResults";
@@ -20,6 +21,9 @@ import AdminCreateWorksheet from "./pages/AdminCreateWorksheet";
 import AdminCreateLearn from "./pages/AdminCreateLearn";
 import AdminCreateUpload from "./pages/AdminCreateUpload";
 import AdminCreateTest from "./pages/AdminCreateTest";
+import AdminCreateComposite from "./pages/AdminCreateComposite";
+import AdminComposites from "./pages/AdminComposites";
+import AdminTests from "./pages/AdminTests";
 import AdminLearnEdit from "./pages/AdminLearnEdit";
 import AdminStudents from "./pages/AdminStudents";
 import AdminSettings from "./pages/AdminSettings";
@@ -78,6 +82,15 @@ export default function App() {
           element={
             <ProtectedRoute role={["student", "admin"]}>
               <StudentTests />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/composites/:compositeId"
+          element={
+            <ProtectedRoute role={["student", "admin"]}>
+              <StudentCompositeHub />
             </ProtectedRoute>
           }
         />
@@ -215,9 +228,28 @@ export default function App() {
           <Route index element={<Navigate to="/admin/create/worksheet" replace />} />
           <Route path="worksheet" element={<AdminCreateWorksheet />} />
           <Route path="test" element={<AdminCreateTest />} />
+          <Route path="composite" element={<AdminCreateComposite />} />
           <Route path="upload" element={<AdminCreateUpload />} />
           <Route path="learn" element={<AdminCreateLearn />} />
         </Route>
+
+        <Route
+          path="/admin/tests"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminTests />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/composites"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminComposites />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/admin/worksheets"

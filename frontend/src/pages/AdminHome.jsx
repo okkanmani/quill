@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   deleteResult,
   deleteWritingSubmission,
+  getAdminCompositeTestResults,
   getAdminTestResults,
   getPracticeResults,
   getResults,
@@ -22,6 +23,7 @@ import ResultsAnswerAside from "../components/ResultsAnswerAside";
 import ResultsPageCategory from "../components/ResultsPageCategory";
 import PracticeResultsSection from "../components/PracticeResultsSection";
 import TestResultsSection from "../components/TestResultsSection";
+import CompositeResultsSection from "../components/CompositeResultsSection";
 import WritingResultsSection from "../components/WritingResultsSection";
 import { normalizeSubjectKey } from "../subjectUtils";
 import { useAutoDismissToast } from "../useAutoDismissToast";
@@ -59,6 +61,14 @@ function ResultsViewTabs({ activeView }) {
       >
         Test results
       </Link>
+      <Link
+        to="/admin/results?view=composites"
+        className={`${RESULTS_VIEW_TAB} ${
+          activeView === "composites" ? RESULTS_VIEW_TAB_ACTIVE : RESULTS_VIEW_TAB_IDLE
+        }`}
+      >
+        Composite results
+      </Link>
     </div>
   );
 }
@@ -66,18 +76,28 @@ function ResultsViewTabs({ activeView }) {
 export default function AdminHome() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const resultsView = searchParams.get("view") === "tests" ? "tests" : "worksheets";
+  const viewParam = searchParams.get("view");
+  const resultsView =
+    viewParam === "tests"
+      ? "tests"
+      : viewParam === "composites"
+        ? "composites"
+        : "worksheets";
   const deepLinkResultId = searchParams.get("result");
   const deepLinkAttemptId = searchParams.get("attempt");
+  const deepLinkCompositeId = searchParams.get("composite");
   const [results, setResults] = useState([]);
   const [practiceResults, setPracticeResults] = useState([]);
   const [testResults, setTestResults] = useState([]);
+  const [compositeResults, setCompositeResults] = useState([]);
   const [writing, setWriting] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [openIds, setOpenIds] = useState(() => new Set());
   const [openPracticeIds, setOpenPracticeIds] = useState(() => new Set());
   const [openTestIds, setOpenTestIds] = useState(() => new Set());
+  const [openCompositeIds, setOpenCompositeIds] = useState(() => new Set());
+  const [openCompositeSectionIds, setOpenCompositeSectionIds] = useState(() => new Set());
   const [openWritingIds, setOpenWritingIds] = useState(() => new Set());
   const [expandResultSubjectKeys, setExpandResultSubjectKeys] = useState([]);
   const [deletingResultId, setDeletingResultId] = useState(null);
@@ -93,11 +113,18 @@ export default function AdminHome() {
       setLoading(false);
       return;
     }
-    Promise.all([getResults(), getPracticeResults(), getAdminTestResults(), getWritingSubmissions()])
-      .then(([resultData, practiceData, testData, writingData]) => {
+    Promise.all([
+      getResults(),
+      getPracticeResults(),
+      getAdminTestResults(),
+      getAdminCompositeTestResults(),
+      getWritingSubmissions(),
+    ])
+      .then(([resultData, practiceData, testData, compositeData, writingData]) => {
         setResults(resultData);
         setPracticeResults(Array.isArray(practiceData) ? practiceData : []);
         setTestResults(Array.isArray(testData) ? testData : []);
+        setCompositeResults(Array.isArray(compositeData) ? compositeData : []);
         setWriting(writingData);
       })
       .catch(() => setError("Could not load results."))
@@ -128,13 +155,32 @@ export default function AdminHome() {
   }, [deepLinkResultId, results, practiceResults]);
 
   useEffect(() => {
-    if (!deepLinkAttemptId || testResults.length === 0) return;
+    if (!deepLinkAttemptId || resultsView !== "tests" || testResults.length === 0) return;
     const target = testResults.find((result) =>
       resultIdsMatch(result.id, deepLinkAttemptId),
     );
     if (!target) return;
     setOpenTestIds(new Set([target.id]));
-  }, [deepLinkAttemptId, testResults]);
+  }, [deepLinkAttemptId, resultsView, testResults]);
+
+  useEffect(() => {
+    if (!deepLinkCompositeId || resultsView !== "composites" || compositeResults.length === 0) {
+      return;
+    }
+    const composite = compositeResults.find((result) =>
+      resultIdsMatch(result.id, deepLinkCompositeId),
+    );
+    if (!composite) return;
+    setOpenCompositeIds(new Set([composite.id]));
+    if (!deepLinkAttemptId) return;
+    const sectionMatch = (composite.sections || []).find(
+      (section) =>
+        section.result && resultIdsMatch(section.result.id, deepLinkAttemptId),
+    );
+    if (sectionMatch?.result) {
+      setOpenCompositeSectionIds(new Set([sectionMatch.result.id]));
+    }
+  }, [deepLinkCompositeId, deepLinkAttemptId, resultsView, compositeResults]);
 
   const prevResultsViewRef = useRef(resultsView);
   useEffect(() => {
@@ -143,6 +189,8 @@ export default function AdminHome() {
     setOpenIds(new Set());
     setOpenPracticeIds(new Set());
     setOpenTestIds(new Set());
+    setOpenCompositeIds(new Set());
+    setOpenCompositeSectionIds(new Set());
   }, [resultsView]);
 
   function toggleAnswers(id) {
@@ -166,6 +214,18 @@ export default function AdminHome() {
 
   function toggleTest(id) {
     setOpenTestIds((prev) => (prev.has(id) ? new Set() : new Set([id])));
+  }
+
+  function toggleComposite(id) {
+    setOpenCompositeIds((prev) => {
+      const next = prev.has(id) ? new Set() : new Set([id]);
+      return next;
+    });
+    setOpenCompositeSectionIds(new Set());
+  }
+
+  function toggleCompositeSection(id) {
+    setOpenCompositeSectionIds((prev) => (prev.has(id) ? new Set() : new Set([id])));
   }
 
   async function handleLogout() {
@@ -257,6 +317,7 @@ export default function AdminHome() {
   const hasMainWorksheets = results.length > 0 || writing.length > 0;
   const hasRevision = practiceResults.length > 0;
   const hasTests = testResults.length > 0;
+  const hasComposites = compositeResults.length > 0;
   const hasWorksheetResults = hasMainWorksheets || hasRevision;
   const openWorksheetId = openIds.size > 0 ? [...openIds][0] : null;
   const openPracticeId = openPracticeIds.size > 0 ? [...openPracticeIds][0] : null;
@@ -270,13 +331,26 @@ export default function AdminHome() {
   const selectedTestResult = openTestId
     ? testResults.find((result) => result.id === openTestId) ?? null
     : null;
+  const openCompositeSectionId =
+    openCompositeSectionIds.size > 0 ? [...openCompositeSectionIds][0] : null;
+  const selectedCompositeSectionResult = openCompositeSectionId
+    ? compositeResults
+        .flatMap((composite) =>
+          (composite.sections || [])
+            .map((section) => section.result)
+            .filter(Boolean),
+        )
+        .find((result) => resultIdsMatch(result.id, openCompositeSectionId)) ?? null
+    : null;
   const hasAnswerSelection = Boolean(
     selectedWorksheetResult || selectedPracticeResult,
   );
   const hasTestAnswerSelection = Boolean(selectedTestResult);
+  const hasCompositeAnswerSelection = Boolean(selectedCompositeSectionResult);
   const useSplitLayout =
     (resultsView === "worksheets" && hasAnswerSelection) ||
-    (resultsView === "tests" && hasTestAnswerSelection);
+    (resultsView === "tests" && hasTestAnswerSelection) ||
+    (resultsView === "composites" && hasCompositeAnswerSelection);
 
   function closeAnswerPanel() {
     setOpenIds(new Set());
@@ -285,6 +359,10 @@ export default function AdminHome() {
 
   function closeTestAnswerPanel() {
     setOpenTestIds(new Set());
+  }
+
+  function closeCompositeAnswerPanel() {
+    setOpenCompositeSectionIds(new Set());
   }
 
   function handleWorksheetSubjectCollapse(subjectKey) {
@@ -322,7 +400,9 @@ export default function AdminHome() {
         <p className={`${RESULTS_PAGE_INTRO} mb-6`}>
           {resultsView === "tests"
             ? "Adaptive test sittings for the selected student — weighted scores and answer review."
-            : "Main worksheet, writing, and revision practice results for the selected student."}
+            : resultsView === "composites"
+              ? "Multi-subject composite assessments — overall scores with per-section review."
+              : "Main worksheet, writing, and revision practice results for the selected student."}
         </p>
 
         {loading && <QuillLoading label="Loading results…" />}
@@ -334,6 +414,10 @@ export default function AdminHome() {
 
         {!loading && !error && resultsView === "tests" && !hasTests ? (
           <p className={RESULTS_EMPTY}>No test results yet.</p>
+        ) : null}
+
+        {!loading && !error && resultsView === "composites" && !hasComposites ? (
+          <p className={RESULTS_EMPTY}>No composite test results yet.</p>
         ) : null}
 
         {!loading && !error && resultsView === "worksheets" && hasWorksheetResults ? (
@@ -427,6 +511,37 @@ export default function AdminHome() {
               className="hidden lg:block"
               testResult={selectedTestResult}
               onClose={closeTestAnswerPanel}
+            />
+          </div>
+        ) : null}
+
+        {!loading && !error && resultsView === "composites" && hasComposites ? (
+          <div
+            className={
+              hasCompositeAnswerSelection
+                ? RESULTS_SPLIT_GRID_CLASS
+                : "lg:grid lg:grid-cols-1 lg:gap-6 lg:items-start"
+            }
+          >
+            <div className="min-w-0">
+              <CompositeResultsSection
+                results={compositeResults}
+                openCompositeIds={openCompositeIds}
+                toggleComposite={toggleComposite}
+                openSectionIds={openCompositeSectionIds}
+                toggleSection={toggleCompositeSection}
+                embedded
+              />
+              <ResultsAnswerAside
+                className="lg:hidden mt-4"
+                testResult={selectedCompositeSectionResult}
+                onClose={closeCompositeAnswerPanel}
+              />
+            </div>
+            <ResultsAnswerAside
+              className="hidden lg:block"
+              testResult={selectedCompositeSectionResult}
+              onClose={closeCompositeAnswerPanel}
             />
           </div>
         ) : null}

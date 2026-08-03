@@ -4,6 +4,7 @@ export const ADMIN_MAIN_NAV = [
   { to: "/admin/results", label: "Results", end: true },
   { to: "/admin/analysis", label: "Analysis", end: true },
   { to: "/admin/worksheets", label: "Worksheets", end: false },
+  { to: "/admin/tests", label: "Tests", end: false },
   { to: "/student/learn", label: "Learn", end: false },
   { to: "/admin/question-bank", label: "Question bank", end: true },
   { to: "/admin/create", label: "Create", end: false },

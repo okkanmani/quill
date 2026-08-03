@@ -47,11 +47,12 @@ function AnalyseChartIcon() {
   );
 }
 
-function TestAnalyseIconLink({ attemptId, analyzed, title }) {
+export function TestAnalyseIconLink({ attemptId, analyzed, title, to }) {
   const className = `${ROW_ACTION_BUTTON_CLASS} hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700`;
   const label = analyzed
     ? `Already analyzed: ${title}`
     : `Analyse test: ${title}`;
+  const href = to || `/admin/analysis?view=tests&attempt=${attemptId}`;
 
   if (analyzed) {
     return (
@@ -68,7 +69,7 @@ function TestAnalyseIconLink({ attemptId, analyzed, title }) {
 
   return (
     <Link
-      to={`/admin/analysis?view=tests&attempt=${attemptId}`}
+      to={href}
       className={className}
       title="Analyse test"
       aria-label={label}
@@ -87,29 +88,33 @@ export default function TestResultsSection({
   openIds,
   toggleOpen,
   embedded = false,
+  hideSort = false,
+  analyseHrefForAttempt,
 }) {
   const [sortMode, setSortMode] = useState(SECTION_SORT_TIME);
 
   const sortedItems = useMemo(
-    () => sortTestResultItems(results, sortMode),
-    [results, sortMode],
+    () => (hideSort ? results : sortTestResultItems(results, sortMode)),
+    [results, sortMode, hideSort],
   );
 
   if (results.length === 0) return null;
 
   const listContent = (
     <div className={embedded ? "flex flex-col gap-3" : `${HUB_TOP_BODY} gap-3`}>
-      <div className="flex items-center justify-end gap-2 px-0.5">
-        <label htmlFor="test-results-sort" className={RESULTS_SORT_LABEL}>
-          Sort
-        </label>
-        <SectionSortSelect
-          id="test-results-sort"
-          value={sortMode}
-          onChange={setSortMode}
-          options={SECTION_SORT_OPTIONS}
-        />
-      </div>
+      {!hideSort ? (
+        <div className="flex items-center justify-end gap-2 px-0.5">
+          <label htmlFor="test-results-sort" className={RESULTS_SORT_LABEL}>
+            Sort
+          </label>
+          <SectionSortSelect
+            id="test-results-sort"
+            value={sortMode}
+            onChange={setSortMode}
+            options={SECTION_SORT_OPTIONS}
+          />
+        </div>
+      ) : null}
       {sortedItems.map((item) => {
         const expanded = openIds.has(item.id);
         const analyzed = Boolean(item.analyzed_at);
@@ -175,6 +180,11 @@ export default function TestResultsSection({
                   attemptId={item.id}
                   analyzed={analyzed}
                   title={item.title || "Test"}
+                  to={
+                    analyseHrefForAttempt
+                      ? analyseHrefForAttempt(item)
+                      : undefined
+                  }
                 />
               </div>
             ) : null}

@@ -258,9 +258,12 @@ function CollectionNode({
   selectedSectionIds = null,
   onToggleSectionSelected = null,
   sectionSelectionDisabled = false,
+  defaultOpenDepth = null,
 }) {
   const isRoot = isRootSection(node);
-  const [open, setOpen] = useState(isRoot);
+  const [open, setOpen] = useState(() =>
+    defaultOpenDepth != null ? depth <= defaultOpenDepth : isRoot,
+  );
   const [sortMode, setSortMode] = useState(SECTION_SORT_STATUS);
   const items = sectionCanHoldWorksheets(node)
     ? worksheetsInSection(worksheets, node.id)
@@ -399,6 +402,7 @@ function CollectionNode({
           selectedSectionIds={selectedSectionIds}
           onToggleSectionSelected={onToggleSectionSelected}
           sectionSelectionDisabled={sectionSelectionDisabled}
+          defaultOpenDepth={defaultOpenDepth}
         />
       ))}
 
@@ -500,8 +504,21 @@ export default function WorksheetCollectionTree({
   selectedSectionIds = null,
   onToggleSectionSelected = null,
   sectionSelectionDisabled = false,
+  rootModeKey = null,
+  excludeRootModeKeys = null,
+  defaultOpenDepth = null,
 }) {
-  const roots = buildSectionTree(sections);
+  const roots = useMemo(() => {
+    let tree = buildSectionTree(sections);
+    if (rootModeKey) {
+      tree = tree.filter((node) => node.mode_key === rootModeKey);
+    }
+    if (excludeRootModeKeys?.length) {
+      const excluded = new Set(excludeRootModeKeys);
+      tree = tree.filter((node) => !excluded.has(node.mode_key));
+    }
+    return tree;
+  }, [sections, rootModeKey, excludeRootModeKeys]);
   if (roots.length === 0) return null;
 
   return (
@@ -525,6 +542,7 @@ export default function WorksheetCollectionTree({
           selectedSectionIds={selectedSectionIds}
           onToggleSectionSelected={onToggleSectionSelected}
           sectionSelectionDisabled={sectionSelectionDisabled}
+          defaultOpenDepth={defaultOpenDepth}
         />
       ))}
     </div>

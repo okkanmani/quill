@@ -44,6 +44,7 @@ import {
 } from "../resultExportUtils";
 import { useAutoDismissToast } from "../useAutoDismissToast";
 import AdminTestAnalysisView from "./AdminTestAnalysisView";
+import AdminCompositeAnalysisView from "./AdminCompositeAnalysisView";
 import {
   CREATE_ACCENT_OUTLINE_BUTTON,
   CREATE_GHOST_BUTTON_BLOCK,
@@ -76,6 +77,14 @@ function AnalysisViewTabs({ activeView }) {
         }`}
       >
         Test analysis
+      </Link>
+      <Link
+        to="/admin/analysis?view=composites"
+        className={`${RESULTS_VIEW_TAB} ${
+          activeView === "composites" ? RESULTS_VIEW_TAB_ACTIVE : RESULTS_VIEW_TAB_IDLE
+        }`}
+      >
+        Composite analysis
       </Link>
     </div>
   );
@@ -832,8 +841,15 @@ function SubjectBlock({ subject, selectedKey, onSelectArea }) {
 export default function AdminAnalysis() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const analysisView = searchParams.get("view") === "tests" ? "tests" : "worksheets";
+  const viewParam = searchParams.get("view");
+  const analysisView =
+    viewParam === "tests"
+      ? "tests"
+      : viewParam === "composites"
+        ? "composites"
+        : "worksheets";
   const initialAttemptId = searchParams.get("attempt");
+  const initialCompositeId = searchParams.get("composite");
   const initialFocusKey = searchParams.get("focus");
   const [results, setResults] = useState([]);
   const [revisionRecords, setRevisionRecords] = useState([]);
@@ -1195,6 +1211,15 @@ export default function AdminAnalysis() {
           <h1 className="text-2xl font-bold text-slate-950 mb-2">Analysis</h1>
           <AnalysisViewTabs activeView={analysisView} />
           <AdminTestAnalysisView initialAttemptId={initialAttemptId} />
+        </div>
+      ) : analysisView === "composites" ? (
+        <div className="max-w-7xl">
+          <h1 className="text-2xl font-bold text-slate-950 mb-2">Analysis</h1>
+          <AnalysisViewTabs activeView={analysisView} />
+          <AdminCompositeAnalysisView
+            initialCompositeId={initialCompositeId}
+            initialAttemptId={initialAttemptId}
+          />
         </div>
       ) : (
       <div

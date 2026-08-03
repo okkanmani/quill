@@ -40,10 +40,13 @@ def _student_last_activity_at(conn, student_name: str) -> str | None:
             SELECT completed_at AS ts FROM test_attempts
                 WHERE student = ? AND completed_at IS NOT NULL
             UNION ALL
+            SELECT completed_at AS ts FROM composite_test_attempts
+                WHERE student = ? AND completed_at IS NOT NULL
+            UNION ALL
             SELECT submitted_at AS ts FROM writing_submissions WHERE student = ?
         )
         """,
-        (student_name, student_name, student_name),
+        (student_name, student_name, student_name, student_name),
     ).fetchone()
     return row["last_at"] if row and row["last_at"] else None
 
@@ -142,6 +145,16 @@ def _recent_activity_for_student(conn, student_name: str, *, limit: int = 8) -> 
         FROM test_attempts ta
         JOIN worksheets w ON w.id = ta.worksheet_id
         WHERE ta.student = ? AND ta.completed_at IS NOT NULL
+          AND ta.composite_attempt_id IS NULL
+          AND NOT EXISTS (
+            SELECT 1
+            FROM test_attempts section_ta
+            JOIN composite_test_attempts cta ON cta.id = section_ta.composite_attempt_id
+            WHERE section_ta.student = ta.student
+              AND section_ta.worksheet_id = ta.worksheet_id
+              AND section_ta.completed_at IS NOT NULL
+              AND cta.completed_at IS NOT NULL
+          )
         ORDER BY ta.completed_at DESC
         LIMIT ?
         """,
@@ -155,6 +168,34 @@ def _recent_activity_for_student(conn, student_name: str, *, limit: int = 8) -> 
                 "title": row["title"] or "Test",
                 "worksheet_id": row["worksheet_id"],
                 "attempt_id": row["attempt_id"],
+                "at": row["completed_at"],
+            }
+        )
+
+    composite_rows = conn.execute(
+        """
+        SELECT cta.id AS attempt_id, cta.completed_at, cta.weighted_score,
+               cta.max_weighted_score, ct.id AS composite_id, ct.title
+        FROM composite_test_attempts cta
+        JOIN composite_tests ct ON ct.id = cta.composite_id
+        WHERE cta.student = ? AND cta.completed_at IS NOT NULL
+        ORDER BY cta.completed_at DESC
+        LIMIT ?
+        """,
+        (student_name, limit),
+    ).fetchall()
+    for row in composite_rows:
+        weighted = row["weighted_score"]
+        max_weighted = row["max_weighted_score"]
+        events.append(
+            {
+                "student_name": student_name,
+                "kind": "composite_test_completed",
+                "title": row["title"] or "Composite test",
+                "composite_id": row["composite_id"],
+                "attempt_id": row["attempt_id"],
+                "weighted_score": float(weighted) if weighted is not None else None,
+                "max_weighted_score": float(max_weighted) if max_weighted is not None else None,
                 "at": row["completed_at"],
             }
         )

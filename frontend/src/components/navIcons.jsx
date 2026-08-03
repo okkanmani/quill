@@ -142,6 +142,7 @@ const EXACT = {
   "/admin/results": IconResults,
   "/admin/analysis": IconAnalysis,
   "/admin/worksheets": IconWorksheets,
+  "/admin/tests": IconTests,
   "/admin/question-bank": IconQuestionBank,
   "/admin/create": IconCreate,
   "/admin/students": IconStudents,
@@ -168,6 +169,7 @@ export function getNavIconComponent(to) {
   if (EXACT[path]) return EXACT[path];
   if (path.startsWith("/admin/create")) return IconCreate;
   if (path.startsWith("/admin/worksheets")) return IconWorksheets;
+  if (path.startsWith("/admin/tests")) return IconTests;
   if (path.startsWith("/student/learn")) return IconLearn;
   return IconWorksheets;
 }

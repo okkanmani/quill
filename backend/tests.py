@@ -28,6 +28,31 @@ RC_DEMOTE_WEIGHTED_PCT = 0.70
 RC_QUESTIONS_BANK_MULTIPLIER = 2
 
 
+def fetch_test_attempt(
+    conn,
+    student_name: str,
+    worksheet_id: str,
+    *,
+    composite_attempt_id: int | None = None,
+):
+    """Return the standalone or composite-section attempt row for this context."""
+    if composite_attempt_id is not None:
+        return conn.execute(
+            """
+            SELECT * FROM test_attempts
+            WHERE student = ? AND worksheet_id = ? AND composite_attempt_id = ?
+            """,
+            (student_name, worksheet_id, composite_attempt_id),
+        ).fetchone()
+    return conn.execute(
+        """
+        SELECT * FROM test_attempts
+        WHERE student = ? AND worksheet_id = ? AND composite_attempt_id IS NULL
+        """,
+        (student_name, worksheet_id),
+    ).fetchone()
+
+
 def _normalize_subject(subject: str) -> str:
     return (subject or "").strip().lower()
 
@@ -1484,6 +1509,7 @@ def list_tests(student_name: str, *, admin_id: int) -> list[dict]:
             FROM worksheets w
             LEFT JOIN test_attempts ta
               ON ta.worksheet_id = w.id AND ta.student = ?
+                 AND ta.composite_attempt_id IS NULL
             LEFT JOIN test_review_sessions tr
               ON tr.attempt_id = ta.id
             WHERE COALESCE(w.is_test, 0) = 1
@@ -1607,8 +1633,21 @@ def get_or_start_test_session(
     target_slot: int | None = None,
     resume: bool = False,
     preview: bool = False,
+    composite_attempt_id: int | None = None,
 ) -> dict:
+    from composite_tests import (
+        assert_worksheet_not_blocked_by_active_composite,
+        validate_composite_attempt_link,
+    )
+
     assert_worksheet_accessible(student_name, worksheet_id)
+    assert_worksheet_not_blocked_by_active_composite(
+        student_name, worksheet_id, composite_attempt_id=composite_attempt_id
+    )
+    if composite_attempt_id is not None:
+        validate_composite_attempt_link(
+            student_name, worksheet_id, composite_attempt_id
+        )
     ws = get_worksheet(worksheet_id)
     if not ws or not _test_from_sheet_data(ws):
         raise ValueError("Test not found.")
@@ -1630,20 +1669,28 @@ def get_or_start_test_session(
 
     conn = db.connect()
     try:
-        row = conn.execute(
-            """
-            SELECT id, student, worksheet_id, started_at, completed_at, locked,
-                   sequence, answers, sitting_count
-            FROM test_attempts
-            WHERE student = ? AND worksheet_id = ?
-            """,
-            (student_name, worksheet_id),
-        ).fetchone()
+        row = fetch_test_attempt(
+            conn,
+            student_name,
+            worksheet_id,
+            composite_attempt_id=composite_attempt_id,
+        )
 
         if row and row["completed_at"]:
             raise ValueError("This test was already submitted and cannot be retaken.")
 
         if row:
+            linked = row["composite_attempt_id"]
+            if linked is not None and composite_attempt_id is None:
+                raise ValueError(
+                    "Continue this subject test from the composite assessment hub."
+                )
+            if (
+                composite_attempt_id is not None
+                and linked is not None
+                and int(linked) != int(composite_attempt_id)
+            ):
+                raise ValueError("This test belongs to a different composite sitting.")
             if int(row["locked"] or 0) == 1:
                 raise ValueError(
                     "This test sitting is locked. Ask your teacher to unlock it."
@@ -1669,11 +1716,17 @@ def get_or_start_test_session(
                 """
                 INSERT INTO test_attempts (
                     student, worksheet_id, started_at, sitting_count,
-                    sequence, answers, locked
+                    sequence, answers, locked, composite_attempt_id
                 )
-                VALUES (?, ?, ?, ?, '[]', '{}', 0)
+                VALUES (?, ?, ?, ?, '[]', '{}', 0, ?)
                 """,
-                (student_name, worksheet_id, started_at, sitting_count),
+                (
+                    student_name,
+                    worksheet_id,
+                    started_at,
+                    sitting_count,
+                    composite_attempt_id,
+                ),
             )
             conn.commit()
             row = conn.execute(
@@ -1703,17 +1756,17 @@ def _save_rc_test_answer(
     *,
     slot: int,
     responses: dict,
+    composite_attempt_id: int | None = None,
 ) -> dict:
     sitting_count = test_sitting_count_from_data(ws)
     conn = db.connect()
     try:
-        row = conn.execute(
-            """
-            SELECT * FROM test_attempts
-            WHERE student = ? AND worksheet_id = ?
-            """,
-            (student_name, worksheet_id),
-        ).fetchone()
+        row = fetch_test_attempt(
+            conn,
+            student_name,
+            worksheet_id,
+            composite_attempt_id=composite_attempt_id,
+        )
         if not row:
             raise ValueError("Start the test before answering questions.")
         if row["completed_at"]:
@@ -1790,6 +1843,7 @@ def save_test_answer(
     slot: int,
     given: str = "",
     responses: dict | None = None,
+    composite_attempt_id: int | None = None,
 ) -> dict:
     assert_worksheet_accessible(student_name, worksheet_id)
     ws = get_worksheet(worksheet_id)
@@ -1807,17 +1861,17 @@ def save_test_answer(
             ws,
             slot=slot,
             responses=responses or {},
+            composite_attempt_id=composite_attempt_id,
         )
 
     conn = db.connect()
     try:
-        row = conn.execute(
-            """
-            SELECT * FROM test_attempts
-            WHERE student = ? AND worksheet_id = ?
-            """,
-            (student_name, worksheet_id),
-        ).fetchone()
+        row = fetch_test_attempt(
+            conn,
+            student_name,
+            worksheet_id,
+            composite_attempt_id=composite_attempt_id,
+        )
         if not row:
             raise ValueError("Start the test before answering questions.")
         if row["completed_at"]:
@@ -1897,6 +1951,7 @@ def save_test_scratchpad(
     scratchpad: str,
     work_text: str | None = None,
     work_mode: str | None = None,
+    composite_attempt_id: int | None = None,
 ) -> dict:
     assert_worksheet_accessible(student_name, worksheet_id)
     ws = get_worksheet(worksheet_id)
@@ -1909,13 +1964,12 @@ def save_test_scratchpad(
 
     conn = db.connect()
     try:
-        row = conn.execute(
-            """
-            SELECT * FROM test_attempts
-            WHERE student = ? AND worksheet_id = ?
-            """,
-            (student_name, worksheet_id),
-        ).fetchone()
+        row = fetch_test_attempt(
+            conn,
+            student_name,
+            worksheet_id,
+            composite_attempt_id=composite_attempt_id,
+        )
         if not row:
             raise ValueError("Start the test before saving scratchpad work.")
         if row["completed_at"]:
@@ -1969,7 +2023,123 @@ def save_test_scratchpad(
         conn.close()
 
 
-def submit_test(student_name: str, worksheet_id: str) -> dict:
+def create_test_review_for_attempt(
+    conn,
+    attempt_id: int,
+    student_name: str,
+    *,
+    completed_at: str | None = None,
+) -> int | None:
+    existing = conn.execute(
+        "SELECT id FROM test_review_sessions WHERE attempt_id = ?",
+        (attempt_id,),
+    ).fetchone()
+    if existing:
+        return int(existing["id"])
+
+    row = conn.execute(
+        "SELECT * FROM test_attempts WHERE id = ? AND student = ?",
+        (attempt_id, student_name),
+    ).fetchone()
+    if not row or not row["completed_at"]:
+        return None
+
+    worksheet_id = row["worksheet_id"]
+    ws = get_worksheet(worksheet_id)
+    if not ws:
+        return None
+
+    sitting_count = int(row["sitting_count"] or test_sitting_count_from_data(ws))
+    sequence = _parse_json(row["sequence"], [])
+    answers = _parse_json(row["answers"], {})
+    is_passage_window = _is_passage_window_test(ws)
+    completed_at = completed_at or row["completed_at"]
+
+    missed = []
+    passage_lookup = _passage_lookup(ws)
+    question_lookup = _question_lookup(ws)
+    for slot in range(1, sitting_count + 1):
+        ans = answers.get(str(slot), {})
+        if not isinstance(ans, dict):
+            continue
+        if is_passage_window:
+            passage = passage_lookup.get(str(ans.get("passage_id") or ""))
+            for detail in ans.get("questions") or []:
+                if not isinstance(detail, dict) or detail.get("correct"):
+                    continue
+                missed.append(
+                    {
+                        "slot": slot,
+                        "question_id": detail.get("question_id"),
+                        "prompt": detail.get("prompt") or "",
+                        "given": detail.get("given") or "",
+                        "expected": detail.get("expected") or "",
+                        "choices": detail.get("choices") or [],
+                        "area": detail.get("area") or "",
+                        "tier": detail.get("tier") or ans.get("tier"),
+                        "passage": passage,
+                        "notes": {"mode": "text", "text": "", "scratchpad": ""},
+                    }
+                )
+            continue
+        if not ans.get("correct"):
+            q_full = question_lookup.get(str(ans.get("question_id") or ""))
+            passage = None
+            if q_full:
+                passage_id = q_full.get("passage_id")
+                if passage_id:
+                    passage = passage_lookup.get(str(passage_id))
+            missed.append(
+                {
+                    "slot": slot,
+                    "question_id": ans.get("question_id"),
+                    "prompt": ans.get("prompt") or "",
+                    "given": ans.get("given") or "",
+                    "expected": ans.get("expected") or "",
+                    "choices": ans.get("choices") or [],
+                    "area": ans.get("area") or "",
+                    "tier": ans.get("tier"),
+                    "passage": passage,
+                    "notes": {"mode": "text", "text": "", "scratchpad": ""},
+                }
+            )
+
+    if not missed:
+        return None
+
+    payload = {
+        "title": f"Review — {ws.get('title') or worksheet_id}",
+        "subject": ws.get("subject") or "general",
+        "worksheet_id": worksheet_id,
+        "attempt_id": row["id"],
+        "questions": missed,
+    }
+    cur = conn.execute(
+        """
+        INSERT INTO test_review_sessions (
+            attempt_id, student, worksheet_id, subject, title, payload, created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            row["id"],
+            student_name,
+            worksheet_id,
+            ws.get("subject") or "general",
+            payload["title"],
+            json.dumps(payload),
+            completed_at,
+        ),
+    )
+    return cur.lastrowid
+
+
+def submit_test(
+    student_name: str,
+    worksheet_id: str,
+    *,
+    composite_attempt_id: int | None = None,
+) -> dict:
     assert_worksheet_accessible(student_name, worksheet_id)
     ws = get_worksheet(worksheet_id)
     if not ws or not _test_from_sheet_data(ws):
@@ -1979,13 +2149,12 @@ def submit_test(student_name: str, worksheet_id: str) -> dict:
 
     conn = db.connect()
     try:
-        row = conn.execute(
-            """
-            SELECT * FROM test_attempts
-            WHERE student = ? AND worksheet_id = ?
-            """,
-            (student_name, worksheet_id),
-        ).fetchone()
+        row = fetch_test_attempt(
+            conn,
+            student_name,
+            worksheet_id,
+            composite_attempt_id=composite_attempt_id,
+        )
         if not row:
             raise ValueError("No test attempt found.")
         if row["completed_at"]:
@@ -2082,82 +2251,23 @@ def submit_test(student_name: str, worksheet_id: str) -> dict:
             ),
         )
 
-        missed = []
-        passage_lookup = _passage_lookup(ws)
-        question_lookup = _question_lookup(ws)
-        for slot in range(1, sitting_count + 1):
-            ans = answers.get(str(slot), {})
-            if not isinstance(ans, dict):
-                continue
-            if is_passage_window:
-                passage = passage_lookup.get(str(ans.get("passage_id") or ""))
-                for detail in ans.get("questions") or []:
-                    if not isinstance(detail, dict) or detail.get("correct"):
-                        continue
-                    missed.append(
-                        {
-                            "slot": slot,
-                            "question_id": detail.get("question_id"),
-                            "prompt": detail.get("prompt") or "",
-                            "given": detail.get("given") or "",
-                            "expected": detail.get("expected") or "",
-                            "choices": detail.get("choices") or [],
-                            "area": detail.get("area") or "",
-                            "tier": detail.get("tier") or ans.get("tier"),
-                            "passage": passage,
-                            "notes": {"mode": "text", "text": "", "scratchpad": ""},
-                        }
-                    )
-                continue
-            if not ans.get("correct"):
-                q_full = question_lookup.get(str(ans.get("question_id") or ""))
-                passage = None
-                if q_full:
-                    passage_id = q_full.get("passage_id")
-                    if passage_id:
-                        passage = passage_lookup.get(str(passage_id))
-                missed.append(
-                    {
-                        "slot": slot,
-                        "question_id": ans.get("question_id"),
-                        "prompt": ans.get("prompt") or "",
-                        "given": ans.get("given") or "",
-                        "expected": ans.get("expected") or "",
-                        "choices": ans.get("choices") or [],
-                        "area": ans.get("area") or "",
-                        "tier": ans.get("tier"),
-                        "passage": passage,
-                        "notes": {"mode": "text", "text": "", "scratchpad": ""},
-                    }
-                )
-
         review_id = None
-        if missed:
-            payload = {
-                "title": f"Review — {ws.get('title') or worksheet_id}",
-                "subject": ws.get("subject") or "general",
-                "worksheet_id": worksheet_id,
-                "attempt_id": row["id"],
-                "questions": missed,
-            }
-            cur = conn.execute(
-                """
-                INSERT INTO test_review_sessions (
-                    attempt_id, student, worksheet_id, subject, title, payload, created_at
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    row["id"],
-                    student_name,
-                    worksheet_id,
-                    ws.get("subject") or "general",
-                    payload["title"],
-                    json.dumps(payload),
-                    completed_at,
-                ),
+        missed_count = 0
+        composite_attempt_id = row["composite_attempt_id"]
+        if composite_attempt_id is None:
+            review_id = create_test_review_for_attempt(
+                conn, row["id"], student_name, completed_at=completed_at
             )
-            review_id = cur.lastrowid
+            if review_id:
+                missed_count = len(
+                    _parse_json(
+                        conn.execute(
+                            "SELECT payload FROM test_review_sessions WHERE id = ?",
+                            (review_id,),
+                        ).fetchone()["payload"],
+                        {},
+                    ).get("questions", [])
+                )
 
         conn.commit()
         return {
@@ -2168,7 +2278,8 @@ def submit_test(student_name: str, worksheet_id: str) -> dict:
             "max_weighted_score": max_weighted,
             "duration_seconds": duration,
             "review_id": review_id,
-            "missed_count": len(missed),
+            "missed_count": missed_count,
+            "composite_section": composite_attempt_id is not None,
         }
     except Exception:
         conn.rollback()
@@ -2177,19 +2288,35 @@ def submit_test(student_name: str, worksheet_id: str) -> dict:
         conn.close()
 
 
-def lock_test_attempt(student_name: str, worksheet_id: str) -> None:
+def lock_test_attempt(
+    student_name: str,
+    worksheet_id: str,
+    *,
+    composite_attempt_id: int | None = None,
+) -> None:
     ws = get_worksheet(worksheet_id)
     if not ws or not _test_from_sheet_data(ws):
         return
     conn = db.connect()
     try:
-        conn.execute(
-            """
-            UPDATE test_attempts SET locked = 1
-            WHERE student = ? AND worksheet_id = ? AND completed_at IS NULL AND locked = 0
-            """,
-            (student_name, worksheet_id),
-        )
+        if composite_attempt_id is not None:
+            conn.execute(
+                """
+                UPDATE test_attempts SET locked = 1
+                WHERE student = ? AND worksheet_id = ? AND composite_attempt_id = ?
+                  AND completed_at IS NULL AND locked = 0
+                """,
+                (student_name, worksheet_id, composite_attempt_id),
+            )
+        else:
+            conn.execute(
+                """
+                UPDATE test_attempts SET locked = 1
+                WHERE student = ? AND worksheet_id = ? AND composite_attempt_id IS NULL
+                  AND completed_at IS NULL AND locked = 0
+                """,
+                (student_name, worksheet_id),
+            )
         conn.commit()
     except Exception:
         conn.rollback()
@@ -2207,7 +2334,7 @@ def unlock_test_attempt(student_name: str, worksheet_id: str) -> None:
         row = conn.execute(
             """
             SELECT id, completed_at FROM test_attempts
-            WHERE student = ? AND worksheet_id = ?
+            WHERE student = ? AND worksheet_id = ? AND composite_attempt_id IS NULL
             """,
             (student_name, worksheet_id),
         ).fetchone()
@@ -2227,70 +2354,91 @@ def unlock_test_attempt(student_name: str, worksheet_id: str) -> None:
         conn.close()
 
 
+def build_test_result_record(row) -> dict:
+    """Build a test result payload from a joined test_attempts + worksheets row."""
+    answers = _parse_json(row["answers"], {})
+    sequence = _parse_json(row["sequence"], [])
+    sitting_count = int(row["sitting_count"] or row["test_sitting_count"] or 20)
+    correct_count = _test_correct_count(answers)
+    total_count = sum(
+        len(a.get("questions") or [])
+        if isinstance(a, dict) and isinstance(a.get("questions"), list) and a.get("questions")
+        else 1
+        for a in answers.values()
+        if isinstance(a, dict)
+    ) or len(answers)
+    adaptive = int(row["test_adaptive"] or 0) != 0
+    slots = (
+        build_ordered_test_slots(sequence, answers, sitting_count=sitting_count)
+        if adaptive
+        else []
+    )
+    return {
+        "id": row["id"],
+        "worksheet_id": row["worksheet_id"],
+        "title": row["title"] or row["worksheet_id"],
+        "subject": row["subject"] or "general",
+        "completed_at": row["completed_at"],
+        "analyzed_at": row["analyzed_at"],
+        "weighted_score": float(row["weighted_score"] or 0),
+        "max_weighted_score": float(row["max_weighted_score"] or 0),
+        "duration_seconds": row["duration_seconds"],
+        "correct_count": correct_count,
+        "total_count": total_count,
+        "sitting_count": sitting_count,
+        "time_limit_minutes": row["time_limit_minutes"],
+        "test_adaptive": adaptive,
+        "content_badge": "Test",
+        "review_id": row["review_id"],
+        "review_completed": bool(row["review_completed_at"]),
+        "slots": slots,
+        "answers": list(answers.values()) if answers else [],
+    }
+
+
+_TEST_RESULT_SELECT = """
+SELECT ta.id, ta.worksheet_id, ta.completed_at, ta.analyzed_at,
+       ta.weighted_score, ta.max_weighted_score, ta.duration_seconds,
+       ta.answers, ta.sequence, ta.sitting_count,
+       w.title, w.subject, w.test_adaptive, w.time_limit_minutes,
+       w.test_sitting_count,
+       tr.id AS review_id, tr.completed_at AS review_completed_at
+FROM test_attempts ta
+JOIN worksheets w ON w.id = ta.worksheet_id
+LEFT JOIN test_review_sessions tr ON tr.attempt_id = ta.id
+"""
+
+
 def list_test_results(student_name: str) -> list[dict]:
     conn = db.connect()
     try:
         rows = conn.execute(
-            """
-            SELECT ta.id, ta.worksheet_id, ta.completed_at, ta.analyzed_at,
-                   ta.weighted_score, ta.max_weighted_score, ta.duration_seconds,
-                   ta.answers, ta.sequence, ta.sitting_count,
-                   w.title, w.subject, w.test_adaptive, w.time_limit_minutes,
-                   w.test_sitting_count,
-                   tr.id AS review_id, tr.completed_at AS review_completed_at
-            FROM test_attempts ta
-            JOIN worksheets w ON w.id = ta.worksheet_id
-            LEFT JOIN test_review_sessions tr ON tr.attempt_id = ta.id
+            f"""
+            {_TEST_RESULT_SELECT}
             WHERE ta.student = ? AND ta.completed_at IS NOT NULL
+              AND ta.composite_attempt_id IS NULL
             ORDER BY ta.completed_at DESC
             """,
             (student_name,),
         ).fetchall()
-        records = []
-        for row in rows:
-            answers = _parse_json(row["answers"], {})
-            sequence = _parse_json(row["sequence"], [])
-            sitting_count = int(row["sitting_count"] or row["test_sitting_count"] or 20)
-            correct_count = _test_correct_count(answers)
-            total_count = sum(
-                len(a.get("questions") or [])
-                if isinstance(a, dict) and isinstance(a.get("questions"), list) and a.get("questions")
-                else 1
-                for a in answers.values()
-                if isinstance(a, dict)
-            ) or len(answers)
-            adaptive = int(row["test_adaptive"] or 0) != 0
-            slots = (
-                build_ordered_test_slots(
-                    sequence, answers, sitting_count=sitting_count
-                )
-                if adaptive
-                else []
-            )
-            records.append(
-                {
-                    "id": row["id"],
-                    "worksheet_id": row["worksheet_id"],
-                    "title": row["title"] or row["worksheet_id"],
-                    "subject": row["subject"] or "general",
-                    "completed_at": row["completed_at"],
-                    "analyzed_at": row["analyzed_at"],
-                    "weighted_score": float(row["weighted_score"] or 0),
-                    "max_weighted_score": float(row["max_weighted_score"] or 0),
-                    "duration_seconds": row["duration_seconds"],
-                    "correct_count": correct_count,
-                    "total_count": total_count,
-                    "sitting_count": sitting_count,
-                    "time_limit_minutes": row["time_limit_minutes"],
-                    "test_adaptive": adaptive,
-                    "content_badge": "Test",
-                    "review_id": row["review_id"],
-                    "review_completed": bool(row["review_completed_at"]),
-                    "slots": slots,
-                    "answers": list(answers.values()) if answers else [],
-                }
-            )
-        return records
+        return [build_test_result_record(row) for row in rows]
+    finally:
+        conn.close()
+
+
+def get_test_result(student_name: str, attempt_id: int) -> dict | None:
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            f"""
+            {_TEST_RESULT_SELECT}
+            WHERE ta.id = ? AND ta.student = ? AND ta.completed_at IS NOT NULL
+            """,
+            (attempt_id, student_name),
+        ).fetchone()
+        if not row:
+            return None
+        return build_test_result_record(row)
     finally:
         conn.close()
 
