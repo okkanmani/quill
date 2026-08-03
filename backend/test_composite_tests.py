@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import db
 from composite_tests import (
+    abandon_composite_sitting,
     create_composite_test,
     delete_composite_test_result,
     get_composite_hub,
@@ -288,6 +289,29 @@ class CompositeTestsTest(unittest.TestCase):
         self.assertTrue(delete_test_attempt(attempt_id, self.student_name))
         self.assertEqual(list_test_results(self.student_name), [])
         self.assertFalse(delete_test_attempt(attempt_id, self.student_name))
+
+    def test_abandon_composite_auto_submits_entire_assessment(self):
+        created = create_composite_test(
+            self.admin_id,
+            title="Benchmark",
+            section_worksheet_ids=["test-math", "test-engl"],
+        )
+        hub = start_composite_attempt(self.student_name, created["id"])
+        attempt_id = hub["attempt_id"]
+
+        with patch("tests._weighted_test_score", return_value=(3.0, 4.0)):
+            self._complete_section("test-math", attempt_id)
+
+        result = abandon_composite_sitting(self.student_name, created["id"])
+        self.assertTrue(result["completed_at"])
+        self.assertIsNotNone(result["overall"])
+        self.assertEqual(result["overall"]["weighted_score"], 3.0)
+        self.assertGreater(result["overall"]["max_weighted_score"], 0)
+        self.assertTrue(all(s["status"] == "completed" for s in result["sections"]))
+
+        hub_after = get_composite_hub(self.student_name, created["id"])
+        self.assertTrue(hub_after["completed_at"])
+        self.assertFalse(hub_after["can_submit"])
 
 
 class LegacyTestAttemptsMigrationTest(unittest.TestCase):

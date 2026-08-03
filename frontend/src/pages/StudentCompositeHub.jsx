@@ -100,7 +100,8 @@ function SectionRow({ section, hub, onNavigateSection, showScores }) {
 }
 
 function CompositeExitDialog({
-  inProgressSectionCount,
+  incompleteSectionCount,
+  completedSectionCount,
   exiting,
   onCancel,
   onConfirm,
@@ -118,23 +119,23 @@ function CompositeExitDialog({
         </h2>
         <div className="space-y-2 text-sm leading-relaxed text-slate-700">
           <p>
-            Each section is one timed sitting. If you leave now, any section you have
-            started will be <strong>auto-submitted</strong> with your current answers and
-            scored.
+            If you leave now, the <strong>entire assessment will be auto-submitted</strong>.
+            Completed sections keep their scores; any section you have not finished will be
+            submitted with your current answers or scored as unanswered.
           </p>
-          {inProgressSectionCount > 0 ? (
+          {completedSectionCount > 0 ? (
             <p>
-              You have <strong>{inProgressSectionCount}</strong> section
-              {inProgressSectionCount === 1 ? "" : "s"} in progress that will be submitted
-              now.
+              You have completed <strong>{completedSectionCount}</strong> section
+              {completedSectionCount === 1 ? "" : "s"}.
             </p>
-          ) : (
-            <p>You have not started a section yet, so nothing will be submitted.</p>
-          )}
-          <p>
-            You can come back later to start sections you have not opened, but you cannot
-            redo a section that was auto-submitted.
-          </p>
+          ) : null}
+          {incompleteSectionCount > 0 ? (
+            <p>
+              <strong>{incompleteSectionCount}</strong> remaining section
+              {incompleteSectionCount === 1 ? "" : "s"} will also be submitted now.
+            </p>
+          ) : null}
+          <p>You cannot return to finish or redo sections after leaving.</p>
         </div>
         <div className="mt-6 flex flex-wrap justify-end gap-3">
           <button
@@ -171,11 +172,15 @@ function CompositeDisclaimer({ hub, starting, onBack, onContinue }) {
         <ul className="list-disc pl-5 space-y-1.5">
           <li>Each section has its own timer and must be finished in one sitting.</li>
           <li>
-            If you back out of a section or leave this assessment, your work is
-            auto-submitted and scored based on whatever you answered.
+            If you back out of a section, that section is auto-submitted with your current
+            answers and you return to this hub to continue other sections.
           </li>
-          <li>Scores are hidden until you submit the full assessment from this page.</li>
-          <li>After the full assessment is submitted, you can review missed questions per section.</li>
+          <li>
+            If you leave this assessment entirely, the whole assessment is auto-submitted —
+            unfinished sections are scored as unanswered.
+          </li>
+          <li>Scores are hidden until the full assessment is submitted.</li>
+          <li>After submission, you can review missed questions per section.</li>
           <li>
             If you already took one of these tests on its own, that result stays on your
             subject tests page. This assessment uses a separate sitting for each section.
@@ -323,8 +328,8 @@ export default function StudentCompositeHub() {
   }
 
   const completedCount = hub?.sections?.filter((s) => s.status === "completed").length || 0;
-  const inProgressSectionCount =
-    hub?.sections?.filter((s) => s.status === "in_progress").length || 0;
+  const incompleteSectionCount =
+    hub?.sections?.filter((s) => s.status !== "completed").length || 0;
   const sectionTotal = hub?.sections?.length || 0;
   const scoresVisible = Boolean(hub?.completed_at);
   const inProgress = Boolean(hub?.attempt_id && !hub?.completed_at);
@@ -372,7 +377,7 @@ export default function StudentCompositeHub() {
               {!showDisclaimer ? (
                 <p className="text-slate-600 text-sm leading-relaxed">
                   {inProgress
-                    ? "Complete each subject section, then submit the full assessment here. Individual scores are shown only after you submit."
+                    ? "Complete each subject section, then submit the full assessment here — or leave to auto-submit everything."
                     : `Multi-subject assessment with ${hub.sections.length} section${hub.sections.length === 1 ? "" : "s"}: ${hub.sections.map((s) => formatSubjectLabel(s.subject)).join(", ")}.`}
                 </p>
               ) : null}
@@ -398,7 +403,7 @@ export default function StudentCompositeHub() {
               <div className="rounded-2xl border border-teal-200 bg-teal-50/70 p-5 mb-6">
                 <p className="text-sm text-teal-950 mb-4">
                   When you are ready, review the instructions and begin. Each section must
-                  be completed in one sitting — backing out auto-submits your answers.
+                  be completed in one sitting. Leaving the assessment auto-submits everything.
                 </p>
                 <button
                   type="button"
@@ -467,7 +472,8 @@ export default function StudentCompositeHub() {
 
         {showExitConfirm ? (
           <CompositeExitDialog
-            inProgressSectionCount={inProgressSectionCount}
+            incompleteSectionCount={incompleteSectionCount}
+            completedSectionCount={completedCount}
             exiting={exiting}
             onCancel={() => setShowExitConfirm(false)}
             onConfirm={handleConfirmExit}

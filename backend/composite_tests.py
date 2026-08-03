@@ -911,12 +911,23 @@ def list_composites_for_student(student_name: str) -> list[dict]:
         conn.close()
 
 
-def submit_composite(student_name: str, composite_id: str) -> dict:
+def submit_composite(student_name: str, composite_id: str, *, force_partial: bool = False) -> dict:
     hub = get_composite_hub(student_name, composite_id)
     if not hub["attempt_id"]:
         raise ValueError("Start the composite assessment before submitting.")
     if hub["completed_at"]:
         raise ValueError("This composite assessment was already submitted.")
+
+    if force_partial:
+        _finalize_incomplete_composite_sections(
+            student_name,
+            int(hub["attempt_id"]),
+            hub["sections"],
+        )
+        hub = get_composite_hub(student_name, composite_id)
+    elif not hub["all_complete"]:
+        raise ValueError("Complete every subject test before submitting.")
+
     if not hub["all_complete"]:
         raise ValueError("Complete every subject test before submitting.")
 
@@ -980,25 +991,30 @@ def submit_composite(student_name: str, composite_id: str) -> dict:
     return result
 
 
-def abandon_composite_sitting(student_name: str, composite_id: str) -> dict:
-    """Auto-submit any in-progress composite sections when the student leaves the hub."""
-    hub = get_composite_hub(student_name, composite_id)
-    if not hub.get("attempt_id"):
-        return hub
-    if hub.get("completed_at"):
-        raise ValueError("This composite assessment was already submitted.")
+def _finalize_incomplete_composite_sections(
+    student_name: str,
+    composite_attempt_id: int,
+    sections: list[dict],
+) -> None:
+    """Auto-submit every incomplete composite section with current or empty answers."""
+    from tests import get_or_start_test_session, submit_test
 
-    from tests import submit_test
-
-    attempt_id = int(hub["attempt_id"])
-    for section in hub.get("sections") or []:
-        if section.get("status") != "in_progress":
+    for section in sections:
+        if section.get("status") == "completed":
             continue
+        worksheet_id = section["worksheet_id"]
+        if section.get("status") == "not_started":
+            get_or_start_test_session(
+                student_name,
+                worksheet_id,
+                resume=True,
+                composite_attempt_id=composite_attempt_id,
+            )
         try:
             submit_test(
                 student_name,
-                section["worksheet_id"],
-                composite_attempt_id=attempt_id,
+                worksheet_id,
+                composite_attempt_id=composite_attempt_id,
                 force_partial=True,
             )
         except ValueError as exc:
@@ -1007,7 +1023,15 @@ def abandon_composite_sitting(student_name: str, composite_id: str) -> dict:
                 continue
             raise
 
-    return get_composite_hub(student_name, composite_id)
+
+def abandon_composite_sitting(student_name: str, composite_id: str) -> dict:
+    """Auto-submit the full composite assessment when the student leaves the hub."""
+    hub = get_composite_hub(student_name, composite_id)
+    if not hub.get("attempt_id"):
+        return hub
+    if hub.get("completed_at"):
+        raise ValueError("This composite assessment was already submitted.")
+    return submit_composite(student_name, composite_id, force_partial=True)
 
 
 def unlock_composite_sitting(
