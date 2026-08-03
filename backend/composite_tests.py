@@ -79,6 +79,23 @@ def ensure_composite_test_schema(conn) -> None:
 
 def ensure_test_attempts_composite_separation(conn) -> None:
     """Allow one standalone and one composite-section attempt per student + worksheet."""
+    attempt_cols = {
+        row[1] for row in conn.execute("PRAGMA table_info(test_attempts)")
+    }
+    if not attempt_cols:
+        return
+
+    if "composite_attempt_id" not in attempt_cols:
+        conn.execute(
+            "ALTER TABLE test_attempts ADD COLUMN composite_attempt_id INTEGER"
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_test_attempts_composite
+                ON test_attempts (composite_attempt_id)
+            """
+        )
+
     table_sql = conn.execute(
         "SELECT sql FROM sqlite_master WHERE type='table' AND name='test_attempts'"
     ).fetchone()
@@ -118,19 +135,6 @@ def ensure_test_attempts_composite_separation(conn) -> None:
                 ON test_attempts (student, completed_at DESC);
             CREATE INDEX IF NOT EXISTS idx_test_attempts_composite
                 ON test_attempts (composite_attempt_id);
-            """
-        )
-    attempt_cols = {
-        row[1] for row in conn.execute("PRAGMA table_info(test_attempts)")
-    }
-    if attempt_cols and "composite_attempt_id" not in attempt_cols:
-        conn.execute(
-            "ALTER TABLE test_attempts ADD COLUMN composite_attempt_id INTEGER"
-        )
-        conn.execute(
-            """
-            CREATE INDEX IF NOT EXISTS idx_test_attempts_composite
-                ON test_attempts (composite_attempt_id)
             """
         )
     conn.execute(

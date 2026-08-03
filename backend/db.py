@@ -274,14 +274,6 @@ def init_schema() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_test_attempts_student
                 ON test_attempts (student, completed_at DESC);
-            CREATE INDEX IF NOT EXISTS idx_test_attempts_composite
-                ON test_attempts (composite_attempt_id);
-            CREATE UNIQUE INDEX IF NOT EXISTS idx_test_attempts_standalone
-                ON test_attempts(student, worksheet_id)
-                WHERE composite_attempt_id IS NULL;
-            CREATE UNIQUE INDEX IF NOT EXISTS idx_test_attempts_composite_section
-                ON test_attempts(student, worksheet_id, composite_attempt_id)
-                WHERE composite_attempt_id IS NOT NULL;
             CREATE TABLE IF NOT EXISTS test_review_sessions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 attempt_id INTEGER NOT NULL,

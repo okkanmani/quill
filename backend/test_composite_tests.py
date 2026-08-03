@@ -240,5 +240,73 @@ class CompositeTestsTest(unittest.TestCase):
         self.assertIsNotNone(hub_after["completed_at"])
 
 
+class LegacyTestAttemptsMigrationTest(unittest.TestCase):
+    """Simulate staging DB: test_attempts without composite_attempt_id."""
+
+    def setUp(self):
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self._db_path = Path(self._tmpdir.name) / "test.db"
+        self._patch = patch.object(db, "DB_PATH", self._db_path)
+        self._patch.start()
+
+    def tearDown(self):
+        self._patch.stop()
+        self._tmpdir.cleanup()
+
+    def test_init_schema_migrates_legacy_test_attempts(self):
+        conn = db.connect()
+        try:
+            conn.executescript(
+                """
+                CREATE TABLE worksheets (
+                    id TEXT PRIMARY KEY,
+                    title TEXT NOT NULL,
+                    subject TEXT NOT NULL,
+                    scratchpad INTEGER NOT NULL DEFAULT 1,
+                    passages TEXT NOT NULL DEFAULT '[]',
+                    sort_ts INTEGER NOT NULL DEFAULT 0
+                );
+                CREATE TABLE test_attempts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    student TEXT NOT NULL,
+                    worksheet_id TEXT NOT NULL,
+                    started_at TEXT NOT NULL,
+                    completed_at TEXT,
+                    locked INTEGER NOT NULL DEFAULT 0,
+                    sitting_count INTEGER NOT NULL DEFAULT 20,
+                    sequence TEXT NOT NULL DEFAULT '[]',
+                    answers TEXT NOT NULL DEFAULT '{}',
+                    weighted_score REAL,
+                    max_weighted_score REAL,
+                    duration_seconds INTEGER,
+                    analyzed_at TEXT,
+                    UNIQUE (student, worksheet_id)
+                );
+                """
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        db.init_schema()
+
+        conn = db.connect()
+        try:
+            cols = {
+                row[1] for row in conn.execute("PRAGMA table_info(test_attempts)")
+            }
+            self.assertIn("composite_attempt_id", cols)
+            indexes = {
+                row[0]
+                for row in conn.execute(
+                    "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='test_attempts'"
+                )
+            }
+            self.assertIn("idx_test_attempts_composite", indexes)
+            self.assertIn("idx_test_attempts_standalone", indexes)
+        finally:
+            conn.close()
+
+
 if __name__ == "__main__":
     unittest.main()
