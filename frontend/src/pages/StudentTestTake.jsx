@@ -8,6 +8,11 @@ import {
   saveTestScratchpad,
   submitTest,
 } from "../api";
+import {
+  clearTestSittingActive,
+  isTestSittingActive,
+  markTestSittingActive,
+} from "../testSittingUtils";
 import AppHeader from "../components/AppHeader";
 import AdminStudentBanner from "../components/AdminStudentBanner";
 import Drawpad from "../components/Drawpad";
@@ -67,7 +72,6 @@ export default function StudentTestTake() {
   const [remainingSeconds, setRemainingSeconds] = useState(null);
   const [timeExpired, setTimeExpired] = useState(false);
   const [accessLocked, setAccessLocked] = useState(false);
-  const [attemptLocked, setAttemptLocked] = useState(false);
   const [workMode, setWorkMode] = useState("text");
   const [workText, setWorkText] = useState("");
   const [scratchpadData, setScratchpadData] = useState("");
@@ -109,15 +113,24 @@ export default function StudentTestTake() {
     return value ? { compositeAttemptId: value } : {};
   }
 
-  function leaveWithoutSubmit() {
+  async function leaveWithoutSubmit() {
     if (isAdminPreview) return;
     if (testActiveRef.current && !submittedRef.current) {
-      lockTestAttempt(worksheetIdRef.current, compositeTestOptions());
+      clearTestSittingActive(worksheetIdRef.current, compositeAttemptIdRef.current);
+      testActiveRef.current = false;
+      try {
+        await submitTest(worksheetIdRef.current, {
+          ...compositeTestOptions(),
+          partial: true,
+        });
+      } catch {
+        lockTestAttempt(worksheetIdRef.current, compositeTestOptions());
+      }
     }
   }
 
   const loadSession = useCallback(
-    async (slot) => {
+    async (slot, { resume = true } = {}) => {
       const data = await getTestSession(id, {
         slot,
         resume: true,
@@ -150,24 +163,19 @@ export default function StudentTestTake() {
     setError("");
     setSubmitted(null);
     setAccessLocked(false);
-    setAttemptLocked(false);
     setSession(null);
     autoSubmitStarted.current = false;
 
-    loadSession(1)
+    const continuingSitting = isTestSittingActive(id, compositeAttemptId);
+    if (!continuingSitting) {
+      markTestSittingActive(id, compositeAttemptId);
+    }
+
+    loadSession(1, { resume: continuingSitting })
       .catch((err) => {
         if (err.status === 423) {
-          const msg = err.message || "";
-          if (
-            msg.toLowerCase().includes("access") ||
-            msg.toLowerCase().includes("unlock") ||
-            msg.toLowerCase().includes("locked")
-          ) {
-            setAccessLocked(true);
-          } else {
-            setAttemptLocked(true);
-          }
-          setError(msg);
+          setAccessLocked(true);
+          setError(err.message || "This test is locked.");
         } else if (err.message?.includes("already submitted")) {
           setSubmitted({ already: true });
         } else if (isAdminPreview && err.status === 400) {
@@ -286,12 +294,30 @@ export default function StudentTestTake() {
     setSubmitError("");
     try {
       await flushWorkSave(currentSlot);
-      const result = await submitTest(id, compositeTestOptions());
+      const usePartial = fromTimer && !allAnswered;
+      const result = await submitTest(id, {
+        ...compositeTestOptions(),
+        partial: usePartial,
+      });
+      clearTestSittingActive(id, compositeAttemptId);
       testActiveRef.current = false;
       setSubmitted(result);
     } catch (err) {
       if (fromTimer) {
-        setSubmitError("Time expired but submit failed — contact your teacher.");
+        try {
+          const result = await submitTest(id, {
+            ...compositeTestOptions(),
+            partial: true,
+          });
+          clearTestSittingActive(id, compositeAttemptId);
+          testActiveRef.current = false;
+          setSubmitted(result);
+          return;
+        } catch (retryErr) {
+          setSubmitError(
+            retryErr.message || "Time expired but submit failed — contact your teacher.",
+          );
+        }
       } else {
         setSubmitError(err.message || "Could not submit test.");
       }
@@ -307,15 +333,31 @@ export default function StudentTestTake() {
   }, [timeExpired, submitted, session, isAdminPreview]);
 
   useEffect(() => {
-    const onBeforeUnload = () => leaveWithoutSubmit();
+    const onBeforeUnload = () => {
+      if (isAdminPreview) return;
+      if (testActiveRef.current && !submittedRef.current) {
+        clearTestSittingActive(worksheetIdRef.current, compositeAttemptIdRef.current);
+        lockTestAttempt(worksheetIdRef.current, compositeTestOptions());
+      }
+    };
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", onBeforeUnload);
       if (workSaveTimer.current) {
         clearTimeout(workSaveTimer.current);
       }
+      if (!isAdminPreview && testActiveRef.current && !submittedRef.current) {
+        submitTest(worksheetIdRef.current, {
+          ...compositeTestOptions(),
+          partial: true,
+        }).catch(() => {
+          lockTestAttempt(worksheetIdRef.current, compositeTestOptions());
+        });
+        clearTestSittingActive(worksheetIdRef.current, compositeAttemptIdRef.current);
+        testActiveRef.current = false;
+      }
     };
-  }, []);
+  }, [isAdminPreview]);
 
   async function goToSlot(slot) {
     if (!session || submitted) return;
@@ -382,8 +424,8 @@ export default function StudentTestTake() {
     return compositeId ? `/student/composites/${compositeId}` : "/student/tests?tab=composite";
   }
 
-  function handleBack() {
-    leaveWithoutSubmit();
+  async function handleBack() {
+    await leaveWithoutSubmit();
     if (isAdminPreview) {
       navigate("/admin/tests");
       return;
@@ -392,7 +434,7 @@ export default function StudentTestTake() {
   }
 
   async function handleLogout() {
-    leaveWithoutSubmit();
+    await leaveWithoutSubmit();
     await logout();
     navigate("/");
   }
@@ -745,7 +787,7 @@ export default function StudentTestTake() {
     );
   }
 
-  if ((accessLocked || attemptLocked) && error) {
+  if (accessLocked && error) {
     return (
       <div className="min-h-screen bg-slate-50 p-6">
         <AppHeader onBack={handleBack} onLogout={handleLogout} />

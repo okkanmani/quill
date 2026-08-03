@@ -1,4 +1,5 @@
 import TestResultsSection, { TestAnalyseIconLink } from "./TestResultsSection";
+import RecycleBinButton from "./RecycleBinButton";
 import {
   RESULTS_ITEM_HEADER,
   RESULTS_ITEM_SHELL,
@@ -43,6 +44,8 @@ export default function CompositeResultsSection({
   openSectionIds,
   toggleSection,
   embedded = false,
+  onDeleteComposite,
+  deletingCompositeId,
 }) {
   if (results.length === 0) return null;
 
@@ -113,14 +116,23 @@ export default function CompositeResultsSection({
                 </div>
               ) : null}
             </div>
-            {analyseTarget ? (
-              <div className="flex shrink-0 self-start sm:w-7 pt-3">
-                <TestAnalyseIconLink
-                  attemptId={0}
-                  analyzed={analyseTarget.analyzed}
-                  title={analyseTarget.title}
-                  to={analyseTarget.href}
-                />
+            {analyseTarget || onDeleteComposite ? (
+              <div className="flex shrink-0 self-start sm:self-stretch sm:items-stretch sm:flex-col sm:justify-center gap-2 sm:w-7 pt-3">
+                {analyseTarget ? (
+                  <TestAnalyseIconLink
+                    attemptId={0}
+                    analyzed={analyseTarget.analyzed}
+                    title={analyseTarget.title}
+                    to={analyseTarget.href}
+                  />
+                ) : null}
+                {onDeleteComposite ? (
+                  <RecycleBinButton
+                    onClick={() => onDeleteComposite(composite)}
+                    label={`Delete composite result for ${composite.title || "Composite test"}`}
+                    disabled={deletingCompositeId === composite.id}
+                  />
+                ) : null}
               </div>
             ) : null}
           </div>

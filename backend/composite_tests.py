@@ -806,8 +806,6 @@ def _section_status(conn, student_name: str, composite_attempt_id: int, workshee
             "max_weighted_score": float(row["max_weighted_score"] or 0),
             "duration_seconds": row["duration_seconds"],
         }
-    if int(row["locked"] or 0) == 1:
-        return {**base, "status": "locked", "attempt_id": row["id"]}
     return {**base, "status": "in_progress", "attempt_id": row["id"]}
 
 
@@ -982,6 +980,36 @@ def submit_composite(student_name: str, composite_id: str) -> dict:
     return result
 
 
+def abandon_composite_sitting(student_name: str, composite_id: str) -> dict:
+    """Auto-submit any in-progress composite sections when the student leaves the hub."""
+    hub = get_composite_hub(student_name, composite_id)
+    if not hub.get("attempt_id"):
+        return hub
+    if hub.get("completed_at"):
+        raise ValueError("This composite assessment was already submitted.")
+
+    from tests import submit_test
+
+    attempt_id = int(hub["attempt_id"])
+    for section in hub.get("sections") or []:
+        if section.get("status") != "in_progress":
+            continue
+        try:
+            submit_test(
+                student_name,
+                section["worksheet_id"],
+                composite_attempt_id=attempt_id,
+                force_partial=True,
+            )
+        except ValueError as exc:
+            msg = str(exc)
+            if "No test attempt" in msg or "already submitted" in msg.lower():
+                continue
+            raise
+
+    return get_composite_hub(student_name, composite_id)
+
+
 def unlock_composite_sitting(
     admin_id: int,
     *,
@@ -1064,5 +1092,35 @@ def list_composite_test_results(student_name: str) -> list[dict]:
                 }
             )
         return records
+    finally:
+        conn.close()
+
+
+def delete_composite_test_result(composite_attempt_id: int, student_name: str) -> bool:
+    """Delete a completed composite test result and its section attempts."""
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            """
+            SELECT id FROM composite_test_attempts
+            WHERE id = ? AND student = ? AND completed_at IS NOT NULL
+            """,
+            (composite_attempt_id, student_name),
+        ).fetchone()
+        if not row:
+            return False
+        conn.execute(
+            "DELETE FROM test_attempts WHERE composite_attempt_id = ?",
+            (composite_attempt_id,),
+        )
+        conn.execute(
+            "DELETE FROM composite_test_attempts WHERE id = ?",
+            (composite_attempt_id,),
+        )
+        conn.commit()
+        return True
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()

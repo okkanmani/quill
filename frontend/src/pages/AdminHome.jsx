@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
+  deleteCompositeTestResult,
   deleteResult,
+  deleteTestResult,
   deleteWritingSubmission,
   getAdminCompositeTestResults,
   getAdminTestResults,
@@ -101,6 +103,8 @@ export default function AdminHome() {
   const [openWritingIds, setOpenWritingIds] = useState(() => new Set());
   const [expandResultSubjectKeys, setExpandResultSubjectKeys] = useState([]);
   const [deletingResultId, setDeletingResultId] = useState(null);
+  const [deletingTestResultId, setDeletingTestResultId] = useState(null);
+  const [deletingCompositeResultId, setDeletingCompositeResultId] = useState(null);
   const [deletingWritingId, setDeletingWritingId] = useState(null);
   const [gradingWritingId, setGradingWritingId] = useState(null);
   const [savingWritingFeedbackId, setSavingWritingFeedbackId] = useState(null);
@@ -254,6 +258,56 @@ export default function AdminHome() {
       setError(err.message || "Could not delete result.");
     } finally {
       setDeletingResultId(null);
+    }
+  }
+
+  async function handleDeleteTestResult(result) {
+    const label = result.title || "Test";
+    const ok = window.confirm(
+      `Delete this test result for “${label}”? This cannot be undone.`,
+    );
+    if (!ok) return;
+    setDeletingTestResultId(result.id);
+    setError("");
+    try {
+      await deleteTestResult(result.id);
+      setTestResults((prev) => prev.filter((r) => r.id !== result.id));
+      setOpenTestIds((prev) => {
+        const next = new Set(prev);
+        next.delete(result.id);
+        return next;
+      });
+      setMessage(`Deleted test result for “${label}”.`);
+    } catch (err) {
+      setError(err.message || "Could not delete test result.");
+    } finally {
+      setDeletingTestResultId(null);
+    }
+  }
+
+  async function handleDeleteCompositeResult(composite) {
+    const label = composite.title || "Composite test";
+    const sectionCount = (composite.sections || []).filter((s) => s.result).length;
+    const ok = window.confirm(
+      `Delete this composite result for “${label}”${sectionCount ? ` and its ${sectionCount} section${sectionCount === 1 ? "" : "s"}` : ""}? This cannot be undone.`,
+    );
+    if (!ok) return;
+    setDeletingCompositeResultId(composite.id);
+    setError("");
+    try {
+      await deleteCompositeTestResult(composite.id);
+      setCompositeResults((prev) => prev.filter((r) => r.id !== composite.id));
+      setOpenCompositeIds((prev) => {
+        const next = new Set(prev);
+        next.delete(composite.id);
+        return next;
+      });
+      setOpenCompositeSectionIds(new Set());
+      setMessage(`Deleted composite result for “${label}”.`);
+    } catch (err) {
+      setError(err.message || "Could not delete composite result.");
+    } finally {
+      setDeletingCompositeResultId(null);
     }
   }
 
@@ -500,6 +554,8 @@ export default function AdminHome() {
                 openIds={openTestIds}
                 toggleOpen={toggleTest}
                 embedded
+                onDeleteResult={handleDeleteTestResult}
+                deletingResultId={deletingTestResultId}
               />
               <ResultsAnswerAside
                 className="lg:hidden mt-4"
@@ -531,6 +587,8 @@ export default function AdminHome() {
                 openSectionIds={openCompositeSectionIds}
                 toggleSection={toggleCompositeSection}
                 embedded
+                onDeleteComposite={handleDeleteCompositeResult}
+                deletingCompositeId={deletingCompositeResultId}
               />
               <ResultsAnswerAside
                 className="lg:hidden mt-4"

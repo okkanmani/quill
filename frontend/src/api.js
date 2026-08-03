@@ -1229,6 +1229,20 @@ export async function markTestAttemptAnalyzed(attemptId) {
   return res.json();
 }
 
+export async function deleteTestResult(attemptId) {
+  const res = await apiFetch(`${BASE_URL}/admin/test-results/${attemptId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to delete test result";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 // --- Composite tests ---
 
 async function readApiError(res, fallback) {
@@ -1338,6 +1352,23 @@ export async function getAdminCompositeTestResults() {
   return res.json();
 }
 
+export async function deleteCompositeTestResult(compositeAttemptId) {
+  const res = await apiFetch(
+    `${BASE_URL}/admin/composite-test-results/${compositeAttemptId}`,
+    {
+      method: "DELETE",
+      headers: authHeaders(),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to delete composite test result";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 // --- Student composite tests ---
 
 export async function getComposites() {
@@ -1387,6 +1418,20 @@ export async function submitCompositeAttempt(compositeId) {
     const d = err.detail;
     throw new Error(typeof d === "string" ? d : "Failed to submit composite assessment");
   }
+  return res.json();
+}
+
+export async function abandonCompositeAttempt(compositeId) {
+  const res = await apiFetch(`${BASE_URL}/composites/${encodeURIComponent(compositeId)}/abandon`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    throw new Error(typeof d === "string" ? d : "Failed to leave assessment");
+  }
+  notifyStudentHomeRefresh();
   return res.json();
 }
 
@@ -1543,10 +1588,13 @@ export async function saveTestScratchpad(
   return res.json();
 }
 
-export async function submitTest(worksheetId, { compositeAttemptId } = {}) {
+export async function submitTest(worksheetId, { compositeAttemptId, partial = false } = {}) {
   const params = new URLSearchParams();
   if (compositeAttemptId != null) {
     params.set("composite_attempt_id", String(compositeAttemptId));
+  }
+  if (partial) {
+    params.set("partial", "1");
   }
   const query = params.toString();
   const res = await apiFetch(

@@ -11,12 +11,6 @@ function testLockState(item) {
   if (item.access_locked) {
     return { kind: "access", reason: item.lock_reason || "admin" };
   }
-  if (item.attempt_locked) {
-    return { kind: "attempt", reason: "abandoned" };
-  }
-  if (item.attempt_started && !item.done) {
-    return { kind: "attempt", reason: "active" };
-  }
   return null;
 }
 
@@ -27,15 +21,12 @@ function lockLabel(state) {
       ? "This week is locked"
       : "Locked — ask your teacher to unlock";
   }
-  if (state.reason === "abandoned") {
-    return "Test sitting locked — ask your teacher to reset";
-  }
-  return "Test in progress";
+  return "";
 }
 
 function TestRow({ item, onOpenTest, onOpenReview }) {
   const lock = testLockState(item);
-  const blocked = Boolean(lock && (lock.kind === "access" || lock.reason === "abandoned"));
+  const blocked = Boolean(lock);
 
   function handleOpen() {
     if (blocked) return;

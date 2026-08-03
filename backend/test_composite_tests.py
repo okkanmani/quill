@@ -7,6 +7,7 @@ from unittest.mock import patch
 import db
 from composite_tests import (
     create_composite_test,
+    delete_composite_test_result,
     get_composite_hub,
     is_worksheet_in_locked_composite,
     list_composite_test_results,
@@ -16,7 +17,7 @@ from composite_tests import (
     submit_composite,
     unlock_composite_for_admin_students,
 )
-from tests import get_or_start_test_session, list_tests, submit_test
+from tests import delete_test_attempt, get_or_start_test_session, list_test_results, list_tests, submit_test
 
 
 def _seed_test_data() -> tuple[int, str]:
@@ -238,6 +239,55 @@ class CompositeTestsTest(unittest.TestCase):
         hub_after = get_composite_hub(self.student_name, created["id"])
         self.assertTrue(hub_after["can_submit"] is False)
         self.assertIsNotNone(hub_after["completed_at"])
+
+    def test_delete_composite_test_result_removes_attempt_and_sections(self):
+        created = create_composite_test(
+            self.admin_id,
+            title="Benchmark",
+            section_worksheet_ids=["test-math", "test-engl"],
+        )
+        hub = start_composite_attempt(self.student_name, created["id"])
+        attempt_id = hub["attempt_id"]
+
+        with patch("tests._weighted_test_score", return_value=(3.0, 4.0)):
+            self._complete_section("test-math", attempt_id)
+            self._complete_section("test-engl", attempt_id)
+
+        submit_composite(self.student_name, created["id"])
+        results = list_composite_test_results(self.student_name)
+        self.assertEqual(len(results), 1)
+        composite_attempt_id = results[0]["id"]
+
+        self.assertTrue(
+            delete_composite_test_result(composite_attempt_id, self.student_name)
+        )
+        self.assertEqual(list_composite_test_results(self.student_name), [])
+
+        conn = db.connect()
+        try:
+            section_rows = conn.execute(
+                "SELECT id FROM test_attempts WHERE composite_attempt_id = ?",
+                (composite_attempt_id,),
+            ).fetchall()
+            self.assertEqual(section_rows, [])
+        finally:
+            conn.close()
+
+    def test_delete_test_attempt_removes_standalone_result(self):
+        get_or_start_test_session(self.student_name, "test-math", resume=True)
+        with patch("tests._weighted_test_score", return_value=(2.0, 4.0)):
+            from tests import save_test_answer
+
+            save_test_answer(self.student_name, "test-math", slot=1, given="A")
+            submit_test(self.student_name, "test-math")
+
+        results = list_test_results(self.student_name)
+        self.assertEqual(len(results), 1)
+        attempt_id = results[0]["id"]
+
+        self.assertTrue(delete_test_attempt(attempt_id, self.student_name))
+        self.assertEqual(list_test_results(self.student_name), [])
+        self.assertFalse(delete_test_attempt(attempt_id, self.student_name))
 
 
 class LegacyTestAttemptsMigrationTest(unittest.TestCase):

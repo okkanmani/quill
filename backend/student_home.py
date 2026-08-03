@@ -201,22 +201,6 @@ def _test_alerts(tests: list[dict], *, baseline: datetime, seen_keys: set[str]) 
         if test.get("done"):
             continue
 
-        if test.get("attempt_started") and not test.get("attempt_locked"):
-            key = f"continue:{test_id}"
-            if key not in seen_keys:
-                seen_keys.add(key)
-                alerts.append(
-                    {
-                        "kind": "test_continue",
-                        "title": title,
-                        "subtitle": "Test in progress",
-                        "at": sort_iso,
-                        "url": f"/student/tests/{test_id}",
-                        "worksheet_id": test_id,
-                    }
-                )
-            continue
-
         if _is_after_baseline(sort_at, baseline):
             key = f"new:{test_id}"
             if key not in seen_keys:

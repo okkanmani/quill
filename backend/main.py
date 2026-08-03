@@ -78,6 +78,7 @@ from revision import (
 )
 from tests import (
     complete_test_review,
+    delete_test_attempt,
     get_or_start_test_session,
     get_test_review,
     list_test_results,
@@ -92,8 +93,10 @@ from tests import (
     unlock_test_attempt,
 )
 from composite_tests import (
+    abandon_composite_sitting,
     create_composite_test,
     delete_composite_test,
+    delete_composite_test_result,
     get_composite_hub,
     get_composite_test,
     list_composite_test_results,
@@ -1400,6 +1403,19 @@ def admin_composite_test_results(authorization: str = Header(...)):
     return list_composite_test_results(who)
 
 
+@app.delete("/admin/composite-test-results/{composite_attempt_id}")
+def remove_admin_composite_test_result(
+    composite_attempt_id: int, authorization: str = Header(...)
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    if not delete_composite_test_result(composite_attempt_id, who):
+        raise HTTPException(status_code=404, detail="Composite test result not found")
+    return {"message": "Composite test result deleted"}
+
+
 @app.post("/admin/tests/generate-draft")
 def admin_generate_test_draft(
     req: GenerateTestDraftRequest,
@@ -2589,6 +2605,17 @@ def mark_admin_test_result_analyzed(
     return result
 
 
+@app.delete("/admin/test-results/{attempt_id}")
+def remove_admin_test_result(attempt_id: int, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    if not delete_test_attempt(attempt_id, who):
+        raise HTTPException(status_code=404, detail="Test result not found")
+    return {"message": "Test result deleted"}
+
+
 @app.get("/tests/reviews")
 def get_test_reviews(authorization: str = Header(...)):
     payload = _payload(authorization)
@@ -2668,6 +2695,21 @@ def submit_composite_route(composite_id: str, authorization: str = Header(...)):
         return submit_composite(who, composite_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/composites/{composite_id}/abandon")
+def abandon_composite_route(composite_id: str, authorization: str = Header(...)):
+    payload = _payload(authorization)
+    if payload.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can abandon composites")
+    who = _composite_context_name(payload)
+    try:
+        return abandon_composite_sitting(who, composite_id)
+    except ValueError as exc:
+        msg = str(exc)
+        if "locked" in msg.lower():
+            raise HTTPException(status_code=423, detail=msg)
+        raise HTTPException(status_code=400, detail=msg)
 
 
 @app.get("/tests/{worksheet_id}/session")
@@ -2774,6 +2816,7 @@ def submit_test_route(
     worksheet_id: str,
     authorization: str = Header(...),
     composite_attempt_id: int | None = Query(default=None),
+    partial: int = Query(default=0),
 ):
     payload = _payload(authorization)
     if payload.get("role") != "student":
@@ -2783,6 +2826,7 @@ def submit_test_route(
             payload["name"],
             worksheet_id,
             composite_attempt_id=composite_attempt_id,
+            force_partial=bool(partial),
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

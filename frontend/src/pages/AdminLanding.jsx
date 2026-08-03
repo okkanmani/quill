@@ -5,7 +5,6 @@ import {
   logout,
   switchAdminStudent,
   clearAdminStudentContext,
-  unlockTestAttempt,
   unlockTimedWorksheet,
   setWorksheetAccessLock,
   clearWorksheetAccessLock,
@@ -142,8 +141,6 @@ function pendingStatusLine(item, scopedToStudent) {
   const parts = [];
   if (item.lock_type === "access") {
     parts.push("Access locked");
-  } else if (item.lock_type === "test_attempt") {
-    parts.push(item.attempt_locked ? "Sitting locked" : "Test in progress");
   } else {
     parts.push("Timed attempt locked");
   }
@@ -154,7 +151,6 @@ function pendingStatusLine(item, scopedToStudent) {
 
 function pendingUnlockLabel(item) {
   if (item.lock_type === "access") return `Unlock access to ${item.title}`;
-  if (item.lock_type === "test_attempt") return `Reset test sitting for ${item.title}`;
   return `Reset timed attempt for ${item.title}`;
 }
 
@@ -162,15 +158,12 @@ function pendingUnlockConfirm(item) {
   if (item.lock_type === "access") {
     return `Unlock access to “${item.title}” for ${item.student_name}?`;
   }
-  if (item.is_test) {
-    return `Reset test sitting for “${item.title}” (${item.student_name})? The student can start again from scratch.`;
-  }
   return `Unlock “${item.title}” for ${item.student_name}? They can start this timed worksheet again from scratch.`;
 }
 
 function pendingLockVariant(item) {
   if (item.lock_type === "access") return "access";
-  if (item.lock_type === "test_attempt" || item.lock_type === "timed_attempt") return "timed";
+  if (item.lock_type === "timed_attempt") return "timed";
   return "neutral";
 }
 
@@ -481,8 +474,6 @@ export default function AdminLanding() {
         } else {
           await setWorksheetAccessLock(item.worksheet_id, false);
         }
-      } else if (item.lock_type === "test_attempt") {
-        await unlockTestAttempt(item.worksheet_id);
       } else if (item.lock_type === "timed_attempt") {
         await unlockTimedWorksheet(item.worksheet_id);
       }

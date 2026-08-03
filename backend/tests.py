@@ -1046,6 +1046,41 @@ def _question_lookup(worksheet: dict) -> dict[str, dict]:
     }
 
 
+def _enrich_test_answers_with_passages(
+    answers: dict | None,
+    worksheet: dict | None,
+) -> list[dict]:
+    """Attach passage content to stored test answers for results display."""
+    if not answers:
+        return []
+    if not worksheet:
+        return [a for a in answers.values() if isinstance(a, dict)]
+
+    passage_lookup = _passage_lookup(worksheet)
+    question_lookup = _question_lookup(worksheet)
+    enriched: list[dict] = []
+    for key in sorted(answers.keys(), key=lambda k: int(k) if str(k).isdigit() else k):
+        ans = answers.get(key)
+        if not isinstance(ans, dict):
+            continue
+        out = dict(ans)
+        if isinstance(ans.get("responses"), dict) or isinstance(
+            ans.get("questions"), list
+        ):
+            passage = passage_lookup.get(str(ans.get("passage_id") or ""))
+            if passage:
+                out["passage"] = passage
+        else:
+            q_full = question_lookup.get(str(ans.get("question_id") or ""))
+            passage_id = q_full.get("passage_id") if q_full else None
+            if passage_id:
+                passage = passage_lookup.get(str(passage_id))
+                if passage:
+                    out["passage"] = passage
+        enriched.append(out)
+    return enriched
+
+
 def _passage_lookup(worksheet: dict) -> dict[str, dict]:
     return {
         str(p.get("id")): p
@@ -1668,6 +1703,7 @@ def get_or_start_test_session(
         )
 
     conn = db.connect()
+    closed_early = False
     try:
         row = fetch_test_attempt(
             conn,
@@ -1678,6 +1714,27 @@ def get_or_start_test_session(
 
         if row and row["completed_at"]:
             raise ValueError("This test was already submitted and cannot be retaken.")
+
+        if row and not row["completed_at"]:
+            stale = int(row["locked"] or 0) == 1 or not resume
+            if stale:
+                conn.close()
+                closed_early = True
+                conn = None
+                try:
+                    submit_test(
+                        student_name,
+                        worksheet_id,
+                        composite_attempt_id=composite_attempt_id,
+                        force_partial=True,
+                    )
+                except ValueError as exc:
+                    msg = str(exc)
+                    if "No test attempt" not in msg and "already submitted" not in msg.lower():
+                        raise
+                raise ValueError(
+                    "This test was already submitted and cannot be retaken."
+                )
 
         if row:
             linked = row["composite_attempt_id"]
@@ -1691,25 +1748,6 @@ def get_or_start_test_session(
                 and int(linked) != int(composite_attempt_id)
             ):
                 raise ValueError("This test belongs to a different composite sitting.")
-            if int(row["locked"] or 0) == 1:
-                raise ValueError(
-                    "This test sitting is locked. Ask your teacher to unlock it."
-                )
-            if not resume:
-                started_at = datetime.now(timezone.utc).isoformat()
-                conn.execute(
-                    """
-                    UPDATE test_attempts
-                    SET started_at = ?, locked = 0, sequence = '[]', answers = '{}'
-                    WHERE id = ?
-                    """,
-                    (started_at, row["id"]),
-                )
-                conn.commit()
-                row = conn.execute(
-                    "SELECT * FROM test_attempts WHERE id = ?",
-                    (row["id"],),
-                ).fetchone()
         else:
             started_at = datetime.now(timezone.utc).isoformat()
             cur = conn.execute(
@@ -1743,10 +1781,12 @@ def get_or_start_test_session(
         session.pop("answers", None)
         return session
     except Exception:
-        conn.rollback()
+        if conn is not None:
+            conn.rollback()
         raise
     finally:
-        conn.close()
+        if conn is not None and not closed_early:
+            conn.close()
 
 
 def _save_rc_test_answer(
@@ -1771,8 +1811,6 @@ def _save_rc_test_answer(
             raise ValueError("Start the test before answering questions.")
         if row["completed_at"]:
             raise ValueError("Test already submitted.")
-        if int(row["locked"] or 0) == 1:
-            raise ValueError("This test sitting is locked.")
 
         session = _attempt_row_to_rc_session(
             row, ws, sitting_count=sitting_count, target_slot=slot
@@ -1876,8 +1914,6 @@ def save_test_answer(
             raise ValueError("Start the test before answering questions.")
         if row["completed_at"]:
             raise ValueError("Test already submitted.")
-        if int(row["locked"] or 0) == 1:
-            raise ValueError("This test sitting is locked.")
 
         session = _attempt_row_to_session(
             row, ws, sitting_count=sitting_count, target_slot=slot
@@ -1974,8 +2010,6 @@ def save_test_scratchpad(
             raise ValueError("Start the test before saving scratchpad work.")
         if row["completed_at"]:
             raise ValueError("Test already submitted.")
-        if int(row["locked"] or 0) == 1:
-            raise ValueError("This test sitting is locked.")
 
         session = _attempt_row_to_session(
             row, ws, sitting_count=sitting_count, target_slot=slot
@@ -2134,43 +2168,20 @@ def create_test_review_for_attempt(
     return cur.lastrowid
 
 
-def submit_test(
-    student_name: str,
-    worksheet_id: str,
+def _finalize_answers_for_submit(
+    ws: dict,
+    sequence: list,
+    answers: dict,
     *,
-    composite_attempt_id: int | None = None,
+    sitting_count: int,
+    force_partial: bool,
 ) -> dict:
-    assert_worksheet_accessible(student_name, worksheet_id)
-    ws = get_worksheet(worksheet_id)
-    if not ws or not _test_from_sheet_data(ws):
-        raise ValueError("Test not found.")
+    is_passage_window = _is_passage_window_test(ws)
+    is_data = _is_data_passage_test(ws)
+    unit_label = "data sets" if is_data else "passages"
+    lookup = _question_lookup(ws)
 
-    sitting_count = test_sitting_count_from_data(ws)
-
-    conn = db.connect()
-    try:
-        row = fetch_test_attempt(
-            conn,
-            student_name,
-            worksheet_id,
-            composite_attempt_id=composite_attempt_id,
-        )
-        if not row:
-            raise ValueError("No test attempt found.")
-        if row["completed_at"]:
-            raise ValueError("Test already submitted.")
-        if int(row["locked"] or 0) == 1:
-            raise ValueError("This test sitting is locked.")
-
-        session = _attempt_row_to_session(
-            row, ws, sitting_count=sitting_count, target_slot=sitting_count
-        )
-        sequence = session["sequence"]
-        answers = session["answers"]
-        is_passage_window = _is_passage_window_test(ws)
-        is_data = _is_data_passage_test(ws)
-        unit_label = "data sets" if is_data else "passages"
-
+    if not force_partial:
         assigned = sum(1 for s in sequence if isinstance(s, dict))
         if assigned < sitting_count:
             raise ValueError(
@@ -2197,7 +2208,6 @@ def submit_test(
                     f"Answer all questions in every {'data set' if is_data else 'passage'} before submitting."
                 )
 
-            lookup = _question_lookup(ws)
             for slot in range(1, sitting_count + 1):
                 entry = sequence[slot - 1]
                 if not isinstance(entry, dict):
@@ -2222,6 +2232,97 @@ def submit_test(
             ]
             if unanswered:
                 raise ValueError("Answer all questions before submitting.")
+        return answers
+
+    if is_passage_window:
+        for slot in range(1, sitting_count + 1):
+            entry = sequence[slot - 1] if slot - 1 < len(sequence) else None
+            if not isinstance(entry, dict):
+                continue
+            ans = answers.get(str(slot), {})
+            responses = ans.get("responses") if isinstance(ans, dict) else {}
+            if not isinstance(responses, dict):
+                responses = {}
+            answers[str(slot)] = _build_rc_passage_answer(
+                entry,
+                responses,
+                lookup,
+                ws,
+                prev=ans if isinstance(ans, dict) else None,
+            )
+        return answers
+
+    for slot in range(1, sitting_count + 1):
+        entry = sequence[slot - 1] if slot - 1 < len(sequence) else None
+        if not isinstance(entry, dict):
+            continue
+        existing = answers.get(str(slot))
+        if isinstance(existing, dict) and str(existing.get("given") or "").strip():
+            continue
+        q = lookup.get(str(entry.get("question_id")))
+        if not q:
+            continue
+        expected = str(q.get("answer") or "").strip()
+        tier = int(entry.get("tier") or _question_tier(q, ws) or START_TIER)
+        prev = existing if isinstance(existing, dict) else {}
+        prev_work_mode = prev.get("work_mode", "text")
+        if prev_work_mode not in ("text", "scratchpad"):
+            prev_work_mode = "text"
+        answers[str(slot)] = {
+            "given": "",
+            "correct": False,
+            "question_id": entry["question_id"],
+            "tier": tier,
+            "prompt": q.get("prompt") or "",
+            "expected": expected,
+            "choices": q.get("choices") or [],
+            "area": q.get("area") or "",
+            "scratchpad": prev.get("scratchpad", ""),
+            "work_text": prev.get("work_text", ""),
+            "work_mode": prev_work_mode,
+        }
+    return answers
+
+
+def submit_test(
+    student_name: str,
+    worksheet_id: str,
+    *,
+    composite_attempt_id: int | None = None,
+    force_partial: bool = False,
+) -> dict:
+    assert_worksheet_accessible(student_name, worksheet_id)
+    ws = get_worksheet(worksheet_id)
+    if not ws or not _test_from_sheet_data(ws):
+        raise ValueError("Test not found.")
+
+    sitting_count = test_sitting_count_from_data(ws)
+
+    conn = db.connect()
+    try:
+        row = fetch_test_attempt(
+            conn,
+            student_name,
+            worksheet_id,
+            composite_attempt_id=composite_attempt_id,
+        )
+        if not row:
+            raise ValueError("No test attempt found.")
+        if row["completed_at"]:
+            raise ValueError("Test already submitted.")
+
+        session = _attempt_row_to_session(
+            row, ws, sitting_count=sitting_count, target_slot=sitting_count
+        )
+        sequence = session["sequence"]
+        answers = session["answers"]
+        answers = _finalize_answers_for_submit(
+            ws,
+            sequence,
+            answers,
+            sitting_count=sitting_count,
+            force_partial=force_partial,
+        )
 
         weighted, max_weighted = _weighted_test_score(
             ws, sequence, answers, sitting_count=sitting_count
@@ -2294,64 +2395,25 @@ def lock_test_attempt(
     *,
     composite_attempt_id: int | None = None,
 ) -> None:
-    ws = get_worksheet(worksheet_id)
-    if not ws or not _test_from_sheet_data(ws):
-        return
-    conn = db.connect()
+    """Legacy abandon endpoint — auto-submit with whatever answers were saved."""
     try:
-        if composite_attempt_id is not None:
-            conn.execute(
-                """
-                UPDATE test_attempts SET locked = 1
-                WHERE student = ? AND worksheet_id = ? AND composite_attempt_id = ?
-                  AND completed_at IS NULL AND locked = 0
-                """,
-                (student_name, worksheet_id, composite_attempt_id),
-            )
-        else:
-            conn.execute(
-                """
-                UPDATE test_attempts SET locked = 1
-                WHERE student = ? AND worksheet_id = ? AND composite_attempt_id IS NULL
-                  AND completed_at IS NULL AND locked = 0
-                """,
-                (student_name, worksheet_id),
-            )
-        conn.commit()
-    except Exception:
-        conn.rollback()
+        submit_test(
+            student_name,
+            worksheet_id,
+            composite_attempt_id=composite_attempt_id,
+            force_partial=True,
+        )
+    except ValueError as exc:
+        msg = str(exc)
+        if "No test attempt" in msg or "already submitted" in msg.lower():
+            return
         raise
-    finally:
-        conn.close()
 
 
 def unlock_test_attempt(student_name: str, worksheet_id: str) -> None:
-    ws = get_worksheet(worksheet_id)
-    if not ws or not _test_from_sheet_data(ws):
-        raise ValueError("Test not found.")
-    conn = db.connect()
-    try:
-        row = conn.execute(
-            """
-            SELECT id, completed_at FROM test_attempts
-            WHERE student = ? AND worksheet_id = ? AND composite_attempt_id IS NULL
-            """,
-            (student_name, worksheet_id),
-        ).fetchone()
-        if not row:
-            raise ValueError("No test attempt to unlock.")
-        if row["completed_at"]:
-            raise ValueError("Test already submitted — cannot unlock.")
-        conn.execute(
-            "DELETE FROM test_attempts WHERE id = ?",
-            (row["id"],),
-        )
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
+    raise ValueError(
+        "Tests cannot be reset. Leaving a test auto-submits the current sitting."
+    )
 
 
 def build_test_result_record(row) -> dict:
@@ -2359,6 +2421,8 @@ def build_test_result_record(row) -> dict:
     answers = _parse_json(row["answers"], {})
     sequence = _parse_json(row["sequence"], [])
     sitting_count = int(row["sitting_count"] or row["test_sitting_count"] or 20)
+    worksheet = get_worksheet(row["worksheet_id"])
+    enriched_answers = _enrich_test_answers_with_passages(answers, worksheet)
     correct_count = _test_correct_count(answers)
     total_count = sum(
         len(a.get("questions") or [])
@@ -2392,7 +2456,7 @@ def build_test_result_record(row) -> dict:
         "review_id": row["review_id"],
         "review_completed": bool(row["review_completed_at"]),
         "slots": slots,
-        "answers": list(answers.values()) if answers else [],
+        "answers": enriched_answers,
     }
 
 
@@ -2464,6 +2528,30 @@ def mark_test_attempt_analyzed(attempt_id: int, student_name: str) -> dict | Non
         )
         conn.commit()
         return {"id": attempt_id, "analyzed_at": analyzed_at}
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def delete_test_attempt(attempt_id: int, student_name: str) -> bool:
+    """Delete a completed standalone test result (not a composite section)."""
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            """
+            SELECT id FROM test_attempts
+            WHERE id = ? AND student = ? AND completed_at IS NOT NULL
+              AND composite_attempt_id IS NULL
+            """,
+            (attempt_id, student_name),
+        ).fetchone()
+        if not row:
+            return False
+        conn.execute("DELETE FROM test_attempts WHERE id = ?", (attempt_id,))
+        conn.commit()
+        return True
     except Exception:
         conn.rollback()
         raise

@@ -18,6 +18,7 @@ import {
   ROW_ACTION_BUTTON_CLASS,
   ROW_ACTION_ICON_CLASS,
 } from "./rowActionButtonStyles";
+import RecycleBinButton from "./RecycleBinButton";
 import { formatSubjectLabel } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
 import { formatWeightedTestScore } from "../testUtils";
@@ -90,6 +91,8 @@ export default function TestResultsSection({
   embedded = false,
   hideSort = false,
   analyseHrefForAttempt,
+  onDeleteResult,
+  deletingResultId,
 }) {
   const [sortMode, setSortMode] = useState(SECTION_SORT_TIME);
 
@@ -174,18 +177,27 @@ export default function TestResultsSection({
                 </div>
               </button>
             </div>
-            {showAnalyse ? (
-              <div className="flex shrink-0 self-start sm:w-7 pt-3">
-                <TestAnalyseIconLink
-                  attemptId={item.id}
-                  analyzed={analyzed}
-                  title={item.title || "Test"}
-                  to={
-                    analyseHrefForAttempt
-                      ? analyseHrefForAttempt(item)
-                      : undefined
-                  }
-                />
+            {showAnalyse || onDeleteResult ? (
+              <div className="flex shrink-0 self-start sm:self-stretch sm:items-stretch sm:flex-col sm:justify-center gap-2 sm:w-7 pt-3">
+                {showAnalyse ? (
+                  <TestAnalyseIconLink
+                    attemptId={item.id}
+                    analyzed={analyzed}
+                    title={item.title || "Test"}
+                    to={
+                      analyseHrefForAttempt
+                        ? analyseHrefForAttempt(item)
+                        : undefined
+                    }
+                  />
+                ) : null}
+                {onDeleteResult ? (
+                  <RecycleBinButton
+                    onClick={() => onDeleteResult(item)}
+                    label={`Delete test result for ${item.title || "Test"}`}
+                    disabled={deletingResultId === item.id}
+                  />
+                ) : null}
               </div>
             ) : null}
           </div>

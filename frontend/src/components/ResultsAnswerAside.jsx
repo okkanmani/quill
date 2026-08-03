@@ -1,5 +1,6 @@
-import AnswerResponseView from "./AnswerResponseView";
 import AdminResultGrader from "./AdminResultGrader";
+import TestAnswerReview from "./TestAnswerReview";
+import WorksheetAnswerReview from "./WorksheetAnswerReview";
 import {
   RESULTS_ANSWER_BODY,
   RESULTS_ANSWER_PROMPT,
@@ -21,40 +22,7 @@ function WorksheetAnswersBody({ result, isAdmin, isPending, onResultEvaluated })
     );
   }
 
-  return (
-    <div className="px-4 pb-4 pt-4">
-      <ul className="flex flex-col gap-3">
-        {(result.answers || []).map((a, index) => (
-          <li
-            key={a.question_id}
-            className="rounded-xl bg-white border border-slate-100 p-3 shadow-sm"
-          >
-            <p className={RESULTS_ANSWER_PROMPT}>
-              <span className="text-indigo-600 font-normal">
-                {index + 1}.{" "}
-              </span>
-              {a.prompt}
-            </p>
-            <div className="mt-2 flex flex-col gap-1.5 text-sm">
-              <span className={RESULTS_ANSWER_BODY}>Response:</span>
-              <AnswerResponseView answer={a} />
-              {typeof a.correct === "boolean" ? (
-                <span
-                  className={`inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
-                    a.correct
-                      ? "bg-green-50 text-green-800 border-green-200"
-                      : "bg-red-50 text-red-800 border-red-200"
-                  }`}
-                >
-                  {a.correct ? "Correct" : "Incorrect"}
-                </span>
-              ) : null}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  return <WorksheetAnswerReview result={result} />;
 }
 
 function PracticeAnswersBody({ item }) {
@@ -115,44 +83,7 @@ function PracticeAnswersBody({ item }) {
 }
 
 function TestAnswersBody({ item }) {
-  return (
-    <div className="px-4 pb-4 pt-4 text-sm space-y-3">
-      {(item.answers || []).map((a, i) => (
-        <div
-          key={a.question_id || i}
-          className={`rounded-xl border p-3 ${
-            a.correct
-              ? "border-green-200 bg-green-50/50"
-              : "border-red-200 bg-red-50/50"
-          }`}
-        >
-          <p className="text-sm font-semibold text-slate-900">
-            {a.prompt || "Question"}
-          </p>
-          <p className={`mt-1 ${RESULTS_ANSWER_BODY}`}>
-            Answer: {a.given || "—"}
-            {!a.correct && a.expected ? (
-              <span className="block text-emerald-800 mt-0.5">
-                Correct: {a.expected}
-              </span>
-            ) : null}
-          </p>
-          {a.tier ? (
-            <p className={`${RESULTS_ROW_DETAIL} mt-1`}>Tier {a.tier}</p>
-          ) : null}
-        </div>
-      ))}
-      {item.review_id ? (
-        <p className="text-xs text-amber-800 font-medium">
-          Review session #{item.review_id}
-          {item.review_completed ? " — completed" : " — pending"}
-        </p>
-      ) : null}
-      {!item.answers?.length && !item.review_id ? (
-        <p className={RESULTS_BODY_MUTED}>No answers were saved for this test.</p>
-      ) : null}
-    </div>
-  );
+  return <TestAnswerReview item={item} />;
 }
 
 /**
