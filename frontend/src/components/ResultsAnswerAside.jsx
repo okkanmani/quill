@@ -1,4 +1,5 @@
 import AdminResultGrader from "./AdminResultGrader";
+import AdminTestResultGrader from "./AdminTestResultGrader";
 import TestAnswerReview from "./TestAnswerReview";
 import WorksheetAnswerReview from "./WorksheetAnswerReview";
 import {
@@ -82,7 +83,17 @@ function PracticeAnswersBody({ item }) {
   );
 }
 
-function TestAnswersBody({ item }) {
+function TestAnswersBody({ item, isAdmin, onTestResultEvaluated }) {
+  if (isAdmin) {
+    return (
+      <AdminTestResultGrader
+        result={item}
+        onEvaluated={onTestResultEvaluated}
+        layout="side"
+      />
+    );
+  }
+
   return <TestAnswerReview item={item} />;
 }
 
@@ -95,6 +106,7 @@ export default function ResultsAnswerAside({
   testResult = null,
   isAdmin = true,
   onResultEvaluated,
+  onTestResultEvaluated,
   onClose,
   className = "",
 }) {
@@ -152,7 +164,13 @@ export default function ResultsAnswerAside({
             />
           ) : null}
           {practiceItem ? <PracticeAnswersBody item={practiceItem} /> : null}
-          {testResult ? <TestAnswersBody item={testResult} /> : null}
+          {testResult ? (
+            <TestAnswersBody
+              item={testResult}
+              isAdmin={isAdmin}
+              onTestResultEvaluated={onTestResultEvaluated}
+            />
+          ) : null}
         </div>
       </div>
     </aside>

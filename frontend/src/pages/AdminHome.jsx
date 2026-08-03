@@ -438,6 +438,41 @@ export default function AdminHome() {
     );
   }
 
+  function handleTestResultEvaluated(updated) {
+    setTestResults((prev) =>
+      prev.map((result) => (result.id === updated.id ? updated : result)),
+    );
+    setCompositeResults((prev) =>
+      prev.map((composite) => {
+        let sectionUpdated = false;
+        const sections = (composite.sections || []).map((section) => {
+          if (section.result?.id !== updated.id) return section;
+          sectionUpdated = true;
+          return { ...section, result: updated };
+        });
+        if (!sectionUpdated) return composite;
+
+        const sectionResults = sections
+          .map((section) => section.result)
+          .filter(Boolean);
+        const weightedScore = sectionResults.reduce(
+          (sum, result) => sum + (result.weighted_score || 0),
+          0,
+        );
+        const maxWeightedScore = sectionResults.reduce(
+          (sum, result) => sum + (result.max_weighted_score || 0),
+          0,
+        );
+        return {
+          ...composite,
+          sections,
+          weighted_score: weightedScore,
+          max_weighted_score: maxWeightedScore,
+        };
+      }),
+    );
+  }
+
   return (
     <AppShell
       navLinks={ADMIN_MAIN_NAV}
@@ -560,12 +595,14 @@ export default function AdminHome() {
               <ResultsAnswerAside
                 className="lg:hidden mt-4"
                 testResult={selectedTestResult}
+                onTestResultEvaluated={handleTestResultEvaluated}
                 onClose={closeTestAnswerPanel}
               />
             </div>
             <ResultsAnswerAside
               className="hidden lg:block"
               testResult={selectedTestResult}
+              onTestResultEvaluated={handleTestResultEvaluated}
               onClose={closeTestAnswerPanel}
             />
           </div>
@@ -593,12 +630,14 @@ export default function AdminHome() {
               <ResultsAnswerAside
                 className="lg:hidden mt-4"
                 testResult={selectedCompositeSectionResult}
+                onTestResultEvaluated={handleTestResultEvaluated}
                 onClose={closeCompositeAnswerPanel}
               />
             </div>
             <ResultsAnswerAside
               className="hidden lg:block"
               testResult={selectedCompositeSectionResult}
+              onTestResultEvaluated={handleTestResultEvaluated}
               onClose={closeCompositeAnswerPanel}
             />
           </div>

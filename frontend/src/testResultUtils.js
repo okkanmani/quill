@@ -113,3 +113,58 @@ export function groupWorksheetAnswers(answers, worksheet) {
 export function worksheetHasPassageContext(worksheet) {
   return Boolean(worksheet?.passages?.length);
 }
+
+/** Flatten test result answers into per-question rows for grading. */
+export function flattenTestQuestions(answers) {
+  const items = [];
+  for (const answer of answers || []) {
+    if (isPassageWindowAnswer(answer)) {
+      for (const question of answer.questions || []) {
+        if (question?.question_id) items.push(question);
+      }
+    } else if (answer?.question_id) {
+      items.push(answer);
+    }
+  }
+  return items;
+}
+
+/** Group test result answers for admin grading (passage windows + regular). */
+export function groupTestAnswers(answers, worksheet) {
+  const items = Array.isArray(answers) ? answers : [];
+  const passageLookup = buildPassageLookup(worksheet);
+  const questionPassageLookup = buildQuestionPassageLookup(worksheet);
+  const groups = [];
+  let questionNumber = 0;
+
+  for (const answer of items) {
+    if (isPassageWindowAnswer(answer)) {
+      const passage = resolveAnswerPassage(answer, passageLookup, questionPassageLookup);
+      const numberedAnswers = (answer.questions || [])
+        .filter((question) => question?.question_id)
+        .map((question) => {
+          questionNumber += 1;
+          return { answer: question, number: questionNumber };
+        });
+      groups.push({
+        kind: "passage",
+        passageId: answer.passage_id,
+        passage,
+        numberedAnswers,
+      });
+      continue;
+    }
+
+    if (!answer?.question_id) continue;
+    questionNumber += 1;
+    const passage = resolveAnswerPassage(answer, passageLookup, questionPassageLookup);
+    groups.push({
+      kind: "question",
+      answer,
+      number: questionNumber,
+      passage,
+    });
+  }
+
+  return groups;
+}

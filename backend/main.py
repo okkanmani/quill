@@ -79,6 +79,7 @@ from revision import (
 from tests import (
     complete_test_review,
     delete_test_attempt,
+    evaluate_test_attempt,
     get_or_start_test_session,
     get_test_review,
     list_test_results,
@@ -2614,6 +2615,20 @@ def remove_admin_test_result(attempt_id: int, authorization: str = Header(...)):
     if not delete_test_attempt(attempt_id, who):
         raise HTTPException(status_code=404, detail="Test result not found")
     return {"message": "Test result deleted"}
+
+
+@app.post("/admin/test-results/{attempt_id}/evaluate")
+def evaluate_admin_test_result(
+    attempt_id: int, req: EvaluateResultRequest, authorization: str = Header(...)
+):
+    payload = _payload(authorization)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    who = _student_context_name(payload)
+    try:
+        return evaluate_test_attempt(attempt_id, who, req.marks)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @app.get("/tests/reviews")

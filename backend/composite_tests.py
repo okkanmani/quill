@@ -991,6 +991,52 @@ def submit_composite(student_name: str, composite_id: str, *, force_partial: boo
     return result
 
 
+def recompute_composite_aggregate(
+    conn,
+    composite_attempt_id: int,
+    student_name: str,
+) -> None:
+    """Refresh composite overall scores after a section result is re-graded."""
+    attempt = conn.execute(
+        """
+        SELECT id, composite_id, completed_at
+        FROM composite_test_attempts
+        WHERE id = ? AND student = ?
+        """,
+        (composite_attempt_id, student_name),
+    ).fetchone()
+    if not attempt or not attempt["completed_at"]:
+        return
+
+    total_weighted = 0.0
+    total_max = 0.0
+    total_duration = 0
+    for section in _section_rows(conn, attempt["composite_id"]):
+        child = conn.execute(
+            """
+            SELECT weighted_score, max_weighted_score, duration_seconds
+            FROM test_attempts
+            WHERE student = ? AND worksheet_id = ? AND composite_attempt_id = ?
+              AND completed_at IS NOT NULL
+            """,
+            (student_name, section["worksheet_id"], composite_attempt_id),
+        ).fetchone()
+        if not child:
+            continue
+        total_weighted += float(child["weighted_score"] or 0)
+        total_max += float(child["max_weighted_score"] or 0)
+        total_duration += int(child["duration_seconds"] or 0)
+
+    conn.execute(
+        """
+        UPDATE composite_test_attempts
+        SET weighted_score = ?, max_weighted_score = ?, duration_seconds = ?
+        WHERE id = ?
+        """,
+        (total_weighted, total_max, total_duration, composite_attempt_id),
+    )
+
+
 def _finalize_incomplete_composite_sections(
     student_name: str,
     composite_attempt_id: int,

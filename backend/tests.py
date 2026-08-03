@@ -1038,6 +1038,236 @@ def _build_rc_passage_answer(
     }
 
 
+def _recalc_passage_answer_stats(ans: dict, worksheet: dict) -> dict:
+    """Recompute passage-level correctness after admin overrides question marks."""
+    questions = [
+        q for q in (ans.get("questions") or []) if isinstance(q, dict)
+    ]
+    if not questions:
+        return ans
+    correct_count = sum(1 for q in questions if q.get("correct"))
+    weighted_earned = sum(
+        tier_weight(int(q.get("tier") or START_TIER))
+        for q in questions
+        if q.get("correct")
+    )
+    weighted_max = sum(
+        tier_weight(int(q.get("tier") or START_TIER)) for q in questions
+    )
+    weighted_pct = (weighted_earned / weighted_max) if weighted_max else 0.0
+    passage_correct = correct_count * 2 > len(questions)
+    if _uses_rc_adaptive_v2(worksheet):
+        passage_correct = weighted_pct >= RC_PROMOTE_WEIGHTED_PCT
+    ans["correct_count"] = correct_count
+    ans["question_count"] = len(questions)
+    ans["weighted_pct"] = round(weighted_pct, 4)
+    ans["correct"] = passage_correct
+    return ans
+
+
+def _apply_test_marks(
+    answers: dict,
+    mark_by_qid: dict[str, bool],
+    worksheet: dict,
+    *,
+    sitting_count: int,
+) -> dict:
+    is_passage_window = _is_passage_window_test(worksheet)
+    for slot in range(1, sitting_count + 1):
+        key = str(slot)
+        ans = answers.get(key)
+        if not isinstance(ans, dict):
+            continue
+        if is_passage_window:
+            for detail in ans.get("questions") or []:
+                if not isinstance(detail, dict):
+                    continue
+                qid = str(detail.get("question_id") or "")
+                if qid in mark_by_qid:
+                    detail["correct"] = mark_by_qid[qid]
+            _recalc_passage_answer_stats(ans, worksheet)
+        else:
+            qid = str(ans.get("question_id") or "")
+            if qid in mark_by_qid:
+                ans["correct"] = mark_by_qid[qid]
+        answers[key] = ans
+    return answers
+
+
+def _build_test_review_missed(
+    ws: dict,
+    answers: dict,
+    *,
+    sitting_count: int,
+) -> list[dict]:
+    is_passage_window = _is_passage_window_test(ws)
+    passage_lookup = _passage_lookup(ws)
+    question_lookup = _question_lookup(ws)
+    missed = []
+    for slot in range(1, sitting_count + 1):
+        ans = answers.get(str(slot), {})
+        if not isinstance(ans, dict):
+            continue
+        if is_passage_window:
+            passage = passage_lookup.get(str(ans.get("passage_id") or ""))
+            for detail in ans.get("questions") or []:
+                if not isinstance(detail, dict) or detail.get("correct"):
+                    continue
+                missed.append(
+                    {
+                        "slot": slot,
+                        "question_id": detail.get("question_id"),
+                        "prompt": detail.get("prompt") or "",
+                        "given": detail.get("given") or "",
+                        "expected": detail.get("expected") or "",
+                        "choices": detail.get("choices") or [],
+                        "area": detail.get("area") or "",
+                        "tier": detail.get("tier") or ans.get("tier"),
+                        "passage": passage,
+                        "notes": {"mode": "text", "text": "", "scratchpad": ""},
+                    }
+                )
+            continue
+        if not ans.get("correct"):
+            q_full = question_lookup.get(str(ans.get("question_id") or ""))
+            passage = None
+            if q_full:
+                passage_id = q_full.get("passage_id")
+                if passage_id:
+                    passage = passage_lookup.get(str(passage_id))
+            missed.append(
+                {
+                    "slot": slot,
+                    "question_id": ans.get("question_id"),
+                    "prompt": ans.get("prompt") or "",
+                    "given": ans.get("given") or "",
+                    "expected": ans.get("expected") or "",
+                    "choices": ans.get("choices") or [],
+                    "area": ans.get("area") or "",
+                    "tier": ans.get("tier"),
+                    "passage": passage,
+                    "notes": {"mode": "text", "text": "", "scratchpad": ""},
+                }
+            )
+    return missed
+
+
+def _sync_test_review_payload(
+    conn,
+    attempt_id: int,
+    ws: dict,
+    answers: dict,
+    *,
+    sitting_count: int,
+) -> None:
+    review = conn.execute(
+        "SELECT id, payload FROM test_review_sessions WHERE attempt_id = ?",
+        (attempt_id,),
+    ).fetchone()
+    if not review:
+        return
+    old_payload = _parse_json(review["payload"], {})
+    old_notes = {
+        str(q.get("question_id")): q.get("notes")
+        for q in (old_payload.get("questions") or [])
+        if isinstance(q, dict) and q.get("question_id")
+    }
+    missed = _build_test_review_missed(
+        ws, answers, sitting_count=sitting_count
+    )
+    for item in missed:
+        qid = str(item.get("question_id") or "")
+        if qid in old_notes and isinstance(old_notes[qid], dict):
+            item["notes"] = old_notes[qid]
+    new_payload = {**old_payload, "questions": missed}
+    conn.execute(
+        "UPDATE test_review_sessions SET payload = ? WHERE id = ?",
+        (json.dumps(new_payload), review["id"]),
+    )
+
+
+def evaluate_test_attempt(
+    attempt_id: int, student_name: str, marks: list[dict]
+) -> dict:
+    """Admin overrides per-question correctness on a completed test result."""
+    mark_by_qid = {
+        str(m["question_id"]): bool(m["correct"])
+        for m in marks
+        if isinstance(m, dict) and m.get("question_id")
+    }
+    if not mark_by_qid:
+        raise ValueError("No marks provided.")
+
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            """
+            SELECT ta.*, w.title, w.subject, w.test_adaptive, w.time_limit_minutes,
+                   w.test_sitting_count,
+                   tr.id AS review_id, tr.completed_at AS review_completed_at
+            FROM test_attempts ta
+            JOIN worksheets w ON w.id = ta.worksheet_id
+            LEFT JOIN test_review_sessions tr ON tr.attempt_id = ta.id
+            WHERE ta.id = ? AND ta.student = ? AND ta.completed_at IS NOT NULL
+            """,
+            (attempt_id, student_name),
+        ).fetchone()
+        if not row:
+            raise ValueError("Test result not found.")
+
+        ws = get_worksheet(row["worksheet_id"])
+        if not ws:
+            raise ValueError("Test worksheet not found.")
+
+        answers = _parse_json(row["answers"], {})
+        sequence = _parse_json(row["sequence"], [])
+        sitting_count = int(row["sitting_count"] or test_sitting_count_from_data(ws))
+        answers = _apply_test_marks(
+            answers,
+            mark_by_qid,
+            ws,
+            sitting_count=sitting_count,
+        )
+        weighted, max_weighted = _weighted_test_score(
+            ws, sequence, answers, sitting_count=sitting_count
+        )
+        conn.execute(
+            """
+            UPDATE test_attempts
+            SET answers = ?, weighted_score = ?, max_weighted_score = ?,
+                analyzed_at = NULL
+            WHERE id = ?
+            """,
+            (json.dumps(answers), weighted, max_weighted, attempt_id),
+        )
+        _sync_test_review_payload(
+            conn, attempt_id, ws, answers, sitting_count=sitting_count
+        )
+
+        composite_attempt_id = row["composite_attempt_id"]
+        if composite_attempt_id:
+            from composite_tests import recompute_composite_aggregate
+
+            recompute_composite_aggregate(
+                conn, int(composite_attempt_id), student_name
+            )
+
+        conn.commit()
+        updated = conn.execute(
+            f"""
+            {_TEST_RESULT_SELECT}
+            WHERE ta.id = ? AND ta.student = ?
+            """,
+            (attempt_id, student_name),
+        ).fetchone()
+        return build_test_result_record(updated)
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def _question_lookup(worksheet: dict) -> dict[str, dict]:
     return {
         str(q.get("id")): q

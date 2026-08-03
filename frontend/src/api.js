@@ -1243,6 +1243,21 @@ export async function deleteTestResult(attemptId) {
   return res.json();
 }
 
+export async function evaluateTestResult(attemptId, marks) {
+  const res = await apiFetch(`${BASE_URL}/admin/test-results/${attemptId}/evaluate`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ marks }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const d = err.detail;
+    const msg = typeof d === "string" ? d : "Failed to save test marks";
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 // --- Composite tests ---
 
 async function readApiError(res, fallback) {

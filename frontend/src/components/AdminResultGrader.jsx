@@ -8,7 +8,7 @@ import {
 import AnswerResponseView from "./AnswerResponseView";
 import CollapsiblePassageContext from "./CollapsiblePassageContext";
 
-function AdminGradingQuestionRow({ answer, number, marks, saving, onMark }) {
+export function AdminGradingQuestionRow({ answer, number, marks, saving, onMark }) {
   const isCorrect = marks[answer.question_id] === true;
   const isWrong = marks[answer.question_id] === false;
 

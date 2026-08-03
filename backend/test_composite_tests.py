@@ -313,6 +313,30 @@ class CompositeTestsTest(unittest.TestCase):
         self.assertTrue(hub_after["completed_at"])
         self.assertFalse(hub_after["can_submit"])
 
+    def test_evaluate_test_attempt_updates_marks_and_score(self):
+        get_or_start_test_session(self.student_name, "test-math", resume=True)
+        with patch("tests._weighted_test_score", return_value=(0.0, 4.0)):
+            from tests import save_test_answer
+
+            save_test_answer(self.student_name, "test-math", slot=1, given="A")
+            submit_test(self.student_name, "test-math")
+
+        results = list_test_results(self.student_name)
+        attempt_id = results[0]["id"]
+        question_id = results[0]["answers"][0]["question_id"]
+
+        with patch("tests._weighted_test_score", return_value=(2.0, 4.0)):
+            from tests import evaluate_test_attempt
+
+            updated = evaluate_test_attempt(
+                attempt_id,
+                self.student_name,
+                [{"question_id": question_id, "correct": True}],
+            )
+
+        self.assertEqual(updated["weighted_score"], 2.0)
+        self.assertEqual(updated["correct_count"], 1)
+
 
 class LegacyTestAttemptsMigrationTest(unittest.TestCase):
     """Simulate staging DB: test_attempts without composite_attempt_id."""
