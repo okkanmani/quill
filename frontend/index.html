@@ -12,8 +12,41 @@
           rel="stylesheet"
         />
         <script>
+          function quillAppearanceUserKey() {
+            try {
+              if (!localStorage.getItem("token")) return "guest";
+              var role = localStorage.getItem("role");
+              var studentName = localStorage.getItem("studentName");
+              function safe(value) {
+                return String(value || "default").replace(/:/g, "_");
+              }
+              if (role === "admin") {
+                if (studentName) return "student:" + safe(studentName);
+                return "admin:" + safe(localStorage.getItem("adminName"));
+              }
+              return "student:" + safe(localStorage.getItem("name"));
+            } catch (e) {
+              return "guest";
+            }
+          }
+          function quillScopedKey(baseKey) {
+            return baseKey + ":" + quillAppearanceUserKey();
+          }
+          function quillReadScoped(baseKey, fallback) {
+            try {
+              var scopedKey = quillScopedKey(baseKey);
+              var scoped = localStorage.getItem(scopedKey);
+              if (scoped != null) return scoped;
+              var legacy = localStorage.getItem(baseKey);
+              if (legacy != null) {
+                localStorage.setItem(scopedKey, legacy);
+                return legacy;
+              }
+            } catch (e) {}
+            return fallback;
+          }
           try {
-            var theme = localStorage.getItem("quillColorTheme") || "default";
+            var theme = quillReadScoped("quillColorTheme", "default");
             document.documentElement.dataset.theme = theme;
             var darkThemes = { midnight: 1, charcoal: 1, wine: 1 };
             document.documentElement.dataset.themeMode = darkThemes[theme]
@@ -39,7 +72,7 @@
                 '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
               "space-grotesk": '"Space Grotesk", system-ui, sans-serif',
             };
-            var fontId = localStorage.getItem("quillFont") || "system";
+            var fontId = quillReadScoped("quillFont", "system");
             var stack = fonts[fontId] || fonts.system;
             document.documentElement.dataset.font = fontId in fonts ? fontId : "system";
             document.documentElement.style.setProperty("--quill-font-family", stack);

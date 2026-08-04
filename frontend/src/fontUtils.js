@@ -1,3 +1,8 @@
+import {
+  readScopedAppearanceValue,
+  writeScopedAppearanceValue,
+} from "./appearancePrefsScope.js";
+
 export const FONT_STORAGE_KEY = "quillFont";
 
 export const FONT_OPTIONS = [
@@ -82,7 +87,7 @@ export function normalizeFont(fontId) {
 
 export function getStoredFont() {
   try {
-    return normalizeFont(localStorage.getItem(FONT_STORAGE_KEY));
+    return normalizeFont(readScopedAppearanceValue(FONT_STORAGE_KEY));
   } catch {
     return "system";
   }
@@ -98,11 +103,7 @@ export function applyFont(fontId) {
 
 export function setStoredFont(fontId) {
   const normalized = normalizeFont(fontId);
-  try {
-    localStorage.setItem(FONT_STORAGE_KEY, normalized);
-  } catch {
-    /* ignore quota / private mode */
-  }
+  writeScopedAppearanceValue(FONT_STORAGE_KEY, normalized);
   applyFont(normalized);
   return normalized;
 }

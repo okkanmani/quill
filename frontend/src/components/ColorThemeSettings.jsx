@@ -63,8 +63,7 @@ export default function ColorThemeSettings() {
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className={WS_SECTION_TITLE}>Color theme</h2>
       <p className={`${WS_BODY} mt-1 leading-relaxed`}>
-        Choose how Quill looks on this device. Saved in your browser for student
-        and teacher views.
+        Choose how Quill looks on this device. Saved for your account on this browser.
       </p>
 
       <div ref={rootRef} className="relative mt-4">

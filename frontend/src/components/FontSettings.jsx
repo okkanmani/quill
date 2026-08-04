@@ -61,8 +61,8 @@ export default function FontSettings() {
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className={WS_SECTION_TITLE}>Font</h2>
       <p className={`${WS_BODY} mt-1 leading-relaxed`}>
-        Choose the typeface for Quill on this device. Saved in your browser for
-        student and teacher views.
+        Choose the typeface for Quill on this device. Saved for your account on
+        this browser.
       </p>
 
       <div ref={rootRef} className="relative mt-4">

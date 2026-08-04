@@ -1,3 +1,8 @@
+import {
+  readScopedAppearanceValue,
+  writeScopedAppearanceValue,
+} from "./appearancePrefsScope.js";
+
 export const COLOR_THEME_STORAGE_KEY = "quillColorTheme";
 
 export const COLOR_THEMES = [
@@ -69,7 +74,7 @@ export function normalizeColorTheme(themeId) {
 
 export function getStoredColorTheme() {
   try {
-    return normalizeColorTheme(localStorage.getItem(COLOR_THEME_STORAGE_KEY));
+    return normalizeColorTheme(readScopedAppearanceValue(COLOR_THEME_STORAGE_KEY));
   } catch {
     return "default";
   }
@@ -86,11 +91,7 @@ export function applyColorTheme(themeId) {
 
 export function setStoredColorTheme(themeId) {
   const normalized = normalizeColorTheme(themeId);
-  try {
-    localStorage.setItem(COLOR_THEME_STORAGE_KEY, normalized);
-  } catch {
-    /* ignore quota / private mode */
-  }
+  writeScopedAppearanceValue(COLOR_THEME_STORAGE_KEY, normalized);
   applyColorTheme(normalized);
   return normalized;
 }
