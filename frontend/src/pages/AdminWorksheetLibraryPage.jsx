@@ -23,7 +23,9 @@ import RecycleBinButton from "../components/RecycleBinButton";
 import WorksheetsBySubject from "../components/WorksheetsBySubject";
 import ThinkingQuestByWeek from "../components/ThinkingQuestByWeek";
 import MoveActionButton from "../components/MoveActionButton";
+import QuestionBankActionButton from "../components/QuestionBankActionButton";
 import OrganizeActionButton from "../components/OrganizeActionButton";
+import { saveWorksheetOrTestToQuestionBank } from "../questionBankImport";
 import WorksheetMoveDialog from "../components/WorksheetMoveDialog";
 import AddWorksheetCollectionDialog from "../components/AddWorksheetCollectionDialog";
 import CollectionMoveDialog from "../components/CollectionMoveDialog";
@@ -153,6 +155,7 @@ export default function AdminWorksheetLibraryPage({
   const [organizing, setOrganizing] = useState(false);
   const [titleSavingId, setTitleSavingId] = useState(null);
   const [sectionDeleteAck, setSectionDeleteAck] = useState(null);
+  const [savingToBankId, setSavingToBankId] = useState(null);
 
   useAutoDismissToast(
     toast?.message ?? "",
@@ -407,7 +410,26 @@ export default function AdminWorksheetLibraryPage({
   }, [selectedSectionIds, worksheetSections.sections]);
 
   const selectionBusy =
-    deleting || deletingSections || moveSaving || moveCollectionSaving;
+    deleting || deletingSections || moveSaving || moveCollectionSaving || Boolean(savingToBankId);
+
+  async function handleSaveWorksheetToBank(ws) {
+    if (savingToBankId) return;
+    setSavingToBankId(ws.id);
+    setError("");
+    try {
+      const worksheet = await getWorksheet(ws.id);
+      const result = await saveWorksheetOrTestToQuestionBank(worksheet);
+      if (result.errors?.length) {
+        showToast(`${result.message} ${result.errors.join(" ")}`);
+      } else {
+        showToast(result.message);
+      }
+    } catch (err) {
+      setError(err.message || "Could not save to the question bank.");
+    } finally {
+      setSavingToBankId(null);
+    }
+  }
 
   async function handleAddCollection({ title, parentId }) {
     setAddCollectionSaving(true);
@@ -757,6 +779,15 @@ export default function AdminWorksheetLibraryPage({
           to={config.editPath(ws)}
           label={`Edit ${ws.title}`}
           disabled={selectionBusy}
+        />
+        <QuestionBankActionButton
+          label={
+            savingToBankId === ws.id
+              ? `Saving ${ws.title} to question bank…`
+              : `Add ${ws.title} to question bank`
+          }
+          disabled={selectionBusy}
+          onClick={() => handleSaveWorksheetToBank(ws)}
         />
         <RecycleBinButton
           onClick={() => handleDelete(ws)}
