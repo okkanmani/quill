@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AppearanceScope } from "../appearancePrefsScope";
 import {
   FONT_OPTIONS,
   getFontOption,
@@ -24,8 +25,8 @@ function FontPreview({ stack, className = "" }) {
   );
 }
 
-export default function FontSettings() {
-  const [fontId, setFontId] = useState(getStoredFont);
+export default function FontSettings({ scope = AppearanceScope.ACTIVE }) {
+  const [fontId, setFontId] = useState(() => getStoredFont(scope));
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
 
@@ -53,7 +54,7 @@ export default function FontSettings() {
   }, [open]);
 
   function chooseFont(nextFontId) {
-    setFontId(setStoredFont(nextFontId));
+    setFontId(setStoredFont(nextFontId, scope));
     setOpen(false);
   }
 

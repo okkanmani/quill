@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getMe } from "../api";
 import { clearSession } from "../sessionAuth";
+import { applyLoginAppearance } from "../loginAppearance";
 import QuillLoading from "./QuillLoading";
 
 export default function ProtectedRoute({ role, children }) {
@@ -23,6 +24,7 @@ export default function ProtectedRoute({ role, children }) {
       })
       .catch(() => {
         clearSession();
+        applyLoginAppearance();
         setStatus("denied");
       });
   }, [role]);

@@ -4,6 +4,7 @@ import {
   isAuthenticated,
   touchActivity,
 } from "./sessionAuth";
+import { applyLoginAppearance } from "./loginAppearance";
 import { notifyStudentHomeRefresh } from "./studentHomeRefresh";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -101,6 +102,7 @@ export async function logout() {
     }
   }
   clearSession();
+  applyLoginAppearance();
 }
 
 export async function getMe() {

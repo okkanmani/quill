@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AppearanceScope } from "../appearancePrefsScope";
 import {
   COLOR_THEMES,
   getStoredColorTheme,
@@ -23,8 +24,10 @@ function ThemeColorSwatch({ swatch, className = "" }) {
   );
 }
 
-export default function ColorThemeSettings() {
-  const [themeId, setThemeId] = useState(getStoredColorTheme);
+export default function ColorThemeSettings({
+  scope = AppearanceScope.ACTIVE,
+}) {
+  const [themeId, setThemeId] = useState(() => getStoredColorTheme(scope));
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
 
@@ -55,7 +58,7 @@ export default function ColorThemeSettings() {
   }, [open]);
 
   function chooseTheme(nextThemeId) {
-    setThemeId(setStoredColorTheme(nextThemeId));
+    setThemeId(setStoredColorTheme(nextThemeId, scope));
     setOpen(false);
   }
 

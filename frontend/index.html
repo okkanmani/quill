@@ -12,41 +12,48 @@
           rel="stylesheet"
         />
         <script>
-          function quillAppearanceUserKey() {
-            try {
-              if (!localStorage.getItem("token")) return "guest";
-              var role = localStorage.getItem("role");
-              var studentName = localStorage.getItem("studentName");
-              function safe(value) {
-                return String(value || "default").replace(/:/g, "_");
-              }
-              if (role === "admin") {
-                if (studentName) return "student:" + safe(studentName);
-                return "admin:" + safe(localStorage.getItem("adminName"));
-              }
-              return "student:" + safe(localStorage.getItem("name"));
-            } catch (e) {
-              return "guest";
+          function quillSafe(value) {
+            return String(value || "default").replace(/:/g, "_");
+          }
+          function quillActiveAppearanceUserKey() {
+            var role = localStorage.getItem("role");
+            var studentName = localStorage.getItem("studentName");
+            if (role === "admin") {
+              if (studentName) return "student:" + quillSafe(studentName);
+              return "admin:" + quillSafe(localStorage.getItem("adminName"));
             }
+            return "student:" + quillSafe(localStorage.getItem("name"));
           }
-          function quillScopedKey(baseKey) {
-            return baseKey + ":" + quillAppearanceUserKey();
-          }
-          function quillReadScoped(baseKey, fallback) {
+          function quillReadScoped(baseKey, userKey, fallback) {
             try {
-              var scopedKey = quillScopedKey(baseKey);
+              var scopedKey = baseKey + ":" + userKey;
               var scoped = localStorage.getItem(scopedKey);
               if (scoped != null) return scoped;
-              var legacy = localStorage.getItem(baseKey);
-              if (legacy != null) {
-                localStorage.setItem(scopedKey, legacy);
-                return legacy;
+              if (userKey.indexOf("guest") === -1) {
+                var legacy = localStorage.getItem(baseKey);
+                if (legacy != null) {
+                  localStorage.setItem(scopedKey, legacy);
+                  return legacy;
+                }
               }
             } catch (e) {}
             return fallback;
           }
           try {
-            var theme = quillReadScoped("quillColorTheme", "default");
+            var token = localStorage.getItem("token");
+            var theme;
+            if (!token) {
+              var loginMode = localStorage.getItem("quillLoginThemeMode") || "light";
+              theme = loginMode === "dark" ? "charcoal" : "default";
+              document.documentElement.dataset.quillPage = "login";
+            } else {
+              theme = quillReadScoped(
+                "quillColorTheme",
+                quillActiveAppearanceUserKey(),
+                "default",
+              );
+              delete document.documentElement.dataset.quillPage;
+            }
             document.documentElement.dataset.theme = theme;
             var darkThemes = { midnight: 1, charcoal: 1, wine: 1 };
             document.documentElement.dataset.themeMode = darkThemes[theme]
@@ -72,7 +79,14 @@
                 '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
               "space-grotesk": '"Space Grotesk", system-ui, sans-serif',
             };
-            var fontId = quillReadScoped("quillFont", "system");
+            var fontId = "system";
+            if (localStorage.getItem("token")) {
+              fontId = quillReadScoped(
+                "quillFont",
+                quillActiveAppearanceUserKey(),
+                "system",
+              );
+            }
             var stack = fonts[fontId] || fonts.system;
             document.documentElement.dataset.font = fontId in fonts ? fontId : "system";
             document.documentElement.style.setProperty("--quill-font-family", stack);

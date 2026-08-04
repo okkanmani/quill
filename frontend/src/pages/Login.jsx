@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   listAdminStudents,
@@ -10,6 +10,12 @@ import {
 } from "../api";
 import QuillLoading from "../components/QuillLoading";
 import { applyStudentSessionPrefs } from "../adminSession";
+import {
+  applyActiveUserAppearance,
+  applyLoginAppearance,
+  getStoredLoginThemeMode,
+  setStoredLoginThemeMode,
+} from "../loginAppearance";
 
 const TAB_SIGN_IN = "sign-in";
 const TAB_SIGN_UP = "sign-up";
@@ -33,6 +39,7 @@ async function navigateAfterAdminLogin(navigate) {
     const { students } = await listAdminStudents();
     const list = students || [];
     if (list.length === 0) {
+      applyActiveUserAppearance();
       navigate("/admin/students");
       return;
     }
@@ -46,8 +53,10 @@ async function navigateAfterAdminLogin(navigate) {
         curriculum: switched.curriculum ?? "",
       });
     }
+    applyActiveUserAppearance();
     navigate("/admin");
   } catch {
+    applyActiveUserAppearance();
     navigate("/admin");
   }
 }
@@ -57,6 +66,7 @@ export default function Login() {
   const [searchParams] = useSearchParams();
   const signedOut = searchParams.get("signedOut");
   const [activeTab, setActiveTab] = useState(TAB_SIGN_IN);
+  const [loginThemeMode, setLoginThemeMode] = useState(getStoredLoginThemeMode);
   const [adminName, setAdminName] = useState("");
   const [studentName, setStudentName] = useState("");
   const [password, setPassword] = useState("");
@@ -64,6 +74,18 @@ export default function Login() {
   const [signupPassword, setSignupPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    applyLoginAppearance();
+  }, []);
+
+  const isDarkLogin = loginThemeMode === "dark";
+
+  function toggleLoginThemeMode() {
+    setLoginThemeMode(
+      setStoredLoginThemeMode(loginThemeMode === "dark" ? "light" : "dark"),
+    );
+  }
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -92,6 +114,7 @@ export default function Login() {
           curriculum: data.curriculum ?? "",
         });
         touchActivity();
+        applyActiveUserAppearance();
         navigate("/student");
       } else {
         const data = await loginAdmin({
@@ -137,10 +160,29 @@ export default function Login() {
   }
 
   const inputClass =
-    "border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400";
+    "quill-login-input w-full rounded-xl border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 " +
+    (isDarkLogin
+      ? "quill-login-input--dark border-slate-500"
+      : "quill-login-input--light border-slate-300");
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-8 px-4">
+      <div className="absolute top-4 right-4">
+        <button
+          type="button"
+          onClick={toggleLoginThemeMode}
+          className={
+            "rounded-xl border px-3 py-2 text-sm font-semibold transition " +
+            (isDarkLogin
+              ? "border-slate-500 bg-slate-800 text-slate-100 hover:bg-slate-700"
+              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50")
+          }
+          aria-pressed={isDarkLogin}
+        >
+          {isDarkLogin ? "Light theme" : "Dark theme"}
+        </button>
+      </div>
+
       <div className="text-center">
         <h1 className="text-5xl font-bold text-slate-800 tracking-tight">
           🪶 Quill

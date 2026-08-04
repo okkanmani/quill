@@ -1,4 +1,5 @@
 import {
+  AppearanceScope,
   readScopedAppearanceValue,
   writeScopedAppearanceValue,
 } from "./appearancePrefsScope.js";
@@ -72,9 +73,11 @@ export function normalizeColorTheme(themeId) {
   return VALID_THEME_IDS.has(themeId) ? themeId : "default";
 }
 
-export function getStoredColorTheme() {
+export function getStoredColorTheme(scope = AppearanceScope.ACTIVE) {
   try {
-    return normalizeColorTheme(readScopedAppearanceValue(COLOR_THEME_STORAGE_KEY));
+    return normalizeColorTheme(
+      readScopedAppearanceValue(COLOR_THEME_STORAGE_KEY, scope) ?? "default",
+    );
   } catch {
     return "default";
   }
@@ -89,13 +92,13 @@ export function applyColorTheme(themeId) {
   return normalized;
 }
 
-export function setStoredColorTheme(themeId) {
+export function setStoredColorTheme(themeId, scope = AppearanceScope.ACTIVE) {
   const normalized = normalizeColorTheme(themeId);
-  writeScopedAppearanceValue(COLOR_THEME_STORAGE_KEY, normalized);
+  writeScopedAppearanceValue(COLOR_THEME_STORAGE_KEY, normalized, scope);
   applyColorTheme(normalized);
   return normalized;
 }
 
-export function initColorTheme() {
-  return applyColorTheme(getStoredColorTheme());
+export function initColorTheme(scope = AppearanceScope.ACTIVE) {
+  return applyColorTheme(getStoredColorTheme(scope));
 }

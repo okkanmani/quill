@@ -1,43 +1,72 @@
 /** Scope theme/font prefs per signed-in user (admin vs each student). */
 
+export const AppearanceScope = {
+  ACTIVE: "active",
+  ADMIN: "admin",
+  STUDENT: "student",
+};
+
 function sanitizeKeyPart(value) {
   return String(value || "default").replace(/:/g, "_");
 }
 
-/**
- * Stable localStorage scope for appearance prefs.
- * - Admin alone: admin:{adminName}
- * - Admin viewing a student: student:{studentName}
- * - Student login: student:{name}
- * - Signed out: guest
- */
-export function getAppearancePrefsUserKey() {
+function isSignedIn() {
   try {
-    if (!localStorage.getItem("token")) return "guest";
-
-    const role = localStorage.getItem("role");
-    const studentName = localStorage.getItem("studentName");
-
-    if (role === "admin") {
-      if (studentName) {
-        return `student:${sanitizeKeyPart(studentName)}`;
-      }
-      return `admin:${sanitizeKeyPart(localStorage.getItem("adminName"))}`;
-    }
-
-    return `student:${sanitizeKeyPart(localStorage.getItem("name"))}`;
+    return Boolean(localStorage.getItem("token"));
   } catch {
-    return "guest";
+    return false;
   }
 }
 
-export function scopedAppearanceStorageKey(baseKey) {
-  return `${baseKey}:${getAppearancePrefsUserKey()}`;
+/**
+ * Resolve the localStorage user segment for appearance prefs.
+ * - ADMIN: always the family admin account (settings page)
+ * - STUDENT: the student account (student settings / student login)
+ * - ACTIVE: student prefs while impersonating or as student; otherwise admin
+ */
+export function resolveAppearanceUserKey(scope = AppearanceScope.ACTIVE) {
+  if (!isSignedIn()) return null;
+
+  const role = localStorage.getItem("role");
+  const adminName = sanitizeKeyPart(localStorage.getItem("adminName"));
+  const studentName = sanitizeKeyPart(localStorage.getItem("studentName"));
+  const name = sanitizeKeyPart(localStorage.getItem("name"));
+
+  if (scope === AppearanceScope.ADMIN) {
+    return `admin:${adminName}`;
+  }
+
+  if (scope === AppearanceScope.STUDENT) {
+    if (role === "admin" && studentName) {
+      return `student:${studentName}`;
+    }
+    return `student:${name}`;
+  }
+
+  if (role === "admin") {
+    if (studentName) {
+      return `student:${studentName}`;
+    }
+    return `admin:${adminName}`;
+  }
+
+  return `student:${name}`;
 }
 
-export function readScopedAppearanceValue(baseKey) {
+export function scopedAppearanceStorageKey(baseKey, scope = AppearanceScope.ACTIVE) {
+  const userKey = resolveAppearanceUserKey(scope);
+  if (!userKey) return null;
+  return `${baseKey}:${userKey}`;
+}
+
+export function readScopedAppearanceValue(
+  baseKey,
+  scope = AppearanceScope.ACTIVE,
+) {
   try {
-    const scopedKey = scopedAppearanceStorageKey(baseKey);
+    const scopedKey = scopedAppearanceStorageKey(baseKey, scope);
+    if (!scopedKey) return null;
+
     const scoped = localStorage.getItem(scopedKey);
     if (scoped != null) return scoped;
 
@@ -52,9 +81,15 @@ export function readScopedAppearanceValue(baseKey) {
   return null;
 }
 
-export function writeScopedAppearanceValue(baseKey, value) {
+export function writeScopedAppearanceValue(
+  baseKey,
+  value,
+  scope = AppearanceScope.ACTIVE,
+) {
   try {
-    localStorage.setItem(scopedAppearanceStorageKey(baseKey), value);
+    const scopedKey = scopedAppearanceStorageKey(baseKey, scope);
+    if (!scopedKey) return;
+    localStorage.setItem(scopedKey, value);
   } catch {
     /* ignore quota / private mode */
   }

@@ -2,11 +2,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
-import { initColorTheme } from './themeUtils.js'
-import { initFont } from './fontUtils.js'
+import { applyLoginAppearance, applyActiveUserAppearance } from './loginAppearance.js'
 
-initColorTheme()
-initFont()
+if (localStorage.getItem('token')) {
+  applyActiveUserAppearance()
+} else {
+  applyLoginAppearance()
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

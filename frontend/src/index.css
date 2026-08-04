@@ -835,3 +835,38 @@ html[data-theme-mode="dark"] .learn-figure__caption {
   margin: 0;
   size: auto;
 }
+
+/* Login page: independent light/dark toggle; keep fields readable on dark. */
+html[data-quill-page="login"] .quill-login-input {
+  color-scheme: light;
+}
+
+html[data-quill-page="login"] .quill-login-input--light {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html[data-quill-page="login"] .quill-login-input--light::placeholder {
+  color: #94a3b8 !important;
+}
+
+html[data-quill-page="login"][data-theme-mode="dark"] .quill-login-input--dark {
+  background-color: var(--quill-elevated-bg) !important;
+  border-color: var(--quill-border) !important;
+  color: var(--quill-text-primary) !important;
+  -webkit-text-fill-color: var(--quill-text-primary);
+  color-scheme: dark;
+}
+
+html[data-quill-page="login"][data-theme-mode="dark"] .quill-login-input--dark::placeholder {
+  color: var(--quill-text-muted) !important;
+}
+
+html[data-quill-page="login"][data-theme-mode="dark"] .quill-login-input--dark:-webkit-autofill,
+html[data-quill-page="login"][data-theme-mode="dark"] .quill-login-input--dark:-webkit-autofill:hover,
+html[data-quill-page="login"][data-theme-mode="dark"] .quill-login-input--dark:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--quill-elevated-bg) inset !important;
+  -webkit-text-fill-color: var(--quill-text-primary) !important;
+  caret-color: var(--quill-text-primary);
+}

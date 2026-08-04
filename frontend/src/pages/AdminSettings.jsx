@@ -9,6 +9,7 @@ import {
 import { ADMIN_MAIN_NAV } from "../adminNav";
 import AppShell from "../components/AppShell";
 import AccountSettings from "../components/AccountSettings";
+import { AppearanceScope } from "../appearancePrefsScope";
 import ColorThemeSettings from "../components/ColorThemeSettings";
 import FontSettings from "../components/FontSettings";
 import ExpertJsonWarningSettings from "../components/ExpertJsonWarningSettings";
@@ -192,8 +193,8 @@ export default function AdminSettings() {
               </form>
             </div>
 
-            <ColorThemeSettings />
-            <FontSettings />
+            <ColorThemeSettings scope={AppearanceScope.ADMIN} />
+            <FontSettings scope={AppearanceScope.ADMIN} />
           </div>
         ) : null}
       </div>

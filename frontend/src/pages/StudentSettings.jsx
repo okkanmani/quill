@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { AppearanceScope } from "../appearancePrefsScope";
 import { logout } from "../api";
 import AppShell from "../components/AppShell";
 import ColorThemeSettings from "../components/ColorThemeSettings";
@@ -25,8 +26,8 @@ export default function StudentSettings() {
         </p>
 
         <div className="space-y-5">
-          <ColorThemeSettings />
-          <FontSettings />
+          <ColorThemeSettings scope={AppearanceScope.STUDENT} />
+          <FontSettings scope={AppearanceScope.STUDENT} />
         </div>
       </div>
     </AppShell>

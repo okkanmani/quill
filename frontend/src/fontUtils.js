@@ -1,4 +1,5 @@
 import {
+  AppearanceScope,
   readScopedAppearanceValue,
   writeScopedAppearanceValue,
 } from "./appearancePrefsScope.js";
@@ -85,9 +86,11 @@ export function normalizeFont(fontId) {
   return VALID_FONT_IDS.has(fontId) ? fontId : "system";
 }
 
-export function getStoredFont() {
+export function getStoredFont(scope = AppearanceScope.ACTIVE) {
   try {
-    return normalizeFont(readScopedAppearanceValue(FONT_STORAGE_KEY));
+    return normalizeFont(
+      readScopedAppearanceValue(FONT_STORAGE_KEY, scope) ?? "system",
+    );
   } catch {
     return "system";
   }
@@ -101,13 +104,13 @@ export function applyFont(fontId) {
   return normalized;
 }
 
-export function setStoredFont(fontId) {
+export function setStoredFont(fontId, scope = AppearanceScope.ACTIVE) {
   const normalized = normalizeFont(fontId);
-  writeScopedAppearanceValue(FONT_STORAGE_KEY, normalized);
+  writeScopedAppearanceValue(FONT_STORAGE_KEY, normalized, scope);
   applyFont(normalized);
   return normalized;
 }
 
-export function initFont() {
-  return applyFont(getStoredFont());
+export function initFont(scope = AppearanceScope.ACTIVE) {
+  return applyFont(getStoredFont(scope));
 }
