@@ -38,6 +38,36 @@ export const FONT_OPTIONS = [
     description: "Clear letterforms for easy reading",
     stack: '"Atkinson Hyperlegible", system-ui, sans-serif',
   },
+  {
+    id: "nunito",
+    label: "Nunito",
+    description: "Soft, rounded sans serif",
+    stack: '"Nunito", system-ui, sans-serif',
+  },
+  {
+    id: "bitter",
+    label: "Bitter",
+    description: "Sturdy slab serif",
+    stack: '"Bitter", Georgia, "Times New Roman", serif',
+  },
+  {
+    id: "fraunces",
+    label: "Fraunces",
+    description: "Expressive old-style serif",
+    stack: '"Fraunces", Georgia, "Times New Roman", serif',
+  },
+  {
+    id: "jetbrains",
+    label: "JetBrains Mono",
+    description: "Clean monospace for focused reading",
+    stack: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
+  },
+  {
+    id: "space-grotesk",
+    label: "Space Grotesk",
+    description: "Geometric sans with character",
+    stack: '"Space Grotesk", system-ui, sans-serif',
+  },
 ];
 
 const VALID_FONT_IDS = new Set(FONT_OPTIONS.map((font) => font.id));

@@ -31,6 +31,27 @@ export const COLOR_THEMES = [
     description: "Rich violet",
     swatch: ["#faf5ff", "#7c3aed"],
   },
+  {
+    id: "midnight",
+    label: "Midnight",
+    description: "Deep navy with cyan accents",
+    swatch: ["#0f172a", "#22d3ee"],
+    dark: true,
+  },
+  {
+    id: "charcoal",
+    label: "Charcoal",
+    description: "Neutral dark gray with blue accents",
+    swatch: ["#18181b", "#3b82f6"],
+    dark: true,
+  },
+  {
+    id: "wine",
+    label: "Wine",
+    description: "Dark plum with rose accents",
+    swatch: ["#1c1017", "#fb7185"],
+    dark: true,
+  },
 ];
 
 const VALID_THEME_IDS = new Set(COLOR_THEMES.map((theme) => theme.id));
