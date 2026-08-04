@@ -784,7 +784,11 @@ def get_worksheets(authorization: str = Header(...)):
         who = payload.get("student_name") or None
     else:
         raise HTTPException(status_code=403, detail="Invalid role")
-    return list_worksheets(student_name=who, admin_id=admin_id)
+    return list_worksheets(
+        student_name=who,
+        admin_id=admin_id,
+        for_admin=payload.get("role") == "admin",
+    )
 
 
 @app.get("/worksheets/{worksheet_id}")

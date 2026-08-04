@@ -1224,7 +1224,7 @@ def merge_worksheets_from_json_files(
 
 
 def list_worksheets(
-    student_name: str | None = None, *, admin_id: int
+    student_name: str | None = None, *, admin_id: int, for_admin: bool = False
 ) -> list:
     """If student_name is set, done = this student submitted. If None (admin), done = any submission."""
     conn = db.connect()
@@ -1234,6 +1234,7 @@ def list_worksheets(
         )
         default_admin = _default_admin_id(conn)
         admin_params = (admin_id, admin_id, default_admin)
+        admin_code_select = ", t.admin_code" if for_admin else ""
         # Scalar subqueries avoid GROUP BY + EXISTS quirks in SQLite.
         if student_name is not None:
             rows = conn.execute(
@@ -1241,7 +1242,7 @@ def list_worksheets(
                 SELECT t.id, t.title, t.subject, t.scratchpad, t.sort_ts, t.question_count, t.done,
                        t.learn_subject, t.learn_section, t.content_badge, t.evaluation,
                        t.is_timed, t.time_limit_minutes, t.is_math_enrichment, t.is_gifted_track, t.gifted_track_week,
-                       t.is_test, t.test_sitting_count, t.test_adaptive,
+                       t.is_test, t.test_sitting_count, t.test_adaptive{admin_code_select},
                        t.last_score, t.last_total, t.last_status, t.draft_saved_at,
                        t.timed_locked, t.timed_started, t.last_duration_seconds,
                        t.attempt_locked, t.attempt_started
@@ -1367,7 +1368,7 @@ def list_worksheets(
             item.update(_resolve_gifted_track(r["id"], r["is_gifted_track"]))
             item.update(_resolve_gifted_track_week(r["id"], r["gifted_track_week"]))
             item.update(_resolve_test(r["id"], r["is_test"], r["test_sitting_count"], r["test_adaptive"]))
-            if student_name is None:
+            if for_admin:
                 admin_code = r["admin_code"] if "admin_code" in r.keys() else None
                 if admin_code and str(admin_code).strip():
                     item["admin_code"] = str(admin_code).strip()
