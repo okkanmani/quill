@@ -15,8 +15,13 @@
           try {
             var theme = localStorage.getItem("quillColorTheme") || "default";
             document.documentElement.dataset.theme = theme;
+            var darkThemes = { midnight: 1, charcoal: 1, wine: 1 };
+            document.documentElement.dataset.themeMode = darkThemes[theme]
+              ? "dark"
+              : "light";
           } catch (e) {
             document.documentElement.dataset.theme = "default";
+            document.documentElement.dataset.themeMode = "light";
           }
           try {
             var fonts = {

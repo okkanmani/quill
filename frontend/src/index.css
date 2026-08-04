@@ -96,6 +96,7 @@
     --quill-border: #475569;
     --quill-muted-bg: #334155;
     --quill-hover-bg: #334155;
+    --quill-elevated-bg: #475569;
     --quill-accent-50: #164e63;
     --quill-accent-100: #155e75;
     --quill-accent-200: #0891b2;
@@ -121,6 +122,7 @@
     --quill-border: #52525b;
     --quill-muted-bg: #3f3f46;
     --quill-hover-bg: #3f3f46;
+    --quill-elevated-bg: #52525b;
     --quill-accent-50: #172554;
     --quill-accent-100: #1e3a8a;
     --quill-accent-200: #1d4ed8;
@@ -141,11 +143,12 @@
     --quill-text-primary: #fce7f3;
     --quill-text-secondary: #f9a8d4;
     --quill-text-muted: #f472b6;
-    --quill-text-faint: #be185d;
+    --quill-text-faint: #e879a9;
     --quill-border-subtle: #4c1d35;
     --quill-border: #6b2140;
     --quill-muted-bg: #4c1d35;
     --quill-hover-bg: #4c1d35;
+    --quill-elevated-bg: #6b2140;
     --quill-accent-50: #500724;
     --quill-accent-100: #831843;
     --quill-accent-200: #9d174d;
@@ -157,6 +160,27 @@
     --quill-accent-800: #ffe4e6;
     --quill-accent-900: #fff1f2;
     --quill-accent-950: #ffffff;
+  }
+
+  html[data-theme-mode="dark"] {
+    --quill-success-surface: #052e16;
+    --quill-success-text: #6ee7b7;
+    --quill-success-border: #047857;
+    --quill-warning-surface: #451a03;
+    --quill-warning-text: #fcd34d;
+    --quill-warning-border: #b45309;
+    --quill-error-surface: #450a0a;
+    --quill-error-text: #fca5a5;
+    --quill-error-border: #b91c1c;
+    --quill-info-surface: #0c4a6e;
+    --quill-info-text: #7dd3fc;
+    --quill-info-border: #0369a1;
+    --quill-teal-surface: #042f2e;
+    --quill-teal-text: #5eead4;
+    --quill-teal-border: #0f766e;
+    --quill-rose-surface: #4c0519;
+    --quill-rose-text: #fda4af;
+    --quill-rose-border: #be123c;
   }
 
   html {
@@ -224,81 +248,211 @@ input[type="checkbox"].text-indigo-600 { accent-color: var(--quill-accent-600); 
 .bg-white { background-color: var(--quill-surface) !important; }
 .hover\:bg-white:hover { background-color: var(--quill-surface) !important; }
 
-/* Dark themes: remap common slate text, borders, and muted surfaces. */
-html[data-theme="midnight"] .text-slate-900,
-html[data-theme="charcoal"] .text-slate-900,
-html[data-theme="wine"] .text-slate-900 {
+/* Dark themes: remap common slate text, borders, surfaces, and status colors. */
+html[data-theme-mode="dark"] .text-slate-950,
+html[data-theme-mode="dark"] .text-slate-900,
+html[data-theme-mode="dark"] .text-slate-800 {
   color: var(--quill-text-primary) !important;
 }
-html[data-theme="midnight"] .text-slate-800,
-html[data-theme="charcoal"] .text-slate-800,
-html[data-theme="wine"] .text-slate-800 {
-  color: var(--quill-text-primary) !important;
-}
-html[data-theme="midnight"] .text-slate-700,
-html[data-theme="charcoal"] .text-slate-700,
-html[data-theme="wine"] .text-slate-700 {
+html[data-theme-mode="dark"] .text-slate-700 {
   color: var(--quill-text-secondary) !important;
 }
-html[data-theme="midnight"] .text-slate-600,
-html[data-theme="charcoal"] .text-slate-600,
-html[data-theme="wine"] .text-slate-600 {
+html[data-theme-mode="dark"] .text-slate-600,
+html[data-theme-mode="dark"] .text-slate-500 {
   color: var(--quill-text-muted) !important;
 }
-html[data-theme="midnight"] .text-slate-500,
-html[data-theme="charcoal"] .text-slate-500,
-html[data-theme="wine"] .text-slate-500 {
-  color: var(--quill-text-muted) !important;
-}
-html[data-theme="midnight"] .text-slate-400,
-html[data-theme="charcoal"] .text-slate-400,
-html[data-theme="wine"] .text-slate-400 {
+html[data-theme-mode="dark"] .text-slate-400,
+html[data-theme-mode="dark"] .text-slate-300 {
   color: var(--quill-text-faint) !important;
 }
-html[data-theme="midnight"] .border-slate-200,
-html[data-theme="charcoal"] .border-slate-200,
-html[data-theme="wine"] .border-slate-200 {
+html[data-theme-mode="dark"] .marker\:text-slate-600::marker {
+  color: var(--quill-text-muted) !important;
+}
+html[data-theme-mode="dark"] .hover\:text-slate-950:hover,
+html[data-theme-mode="dark"] .hover\:text-slate-900:hover {
+  color: var(--quill-text-primary) !important;
+}
+html[data-theme-mode="dark"] .border-slate-100,
+html[data-theme-mode="dark"] .border-slate-200 {
   border-color: var(--quill-border-subtle) !important;
 }
-html[data-theme="midnight"] .border-slate-300,
-html[data-theme="charcoal"] .border-slate-300,
-html[data-theme="wine"] .border-slate-300 {
+html[data-theme-mode="dark"] .border-slate-300,
+html[data-theme-mode="dark"] .border-slate-400 {
   border-color: var(--quill-border) !important;
 }
-html[data-theme="midnight"] .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
-html[data-theme="charcoal"] .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
-html[data-theme="wine"] .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+html[data-theme-mode="dark"] .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+html[data-theme-mode="dark"] .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
   border-color: var(--quill-border-subtle) !important;
 }
-html[data-theme="midnight"] .bg-slate-100,
-html[data-theme="charcoal"] .bg-slate-100,
-html[data-theme="wine"] .bg-slate-100 {
+html[data-theme-mode="dark"] .bg-slate-100 {
   background-color: var(--quill-muted-bg) !important;
 }
-html[data-theme="midnight"] .hover\:bg-slate-50:hover,
-html[data-theme="charcoal"] .hover\:bg-slate-50:hover,
-html[data-theme="wine"] .hover\:bg-slate-50:hover {
+html[data-theme-mode="dark"] .bg-slate-200,
+html[data-theme-mode="dark"] .bg-slate-200\/90 {
+  background-color: var(--quill-elevated-bg) !important;
+}
+html[data-theme-mode="dark"] .bg-slate-50\/30 {
+  background-color: color-mix(in srgb, var(--quill-page) 30%, transparent) !important;
+}
+html[data-theme-mode="dark"] .bg-slate-50\/40 {
+  background-color: color-mix(in srgb, var(--quill-page) 40%, transparent) !important;
+}
+html[data-theme-mode="dark"] .bg-slate-50\/60 {
+  background-color: color-mix(in srgb, var(--quill-page) 60%, transparent) !important;
+}
+html[data-theme-mode="dark"] .bg-white\/95 {
+  background-color: color-mix(in srgb, var(--quill-surface) 95%, transparent) !important;
+}
+html[data-theme-mode="dark"] .bg-white\/80 {
+  background-color: color-mix(in srgb, var(--quill-surface) 80%, transparent) !important;
+}
+html[data-theme-mode="dark"] .hover\:bg-slate-50:hover,
+html[data-theme-mode="dark"] .hover\:bg-slate-100:hover,
+html[data-theme-mode="dark"] .hover\:bg-slate-200:hover {
   background-color: var(--quill-hover-bg) !important;
 }
-html[data-theme="midnight"] .hover\:bg-slate-100:hover,
-html[data-theme="charcoal"] .hover\:bg-slate-100:hover,
-html[data-theme="wine"] .hover\:bg-slate-100:hover {
-  background-color: var(--quill-hover-bg) !important;
-}
-html[data-theme="midnight"] .hover\:border-slate-400:hover,
-html[data-theme="charcoal"] .hover\:border-slate-400:hover,
-html[data-theme="wine"] .hover\:border-slate-400:hover {
+html[data-theme-mode="dark"] .hover\:border-slate-400:hover {
   border-color: var(--quill-border) !important;
 }
-html[data-theme="midnight"] .shadow-sm,
-html[data-theme="charcoal"] .shadow-sm,
-html[data-theme="wine"] .shadow-sm {
+html[data-theme-mode="dark"] .placeholder\:text-slate-400::placeholder {
+  color: var(--quill-text-faint) !important;
+}
+html[data-theme-mode="dark"] .shadow-sm {
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.35) !important;
 }
-html[data-theme="midnight"] .shadow-lg,
-html[data-theme="charcoal"] .shadow-lg,
-html[data-theme="wine"] .shadow-lg {
+html[data-theme-mode="dark"] .shadow-md {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.35) !important;
+}
+html[data-theme-mode="dark"] .shadow-lg {
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.45), 0 4px 6px -4px rgb(0 0 0 / 0.35) !important;
+}
+
+html[data-theme-mode="dark"] .bg-emerald-50,
+html[data-theme-mode="dark"] .bg-emerald-50\/80,
+html[data-theme-mode="dark"] .bg-emerald-100,
+html[data-theme-mode="dark"] .bg-green-50,
+html[data-theme-mode="dark"] .bg-green-50\/50,
+html[data-theme-mode="dark"] .bg-green-100 {
+  background-color: var(--quill-success-surface) !important;
+}
+html[data-theme-mode="dark"] .text-emerald-700,
+html[data-theme-mode="dark"] .text-emerald-800,
+html[data-theme-mode="dark"] .text-emerald-900,
+html[data-theme-mode="dark"] .text-emerald-950,
+html[data-theme-mode="dark"] .text-green-700,
+html[data-theme-mode="dark"] .text-green-800 {
+  color: var(--quill-success-text) !important;
+}
+html[data-theme-mode="dark"] .border-emerald-200,
+html[data-theme-mode="dark"] .border-green-200,
+html[data-theme-mode="dark"] .border-green-300,
+html[data-theme-mode="dark"] .border-green-400 {
+  border-color: var(--quill-success-border) !important;
+}
+html[data-theme-mode="dark"] .hover\:bg-emerald-100:hover {
+  background-color: color-mix(in srgb, var(--quill-success-surface) 80%, var(--quill-success-border)) !important;
+}
+
+html[data-theme-mode="dark"] .bg-amber-50,
+html[data-theme-mode="dark"] .bg-amber-50\/60,
+html[data-theme-mode="dark"] .bg-amber-50\/80,
+html[data-theme-mode="dark"] .bg-amber-100,
+html[data-theme-mode="dark"] .bg-amber-200 {
+  background-color: var(--quill-warning-surface) !important;
+}
+html[data-theme-mode="dark"] .text-amber-800,
+html[data-theme-mode="dark"] .text-amber-900,
+html[data-theme-mode="dark"] .text-amber-950 {
+  color: var(--quill-warning-text) !important;
+}
+html[data-theme-mode="dark"] .border-amber-200,
+html[data-theme-mode="dark"] .border-amber-400 {
+  border-color: var(--quill-warning-border) !important;
+}
+html[data-theme-mode="dark"] .hover\:bg-amber-100:hover,
+html[data-theme-mode="dark"] .hover\:bg-amber-200:hover {
+  background-color: color-mix(in srgb, var(--quill-warning-surface) 80%, var(--quill-warning-border)) !important;
+}
+
+html[data-theme-mode="dark"] .bg-red-50,
+html[data-theme-mode="dark"] .bg-red-50\/50,
+html[data-theme-mode="dark"] .bg-red-100 {
+  background-color: var(--quill-error-surface) !important;
+}
+html[data-theme-mode="dark"] .text-red-500,
+html[data-theme-mode="dark"] .text-red-600,
+html[data-theme-mode="dark"] .text-red-700,
+html[data-theme-mode="dark"] .text-red-800 {
+  color: var(--quill-error-text) !important;
+}
+html[data-theme-mode="dark"] .border-red-200,
+html[data-theme-mode="dark"] .border-red-300,
+html[data-theme-mode="dark"] .border-red-400 {
+  border-color: var(--quill-error-border) !important;
+}
+
+html[data-theme-mode="dark"] .bg-sky-100 {
+  background-color: var(--quill-info-surface) !important;
+}
+html[data-theme-mode="dark"] .text-sky-900 {
+  color: var(--quill-info-text) !important;
+}
+html[data-theme-mode="dark"] .border-sky-200 {
+  border-color: var(--quill-info-border) !important;
+}
+
+html[data-theme-mode="dark"] .bg-teal-50,
+html[data-theme-mode="dark"] .bg-teal-100 {
+  background-color: var(--quill-teal-surface) !important;
+}
+html[data-theme-mode="dark"] .text-teal-700,
+html[data-theme-mode="dark"] .text-teal-900 {
+  color: var(--quill-teal-text) !important;
+}
+html[data-theme-mode="dark"] .border-teal-200,
+html[data-theme-mode="dark"] .border-teal-300 {
+  border-color: var(--quill-teal-border) !important;
+}
+html[data-theme-mode="dark"] .hover\:bg-teal-100:hover {
+  background-color: color-mix(in srgb, var(--quill-teal-surface) 80%, var(--quill-teal-border)) !important;
+}
+
+html[data-theme-mode="dark"] .bg-rose-50,
+html[data-theme-mode="dark"] .bg-rose-50\/30,
+html[data-theme-mode="dark"] .bg-rose-100,
+html[data-theme-mode="dark"] .bg-rose-100\/90 {
+  background-color: var(--quill-rose-surface) !important;
+}
+html[data-theme-mode="dark"] .text-rose-700,
+html[data-theme-mode="dark"] .text-rose-900,
+html[data-theme-mode="dark"] .text-rose-950 {
+  color: var(--quill-rose-text) !important;
+}
+html[data-theme-mode="dark"] .border-rose-100,
+html[data-theme-mode="dark"] .border-rose-200,
+html[data-theme-mode="dark"] .border-rose-200\/80,
+html[data-theme-mode="dark"] .border-rose-300,
+html[data-theme-mode="dark"] .border-rose-400 {
+  border-color: var(--quill-rose-border) !important;
+}
+html[data-theme-mode="dark"] .ring-rose-200 {
+  --tw-ring-color: var(--quill-rose-border) !important;
+}
+html[data-theme-mode="dark"] .hover\:bg-rose-100:hover,
+html[data-theme-mode="dark"] .hover\:bg-rose-100\/80:hover,
+html[data-theme-mode="dark"] .hover\:bg-rose-200:hover {
+  background-color: color-mix(in srgb, var(--quill-rose-surface) 80%, var(--quill-rose-border)) !important;
+}
+
+html[data-theme-mode="dark"] .learn-figure:not(.learn-figure--legacy) {
+  border-color: var(--quill-border-subtle);
+  background: var(--quill-muted-bg);
+}
+html[data-theme-mode="dark"] .learn-figure--legacy .learn-figure__img {
+  border-color: var(--quill-border-subtle);
+}
+html[data-theme-mode="dark"] .learn-figure__caption {
+  color: var(--quill-text-muted);
 }
 
 @keyframes quill-loading {

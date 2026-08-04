@@ -55,6 +55,13 @@ export const COLOR_THEMES = [
 ];
 
 const VALID_THEME_IDS = new Set(COLOR_THEMES.map((theme) => theme.id));
+const DARK_THEME_IDS = new Set(
+  COLOR_THEMES.filter((theme) => theme.dark).map((theme) => theme.id),
+);
+
+export function isDarkColorTheme(themeId) {
+  return DARK_THEME_IDS.has(normalizeColorTheme(themeId));
+}
 
 export function normalizeColorTheme(themeId) {
   return VALID_THEME_IDS.has(themeId) ? themeId : "default";
@@ -71,6 +78,9 @@ export function getStoredColorTheme() {
 export function applyColorTheme(themeId) {
   const normalized = normalizeColorTheme(themeId);
   document.documentElement.dataset.theme = normalized;
+  document.documentElement.dataset.themeMode = isDarkColorTheme(normalized)
+    ? "dark"
+    : "light";
   return normalized;
 }
 
