@@ -587,6 +587,30 @@ def _normalize_cr_draft(data: dict, *, question_count: int) -> dict:
     return {"title": title.strip(), "passages": passages}
 
 
+def _rc_passage_star_split(question_count: int, passage_level: str) -> tuple[int, int, int, int]:
+    """Return (low_star, high_star, low_count, high_count) for a ~50-50 RC bank split."""
+    count = max(int(question_count or 0), 0)
+    low_count = count // 2
+    high_count = count - low_count
+    if passage_level == "easy":
+        return 1, 2, low_count, high_count
+    if passage_level == "complex":
+        return 2, 3, low_count, high_count
+    return 0, 0, 0, count
+
+
+def _rc_passage_star_split_note(question_count: int, passage_level: str) -> str:
+    low_star, high_star, low_count, high_count = _rc_passage_star_split(
+        question_count, passage_level
+    )
+    if low_star <= 0 or high_star <= 0:
+        return ""
+    return (
+        f"; exactly {low_count} questions with \"stars\": {low_star} and "
+        f"exactly {high_count} with \"stars\": {high_star} (50-50 split)"
+    )
+
+
 def _build_rc_prompt(
     *,
     grade: int,
@@ -597,13 +621,15 @@ def _build_rc_prompt(
 ) -> str:
     if passage_level == "easy":
         level_note = (
-            "Passage level: EASY. Each question must have \"stars\": 1 or 2 only "
-            "(mix tier-1 and tier-2 questions)."
+            "Passage level: EASY. Each question must have \"stars\": 1 or 2 only. "
+            "Per passage, split stars 50-50 (exact counts listed below).\n"
+            "CRITICAL: Count stars in each passage's questions array before responding."
         )
     elif passage_level == "complex":
         level_note = (
-            "Passage level: COMPLEX. Each question must have \"stars\": 2 or 3 only "
-            "(mix tier-2 and tier-3 questions)."
+            "Passage level: COMPLEX. Each question must have \"stars\": 2 or 3 only. "
+            "Per passage, split stars 50-50 (exact counts listed below).\n"
+            "CRITICAL: Count stars in each passage's questions array before responding."
         )
     else:
         level_note = f"Difficulty: {_difficulty_label(stars)} (stars {stars} of 3)."
@@ -611,13 +637,16 @@ def _build_rc_prompt(
     if passage_level in ("easy", "complex"):
         bank_note = (
             "\nAdaptive test bank: these questions form a per-passage bank. "
-            "Students see only a random subset each sitting, so vary difficulty and "
-            "skill focus across questions.\n"
+            "Students see only a random subset each sitting, so vary skill focus "
+            "across questions while keeping the required 50-50 stars split.\n"
         )
     specs_text = "\n".join(
         f"- Passage {i + 1} (id {spec.get('id', f'p{i + 1}')}): "
-        f"exactly {spec.get('question_count')} multiple-choice questions; "
-        f"minimum {spec.get('min_words', 200)} words in the passage body"
+        f"exactly {spec.get('question_count')} multiple-choice questions"
+        + _rc_passage_star_split_note(
+            int(spec.get("question_count") or 0), passage_level
+        )
+        + f"; minimum {spec.get('min_words', 200)} words in the passage body"
         + (
             f"; topic/focus: {spec.get('prompt', '').strip()}"
             if spec.get("prompt", "").strip()
@@ -661,6 +690,7 @@ Rules:
 - Each question must have exactly 4 distinct choices and a correct_index (0-3).
 - Each question must include a specific lowercase area label (e.g. vocabulary, inference, main idea).
 - Each question must include "stars": 1, 2, or 3 for question difficulty (see passage level rules above).
+- When passage level is EASY or COMPLEX, each passage must match its exact stars counts above (50-50 split).
 - Questions must be answerable from their passage only.
 - Do not prefix choices with letters.
 - Title under 80 characters.
