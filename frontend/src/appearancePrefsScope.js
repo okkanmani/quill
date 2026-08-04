@@ -21,8 +21,9 @@ function isSignedIn() {
 /**
  * Resolve the localStorage user segment for appearance prefs.
  * - ADMIN: always the family admin account (settings page)
- * - STUDENT: the student account (student settings / student login)
- * - ACTIVE: student prefs while impersonating or as student; otherwise admin
+ * - STUDENT: the student account (student settings)
+ * - ACTIVE: follows who signed in — admin session uses admin prefs even while
+ *   a student is selected for worksheet/data context
  */
 export function resolveAppearanceUserKey(scope = AppearanceScope.ACTIVE) {
   if (!isSignedIn()) return null;
@@ -44,9 +45,6 @@ export function resolveAppearanceUserKey(scope = AppearanceScope.ACTIVE) {
   }
 
   if (role === "admin") {
-    if (studentName) {
-      return `student:${studentName}`;
-    }
     return `admin:${adminName}`;
   }
 

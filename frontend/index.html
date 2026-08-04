@@ -17,9 +17,7 @@
           }
           function quillActiveAppearanceUserKey() {
             var role = localStorage.getItem("role");
-            var studentName = localStorage.getItem("studentName");
             if (role === "admin") {
-              if (studentName) return "student:" + quillSafe(studentName);
               return "admin:" + quillSafe(localStorage.getItem("adminName"));
             }
             return "student:" + quillSafe(localStorage.getItem("name"));
