@@ -193,6 +193,118 @@ def _english_type_from_sheet_data(data: dict) -> str:
     return ""
 
 
+CR_STIMULUS_MAX_WORDS = 150
+
+
+def _passage_body_word_count(passage: dict) -> int:
+    body = str(passage.get("body") or passage.get("text") or "").strip()
+    if not body:
+        return 0
+    return len(body.split())
+
+
+def infer_english_type_from_worksheet_content(
+    *,
+    subject: str,
+    passages: list[dict] | None,
+    questions: list[dict] | None,
+) -> str | None:
+    """Infer ENCR vs ENRC from passage/question structure when english_type is unset."""
+    if (subject or "").strip().lower() != "english":
+        return None
+
+    passage_list = passages if isinstance(passages, list) else []
+    question_list = questions if isinstance(questions, list) else []
+    if not passage_list:
+        return None
+
+    counts: dict[str, int] = {}
+    for question in question_list:
+        if not isinstance(question, dict):
+            continue
+        passage_id = question.get("passage_id")
+        if passage_id:
+            key = str(passage_id)
+            counts[key] = counts.get(key, 0) + 1
+
+    for index, passage in enumerate(passage_list):
+        if not isinstance(passage, dict):
+            continue
+        passage_id = str(passage.get("id") or f"p{index + 1}")
+        if counts.get(passage_id, 0) >= 2:
+            return "reading_comprehension"
+
+    if question_list and len(passage_list) == len(question_list):
+        linked_counts = []
+        short_stimuli = True
+        for index, passage in enumerate(passage_list):
+            if not isinstance(passage, dict):
+                continue
+            passage_id = str(passage.get("id") or f"p{index + 1}")
+            linked_counts.append(counts.get(passage_id, 0))
+            if _passage_body_word_count(passage) > CR_STIMULUS_MAX_WORDS:
+                short_stimuli = False
+        if all(count == 1 for count in linked_counts):
+            if short_stimuli:
+                return "critical_reasoning"
+            return "reading_comprehension"
+
+    if any(_passage_body_word_count(passage) > CR_STIMULUS_MAX_WORDS for passage in passage_list):
+        return "reading_comprehension"
+
+    return None
+
+
+def resolve_worksheet_english_type(
+    conn,
+    worksheet_id: str,
+    *,
+    subject: str,
+    db_english_type: str | None = None,
+    passages_json: str | None = None,
+) -> str | None:
+    """Resolve english_type from DB, bundled JSON, or passage/question structure."""
+    if isinstance(db_english_type, str) and db_english_type.strip():
+        return db_english_type.strip().lower()
+
+    data = _load_bundled_sheet_data(worksheet_id)
+    if data:
+        from_sheet = _english_type_from_sheet_data(data)
+        if from_sheet:
+            return from_sheet
+
+    passages: list[dict] = []
+    if passages_json:
+        try:
+            parsed = json.loads(passages_json) if isinstance(passages_json, str) else passages_json
+            if isinstance(parsed, list):
+                passages = parsed
+        except (TypeError, json.JSONDecodeError):
+            passages = []
+
+    qrows = conn.execute(
+        """
+        SELECT payload FROM worksheet_questions
+        WHERE worksheet_id = ? ORDER BY sort_order
+        """,
+        (worksheet_id,),
+    ).fetchall()
+    questions = []
+    for row in qrows:
+        try:
+            payload = json.loads(row["payload"])
+        except (TypeError, json.JSONDecodeError):
+            continue
+        if isinstance(payload, dict):
+            questions.append(payload)
+
+    return infer_english_type_from_worksheet_content(
+        subject=subject,
+        passages=passages,
+        questions=questions,
+    )
+
+
 def _test_rc_questions_per_passage_from_sheet_data(data: dict) -> int | None:
     raw = data.get("test_rc_questions_per_passage")
     if isinstance(raw, bool):

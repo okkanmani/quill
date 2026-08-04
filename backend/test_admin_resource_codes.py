@@ -1,4 +1,5 @@
 import sqlite3
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,8 +12,10 @@ from admin_resource_codes import (
     ensure_admin_resource_code_schema,
     format_admin_code,
     preview_admin_code,
+    recode_misclassified_english_rc_worksheets,
     subject_to_code,
 )
+from worksheets import infer_english_type_from_worksheet_content
 
 
 class AdminResourceCodesTest(unittest.TestCase):
@@ -37,7 +40,13 @@ class AdminResourceCodesTest(unittest.TestCase):
                     is_timed INTEGER NOT NULL DEFAULT 0,
                     is_test INTEGER NOT NULL DEFAULT 0,
                     english_type TEXT,
-                    admin_id INTEGER
+                    admin_id INTEGER,
+                    admin_code TEXT
+                );
+                CREATE TABLE worksheet_questions (
+                    worksheet_id TEXT NOT NULL,
+                    sort_order INTEGER NOT NULL,
+                    payload TEXT NOT NULL
                 );
                 CREATE TABLE learn_sections (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -150,6 +159,92 @@ class AdminResourceCodesTest(unittest.TestCase):
                 "SELECT admin_code FROM learn_sections WHERE section_id = 'intro'"
             ).fetchone()
             self.assertEqual(learn["admin_code"], "SCIE-LR-0001")
+        finally:
+            conn.close()
+
+    def test_infer_reading_comprehension_from_multiple_questions_per_passage(self):
+        passages = [{"id": "p1", "title": "Passage", "body": "word " * 120}]
+        questions = [
+            {"prompt": "Q1", "passage_id": "p1", "type": "multiple_choice"},
+            {"prompt": "Q2", "passage_id": "p1", "type": "multiple_choice"},
+        ]
+        self.assertEqual(
+            infer_english_type_from_worksheet_content(
+                subject="english", passages=passages, questions=questions
+            ),
+            "reading_comprehension",
+        )
+
+    def test_backfill_infers_enrc_for_legacy_rc_worksheet(self):
+        conn = db.connect()
+        try:
+            passages = json.dumps([{"id": "p1", "title": "Passage", "body": "word " * 120}])
+            conn.execute(
+                """
+                INSERT INTO worksheets
+                    (id, title, subject, is_timed, is_test, admin_id, sort_ts, english_type, passages)
+                VALUES ('questions_rc_legacy', 'Legacy RC', 'english', 0, 0, 1, 1, NULL, ?)
+                """,
+                (passages,),
+            )
+            conn.execute(
+                """
+                INSERT INTO worksheet_questions (worksheet_id, sort_order, payload)
+                VALUES
+                    ('questions_rc_legacy', 0, '{"prompt":"Q1","passage_id":"p1","type":"multiple_choice"}'),
+                    ('questions_rc_legacy', 1, '{"prompt":"Q2","passage_id":"p1","type":"multiple_choice"}')
+                """
+            )
+            conn.commit()
+            from admin_resource_codes import backfill_admin_codes
+
+            backfill_admin_codes(conn)
+            conn.commit()
+            row = conn.execute(
+                """
+                SELECT admin_code, english_type FROM worksheets WHERE id = 'questions_rc_legacy'
+                """
+            ).fetchone()
+            self.assertEqual(row["admin_code"], "ENRC-WS-0001")
+            self.assertEqual(row["english_type"], "reading_comprehension")
+        finally:
+            conn.close()
+
+    def test_recode_misclassified_english_rc_worksheet(self):
+        conn = db.connect()
+        try:
+            passages = json.dumps([{"id": "p1", "title": "Passage", "body": "word " * 120}])
+            conn.execute(
+                """
+                INSERT INTO worksheets
+                    (id, title, subject, is_timed, is_test, admin_id, sort_ts, english_type, passages, admin_code)
+                VALUES ('questions_rc_wrong', 'Wrong code', 'english', 0, 0, 1, 1, NULL, ?, 'ENCR-WS-0099')
+                """,
+                (passages,),
+            )
+            conn.execute(
+                """
+                INSERT INTO worksheet_questions (worksheet_id, sort_order, payload)
+                VALUES
+                    ('questions_rc_wrong', 0, '{"prompt":"Q1","passage_id":"p1","type":"multiple_choice"}'),
+                    ('questions_rc_wrong', 1, '{"prompt":"Q2","passage_id":"p1","type":"multiple_choice"}')
+                """
+            )
+            conn.commit()
+            preview = recode_misclassified_english_rc_worksheets(conn, 1, dry_run=True)
+            self.assertEqual(preview["count"], 1)
+            self.assertEqual(preview["changes"][0]["old_code"], "ENCR-WS-0099")
+
+            result = recode_misclassified_english_rc_worksheets(conn, 1, dry_run=False)
+            conn.commit()
+            row = conn.execute(
+                """
+                SELECT admin_code, english_type FROM worksheets WHERE id = 'questions_rc_wrong'
+                """
+            ).fetchone()
+            self.assertEqual(result["count"], 1)
+            self.assertTrue(str(row["admin_code"]).startswith("ENRC-WS-"))
+            self.assertEqual(row["english_type"], "reading_comprehension")
         finally:
             conn.close()
 

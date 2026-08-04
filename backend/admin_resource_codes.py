@@ -249,11 +249,36 @@ def backfill_admin_codes(conn) -> None:
         _backfill_learn_codes(conn, admin_id)
 
 
+def _resolved_english_type_for_row(conn, row) -> str | None:
+    from worksheets import resolve_worksheet_english_type
+
+    return resolve_worksheet_english_type(
+        conn,
+        row["id"],
+        subject=row["subject"],
+        db_english_type=row["english_type"],
+        passages_json=row["passages"] if "passages" in row.keys() else None,
+    )
+
+
+def _persist_inferred_english_type(
+    conn, worksheet_id: str, db_value: str | None, resolved: str | None
+) -> None:
+    if not resolved:
+        return
+    if isinstance(db_value, str) and db_value.strip():
+        return
+    conn.execute(
+        "UPDATE worksheets SET english_type = ? WHERE id = ?",
+        (resolved, worksheet_id),
+    )
+
+
 def _backfill_worksheet_codes(conn, admin_id: int) -> None:
     default_admin = _default_admin_id(conn)
     rows = conn.execute(
         """
-        SELECT id, subject, is_test, is_timed, admin_code, english_type
+        SELECT id, subject, is_test, is_timed, admin_code, english_type, passages
         FROM worksheets
         WHERE (admin_id = ? OR (admin_id IS NULL AND ? = ?))
           AND (admin_code IS NULL OR trim(admin_code) = '')
@@ -262,13 +287,17 @@ def _backfill_worksheet_codes(conn, admin_id: int) -> None:
         (admin_id, admin_id, default_admin),
     ).fetchall()
     for row in rows:
+        english_type = _resolved_english_type_for_row(conn, row)
+        _persist_inferred_english_type(
+            conn, row["id"], row["english_type"], english_type
+        )
         code = allocate_admin_code(
             conn,
             admin_id,
             row["subject"],
             is_test=bool(row["is_test"]),
             is_timed=bool(row["is_timed"]),
-            english_type=row["english_type"],
+            english_type=english_type,
         )
         conn.execute(
             "UPDATE worksheets SET admin_code = ? WHERE id = ?",
@@ -335,3 +364,115 @@ def _backfill_learn_codes(conn, admin_id: int) -> None:
         seq = _next_seq_from_code(code)
         if seq is not None:
             _sync_counter(conn, admin_id, subject_code, type_code, seq)
+
+
+def _english_worksheet_rows_for_admin(conn, admin_id: int) -> list:
+    default_admin = _default_admin_id(conn)
+    return conn.execute(
+        """
+        SELECT id, title, subject, is_test, is_timed, admin_code, english_type, passages
+        FROM worksheets
+        WHERE (admin_id = ? OR (admin_id IS NULL AND ? = ?))
+          AND lower(subject) = 'english'
+          AND admin_code IS NOT NULL
+          AND trim(admin_code) != ''
+          AND admin_code LIKE 'ENCR-%'
+        ORDER BY sort_ts ASC, id ASC
+        """,
+        (admin_id, admin_id, default_admin),
+    ).fetchall()
+
+
+def find_misclassified_english_rc_worksheets(conn, admin_id: int) -> list[dict]:
+    """English RC worksheets that were coded under ENCR instead of ENRC."""
+    matches: list[dict] = []
+    for row in _english_worksheet_rows_for_admin(conn, admin_id):
+        english_type = _resolved_english_type_for_row(conn, row)
+        if english_type != "reading_comprehension":
+            continue
+        matches.append(
+            {
+                "id": row["id"],
+                "title": row["title"],
+                "old_code": str(row["admin_code"]).strip(),
+                "english_type": english_type,
+                "is_test": bool(row["is_test"]),
+                "is_timed": bool(row["is_timed"]),
+            }
+        )
+    return matches
+
+
+def recode_misclassified_english_rc_worksheets(
+    conn, admin_id: int, *, dry_run: bool = True
+) -> dict:
+    """
+    One-time fix: reassign ENCR-* codes to ENRC-* for reading-comprehension worksheets.
+    """
+    planned = find_misclassified_english_rc_worksheets(conn, admin_id)
+    if dry_run:
+        return {"dry_run": True, "count": len(planned), "changes": planned}
+
+    applied: list[dict] = []
+    for item in planned:
+        row = conn.execute(
+            """
+            SELECT id, subject, is_test, is_timed, admin_code, english_type, passages
+            FROM worksheets WHERE id = ?
+            """,
+            (item["id"],),
+        ).fetchone()
+        if not row:
+            continue
+        old_code = str(row["admin_code"] or "").strip()
+        if not old_code.startswith("ENCR-"):
+            continue
+
+        english_type = _resolved_english_type_for_row(conn, row)
+        if english_type != "reading_comprehension":
+            continue
+
+        conn.execute(
+            "UPDATE worksheets SET admin_code = NULL, english_type = ? WHERE id = ?",
+            (english_type, row["id"]),
+        )
+        new_code = allocate_admin_code(
+            conn,
+            admin_id,
+            row["subject"],
+            is_test=bool(row["is_test"]),
+            is_timed=bool(row["is_timed"]),
+            english_type=english_type,
+        )
+        conn.execute(
+            "UPDATE worksheets SET admin_code = ? WHERE id = ?",
+            (new_code, row["id"]),
+        )
+        applied.append(
+            {
+                "id": row["id"],
+                "title": item.get("title") or row["id"],
+                "old_code": old_code,
+                "new_code": new_code,
+            }
+        )
+
+    assigned = conn.execute(
+        """
+        SELECT admin_code FROM worksheets
+        WHERE (admin_id = ? OR (admin_id IS NULL AND ? = ?))
+          AND admin_code IS NOT NULL AND trim(admin_code) != ''
+        """,
+        (admin_id, admin_id, _default_admin_id(conn)),
+    ).fetchall()
+    for row in assigned:
+        code = row["admin_code"]
+        if not ADMIN_CODE_RE.fullmatch(code or ""):
+            continue
+        parts = code.split("-")
+        subject_code, type_code = parts[0], parts[1]
+        seq = _next_seq_from_code(code)
+        if seq is not None:
+            _sync_counter(conn, admin_id, subject_code, type_code, seq)
+
+    return {"dry_run": False, "count": len(applied), "changes": applied}
