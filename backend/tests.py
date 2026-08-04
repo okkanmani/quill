@@ -628,7 +628,13 @@ def _adaptation_tier_after_answer(
             weighted_pct = _answer_weighted_pct(answer)
         if weighted_pct is None:
             return int(entry_tier or RC_START_PASSAGE_TIER)
-        return _next_rc_passage_tier(int(entry_tier or RC_START_PASSAGE_TIER), float(weighted_pct))
+        from rc_adaptive_picking import resolve_rc_v2_slot_plan
+
+        passage_tier, _rule = resolve_rc_v2_slot_plan(
+            slot=2,
+            prev_answer=answer,
+        )
+        return passage_tier
     if "correct" in answer:
         return _next_tier(int(entry_tier or START_TIER), correct=bool(answer.get("correct")))
     return int(entry_tier or START_TIER)
@@ -689,6 +695,7 @@ def _assign_through_slot_rc(
     rng: random.Random,
     *,
     adaptive: bool = True,
+    pick_log_context: dict | None = None,
 ) -> list[dict | None]:
     if _uses_rc_adaptive_v2(worksheet):
         return _assign_through_slot_rc_v2(
@@ -699,6 +706,7 @@ def _assign_through_slot_rc(
             target_slot,
             rng,
             adaptive=adaptive,
+            pick_log_context=pick_log_context,
         )
     return _assign_through_slot_passage_data(
         sequence,
@@ -720,7 +728,14 @@ def _assign_through_slot_rc_v2(
     rng: random.Random,
     *,
     adaptive: bool = True,
+    pick_log_context: dict | None = None,
 ) -> list[dict | None]:
+    from rc_adaptive_picking import (
+        log_rc_adaptive_pick,
+        pick_rc_questions_composed,
+        resolve_rc_v2_slot_plan,
+    )
+
     target_slot = max(1, min(target_slot, sitting_count))
     pools = _passages_by_tier_rc(worksheet)
     qmap = _questions_by_passage_id(worksheet)
@@ -731,36 +746,66 @@ def _assign_through_slot_rc_v2(
         if isinstance(entry, dict) and entry.get("passage_id")
     }
 
-    current_tier = RC_START_PASSAGE_TIER
+    passage_tier, composition_rule = resolve_rc_v2_slot_plan(slot=1, prev_answer=None)
+
     for slot in range(1, target_slot + 1):
         idx = slot - 1
         if idx < len(sequence) and isinstance(sequence[idx], dict):
-            current_tier = int(sequence[idx].get("tier") or RC_START_PASSAGE_TIER)
+            passage_tier = int(sequence[idx].get("tier") or RC_START_PASSAGE_TIER)
             if adaptive:
                 prev = answers.get(str(slot))
                 if isinstance(prev, dict) and (
                     "weighted_pct" in prev or "correct" in prev or prev.get("questions")
                 ):
-                    current_tier = _adaptation_tier_after_answer(
-                        prev, worksheet, current_tier
+                    passage_tier, composition_rule = resolve_rc_v2_slot_plan(
+                        slot=slot + 1,
+                        prev_answer=prev,
                     )
             continue
 
-        tier_to_use = (
-            current_tier
-            if adaptive
-            else RC_PASSAGE_TIERS[(slot - 1) % len(RC_PASSAGE_TIERS)]
-        )
+        if not adaptive:
+            passage_tier = RC_PASSAGE_TIERS[(slot - 1) % len(RC_PASSAGE_TIERS)]
+            composition_rule = None
+
+        tier_to_use = passage_tier
         picked = _pick_passage_rc(pools, tier_to_use, used_passage_ids, rng)
         if not picked:
             break
-        question_ids = _pick_questions_for_passage(
-            picked["passage_id"],
-            per_passage,
-            qmap,
-            set(),
-            rng,
-        )
+
+        prev_weighted_pct = None
+        if slot > 1:
+            prev = answers.get(str(slot - 1))
+            if isinstance(prev, dict):
+                from rc_adaptive_picking import _weighted_pct_from_answer
+
+                prev_weighted_pct = _weighted_pct_from_answer(prev)
+
+        if adaptive and composition_rule:
+            question_ids, pick_meta = pick_rc_questions_composed(
+                picked["passage_id"],
+                per_passage,
+                qmap,
+                lambda q: _question_tier(q, worksheet),
+                passage_tier=int(picked["tier"]),
+                composition_rule=composition_rule,
+                rng=rng,
+            )
+            log_rc_adaptive_pick(
+                context=pick_log_context,
+                slot=slot,
+                passage_id=str(picked["passage_id"]),
+                prev_weighted_pct=prev_weighted_pct,
+                pick_meta=pick_meta,
+            )
+        else:
+            question_ids = _pick_questions_for_passage(
+                picked["passage_id"],
+                per_passage,
+                qmap,
+                set(),
+                rng,
+            )
+
         while len(sequence) < slot:
             sequence.append(None)
         sequence[idx] = {
@@ -769,6 +814,8 @@ def _assign_through_slot_rc_v2(
             "tier": picked["tier"],
             "question_ids": question_ids,
         }
+        if composition_rule:
+            sequence[idx]["composition_rule"] = composition_rule
         used_passage_ids.add(picked["passage_id"])
 
         if adaptive:
@@ -776,8 +823,9 @@ def _assign_through_slot_rc_v2(
             if isinstance(prev, dict) and (
                 "weighted_pct" in prev or "correct" in prev or prev.get("questions")
             ):
-                current_tier = _adaptation_tier_after_answer(
-                    prev, worksheet, int(picked["tier"])
+                passage_tier, composition_rule = resolve_rc_v2_slot_plan(
+                    slot=slot + 1,
+                    prev_answer=prev,
                 )
 
     return sequence
@@ -1552,6 +1600,13 @@ def _attempt_row_to_rc_session(
         target_slot,
         rng,
         adaptive=adaptive,
+        pick_log_context={
+            "attempt_id": row["id"],
+            "student": row["student"],
+            "worksheet_id": row["worksheet_id"],
+        }
+        if int(row["id"] or 0) > 0
+        else None,
     )
 
     slots_out = []

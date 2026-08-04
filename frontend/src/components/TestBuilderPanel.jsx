@@ -921,8 +921,10 @@ export default function TestBuilderPanel() {
                     complex passages allow tier 2–3.
                   </li>
                   <li>
-                    Weighted score ≥80% on an easy passage moves up to complex; below 70% on complex
-                    moves down to easy.
+                    Slot 1 is an easy passage with mostly tier 2 questions (~75%). After each
+                    passage, weighted score routes the next passage and question mix:
+                    under 50% → easy tier 1 only · 50–70% → easy tier 2 only · 70–85% →
+                    complex tier 2/3 mix · above 85% → complex tier 3 only.
                   </li>
                   <li>
                     Bank needs {sittingCount} easy and {sittingCount} complex passages ({bankMinimum}{" "}
