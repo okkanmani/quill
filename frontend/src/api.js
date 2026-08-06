@@ -4,7 +4,7 @@ import {
   isAuthenticated,
   touchActivity,
 } from "./sessionAuth";
-import { applyLoginAppearance } from "./loginAppearance";
+import { parseDemoBlockedPayload } from "./demoMode";
 import { notifyStudentHomeRefresh } from "./studentHomeRefresh";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -115,6 +115,8 @@ export async function getMe() {
 
 async function parseApiError(res, fallback) {
   const err = await res.json().catch(() => ({}));
+  const demoMessage = parseDemoBlockedPayload(err);
+  if (demoMessage) return demoMessage;
   const d = err.detail;
   return typeof d === "string" ? d : fallback;
 }

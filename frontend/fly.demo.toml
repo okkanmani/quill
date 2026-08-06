@@ -1,0 +1,22 @@
+# Demo frontend — deploy with: fly deploy -c fly.demo.toml
+# Or: ./scripts/deploy-demo.sh
+
+app = 'quill-app-demo'
+primary_region = 'yyz'
+
+[build.args]
+  VITE_API_URL = "https://quill-backend-demo.fly.dev"
+  VITE_DEMO_MODE = "true"
+
+[http_service]
+  internal_port = 80
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '256mb'
+  cpus = 1
+  memory_mb = 256

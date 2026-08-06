@@ -1,0 +1,31 @@
+# Demo backend — deploy with: fly deploy -c fly.demo.toml
+# Or: ./scripts/deploy-demo.sh
+
+app = 'quill-backend-demo'
+primary_region = 'yyz'
+
+[build]
+
+[mounts]
+  source = "quill_data_demo"
+  destination = "/data"
+  processes = ["app"]
+
+[env]
+  QUILL_DATA_DIR = "/data"
+  QUILL_DEMO_MODE = "1"
+  QUILL_AI_ENABLED = "0"
+  QUILL_PUBLIC_API_URL = "https://quill-backend-demo.fly.dev"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '256mb'
+  cpus = 1
+  memory_mb = 256

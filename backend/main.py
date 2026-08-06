@@ -67,6 +67,8 @@ from learn_content import (
     update_learn_section,
 )
 from focus_discussion import list_focus_areas_discussed, mark_focus_area_discussed
+from demo_mode import DemoModeMiddleware, demo_public_config, is_demo_mode
+from demo_seed import ensure_demo_seed
 from revision import (
     complete_revision_worksheet,
     get_revision_worksheet,
@@ -571,19 +573,24 @@ class SwitchAdminStudentRequest(BaseModel):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_worksheet_tables()
-    seed_worksheets_from_json_if_empty()
-    if os.environ.get("MERGE_WORKSHEETS_JSON_ON_START") == "1":
+    if is_demo_mode():
+        ensure_demo_seed()
+    else:
+        seed_worksheets_from_json_if_empty()
+    if os.environ.get("MERGE_WORKSHEETS_JSON_ON_START") == "1" and not is_demo_mode():
         merge_worksheets_from_json_files()
     yield
 
 
 app = FastAPI(lifespan=lifespan)
 
+app.add_middleware(DemoModeMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://quill-app.fly.dev",
         "https://quill-app-staging.fly.dev",
+        "https://quill-app-demo.fly.dev",
         "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:8000",
@@ -653,6 +660,11 @@ def _admin_id(payload: dict) -> int:
 
 def _raise_if_worksheet_not_found(exc: ValueError) -> None:
     raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/config/demo")
+def get_demo_config():
+    return demo_public_config()
 
 
 @app.post("/auth/student/login")

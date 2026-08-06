@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { NavLink, matchPath, useLocation } from "react-router-dom";
+import { decorateNavLinksForDemo, getDemoPreviewForPath } from "../demoMode";
 import { getShellFooterLines } from "../adminSession";
 import ShellLayoutContext from "./ShellLayoutContext";
+import DemoBanner from "./DemoBanner";
+import DemoPreviewBanner from "./DemoPreviewBanner";
 import {
   getStoredSidebarCollapsed,
   setStoredSidebarCollapsed,
@@ -35,7 +38,7 @@ function SidebarNav({ navLinks, compact = false }) {
 
   return (
     <nav className="flex flex-col gap-0.5" aria-label="Main sections">
-      {navLinks.map(({ to, label, end, disabled }) => {
+      {navLinks.map(({ to, label, end, disabled, demoPreview }) => {
         const isActive = matchPath({ path: to, end: end ?? false }, pathname);
         const disabledTitle =
           "No new worksheets in the last 14 days (or all are done)";
@@ -55,11 +58,22 @@ function SidebarNav({ navLinks, compact = false }) {
                   className="w-[18px] h-[18px] shrink-0 opacity-50"
                 />
               ) : (
-                <NavItemLabel to={to} label={label} />
+                <span className={navItemInnerClass}>
+                  <NavItemIcon
+                    to={to}
+                    className="w-[18px] h-[18px] shrink-0 opacity-50"
+                  />
+                  <span className="truncate">{label}</span>
+                </span>
               )}
             </span>
           );
         }
+        const previewBadge = demoPreview ? (
+          <span className="ml-auto shrink-0 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900">
+            Preview
+          </span>
+        ) : null;
         if (isActive) {
           return (
             <span
@@ -72,7 +86,11 @@ function SidebarNav({ navLinks, compact = false }) {
               {compact ? (
                 <NavItemIcon to={to} className="w-[18px] h-[18px] shrink-0" />
               ) : (
-                <NavItemLabel to={to} label={label} />
+                <span className={`${navItemInnerClass} w-full`}>
+                  <NavItemIcon to={to} className="w-[18px] h-[18px] shrink-0" />
+                  <span className="truncate">{label}</span>
+                  {previewBadge}
+                </span>
               )}
             </span>
           );
@@ -89,7 +107,11 @@ function SidebarNav({ navLinks, compact = false }) {
             {compact ? (
               <NavItemIcon to={to} className="w-[18px] h-[18px] shrink-0 opacity-90" />
             ) : (
-              <NavItemLabel to={to} label={label} />
+              <span className={`${navItemInnerClass} w-full`}>
+                <NavItemIcon to={to} className="w-[18px] h-[18px] shrink-0 opacity-90" />
+                <span className="truncate">{label}</span>
+                {previewBadge}
+              </span>
             )}
           </NavLink>
         );
@@ -113,6 +135,9 @@ export default function AppShell({
     getStoredSidebarCollapsed,
   );
   const footerLines = getShellFooterLines();
+  const { pathname } = useLocation();
+  const resolvedNavLinks = decorateNavLinksForDemo(navLinks);
+  const preview = getDemoPreviewForPath(pathname);
 
   function setSidebarCollapsed(next) {
     setSidebarCollapsedState(setStoredSidebarCollapsed(next));
@@ -151,8 +176,8 @@ export default function AppShell({
                 </div>
 
                 <div className="flex-1 overflow-y-auto py-3">
-                  {navLinks.length > 0 ? (
-                    <SidebarNav navLinks={navLinks} compact />
+                  {resolvedNavLinks.length > 0 ? (
+                    <SidebarNav navLinks={resolvedNavLinks} compact />
                   ) : null}
                 </div>
 
@@ -192,8 +217,8 @@ export default function AppShell({
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-3 py-4">
-                  {navLinks.length > 0 ? (
-                    <SidebarNav navLinks={navLinks} />
+                  {resolvedNavLinks.length > 0 ? (
+                    <SidebarNav navLinks={resolvedNavLinks} />
                   ) : null}
                 </div>
 
@@ -241,6 +266,8 @@ export default function AppShell({
               </button>
             </div>
           ) : null}
+          <DemoBanner />
+          <DemoPreviewBanner blurb={preview?.blurb} />
           {children}
         </main>
       </div>

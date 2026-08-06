@@ -16,6 +16,7 @@ import {
   getStoredLoginThemeMode,
   setStoredLoginThemeMode,
 } from "../loginAppearance";
+import { IS_DEMO_MODE } from "../demoMode";
 
 const TAB_SIGN_IN = "sign-in";
 const TAB_SIGN_UP = "sign-up";
@@ -67,9 +68,9 @@ export default function Login() {
   const signedOut = searchParams.get("signedOut");
   const [activeTab, setActiveTab] = useState(TAB_SIGN_IN);
   const [loginThemeMode, setLoginThemeMode] = useState(getStoredLoginThemeMode);
-  const [adminName, setAdminName] = useState("");
+  const [adminName, setAdminName] = useState(IS_DEMO_MODE ? "demo" : "");
   const [studentName, setStudentName] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState(IS_DEMO_MODE ? "quill-demo" : "");
   const [signupName, setSignupName] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [error, setError] = useState("");
@@ -212,24 +213,33 @@ export default function Login() {
           >
             Sign in
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab(TAB_SIGN_UP);
-              setError("");
-            }}
-            className={`flex-1 py-3 text-sm font-semibold transition ${
-              activeTab === TAB_SIGN_UP
-                ? "bg-indigo-50 text-indigo-900 border-b-2 border-indigo-600"
-                : "text-slate-600 hover:bg-slate-50"
-            }`}
-          >
-            Sign up
-          </button>
+          {!IS_DEMO_MODE ? (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab(TAB_SIGN_UP);
+                setError("");
+              }}
+              className={`flex-1 py-3 text-sm font-semibold transition ${
+                activeTab === TAB_SIGN_UP
+                  ? "bg-indigo-50 text-indigo-900 border-b-2 border-indigo-600"
+                  : "text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              Sign up
+            </button>
+          ) : null}
         </div>
 
         <div className="p-5">
-          {activeTab === TAB_SIGN_IN ? (
+          {IS_DEMO_MODE ? (
+            <p className="text-xs text-center leading-relaxed rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-950 px-3 py-2 mb-4">
+              Demo walkthrough — admin <strong>demo</strong> or student{" "}
+              <strong>Alex</strong>/<strong>Sam</strong> with password{" "}
+              <strong>quill-demo</strong>.
+            </p>
+          ) : null}
+          {activeTab === TAB_SIGN_IN || IS_DEMO_MODE ? (
             <form onSubmit={handleLogin} className="flex flex-col gap-3">
               <p className="text-slate-600 text-xs text-center leading-snug">
                 Enter your family admin name. Add a student name to sign in as a
@@ -269,7 +279,7 @@ export default function Login() {
                 Log in
               </button>
             </form>
-          ) : (
+          ) : !IS_DEMO_MODE ? (
             <form onSubmit={handleSignup} className="flex flex-col gap-3">
               <p className="text-slate-600 text-xs text-center leading-snug">
                 Choose a unique admin name and password for your family account.
@@ -300,7 +310,7 @@ export default function Login() {
                 Create admin account
               </button>
             </form>
-          )}
+          ) : null}
 
           {signedOut === "idle" ? (
             <p className="text-sm text-slate-700 text-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 mt-4">
