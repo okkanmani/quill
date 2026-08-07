@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getWorksheet } from "../api";
+import { formatAreaLabel } from "../analysisUtils";
 import { QuestionDifficultyStars } from "./DifficultyStars";
 import WorksheetPassageContent from "./WorksheetPassageContent";
 import { formatSubjectLabel } from "../subjectUtils";
@@ -185,45 +186,151 @@ function TierTrendChart({ trend, chartKey }) {
   );
 }
 
-function WrongAnswerContextPanel({ passage, miss, subject, loading = false }) {
+function passageSittingSlot(attempt, miss) {
+  const slotRow = (attempt?.slots || []).find(
+    (slot) =>
+      miss?.passage_id != null &&
+      String(slot.passage_id) === String(miss.passage_id),
+  );
+  return slotRow?.slot ?? null;
+}
+
+function passageTierLabel(tier, subject) {
+  const value = Number(tier);
+  if (!value) return "";
+  if (subject === "data") {
+    return TEST_TIER_LABELS[value]?.toLowerCase() || "";
+  }
+  return value === 1 ? "easy" : value === 2 ? "complex" : "";
+}
+
+function WeakAreaMissChoice({ choice, isCorrect, isGiven }) {
+  const label = String(choice || "").trim();
+  if (!label) return null;
+
+  let className =
+    "rounded-lg border px-3 py-2 text-sm flex items-center justify-between gap-3";
+  if (isCorrect) {
+    className += " border-emerald-500 bg-emerald-50 text-emerald-950";
+  } else if (isGiven) {
+    className += " border-red-500 bg-red-50 text-red-950";
+  } else {
+    className += " border-slate-200 bg-white text-slate-900";
+  }
+
+  return (
+    <div className={className}>
+      <span>{label}</span>
+      {isCorrect ? (
+        <span className="text-emerald-700 text-xs font-semibold shrink-0">Correct</span>
+      ) : null}
+      {isGiven && !isCorrect ? (
+        <span className="text-red-700 text-xs font-semibold shrink-0">Student</span>
+      ) : null}
+    </div>
+  );
+}
+
+function WeakAreaMissContextPanel({
+  attempt,
+  miss,
+  areaLabel,
+  passage,
+  subject,
+  loading = false,
+}) {
   if (!miss) return null;
 
   const unitLabel = passageWindowUnitLabel(subject);
+  const passageSlot = passageSittingSlot(attempt, miss);
+  const areaName = miss.area ? formatAreaLabel(miss.area) : areaLabel;
+  const choices = (miss.choices || []).map((choice) => String(choice || "").trim()).filter(Boolean);
+  const given = String(miss.given || "").trim();
+  const expected = String(miss.expected || "").trim();
+  const passageTier = passageTierLabel(miss.passage_tier, subject);
+  const passageHeading = [
+    passageSlot != null ? `${unitLabel} ${passageSlot}` : unitLabel,
+    passage?.title ? `"${passage.title}"` : null,
+    passageTier || null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <aside
-      className="rounded-xl border border-indigo-100 bg-indigo-50/30 shadow-sm p-4 max-h-[min(70vh,48rem)] overflow-y-auto"
-      aria-label={`${unitLabel} context for question ${miss.slot}`}
+    <div
+      className="test-analysis-miss-context"
+      aria-label={`Wrong answer review for question ${miss.slot}`}
     >
-      <p className="text-xs font-semibold uppercase tracking-wide text-indigo-900">
-        {unitLabel} context
-      </p>
-      <p className="text-xs text-slate-600 mt-1">
-        Wrong answer · Q{miss.slot}
-        {miss.area ? (
-          <>
-            {" "}
-            · <span className="capitalize">{miss.area.replace(/_/g, " ")}</span>
-          </>
-        ) : null}
-      </p>
-      <div className="mt-3">
-        {loading ? (
-          <p className="text-sm text-slate-600">Loading {unitLabel.toLowerCase()}…</p>
-        ) : passage ? (
-          <WorksheetPassageContent
-            passage={passage}
-            embedded
-            centered={contextCenteredForPassage(passage, subject)}
-            maxWidthClass="max-w-none"
-          />
-        ) : (
-          <p className="text-sm text-slate-600">
-            Could not load {unitLabel.toLowerCase()} context for this question.
+      <div className="test-analysis-miss-context-grid">
+        <div className="test-analysis-miss-context-question">
+          <p className="text-xs text-slate-500">
+            Question {miss.slot}
+            {passageSlot != null ? (
+              <>
+                {" "}
+                · {unitLabel} {passageSlot}
+              </>
+            ) : null}
+            {areaName ? (
+              <>
+                {" "}
+                · {areaName}
+              </>
+            ) : null}
           </p>
-        )}
+          <p className="text-sm font-medium text-slate-900 mt-1.5 leading-relaxed">
+            {miss.prompt || "Question"}
+          </p>
+
+          {choices.length > 0 ? (
+            <div className="mt-3.5 flex flex-col gap-1.5">
+              {choices.map((choice) => (
+                <WeakAreaMissChoice
+                  key={choice}
+                  choice={choice}
+                  isCorrect={Boolean(expected) && choice === expected}
+                  isGiven={Boolean(given) && choice === given}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-3.5 space-y-2 text-sm">
+              <p className="text-red-800">
+                Student answered: <span className="font-medium">{given || "—"}</span>
+              </p>
+              {expected ? (
+                <p className="text-emerald-800">
+                  Correct: <span className="font-medium">{expected}</span>
+                </p>
+              ) : null}
+            </div>
+          )}
+        </div>
+
+        <div className="test-analysis-miss-context-passage">
+          {loading ? (
+            <p className="text-sm text-slate-600">Loading {unitLabel.toLowerCase()}…</p>
+          ) : passage ? (
+            <>
+              {passageHeading ? (
+                <p className="text-xs text-slate-500 mb-2">{passageHeading}</p>
+              ) : null}
+              <WorksheetPassageContent
+                passage={passage}
+                embedded
+                hideTitle
+                centered={contextCenteredForPassage(passage, subject)}
+                maxWidthClass="max-w-none"
+              />
+            </>
+          ) : (
+            <p className="text-sm text-slate-600">
+              Could not load {unitLabel.toLowerCase()} context for this question.
+            </p>
+          )}
+        </div>
       </div>
-    </aside>
+    </div>
   );
 }
 
@@ -279,10 +386,13 @@ function WeakAreaChipList({
   resetKey,
   subject = "",
   showPassageContext = false,
-  selectedMissKey = "",
-  onMissSelect = null,
+  attempt = null,
+  passageLookup = {},
+  questionPassageLookup = {},
+  loadingPassages = false,
 }) {
   const [expandedArea, setExpandedArea] = useState(null);
+  const [selectedMissKey, setSelectedMissKey] = useState("");
   const expandedSectionRef = useRef(null);
   const shouldScrollExpandedRef = useRef(false);
 
@@ -292,10 +402,32 @@ function WeakAreaChipList({
     : [];
   const firstMiss = sortedMisses[0] || null;
   const firstMissKey = firstMiss ? missContextKey(firstMiss) : "";
+  const selectedMiss =
+    sortedMisses.find((miss) => missContextKey(miss) === selectedMissKey) ||
+    firstMiss ||
+    null;
+  const selectedPassage =
+    showPassageContext && selectedMiss && attempt
+      ? resolveMissPassage(attempt, selectedMiss, {
+          passageLookup,
+          questionPassageLookup,
+        })
+      : null;
+  const contextLoading =
+    showPassageContext && loadingPassages && selectedMiss && !selectedPassage;
 
   useEffect(() => {
     setExpandedArea(null);
+    setSelectedMissKey("");
   }, [resetKey]);
+
+  useEffect(() => {
+    if (!expandedArea) {
+      setSelectedMissKey("");
+      return;
+    }
+    if (firstMissKey) setSelectedMissKey(firstMissKey);
+  }, [expandedArea, firstMissKey]);
 
   useEffect(() => {
     if (!expandedArea || !shouldScrollExpandedRef.current) return;
@@ -309,17 +441,6 @@ function WeakAreaChipList({
       });
     });
   }, [expandedArea, sortedMisses.length]);
-
-  useEffect(() => {
-    if (!showPassageContext || !onMissSelect || !expandedArea) return;
-    // Keep selected miss in sync when switching between expanded chips.
-    if (firstMiss) {
-      onMissSelect(firstMiss);
-    } else {
-      onMissSelect(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expandedArea, resetKey, showPassageContext, firstMissKey]);
 
   if (!areas.length) {
     return (
@@ -345,14 +466,6 @@ function WeakAreaChipList({
                 const next = expandedArea === area.area ? null : area.area;
                 if (next) {
                   shouldScrollExpandedRef.current = openingFresh;
-                  if (showPassageContext && onMissSelect) {
-                    const firstMiss = [...(area.misses || [])].sort(
-                      (a, b) => a.slot - b.slot,
-                    )[0];
-                    onMissSelect(firstMiss || null);
-                  }
-                } else if (onMissSelect) {
-                  onMissSelect(null);
                 }
                 setExpandedArea(next);
               }}
@@ -383,41 +496,64 @@ function WeakAreaChipList({
       </div>
 
       {expanded ? (
-        <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50/30 px-4 py-4">
-          <p className="text-xs font-semibold text-rose-900">
-            Wrong questions · {expanded.label}
-            {showPassageContext ? (
-              <span className="font-normal text-slate-600">
-                {" "}
-                · click a question to show its{" "}
-                {passageWindowUnitLabel(subject).toLowerCase()} on the right
-              </span>
+        showPassageContext ? (
+          <div className="mt-3">
+            {sortedMisses.length > 1 ? (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {sortedMisses.map((miss) => {
+                  const missKey = missContextKey(miss);
+                  const selected = selectedMissKey === missKey;
+                  return (
+                    <button
+                      key={missKey}
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => setSelectedMissKey(missKey)}
+                      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                        selected
+                          ? "border-slate-400 bg-slate-100 text-slate-950 ring-2 ring-slate-200"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                      }`}
+                    >
+                      Q{miss.slot}
+                    </button>
+                  );
+                })}
+              </div>
             ) : null}
-          </p>
-          {sortedMisses.length > 0 ? (
-            <div className="mt-3 flex flex-col gap-3">
-              {sortedMisses.map((miss) => {
-                const missKey = missContextKey(miss);
-                return (
-                  <AreaMissCard
-                    key={missKey}
-                    miss={miss}
-                    selected={showPassageContext && selectedMissKey === missKey}
-                    onSelect={
-                      showPassageContext && onMissSelect
-                        ? () => onMissSelect(miss)
-                        : null
-                    }
-                  />
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-sm text-slate-600 mt-2">
-              No wrong questions recorded for this topic.
+            {selectedMiss ? (
+              <WeakAreaMissContextPanel
+                attempt={attempt}
+                miss={selectedMiss}
+                areaLabel={expanded.label}
+                passage={selectedPassage}
+                subject={subject}
+                loading={contextLoading}
+              />
+            ) : (
+              <p className="text-sm text-slate-600">
+                No wrong questions recorded for this topic.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50/30 px-4 py-4">
+            <p className="text-xs font-semibold text-rose-900">
+              Wrong questions · {expanded.label}
             </p>
-          )}
-        </div>
+            {sortedMisses.length > 0 ? (
+              <div className="mt-3 flex flex-col gap-3">
+                {sortedMisses.map((miss) => (
+                  <AreaMissCard key={missContextKey(miss)} miss={miss} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-600 mt-2">
+                No wrong questions recorded for this topic.
+              </p>
+            )}
+          </div>
+        )
       ) : null}
     </div>
   );
@@ -501,14 +637,8 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
   const { tierTrend, tierBands, weakAreas, strongAreas, timePressure, narrative } =
     analysis;
   const showPassageContext = attemptUsesPassageContext(attempt, { tierTrend });
-  const [focusedMiss, setFocusedMiss] = useState(null);
   const [worksheet, setWorksheet] = useState(null);
   const [loadingWorksheet, setLoadingWorksheet] = useState(false);
-  const pendingScrollRestoreRef = useRef(null);
-
-  useEffect(() => {
-    setFocusedMiss(null);
-  }, [attempt?.id]);
 
   const needsWorksheetLookup = showPassageContext && Boolean(attempt?.worksheet_id);
 
@@ -542,40 +672,8 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
     [worksheet],
   );
 
-  const handleMissSelect = useCallback((miss) => {
-    setFocusedMiss((current) => {
-      if (showPassageContext && current) {
-        pendingScrollRestoreRef.current = window.scrollY;
-      }
-      return miss;
-    });
-  }, [showPassageContext]);
-
-  const focusedPassage =
-    showPassageContext && focusedMiss
-      ? resolveMissPassage(attempt, focusedMiss, {
-          passageLookup,
-          questionPassageLookup,
-        })
-      : null;
-  const showContextPanel = Boolean(showPassageContext && focusedMiss);
-  const focusedMissKey = missContextKey(focusedMiss);
-  const compactClass = showContextPanel ? "test-analysis-compact" : "";
-  const contextLoading = showContextPanel && loadingWorksheet && !focusedPassage;
-
-  useEffect(() => {
-    if (pendingScrollRestoreRef.current === null) return;
-    const scrollY = pendingScrollRestoreRef.current;
-    pendingScrollRestoreRef.current = null;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        window.scrollTo({ top: scrollY, left: 0, behavior: "instant" });
-      });
-    });
-  }, [focusedMissKey, focusedPassage?.id, showContextPanel]);
-
   const weakAreasSection = (
-    <div className={showPassageContext ? "" : "mt-6"}>
+    <div className="mt-6">
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-sm font-semibold text-rose-900">Weak areas</h3>
         <span
@@ -592,7 +690,8 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
         {showPassageContext ? (
           <>
             {" "}
-            Passage or data-set context appears on the right when you expand a topic.
+            Each miss opens with its {passageWindowUnitLabel(attempt.subject).toLowerCase()}{" "}
+            in the same panel.
           </>
         ) : null}
       </p>
@@ -602,8 +701,10 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
           resetKey={attempt.id}
           subject={attempt.subject}
           showPassageContext={showPassageContext}
-          selectedMissKey={focusedMissKey}
-          onMissSelect={showPassageContext ? handleMissSelect : null}
+          attempt={attempt}
+          passageLookup={passageLookup}
+          questionPassageLookup={questionPassageLookup}
+          loadingPassages={loadingWorksheet}
         />
       </div>
     </div>
@@ -772,36 +873,10 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
     return <div className={shellClass}>{analysisBody}</div>;
   }
 
-  const shellClasses = `${shellClass} test-analysis-detail-shell`;
-
-  if (showContextPanel) {
-    return (
-      <div className={shellClasses}>
-        <div className="test-analysis-context-row test-analysis-context-row--open">
-          <div className={`test-analysis-context-main ${compactClass}`}>
-            {analysisBody}
-            {weakAreasSection}
-            {tailSections}
-          </div>
-          <div className="test-analysis-context-panel">
-            <WrongAnswerContextPanel
-              passage={focusedPassage}
-              miss={focusedMiss}
-              subject={attempt.subject}
-              loading={contextLoading}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className={shellClasses}>
+    <div className={shellClass}>
       {analysisBody}
-      <div className="mt-6 test-analysis-context-row">
-        <div className="test-analysis-context-main">{weakAreasSection}</div>
-      </div>
+      {weakAreasSection}
       {tailSections}
     </div>
   );
