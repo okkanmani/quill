@@ -772,23 +772,17 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
     return <div className={shellClass}>{analysisBody}</div>;
   }
 
-  return (
-    <div className={shellClass}>
-      <div className={showContextPanel ? compactClass : ""}>{analysisBody}</div>
+  const shellClasses = `${shellClass} test-analysis-detail-shell`;
 
-      <div
-        className={`mt-6 test-analysis-context-row${
-          showContextPanel ? " test-analysis-context-row--open" : ""
-        }`}
-      >
-        <div
-          className={`test-analysis-context-main${
-            showContextPanel ? ` ${compactClass}` : ""
-          }`}
-        >
-          {weakAreasSection}
-        </div>
-        {showContextPanel ? (
+  if (showContextPanel) {
+    return (
+      <div className={shellClasses}>
+        <div className="test-analysis-context-row test-analysis-context-row--open">
+          <div className={`test-analysis-context-main ${compactClass}`}>
+            {analysisBody}
+            {weakAreasSection}
+            {tailSections}
+          </div>
           <div className="test-analysis-context-panel">
             <WrongAnswerContextPanel
               passage={focusedPassage}
@@ -797,10 +791,18 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
               loading={contextLoading}
             />
           </div>
-        ) : null}
+        </div>
       </div>
+    );
+  }
 
-      <div className={showContextPanel ? compactClass : ""}>{tailSections}</div>
+  return (
+    <div className={shellClasses}>
+      {analysisBody}
+      <div className="mt-6 test-analysis-context-row">
+        <div className="test-analysis-context-main">{weakAreasSection}</div>
+      </div>
+      {tailSections}
     </div>
   );
 }

@@ -935,6 +935,11 @@ html[data-quill-page="login"][data-theme-mode="dark"] .quill-login-input--dark:-
   min-width: 260px;
 }
 
+.test-analysis-detail-shell {
+  container-type: inline-size;
+  container-name: test-analysis;
+}
+
 .test-analysis-context-row {
   display: flex;
   flex-direction: column;
@@ -945,19 +950,20 @@ html[data-quill-page="login"][data-theme-mode="dark"] .quill-login-input--dark:-
   align-items: stretch;
 }
 
-@media (min-width: 1024px) {
+/* Split when the analysis card is wide enough — not the full viewport (admin has sidebars). */
+@container test-analysis (min-width: 640px) {
   .test-analysis-context-row--open {
     flex-direction: row;
     align-items: flex-start;
   }
 
-  .test-analysis-context-main {
+  .test-analysis-context-row--open .test-analysis-context-main {
     flex: 1 1 0%;
     min-width: 0;
     max-width: 58%;
   }
 
-  .test-analysis-context-panel {
+  .test-analysis-context-row--open .test-analysis-context-panel {
     flex: 0 0 42%;
     width: 42%;
     min-width: 0;
