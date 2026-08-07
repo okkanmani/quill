@@ -28,6 +28,7 @@ primary_region = 'yyz'
 [env]
   QUILL_DATA_DIR = "/data"
   QUILL_PUBLIC_API_URL = "https://quill-backend.fly.dev"
+  QUILL_SIGNUP_ENABLED = "0"
   # First boot from legacy auth.json: student password is bcrypt(DEFAULT_STUDENT_PASSWORD); default "changeme".
 
 [http_service]

@@ -14,6 +14,7 @@ primary_region = 'yyz'
 [env]
   QUILL_DATA_DIR = "/data"
   QUILL_PUBLIC_API_URL = "https://quill-backend-staging.fly.dev"
+  QUILL_SIGNUP_ENABLED = "0"
 
 [http_service]
   internal_port = 8080

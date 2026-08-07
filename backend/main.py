@@ -4,6 +4,7 @@ import sqlite3
 from contextlib import asynccontextmanager
 
 from auth import context_student_name, create_admin_token, create_student_token, verify_token
+from auth_config import public_auth_config, signup_enabled
 from auth_users import (
     add_admin,
     add_student,
@@ -672,8 +673,18 @@ def student_login(req: StudentLoginRequest):
     return out
 
 
+@app.get("/auth/public-config")
+def auth_public_config():
+    return public_auth_config()
+
+
 @app.post("/auth/admin/signup")
 def admin_signup(req: CreateAdminSignupRequest):
+    if not signup_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail="Sign up is closed during the private pilot. Contact us for access.",
+        )
     name = req.name.strip()
     if not name or not req.password:
         raise HTTPException(

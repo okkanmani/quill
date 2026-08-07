@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
+  getPublicAuthConfig,
   listAdminStudents,
   loginAdmin,
   loginStudent,
@@ -76,10 +77,35 @@ export default function Login() {
   const [signupPassword, setSignupPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [signupEnabled, setSignupEnabled] = useState(null);
 
   useEffect(() => {
     applyLoginAppearance();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getPublicAuthConfig()
+      .then((config) => {
+        if (!cancelled) {
+          setSignupEnabled(Boolean(config?.signup_enabled));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSignupEnabled(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (signupEnabled === false && activeTab === TAB_SIGN_UP) {
+      setActiveTab(TAB_SIGN_IN);
+    }
+  }, [signupEnabled, activeTab]);
 
   useEffect(() => {
     if (authError === "session") {
@@ -204,7 +230,7 @@ export default function Login() {
           </div>
         ) : null}
 
-        <div className="flex border-b border-slate-200">
+        <div className={signupEnabled ? "flex border-b border-slate-200" : "border-b border-slate-200 bg-indigo-50"}>
           <button
             type="button"
             onClick={() => {
@@ -212,32 +238,40 @@ export default function Login() {
               setError("");
             }}
             className={`flex-1 py-3 text-sm font-semibold transition ${
-              activeTab === TAB_SIGN_IN
+              activeTab === TAB_SIGN_IN || !signupEnabled
                 ? "bg-indigo-50 text-indigo-900 border-b-2 border-indigo-600"
                 : "text-slate-600 hover:bg-slate-50"
             }`}
           >
             Sign in
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab(TAB_SIGN_UP);
-              setError("");
-            }}
-            className={`flex-1 py-3 text-sm font-semibold transition ${
-              activeTab === TAB_SIGN_UP
-                ? "bg-indigo-50 text-indigo-900 border-b-2 border-indigo-600"
-                : "text-slate-600 hover:bg-slate-50"
-            }`}
-          >
-            Sign up
-          </button>
+          {signupEnabled ? (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab(TAB_SIGN_UP);
+                setError("");
+              }}
+              className={`flex-1 py-3 text-sm font-semibold transition ${
+                activeTab === TAB_SIGN_UP
+                  ? "bg-indigo-50 text-indigo-900 border-b-2 border-indigo-600"
+                  : "text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              Sign up
+            </button>
+          ) : null}
         </div>
 
         <div className="p-5">
-          {activeTab === TAB_SIGN_IN ? (
+          {activeTab === TAB_SIGN_IN || !signupEnabled ? (
             <form onSubmit={handleLogin} className="flex flex-col gap-3">
+              {signupEnabled === false ? (
+                <p className="text-slate-600 text-xs text-center leading-snug rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                  Quill is in a private pilot — sign up is by invitation only.
+                  Use the credentials you were given.
+                </p>
+              ) : null}
               <p className="text-slate-600 text-xs text-center leading-snug">
                 Enter your family admin name. Add a student name to sign in as a
                 student, or leave it blank for admin access.
@@ -276,7 +310,7 @@ export default function Login() {
                 Log in
               </button>
             </form>
-          ) : (
+          ) : signupEnabled ? (
             <form onSubmit={handleSignup} className="flex flex-col gap-3">
               <p className="text-slate-600 text-xs text-center leading-snug">
                 Choose a unique admin name and password for your family account.
@@ -307,7 +341,7 @@ export default function Login() {
                 Create admin account
               </button>
             </form>
-          )}
+          ) : null}
 
           {signedOut === "idle" ? (
             <p className="text-sm text-slate-700 text-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 mt-4">

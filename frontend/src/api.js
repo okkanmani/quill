@@ -67,6 +67,15 @@ export { touchActivity };
 
 // --- Auth ---
 
+export async function getPublicAuthConfig() {
+  assertApiConfigured();
+  const res = await fetch(`${BASE_URL}/auth/public-config`);
+  if (!res.ok) {
+    throw new Error("Could not load auth configuration");
+  }
+  return res.json();
+}
+
 export async function loginAdmin({ adminName, password }) {
   assertApiConfigured();
   let res;
