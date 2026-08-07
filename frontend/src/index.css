@@ -300,6 +300,9 @@ html[data-theme-mode="dark"] .divide-slate-200 > :not([hidden]) ~ :not([hidden])
 html[data-theme-mode="dark"] .bg-slate-100 {
   background-color: var(--quill-muted-bg) !important;
 }
+html[data-theme-mode="dark"] .bg-slate-100\/90 {
+  background-color: color-mix(in srgb, var(--quill-muted-bg) 90%, transparent) !important;
+}
 html[data-theme-mode="dark"] .bg-slate-200,
 html[data-theme-mode="dark"] .bg-slate-200\/90 {
   background-color: var(--quill-elevated-bg) !important;
@@ -310,8 +313,14 @@ html[data-theme-mode="dark"] .bg-slate-50\/30 {
 html[data-theme-mode="dark"] .bg-slate-50\/40 {
   background-color: color-mix(in srgb, var(--quill-page) 40%, transparent) !important;
 }
+html[data-theme-mode="dark"] .bg-slate-50\/50 {
+  background-color: color-mix(in srgb, var(--quill-muted-bg) 55%, transparent) !important;
+}
 html[data-theme-mode="dark"] .bg-slate-50\/60 {
   background-color: color-mix(in srgb, var(--quill-page) 60%, transparent) !important;
+}
+html[data-theme-mode="dark"] .bg-slate-50\/70 {
+  background-color: color-mix(in srgb, var(--quill-muted-bg) 70%, transparent) !important;
 }
 html[data-theme-mode="dark"] .bg-white\/95 {
   background-color: color-mix(in srgb, var(--quill-surface) 95%, transparent) !important;
@@ -387,6 +396,7 @@ html[data-theme-mode="dark"] .bg-amber-50,
 html[data-theme-mode="dark"] .bg-amber-50\/60,
 html[data-theme-mode="dark"] .bg-amber-50\/80,
 html[data-theme-mode="dark"] .bg-amber-100,
+html[data-theme-mode="dark"] .bg-amber-100\/90,
 html[data-theme-mode="dark"] .bg-amber-200 {
   background-color: var(--quill-warning-surface) !important;
 }
@@ -396,6 +406,7 @@ html[data-theme-mode="dark"] .text-amber-950 {
   color: var(--quill-warning-text) !important;
 }
 html[data-theme-mode="dark"] .border-amber-200,
+html[data-theme-mode="dark"] .border-amber-200\/80,
 html[data-theme-mode="dark"] .border-amber-400 {
   border-color: var(--quill-warning-border) !important;
 }
@@ -432,7 +443,8 @@ html[data-theme-mode="dark"] .border-sky-200 {
 }
 
 html[data-theme-mode="dark"] .bg-teal-50,
-html[data-theme-mode="dark"] .bg-teal-100 {
+html[data-theme-mode="dark"] .bg-teal-100,
+html[data-theme-mode="dark"] .bg-teal-100\/90 {
   background-color: var(--quill-teal-surface) !important;
 }
 html[data-theme-mode="dark"] .text-teal-700,
@@ -440,6 +452,7 @@ html[data-theme-mode="dark"] .text-teal-900 {
   color: var(--quill-teal-text) !important;
 }
 html[data-theme-mode="dark"] .border-teal-200,
+html[data-theme-mode="dark"] .border-teal-200\/80,
 html[data-theme-mode="dark"] .border-teal-300 {
   border-color: var(--quill-teal-border) !important;
 }
@@ -513,8 +526,36 @@ html[data-theme-mode="dark"] .hover\:text-teal-900:hover {
   color: var(--quill-teal-text) !important;
 }
 
+html[data-theme-mode="dark"] .hover\:bg-red-50:hover,
 html[data-theme-mode="dark"] .hover\:bg-red-100:hover {
   background-color: color-mix(in srgb, var(--quill-error-surface) 80%, var(--quill-error-border)) !important;
+}
+
+/* Compact row action buttons on worksheet/collection toolbars. */
+html[data-theme-mode="dark"] .quill-row-action-btn {
+  background-color: var(--quill-elevated-bg) !important;
+  border-color: var(--quill-border) !important;
+  color: var(--quill-text-secondary) !important;
+}
+html[data-theme-mode="dark"] .quill-row-action-btn.hover\:bg-indigo-50:hover {
+  background-color: color-mix(in srgb, var(--quill-accent-100) 70%, var(--quill-elevated-bg)) !important;
+  border-color: var(--quill-accent-300) !important;
+  color: var(--quill-accent-800) !important;
+}
+html[data-theme-mode="dark"] .quill-row-action-btn.hover\:bg-red-50:hover {
+  background-color: color-mix(in srgb, var(--quill-error-surface) 85%, var(--quill-elevated-bg)) !important;
+  border-color: var(--quill-error-border) !important;
+  color: var(--quill-error-text) !important;
+}
+html[data-theme-mode="dark"] .quill-row-action-btn.hover\:bg-teal-50:hover {
+  background-color: color-mix(in srgb, var(--quill-teal-surface) 85%, var(--quill-elevated-bg)) !important;
+  border-color: var(--quill-teal-border) !important;
+  color: var(--quill-teal-text) !important;
+}
+html[data-theme-mode="dark"] .quill-row-action-btn.bg-indigo-100 {
+  background-color: color-mix(in srgb, var(--quill-accent-100) 80%, var(--quill-elevated-bg)) !important;
+  border-color: var(--quill-accent-300) !important;
+  color: var(--quill-accent-900) !important;
 }
 
 /* Solid accent buttons: keep white label text on saturated fills (not pale accent tints). */
