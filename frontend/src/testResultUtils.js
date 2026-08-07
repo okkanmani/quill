@@ -135,7 +135,10 @@ export function normalizeAttemptAnswers(attempt) {
 
 /** True when attempt slots include passage-linked questions (RC or data analysis). */
 export function attemptUsesPassageContext(attempt, { tierTrend = null } = {}) {
-  if (attempt?.subject === "data") return true;
+  const subject = attempt?.subject;
+  // Math adaptive tests use per-question tiers only — no passage/data-set context.
+  if (subject === "math") return false;
+  if (subject === "data") return true;
   if (attempt?.passages_by_id && Object.keys(attempt.passages_by_id).length > 0) {
     return true;
   }
@@ -151,8 +154,9 @@ export function attemptUsesPassageContext(attempt, { tierTrend = null } = {}) {
   ) {
     return true;
   }
+  // passage_tier alone is not enough — math slots reuse that field for question tier.
   return (attempt?.slots || []).some(
-    (slot) => slot.passage_id != null || slot.passage_tier != null || slot.passage,
+    (slot) => slot.passage_id != null || slot.passage,
   );
 }
 
