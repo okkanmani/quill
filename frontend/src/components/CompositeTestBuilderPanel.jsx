@@ -393,7 +393,7 @@ export default function CompositeTestBuilderPanel() {
                 <select
                   value={selectedId}
                   onChange={(e) => selectSubjectTest(subjectKey, e.target.value)}
-                  className={`${CREATE_FIELD_SELECT} mt-0`}
+                  className={`quill-field-select ${CREATE_FIELD_SELECT} mt-0`}
                 >
                   <option value="">Not included</option>
                   {items.map((ws) => (
@@ -405,7 +405,7 @@ export default function CompositeTestBuilderPanel() {
               ) : (
                 <Link
                   to="/admin/create/test"
-                  className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-center text-[13px] font-semibold text-slate-800 hover:bg-slate-50 transition"
+                  className="quill-field-select block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-center text-[13px] font-semibold text-slate-800 hover:bg-slate-50 transition"
                 >
                   + Add a {formatSubjectLabel(subjectKey)} test
                 </Link>
@@ -493,7 +493,7 @@ export default function CompositeTestBuilderPanel() {
                 type="datetime-local"
                 value={scheduledUnlockLocal}
                 onChange={(e) => setScheduledUnlockLocal(e.target.value)}
-                className="w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="quill-field-input w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               />
               <p className={`${CREATE_BODY} mt-2 text-xs`}>
                 Composite and its subject tests stay locked until this time.

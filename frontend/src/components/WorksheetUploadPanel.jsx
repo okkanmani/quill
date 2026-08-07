@@ -281,7 +281,7 @@ export default function WorksheetUploadPanel() {
                 setValidationErrors([]);
               }
             }}
-            className="w-full min-h-[320px] font-mono text-[12px] leading-relaxed text-slate-900 bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 disabled:opacity-60"
+            className="quill-field-textarea w-full min-h-[320px] font-mono text-[12px] leading-relaxed text-slate-900 bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 disabled:opacity-60"
           />
 
           {editorParseError ? (

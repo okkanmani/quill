@@ -51,7 +51,7 @@ export default function AdminStudentSwitcher() {
         id="admin-student-switch"
         value={selectValue}
         onChange={(e) => onChange(e.target.value)}
-        className="border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-950 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        className="quill-field-select border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-950 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-400"
       >
         {!selectValue ? (
           <option value="" disabled>

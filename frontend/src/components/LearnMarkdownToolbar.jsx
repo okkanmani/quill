@@ -211,7 +211,7 @@ export default function LearnMarkdownToolbar({
           <select
             value={imageSize}
             onChange={(e) => onImageSizeChange(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-800"
+            className="quill-field-select rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-800"
           >
             {LEARN_IMAGE_SIZES.map((option) => (
               <option key={option.id} value={option.id}>
@@ -225,7 +225,7 @@ export default function LearnMarkdownToolbar({
           <select
             value={imageLayout}
             onChange={(e) => onImageLayoutChange(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-800 max-w-[12rem]"
+            className="quill-field-select rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-800 max-w-[12rem]"
           >
             {(layoutOptions.length ? layoutOptions : LEARN_IMAGE_LAYOUTS).map((option) => (
               <option key={option.id} value={option.id}>
@@ -239,7 +239,7 @@ export default function LearnMarkdownToolbar({
           <select
             value={imageShape}
             onChange={(e) => onImageShapeChange(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-800"
+            className="quill-field-select rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-800"
           >
             {LEARN_IMAGE_SHAPES.map((option) => (
               <option key={option.id} value={option.id}>

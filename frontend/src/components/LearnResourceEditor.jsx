@@ -124,7 +124,7 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           placeholder="e.g. Calculus — leave blank for Miscellaneous"
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
         />
       </label>
       <LearnMarkdownEditor

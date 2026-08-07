@@ -131,7 +131,7 @@ export default function QuestionBankPicker({
             value={areaFilter}
             onChange={(e) => setAreaFilter(e.target.value)}
             placeholder="Filter by topic area"
-            className="ml-auto min-w-[10rem] rounded-xl border border-slate-300 px-3 py-1.5 text-sm"
+            className="quill-field-input ml-auto min-w-[10rem] rounded-xl border border-slate-300 px-3 py-1.5 text-sm"
           />
         </div>
 

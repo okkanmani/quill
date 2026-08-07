@@ -933,6 +933,75 @@ html[data-theme-mode="dark"] .learn-figure__caption {
   size: auto;
 }
 
+/* Theme-aware form fields — use on inputs, textareas, and selects app-wide. */
+.quill-field-input,
+.quill-field-textarea,
+.quill-field-select {
+  background-color: var(--quill-surface);
+  color: var(--quill-text-primary);
+  border-color: var(--quill-border, #cbd5e1);
+}
+
+.quill-field-input::placeholder,
+.quill-field-textarea::placeholder {
+  color: var(--quill-text-faint, #94a3b8);
+}
+
+.quill-field-input:disabled,
+.quill-field-textarea:disabled,
+.quill-field-select:disabled {
+  background-color: var(--quill-muted-bg, #f1f5f9);
+  opacity: 0.85;
+  cursor: not-allowed;
+}
+
+.quill-field-input:-webkit-autofill,
+.quill-field-input:-webkit-autofill:hover,
+.quill-field-input:-webkit-autofill:focus,
+.quill-field-textarea:-webkit-autofill,
+.quill-field-textarea:-webkit-autofill:hover,
+.quill-field-textarea:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--quill-surface) inset;
+  -webkit-text-fill-color: var(--quill-text-primary);
+  caret-color: var(--quill-text-primary);
+}
+
+html[data-theme-mode="dark"] .quill-field-input:-webkit-autofill,
+html[data-theme-mode="dark"] .quill-field-input:-webkit-autofill:hover,
+html[data-theme-mode="dark"] .quill-field-input:-webkit-autofill:focus,
+html[data-theme-mode="dark"] .quill-field-textarea:-webkit-autofill,
+html[data-theme-mode="dark"] .quill-field-textarea:-webkit-autofill:hover,
+html[data-theme-mode="dark"] .quill-field-textarea:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--quill-surface) inset;
+}
+
+html[data-theme-mode="dark"] input[type="date"],
+html[data-theme-mode="dark"] input[type="time"],
+html[data-theme-mode="dark"] input[type="datetime-local"],
+html[data-theme-mode="dark"] input[type="month"],
+html[data-theme-mode="dark"] input[type="week"] {
+  color-scheme: dark;
+}
+
+/* Safety net: unstyled fields in dark mode (excludes login, overlays, inline editors). */
+.quill-field-input:where([class*="bg-transparent"]),
+.quill-field-textarea:where([class*="bg-transparent"]) {
+  background-color: transparent;
+}
+
+html[data-theme-mode="dark"]:not([data-quill-page="login"]) textarea:not(.quill-field-skip):not([class*="bg-black"]):not([class*="bg-transparent"]),
+html[data-theme-mode="dark"]:not([data-quill-page="login"]) select:not(.quill-field-skip):not([class*="bg-black"]):not([class*="bg-transparent"]),
+html[data-theme-mode="dark"]:not([data-quill-page="login"]) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="color"]):not(.quill-login-input):not(.quill-field-skip):not([class*="bg-black"]):not([class*="bg-transparent"]) {
+  background-color: var(--quill-surface);
+  color: var(--quill-text-primary);
+  border-color: var(--quill-border);
+}
+
+html[data-theme-mode="dark"]:not([data-quill-page="login"]) textarea:not(.quill-field-skip):not([class*="bg-black"]):not([class*="bg-transparent"])::placeholder,
+html[data-theme-mode="dark"]:not([data-quill-page="login"]) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="color"]):not(.quill-login-input):not(.quill-field-skip):not([class*="bg-black"]):not([class*="bg-transparent"])::placeholder {
+  color: var(--quill-text-faint);
+}
+
 /* Login page: independent light/dark toggle; keep fields readable on dark. */
 html[data-quill-page="login"] .quill-login-input {
   color-scheme: light;

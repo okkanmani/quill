@@ -70,7 +70,7 @@ export default function StudentWriting() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Chapter 3 — Charlotte’s Web"
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               maxLength={200}
               required
             />
@@ -83,7 +83,7 @@ export default function StudentWriting() {
               onChange={(e) => setBody(e.target.value)}
               rows={14}
               placeholder="Start writing here…"
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm leading-relaxed focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-y min-h-[280px]"
+              className="quill-field-textarea mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm leading-relaxed focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-y min-h-[280px]"
               required
             />
           </label>

@@ -187,7 +187,7 @@ export default function WritingResultsSection({
                               onChange={(e) =>
                                 onGrade(item, e.target.value, feedbackFor(item))
                               }
-                              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60"
+                              className="quill-field-select mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60"
                             >
                               <option value="">Select grade…</option>
                               {WRITING_GRADE_OPTIONS.map((g) => (
@@ -205,7 +205,7 @@ export default function WritingResultsSection({
                               onChange={(e) => setFeedbackFor(item.id, e.target.value)}
                               rows={4}
                               placeholder="Comments for the student…"
-                              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60 resize-y min-h-[6rem]"
+                              className="quill-field-textarea mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60 resize-y min-h-[6rem]"
                             />
                           </label>
                           {item.grade &&

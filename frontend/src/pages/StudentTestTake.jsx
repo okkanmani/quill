@@ -1128,7 +1128,7 @@ export default function StudentTestTake() {
                       onChange={(e) => handleWorkTextChange(e.target.value)}
                       disabled={submitting || timedOut}
                       placeholder="Show your reasoning, calculations, or notes…"
-                      className="w-full h-full min-h-[320px] max-h-[920px] flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-none"
+                      className="quill-field-textarea w-full h-full min-h-[320px] max-h-[920px] flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-none"
                     />
                   ) : (
                     <Drawpad

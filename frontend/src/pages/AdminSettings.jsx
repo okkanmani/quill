@@ -169,7 +169,7 @@ export default function AdminSettings() {
                     placeholder="sk-…"
                     autoComplete="off"
                     required
-                    className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                   />
                 </label>
                 <div className="flex flex-wrap gap-3">

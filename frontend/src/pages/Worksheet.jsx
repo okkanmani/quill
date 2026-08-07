@@ -549,7 +549,7 @@ export default function Worksheet() {
             disabled={locked}
             placeholder="Type your answer and show your reasoning..."
             rows={4}
-            className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y min-h-[6rem]"
+            className="quill-field-textarea w-full border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y min-h-[6rem]"
           />
         );
       }
@@ -569,7 +569,7 @@ export default function Worksheet() {
         disabled={locked}
         placeholder="Type your answer and show your reasoning..."
         rows={4}
-        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 mt-3 resize-y min-h-[6rem]"
+        className="quill-field-textarea w-full border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 mt-3 resize-y min-h-[6rem]"
       />
     );
   }

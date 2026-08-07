@@ -1047,7 +1047,7 @@ export default function TestBuilderPanel() {
                 ? "Optional — AI will suggest a title if blank"
                 : "e.g. Math Adaptive Test — Unit 4"
             }
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+            className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
           />
         </label>
 
@@ -1057,7 +1057,7 @@ export default function TestBuilderPanel() {
             <select
               value={subject}
               onChange={(e) => handleSubjectChange(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+              className="quill-field-select mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
             >
               {BUILDER_SUBJECTS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -1072,7 +1072,7 @@ export default function TestBuilderPanel() {
             <select
               value={grade}
               onChange={(e) => setGrade(Number(e.target.value))}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+              className="quill-field-select mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
             >
               {GRADE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -1092,7 +1092,7 @@ export default function TestBuilderPanel() {
               max={passageWindowEnabled ? MAX_RC_PASSAGE_COUNT : MAX_SITTING_COUNT}
               value={sittingCount}
               onChange={(e) => setSittingCount(Number(e.target.value))}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
             />
             <span className="mt-1 block text-xs font-normal text-slate-500">
               {passageWindowEnabled
@@ -1110,7 +1110,7 @@ export default function TestBuilderPanel() {
                 max={MAX_RC_QUESTIONS_PER_PASSAGE}
                 value={questionsPerPassage}
                 onChange={(e) => setQuestionsPerPassage(Number(e.target.value))}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
               />
               <span className="mt-1 block text-xs font-normal text-slate-500">
                 Fixed count for every {unitLabels.singular} ({MIN_RC_QUESTIONS_PER_PASSAGE}–
@@ -1126,7 +1126,7 @@ export default function TestBuilderPanel() {
               min={1}
               value={timeLimitMinutes}
               onChange={(e) => setTimeLimitMinutes(Number(e.target.value))}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
             />
           </label>
         </div>
@@ -1185,7 +1185,7 @@ export default function TestBuilderPanel() {
               onChange={(e) => setAiCustomPrompt(e.target.value)}
               rows={3}
               placeholder="e.g. Focus on fractions and decimals from Unit 4. Include a few word problems."
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm resize-y min-h-[4.5rem]"
+              className="quill-field-textarea mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm resize-y min-h-[4.5rem]"
             />
           </label>
         ) : null}
@@ -1220,7 +1220,7 @@ export default function TestBuilderPanel() {
                   type="datetime-local"
                   value={scheduledUnlockLocal}
                   onChange={(e) => setScheduledUnlockLocal(e.target.value)}
-                  className="w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                  className="quill-field-input w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 />
                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                   Test stays locked until this time — you can still edit it before then.
