@@ -136,7 +136,10 @@ export function normalizeAttemptAnswers(attempt) {
 /** True when attempt slots include passage-linked questions (RC or data analysis). */
 export function attemptUsesPassageContext(attempt, { tierTrend = null } = {}) {
   if (attempt?.subject === "data") return true;
-  if (tierTrend?.length && trendUsesPassageBands(trendTrend)) return true;
+  if (attempt?.passages_by_id && Object.keys(attempt.passages_by_id).length > 0) {
+    return true;
+  }
+  if (tierTrend?.length && trendUsesPassageBands(tierTrend)) return true;
   const answers = normalizeAttemptAnswers(attempt);
   if (
     answers.some(
@@ -177,6 +180,8 @@ export function resolveMissPassage(
   }
 
   if (passageId) {
+    const fromAttempt = attempt.passages_by_id?.[passageId];
+    if (fromAttempt) return fromAttempt;
     for (const answer of answers) {
       if (String(answer?.passage_id || "") === passageId && answer?.passage) {
         return answer.passage;
