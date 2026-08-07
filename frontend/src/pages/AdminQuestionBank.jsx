@@ -321,9 +321,7 @@ export default function AdminQuestionBank() {
           </div>
 
           {loading ? (
-            <div className="p-8">
-              <QuillLoading label="Loading questions…" />
-            </div>
+            <QuillLoading page label="Loading questions…" />
           ) : filteredItems.length === 0 ? (
             <p className="text-sm text-slate-500 px-5 py-12 text-center">
               {items.length === 0

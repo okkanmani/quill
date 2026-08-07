@@ -880,6 +880,7 @@ export default function TestBuilderPanel() {
   if (settingsLoading || loadingEdit) {
     return (
       <QuillLoading
+        page
         label={loadingEdit ? `Loading ${editId}…` : "Loading test builder…"}
       />
     );

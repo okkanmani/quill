@@ -555,7 +555,7 @@ export default function AdminLanding() {
           </div>
         ) : null}
 
-        {loading ? <QuillLoading label="Loading home…" /> : null}
+        {loading ? <QuillLoading page label="Loading home…" /> : null}
 
         {!loading && !error && students.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center">

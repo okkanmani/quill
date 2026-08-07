@@ -66,6 +66,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const signedOut = searchParams.get("signedOut");
+  const authError = searchParams.get("authError");
   const [activeTab, setActiveTab] = useState(TAB_SIGN_IN);
   const [loginThemeMode, setLoginThemeMode] = useState(getStoredLoginThemeMode);
   const [adminName, setAdminName] = useState("");
@@ -79,6 +80,12 @@ export default function Login() {
   useEffect(() => {
     applyLoginAppearance();
   }, []);
+
+  useEffect(() => {
+    if (authError === "session") {
+      setError("Your session could not be verified. Please sign in again.");
+    }
+  }, [authError]);
 
   const isDarkLogin = loginThemeMode === "dark";
 
@@ -126,11 +133,9 @@ export default function Login() {
         touchActivity();
         await navigateAfterAdminLogin(navigate);
       }
-    } catch {
+    } catch (err) {
       setError(
-        trimmedStudent
-          ? "Invalid admin name, student name, or password."
-          : "Invalid admin name or password.",
+        err instanceof Error ? err.message : "Sign in failed. Please try again.",
       );
     } finally {
       setBusy(false);
@@ -191,9 +196,9 @@ export default function Login() {
 
       <div className="relative w-full max-w-sm rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         {busy ? (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/90 backdrop-blur-sm">
+          <div className="quill-loading-overlay absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
             <QuillLoading
-              size="lg"
+              size="xl"
               label={activeTab === TAB_SIGN_UP ? "Creating account…" : "Logging in…"}
             />
           </div>

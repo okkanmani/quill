@@ -171,7 +171,7 @@ export default function StudentHome() {
           </div>
         ) : null}
 
-        {loading ? <QuillLoading label="Loading home…" /> : null}
+        {loading ? <QuillLoading page label="Loading home…" /> : null}
 
         {!loading && !error ? (
           <div className="flex flex-col gap-6">

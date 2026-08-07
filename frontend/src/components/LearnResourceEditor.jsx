@@ -88,7 +88,7 @@ export default function LearnResourceEditor({ subjectKey, sectionId }) {
   }
 
   if (loading) {
-    return <QuillLoading label="Loading editor…" />;
+    return <QuillLoading page label="Loading editor…" />;
   }
 
   if (error && !title && !markdown) {

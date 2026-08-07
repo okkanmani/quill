@@ -1146,7 +1146,7 @@ export default function LearnHub() {
           />
         ) : null}
 
-        {loading && <QuillLoading label="Loading resources…" />}
+        {loading && <QuillLoading page label="Loading resources…" />}
         {error && <p className={`${LEARN_ERROR} mb-4`}>{error}</p>}
         {adminSectionsError ? (
           <p className="text-amber-800 text-sm mb-4">{adminSectionsError}</p>

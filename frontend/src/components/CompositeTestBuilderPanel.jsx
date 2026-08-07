@@ -316,7 +316,7 @@ export default function CompositeTestBuilderPanel() {
   }
 
   if (loading) {
-    return <QuillLoading label="Loading composite test builder…" />;
+    return <QuillLoading page label="Loading composite test builder…" />;
   }
 
   return (

@@ -133,7 +133,7 @@ export default function StudentTestReview() {
           ← Back to Tests
         </Link>
 
-        {loading && <QuillLoading label="Loading review…" />}
+        {loading && <QuillLoading page label="Loading review…" />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && review ? (

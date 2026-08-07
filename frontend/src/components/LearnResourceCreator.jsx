@@ -126,7 +126,7 @@ export default function LearnResourceCreator() {
   }
 
   if (settingsLoading) {
-    return <QuillLoading label="Loading learning resource builder…" />;
+    return <QuillLoading page label="Loading learning resource builder…" />;
   }
 
   const learnLink = success

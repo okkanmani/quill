@@ -108,7 +108,7 @@ export default function StudentResults() {
           Scores and feedback from completed worksheets and writing assignments.
         </p>
 
-        {loading && <QuillLoading label="Loading results…" />}
+        {loading && <QuillLoading page label="Loading results…" />}
         {error && <p className={RESULTS_ERROR}>{error}</p>}
 
         {!loading && !error && !hasAny && (

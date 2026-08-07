@@ -59,7 +59,7 @@ export default function StudentRevisionWorksheet() {
           ← Back to Revision
         </Link>
 
-        {loading && <QuillLoading label="Loading worksheet…" />}
+        {loading && <QuillLoading page label="Loading worksheet…" />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && !error && worksheet ? (

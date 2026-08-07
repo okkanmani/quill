@@ -120,7 +120,7 @@ export default function AdminCompositeAnalysisView({
     element.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [initialAttemptId, selectedComposite, sectionAttempts]);
 
-  if (loading) return <QuillLoading label="Loading composite analysis…" />;
+  if (loading) return <QuillLoading page label="Loading composite analysis…" />;
 
   return (
     <div>

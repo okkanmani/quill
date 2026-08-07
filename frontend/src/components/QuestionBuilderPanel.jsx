@@ -999,7 +999,7 @@ export default function QuestionBuilderPanel() {
         : "Publish worksheet";
 
   if (loadingEdit) {
-    return <QuillLoading label="Loading worksheet…" />;
+    return <QuillLoading page label="Loading worksheet…" />;
   }
 
   return (

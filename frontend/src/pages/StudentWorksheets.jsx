@@ -39,7 +39,7 @@ export default function StudentWorksheets() {
           Pick a worksheet to start. Finished ones move to Your Results.
         </p>
 
-        {pageLoading && <QuillLoading label="Loading worksheets…" />}
+        {pageLoading && <QuillLoading page label="Loading worksheets…" />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!pageLoading && !error && worksheets.length === 0 && (

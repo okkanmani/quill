@@ -54,7 +54,7 @@ export default function AdminTestAnalysisView({ initialAttemptId = null }) {
     [selectedAttempt],
   );
 
-  if (loading) return <QuillLoading label="Loading test analysis…" />;
+  if (loading) return <QuillLoading page label="Loading test analysis…" />;
 
   return (
     <div>

@@ -81,7 +81,7 @@ def authenticate_student(admin_name: str, name: str, password: str) -> dict | No
             """
             SELECT id, admin_id, name, password_hash, grade, curriculum
             FROM students
-            WHERE admin_id = ? AND name = ?
+            WHERE admin_id = ? AND name = ? COLLATE NOCASE
             """,
             (admin["id"], name),
         ).fetchone()

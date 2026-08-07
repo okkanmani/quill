@@ -19,6 +19,8 @@
     --quill-brand-icon-bg: #0e0d1f;
     --quill-page: #f8fafc;
     --quill-surface: #ffffff;
+    --quill-text-primary: #0f172a;
+    --quill-text-muted: #64748b;
     --quill-accent-50: #eef2ff;
     --quill-accent-100: #e0e7ff;
     --quill-accent-200: #c7d2fe;
@@ -613,6 +615,38 @@ html[data-theme-mode="dark"] .learn-figure__caption {
   transform-box: view-box;
   transform-origin: 50% 42.86%;
   animation: quill-nib-spin 1.8s linear infinite;
+}
+
+.quill-loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: var(--quill-page);
+  color: var(--quill-text-primary, #0f172a);
+}
+
+.quill-loading-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: min(72vh, calc(100dvh - 6rem));
+  padding: 2rem 1.5rem;
+  color: var(--quill-text-primary, #0f172a);
+}
+
+.quill-loading-overlay {
+  background-color: color-mix(in srgb, var(--quill-page) 92%, transparent);
+}
+
+.quill-loading-label {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--quill-text-muted, #64748b);
 }
 
 .quill-brand-lockup {

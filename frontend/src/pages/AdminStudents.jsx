@@ -379,7 +379,7 @@ export default function AdminStudents() {
           </form>
         </div>
 
-        {loading && <QuillLoading label="Loading students…" />}
+        {loading && <QuillLoading page label="Loading students…" />}
         {error && <p className={ADMIN_HUB_INLINE_ERROR}>{error}</p>}
 
         {!loading && students.length === 0 && !error && (

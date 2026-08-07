@@ -9,6 +9,18 @@ import { notifyStudentHomeRefresh } from "./studentHomeRefresh";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
+async function parseApiError(res, fallback) {
+  const err = await res.json().catch(() => ({}));
+  const d = err.detail;
+  return typeof d === "string" ? d : fallback;
+}
+
+function assertApiConfigured() {
+  if (!BASE_URL) {
+    throw new Error("API URL is not configured for this environment.");
+  }
+}
+
 function getToken() {
   return localStorage.getItem("token");
 }
@@ -56,12 +68,20 @@ export { touchActivity };
 // --- Auth ---
 
 export async function loginAdmin({ adminName, password }) {
-  const res = await fetch(`${BASE_URL}/auth/admin/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ admin_name: adminName, password }),
-  });
-  if (!res.ok) throw new Error("Invalid admin login");
+  assertApiConfigured();
+  let res;
+  try {
+    res = await fetch(`${BASE_URL}/auth/admin/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ admin_name: adminName, password }),
+    });
+  } catch {
+    throw new Error("Could not reach the server. Check your connection and try again.");
+  }
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Invalid admin name or password."));
+  }
   return res.json();
 }
 
@@ -81,12 +101,22 @@ export async function signupAdmin({ name, password }) {
 }
 
 export async function loginStudent({ adminName, name, password }) {
-  const res = await fetch(`${BASE_URL}/auth/student/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ admin_name: adminName, name, password }),
-  });
-  if (!res.ok) throw new Error("Login failed");
+  assertApiConfigured();
+  let res;
+  try {
+    res = await fetch(`${BASE_URL}/auth/student/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ admin_name: adminName, name, password }),
+    });
+  } catch {
+    throw new Error("Could not reach the server. Check your connection and try again.");
+  }
+  if (!res.ok) {
+    throw new Error(
+      await parseApiError(res, "Invalid admin name, student name, or password."),
+    );
+  }
   return res.json();
 }
 
@@ -111,12 +141,6 @@ export async function getMe() {
   });
   if (!res.ok) throw new Error("Not authenticated");
   return res.json();
-}
-
-async function parseApiError(res, fallback) {
-  const err = await res.json().catch(() => ({}));
-  const d = err.detail;
-  return typeof d === "string" ? d : fallback;
 }
 
 export async function updateAdminAccount(payload) {

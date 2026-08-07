@@ -34,7 +34,7 @@ export default function StudentLatest() {
           {`New worksheets from the last ${LATEST_WINDOW_LABEL} that you have not finished yet.`}
         </p>
 
-        {loading && <QuillLoading label="Loading latest worksheets…" />}
+        {loading && <QuillLoading page label="Loading latest worksheets…" />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && !error && latest.length > 0 && (

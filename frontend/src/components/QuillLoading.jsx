@@ -4,6 +4,7 @@ const SIZE_CLASS = {
   sm: 28,
   md: 48,
   lg: 72,
+  xl: 104,
 };
 
 /** Branded loading indicator — static frame, spinning nib. */
@@ -12,13 +13,15 @@ export default function QuillLoading({
   size = "md",
   className = "",
   fullscreen = false,
+  page = false,
   showLabel = true,
 }) {
-  const markSize = SIZE_CLASS[size] || SIZE_CLASS.md;
+  const resolvedSize = fullscreen || page ? "xl" : size;
+  const markSize = SIZE_CLASS[resolvedSize] || SIZE_CLASS.md;
 
   const body = (
     <div
-      className={`flex flex-col items-center justify-center gap-3 text-slate-800 ${className}`}
+      className={`flex flex-col items-center justify-center gap-4 ${className}`.trim()}
       role="status"
       aria-live="polite"
       aria-busy="true"
@@ -29,17 +32,17 @@ export default function QuillLoading({
         className="select-none"
       />
       {showLabel && label ? (
-        <p className="text-slate-600 text-sm">{label}</p>
+        <p className="quill-loading-label">{label}</p>
       ) : null}
     </div>
   );
 
   if (fullscreen) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-6">
-        {body}
-      </div>
-    );
+    return <div className="quill-loading-screen">{body}</div>;
+  }
+
+  if (page) {
+    return <div className="quill-loading-page">{body}</div>;
   }
 
   return body;
