@@ -122,11 +122,25 @@ export function missContextKey(miss) {
 /** True when attempt slots include passage-linked questions (RC or data analysis). */
 export function attemptUsesPassageContext(attempt) {
   if (attempt?.subject === "data") return true;
+  if (
+    (attempt?.answers || []).some(
+      (answer) =>
+        isPassageWindowAnswer(answer) ||
+        answer?.passage_id != null ||
+        answer?.passage,
+    )
+  ) {
+    return true;
+  }
   return (attempt?.slots || []).some((slot) => slot.passage_id);
 }
 
 /** Resolve passage/chart/table context for a wrong-answer slot row. */
-export function resolveMissPassage(attempt, miss) {
+export function resolveMissPassage(
+  attempt,
+  miss,
+  { passageLookup = {}, questionPassageLookup = {} } = {},
+) {
   if (!attempt || !miss) return null;
 
   const answers = attempt.answers || [];
@@ -138,6 +152,7 @@ export function resolveMissPassage(attempt, miss) {
         return answer.passage;
       }
     }
+    if (passageLookup[passageId]) return passageLookup[passageId];
   }
 
   const questionId = miss.question_id != null ? String(miss.question_id) : "";
@@ -149,6 +164,7 @@ export function resolveMissPassage(attempt, miss) {
       );
       if (matches && answer.passage) return answer.passage;
     }
+    if (questionPassageLookup[questionId]) return questionPassageLookup[questionId];
   }
 
   return null;

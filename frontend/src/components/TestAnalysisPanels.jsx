@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getWorksheet } from "../api";
 import { QuestionDifficultyStars } from "./DifficultyStars";
 import WorksheetPassageContent from "./WorksheetPassageContent";
 import { formatSubjectLabel } from "../subjectUtils";
@@ -11,6 +12,8 @@ import {
 } from "../testAnalysisUtils";
 import {
   attemptUsesPassageContext,
+  buildPassageLookup,
+  buildQuestionPassageLookup,
   contextCenteredForPassage,
   missContextKey,
   passageWindowUnitLabel,
@@ -182,8 +185,8 @@ function TierTrendChart({ trend, chartKey }) {
   );
 }
 
-function WrongAnswerContextPanel({ passage, miss, subject }) {
-  if (!passage || !miss) return null;
+function WrongAnswerContextPanel({ passage, miss, subject, loading = false }) {
+  if (!miss) return null;
 
   const unitLabel = passageWindowUnitLabel(subject);
 
@@ -205,12 +208,20 @@ function WrongAnswerContextPanel({ passage, miss, subject }) {
         ) : null}
       </p>
       <div className="mt-3">
-        <WorksheetPassageContent
-          passage={passage}
-          embedded
-          centered={contextCenteredForPassage(passage, subject)}
-          maxWidthClass="max-w-none"
-        />
+        {loading ? (
+          <p className="text-sm text-slate-600">Loading {unitLabel.toLowerCase()}…</p>
+        ) : passage ? (
+          <WorksheetPassageContent
+            passage={passage}
+            embedded
+            centered={contextCenteredForPassage(passage, subject)}
+            maxWidthClass="max-w-none"
+          />
+        ) : (
+          <p className="text-sm text-slate-600">
+            Could not load {unitLabel.toLowerCase()} context for this question.
+          </p>
+        )}
       </div>
     </aside>
   );
@@ -488,11 +499,45 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
     analysis;
   const showPassageContext = attemptUsesPassageContext(attempt);
   const [focusedMiss, setFocusedMiss] = useState(null);
+  const [worksheet, setWorksheet] = useState(null);
+  const [loadingWorksheet, setLoadingWorksheet] = useState(false);
   const pendingScrollRestoreRef = useRef(null);
 
   useEffect(() => {
     setFocusedMiss(null);
   }, [attempt?.id]);
+
+  const needsWorksheetLookup = showPassageContext && Boolean(attempt?.worksheet_id);
+
+  useEffect(() => {
+    if (!attempt?.worksheet_id || !needsWorksheetLookup) {
+      setWorksheet(null);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setLoadingWorksheet(true);
+    getWorksheet(attempt.worksheet_id)
+      .then((data) => {
+        if (!cancelled) setWorksheet(data);
+      })
+      .catch(() => {
+        if (!cancelled) setWorksheet(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingWorksheet(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [attempt?.worksheet_id, needsWorksheetLookup]);
+
+  const passageLookup = useMemo(() => buildPassageLookup(worksheet), [worksheet]);
+  const questionPassageLookup = useMemo(
+    () => buildQuestionPassageLookup(worksheet),
+    [worksheet],
+  );
 
   const handleMissSelect = useCallback(
     (miss) => {
@@ -506,11 +551,15 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
 
   const focusedPassage =
     showPassageContext && focusedMiss
-      ? resolveMissPassage(attempt, focusedMiss)
+      ? resolveMissPassage(attempt, focusedMiss, {
+          passageLookup,
+          questionPassageLookup,
+        })
       : null;
-  const showContextPanel = Boolean(focusedPassage && focusedMiss);
+  const showContextPanel = Boolean(showPassageContext && focusedMiss);
   const focusedMissKey = missContextKey(focusedMiss);
   const compactClass = showContextPanel ? "test-analysis-compact" : "";
+  const contextLoading = showContextPanel && loadingWorksheet && !focusedPassage;
 
   useEffect(() => {
     if (pendingScrollRestoreRef.current === null) return;
@@ -727,22 +776,23 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
 
       <div
         className={`mt-6 flex flex-col gap-5 ${
-          showContextPanel ? "xl:flex-row xl:items-start" : ""
+          showContextPanel ? "lg:flex-row lg:items-start" : ""
         }`}
       >
         <div
           className={`min-w-0 flex-1 ${
-            showContextPanel ? `xl:max-w-[58%] ${compactClass}` : ""
+            showContextPanel ? `lg:max-w-[58%] ${compactClass}` : ""
           }`}
         >
           {weakAreasSection}
         </div>
         {showContextPanel ? (
-          <div className="min-w-0 xl:w-[42%] xl:sticky xl:top-4 shrink-0 self-start">
+          <div className="min-w-0 lg:w-[42%] lg:sticky lg:top-4 shrink-0 self-start">
             <WrongAnswerContextPanel
               passage={focusedPassage}
               miss={focusedMiss}
               subject={attempt.subject}
+              loading={contextLoading}
             />
           </div>
         ) : null}
