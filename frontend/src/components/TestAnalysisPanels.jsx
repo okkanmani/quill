@@ -211,9 +211,9 @@ function WeakAreaMissChoice({ choice, isCorrect, isGiven }) {
   let className =
     "rounded-lg border px-3 py-2 text-sm flex items-center justify-between gap-3";
   if (isCorrect) {
-    className += " border-emerald-500 bg-emerald-50 text-emerald-950";
+    className += " border-emerald-200 bg-emerald-50 text-emerald-800";
   } else if (isGiven) {
-    className += " border-red-500 bg-red-50 text-red-950";
+    className += " border-red-200 bg-red-50 text-red-800";
   } else {
     className += " border-slate-200 bg-white text-slate-900";
   }
@@ -511,7 +511,7 @@ function WeakAreaChipList({
                       onClick={() => setSelectedMissKey(missKey)}
                       className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition ${
                         selected
-                          ? "border-slate-400 bg-slate-100 text-slate-950 ring-2 ring-slate-200"
+                          ? "border-indigo-300 bg-indigo-50 text-indigo-900 ring-2 ring-indigo-200"
                           : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                       }`}
                     >

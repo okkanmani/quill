@@ -914,10 +914,10 @@ html[data-quill-page="login"][data-theme-mode="dark"] .quill-login-input--dark:-
 
 /* Test analysis: inline weak-area miss + passage context panel. */
 .test-analysis-miss-context {
-  border: 1px solid rgb(226 232 240);
+  border: 1px solid var(--quill-border-subtle, #e2e8f0);
   border-radius: 0.75rem;
   overflow: hidden;
-  background: white;
+  background: var(--quill-surface, #ffffff);
 }
 
 .test-analysis-miss-context-grid {
@@ -933,23 +933,60 @@ html[data-quill-page="login"][data-theme-mode="dark"] .quill-login-input--dark:-
 
 .test-analysis-miss-context-question {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgb(226 232 240);
-  background: rgb(248 250 252);
+  border-bottom: 1px solid var(--quill-border-subtle, #e2e8f0);
+  background: var(--quill-page, #f8fafc);
 }
 
 @media (min-width: 640px) {
   .test-analysis-miss-context-question {
     border-bottom: 0;
-    border-right: 1px solid rgb(226 232 240);
+    border-right: 1px solid var(--quill-border-subtle, #e2e8f0);
   }
 }
 
 .test-analysis-miss-context-passage {
   padding: 1rem 1.25rem;
+  background: var(--quill-surface, #ffffff);
 }
 
 .test-analysis-miss-context-passage .rounded-xl.border {
   border: 0;
   background: transparent;
   padding: 0;
+}
+
+html[data-theme-mode="dark"] .test-analysis-miss-context,
+html[data-theme-mode="dark"] .test-analysis-miss-context-passage {
+  background: var(--quill-surface) !important;
+  border-color: var(--quill-border-subtle) !important;
+}
+
+html[data-theme-mode="dark"] .test-analysis-miss-context-question {
+  background: var(--quill-page) !important;
+  border-color: var(--quill-border-subtle) !important;
+}
+
+html[data-theme-mode="dark"] .test-analysis-miss-context-passage .rounded-xl.border {
+  background: transparent !important;
+}
+
+html[data-theme-mode="dark"] .test-analysis-miss-context-passage .text-slate-900,
+html[data-theme-mode="dark"] .test-analysis-miss-context-passage .text-slate-800 {
+  color: var(--quill-text-primary) !important;
+}
+
+html[data-theme-mode="dark"] .border-emerald-500 {
+  border-color: var(--quill-success-border) !important;
+}
+
+html[data-theme-mode="dark"] .border-red-500 {
+  border-color: var(--quill-error-border) !important;
+}
+
+html[data-theme-mode="dark"] .text-red-950 {
+  color: var(--quill-error-text) !important;
+}
+
+html[data-theme-mode="dark"] .ring-slate-200 {
+  --tw-ring-color: var(--quill-border-subtle) !important;
 }
