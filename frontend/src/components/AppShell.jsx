@@ -133,9 +133,14 @@ export default function AppShell({
     ? SIDEBAR_COLLAPSED_WIDTH_CLASS
     : SIDEBAR_WIDTH_CLASS;
 
+  const sidebarWidthVar = sidebarCollapsed ? "3.5rem" : "13rem";
+
   return (
     <ShellLayoutContext.Provider value={shellContext}>
-      <div className="min-h-screen bg-slate-50 flex">
+      <div
+        className="min-h-screen bg-slate-50 flex"
+        style={{ "--quill-sidebar-width": sidebarWidthVar }}
+      >
         <div
           className={`relative shrink-0 sticky top-0 z-20 h-screen border-r border-slate-200 bg-white transition-[width] duration-200 ease-out ${sidebarWidthClass}`}
         >

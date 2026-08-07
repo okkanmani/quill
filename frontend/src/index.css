@@ -630,12 +630,17 @@ html[data-theme-mode="dark"] .learn-figure__caption {
 }
 
 .quill-loading-page {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--quill-sidebar-width, 0);
+  z-index: 15;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: min(72vh, calc(100dvh - 6rem));
   padding: 2rem 1.5rem;
+  background-color: var(--quill-page);
   color: var(--quill-text-primary, #0f172a);
 }
 
