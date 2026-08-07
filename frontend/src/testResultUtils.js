@@ -121,12 +121,25 @@ export function missContextKey(miss) {
   return String(miss.question_id || miss.question_index || miss.slot || "");
 }
 
+export function normalizeAttemptAnswers(attempt) {
+  const raw = attempt?.answers;
+  if (Array.isArray(raw)) return raw;
+  if (raw && typeof raw === "object") {
+    return Object.keys(raw)
+      .sort((a, b) => Number(a) - Number(b))
+      .map((key) => raw[key])
+      .filter((item) => item && typeof item === "object");
+  }
+  return [];
+}
+
 /** True when attempt slots include passage-linked questions (RC or data analysis). */
 export function attemptUsesPassageContext(attempt, { tierTrend = null } = {}) {
   if (attempt?.subject === "data") return true;
   if (tierTrend?.length && trendUsesPassageBands(trendTrend)) return true;
+  const answers = normalizeAttemptAnswers(attempt);
   if (
-    (attempt?.answers || []).some(
+    answers.some(
       (answer) =>
         isPassageWindowAnswer(answer) ||
         answer?.passage_id != null ||
@@ -135,7 +148,9 @@ export function attemptUsesPassageContext(attempt, { tierTrend = null } = {}) {
   ) {
     return true;
   }
-  return (attempt?.slots || []).some((slot) => slot.passage_id);
+  return (attempt?.slots || []).some(
+    (slot) => slot.passage_id != null || slot.passage_tier != null || slot.passage,
+  );
 }
 
 /** Resolve passage/chart/table context for a wrong-answer slot row. */
@@ -145,9 +160,21 @@ export function resolveMissPassage(
   { passageLookup = {}, questionPassageLookup = {} } = {},
 ) {
   if (!attempt || !miss) return null;
+  if (miss.passage) return miss.passage;
 
-  const answers = attempt.answers || [];
-  const passageId = miss.passage_id != null ? String(miss.passage_id) : "";
+  const answers = normalizeAttemptAnswers(attempt);
+  let passageId = miss.passage_id != null ? String(miss.passage_id) : "";
+  if (!passageId) {
+    const slotRow = (attempt?.slots || []).find(
+      (slot) =>
+        (miss.question_index != null && slot.question_index === miss.question_index) ||
+        (miss.slot != null && slot.question_index === miss.slot),
+    );
+    if (slotRow?.passage_id != null) {
+      passageId = String(slotRow.passage_id);
+    }
+    if (slotRow?.passage) return slotRow.passage;
+  }
 
   if (passageId) {
     for (const answer of answers) {
