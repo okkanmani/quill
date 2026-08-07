@@ -9,6 +9,7 @@ import {
   touchActivity,
 } from "../api";
 import QuillLoading from "../components/QuillLoading";
+import QuillLogo from "../components/QuillLogo";
 import { applyStudentSessionPrefs } from "../adminSession";
 import {
   applyActiveUserAppearance,
@@ -184,16 +185,17 @@ export default function Login() {
       </div>
 
       <div className="text-center">
-        <h1 className="text-5xl font-bold text-slate-800 tracking-tight">
-          🪶 Quill
-        </h1>
+        <QuillLogo size="lg" className="justify-center text-slate-800" />
         <p className="text-slate-600 mt-2 text-sm">Your learning companion</p>
       </div>
 
       <div className="relative w-full max-w-sm rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         {busy ? (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/90 backdrop-blur-sm">
-            <QuillLoading label={activeTab === TAB_SIGN_UP ? "Creating account…" : "Logging in…"} />
+            <QuillLoading
+              size="lg"
+              label={activeTab === TAB_SIGN_UP ? "Creating account…" : "Logging in…"}
+            />
           </div>
         ) : null}
 

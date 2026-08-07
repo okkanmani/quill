@@ -1,10 +1,22 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Exo 2";
+  src: url("/fonts/Exo2-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     color-scheme: light;
     --quill-font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
       Arial, sans-serif;
+    --quill-brand-font: "Exo 2", sans-serif;
+    --quill-brand-cyan: #00f5ff;
+    --quill-brand-blue: #2e5bff;
+    --quill-brand-icon-bg: #0e0d1f;
     --quill-page: #f8fafc;
     --quill-surface: #ffffff;
     --quill-accent-50: #eef2ff;
@@ -591,20 +603,30 @@ html[data-theme-mode="dark"] .learn-figure__caption {
   color: var(--quill-text-muted);
 }
 
-@keyframes quill-loading {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 0.82;
-  }
-  50% {
-    transform: translateY(-5px) scale(1.05);
-    opacity: 1;
+@keyframes quill-nib-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-.quill-loading {
-  animation: quill-loading 1.8s ease-in-out infinite;
+.quill-loading-nib {
+  transform-box: view-box;
+  transform-origin: 50% 42.86%;
+  animation: quill-nib-spin 1.8s linear infinite;
+}
+
+.quill-brand-lockup {
+  align-items: center;
+}
+
+.quill-brand-text {
+  font-family: var(--quill-brand-font);
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  /* Exo 2 caps sit a touch low in the em-box; lift to match icon optical center. */
+  transform: translateY(-0.04em);
 }
 
 .learn-hl {

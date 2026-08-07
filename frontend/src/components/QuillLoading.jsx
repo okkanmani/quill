@@ -1,10 +1,12 @@
+import { QuillMark } from "./QuillLogo";
+
 const SIZE_CLASS = {
-  sm: "text-2xl leading-none",
-  md: "text-4xl leading-none",
-  lg: "text-6xl leading-none",
+  sm: 28,
+  md: 48,
+  lg: 72,
 };
 
-/** Branded loading indicator using the Quill feather mark. */
+/** Branded loading indicator — static frame, spinning nib. */
 export default function QuillLoading({
   label = "Loading…",
   size = "md",
@@ -12,19 +14,20 @@ export default function QuillLoading({
   fullscreen = false,
   showLabel = true,
 }) {
+  const markSize = SIZE_CLASS[size] || SIZE_CLASS.md;
+
   const body = (
     <div
-      className={`flex flex-col items-center justify-center gap-3 ${className}`}
+      className={`flex flex-col items-center justify-center gap-3 text-slate-800 ${className}`}
       role="status"
       aria-live="polite"
       aria-busy="true"
     >
-      <span
-        aria-hidden="true"
-        className={`quill-loading select-none ${SIZE_CLASS[size] || SIZE_CLASS.md}`}
-      >
-        🪶
-      </span>
+      <QuillMark
+        size={markSize}
+        animateNib
+        className="select-none"
+      />
       {showLabel && label ? (
         <p className="text-slate-600 text-sm">{label}</p>
       ) : null}
@@ -33,7 +36,7 @@ export default function QuillLoading({
 
   if (fullscreen) {
     return (
-      <div className="min-h-[40vh] flex items-center justify-center px-6">
+      <div className="min-h-screen flex items-center justify-center px-6">
         {body}
       </div>
     );

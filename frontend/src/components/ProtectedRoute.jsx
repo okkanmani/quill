@@ -30,7 +30,7 @@ export default function ProtectedRoute({ role, children }) {
   }, [role]);
 
   if (status === "checking") {
-    return <QuillLoading fullscreen label="Loading…" />;
+    return <QuillLoading fullscreen size="lg" label="Loading…" />;
   }
   if (status === "denied") {
     const token = localStorage.getItem("token");
