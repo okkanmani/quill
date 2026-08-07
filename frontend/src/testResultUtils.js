@@ -1,5 +1,7 @@
 /** Helpers for rendering completed test answers in results views. */
 
+import { trendUsesPassageBands } from "./testAnalysisUtils";
+
 export function isPassageWindowAnswer(answer) {
   return (
     Array.isArray(answer?.questions) &&
@@ -120,8 +122,9 @@ export function missContextKey(miss) {
 }
 
 /** True when attempt slots include passage-linked questions (RC or data analysis). */
-export function attemptUsesPassageContext(attempt) {
+export function attemptUsesPassageContext(attempt, { tierTrend = null } = {}) {
   if (attempt?.subject === "data") return true;
+  if (tierTrend?.length && trendUsesPassageBands(trendTrend)) return true;
   if (
     (attempt?.answers || []).some(
       (answer) =>

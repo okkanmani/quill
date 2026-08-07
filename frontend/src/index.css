@@ -934,3 +934,35 @@ html[data-quill-page="login"][data-theme-mode="dark"] .quill-login-input--dark:-
 .test-analysis-compact svg.min-w-\[320px\] {
   min-width: 260px;
 }
+
+.test-analysis-context-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.test-analysis-context-row--open {
+  align-items: stretch;
+}
+
+@media (min-width: 1024px) {
+  .test-analysis-context-row--open {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .test-analysis-context-main {
+    flex: 1 1 0%;
+    min-width: 0;
+    max-width: 58%;
+  }
+
+  .test-analysis-context-panel {
+    flex: 0 0 42%;
+    width: 42%;
+    min-width: 0;
+    position: sticky;
+    top: 1rem;
+    align-self: flex-start;
+  }
+}

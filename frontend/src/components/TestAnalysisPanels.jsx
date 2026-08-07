@@ -290,6 +290,8 @@ function WeakAreaChipList({
   const sortedMisses = expanded
     ? [...(expanded.misses || [])].sort((a, b) => a.slot - b.slot)
     : [];
+  const firstMiss = sortedMisses[0] || null;
+  const firstMissKey = firstMiss ? missContextKey(firstMiss) : "";
 
   useEffect(() => {
     setExpandedArea(null);
@@ -309,17 +311,15 @@ function WeakAreaChipList({
   }, [expandedArea, sortedMisses.length]);
 
   useEffect(() => {
-    if (!showPassageContext || !onMissSelect) return;
-    if (!expandedArea) return;
-    const firstMiss = sortedMisses[0];
+    if (!showPassageContext || !onMissSelect || !expandedArea) return;
+    // Keep selected miss in sync when switching between expanded chips.
     if (firstMiss) {
       onMissSelect(firstMiss);
     } else {
       onMissSelect(null);
     }
-    // Auto-focus first miss when the expanded weak-area chip changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expandedArea, resetKey, showPassageContext]);
+  }, [expandedArea, resetKey, showPassageContext, firstMissKey]);
 
   if (!areas.length) {
     return (
@@ -341,17 +341,20 @@ function WeakAreaChipList({
               aria-expanded={selected}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => {
-                setExpandedArea((current) => {
-                  const next = current === area.area ? null : area.area;
-                  if (next) {
-                    // Only auto-scroll when opening from collapsed — chip switches
-                    // preserve scroll via handleMissSelect in the parent.
-                    shouldScrollExpandedRef.current = current === null;
-                  } else if (onMissSelect) {
-                    onMissSelect(null);
+                const openingFresh = expandedArea === null;
+                const next = expandedArea === area.area ? null : area.area;
+                if (next) {
+                  shouldScrollExpandedRef.current = openingFresh;
+                  if (showPassageContext && onMissSelect) {
+                    const firstMiss = [...(area.misses || [])].sort(
+                      (a, b) => a.slot - b.slot,
+                    )[0];
+                    onMissSelect(firstMiss || null);
                   }
-                  return next;
-                });
+                } else if (onMissSelect) {
+                  onMissSelect(null);
+                }
+                setExpandedArea(next);
               }}
               className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
                 selected
@@ -497,7 +500,7 @@ export function TestAttemptTile({ attempt, selected, onSelect }) {
 export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
   const { tierTrend, tierBands, weakAreas, strongAreas, timePressure, narrative } =
     analysis;
-  const showPassageContext = attemptUsesPassageContext(attempt);
+  const showPassageContext = attemptUsesPassageContext(attempt, { tierTrend });
   const [focusedMiss, setFocusedMiss] = useState(null);
   const [worksheet, setWorksheet] = useState(null);
   const [loadingWorksheet, setLoadingWorksheet] = useState(false);
@@ -539,15 +542,14 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
     [worksheet],
   );
 
-  const handleMissSelect = useCallback(
-    (miss) => {
-      if (showPassageContext && focusedMiss) {
+  const handleMissSelect = useCallback((miss) => {
+    setFocusedMiss((current) => {
+      if (showPassageContext && current) {
         pendingScrollRestoreRef.current = window.scrollY;
       }
-      setFocusedMiss(miss);
-    },
-    [showPassageContext, focusedMiss],
-  );
+      return miss;
+    });
+  }, [showPassageContext]);
 
   const focusedPassage =
     showPassageContext && focusedMiss
@@ -775,19 +777,19 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
       <div className={showContextPanel ? compactClass : ""}>{analysisBody}</div>
 
       <div
-        className={`mt-6 flex flex-col gap-5 ${
-          showContextPanel ? "lg:flex-row lg:items-start" : ""
+        className={`mt-6 test-analysis-context-row${
+          showContextPanel ? " test-analysis-context-row--open" : ""
         }`}
       >
         <div
-          className={`min-w-0 flex-1 ${
-            showContextPanel ? `lg:max-w-[58%] ${compactClass}` : ""
+          className={`test-analysis-context-main${
+            showContextPanel ? ` ${compactClass}` : ""
           }`}
         >
           {weakAreasSection}
         </div>
         {showContextPanel ? (
-          <div className="min-w-0 lg:w-[42%] lg:sticky lg:top-4 shrink-0 self-start">
+          <div className="test-analysis-context-panel">
             <WrongAnswerContextPanel
               passage={focusedPassage}
               miss={focusedMiss}
