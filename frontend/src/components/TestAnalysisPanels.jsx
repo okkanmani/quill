@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { QuestionDifficultyStars } from "./DifficultyStars";
+import WorksheetPassageContent from "./WorksheetPassageContent";
 import { formatSubjectLabel } from "../subjectUtils";
 import { formatDurationSeconds } from "../worksheetUtils";
 import { formatWeightedTestScore } from "../testUtils";
@@ -8,6 +9,13 @@ import {
   TEST_TIER_LABELS,
   trendUsesPassageBands,
 } from "../testAnalysisUtils";
+import {
+  attemptUsesPassageContext,
+  contextCenteredForPassage,
+  missContextKey,
+  passageWindowUnitLabel,
+  resolveMissPassage,
+} from "../testResultUtils";
 
 function TierTrendChart({ trend, chartKey }) {
   if (!trend?.length) {
@@ -174,14 +182,75 @@ function TierTrendChart({ trend, chartKey }) {
   );
 }
 
-function AreaMissCard({ miss }) {
+function WrongAnswerContextPanel({ passage, miss, subject }) {
+  if (!passage || !miss) return null;
+
+  const unitLabel = passageWindowUnitLabel(subject);
+
   return (
-    <div className="rounded-xl border border-red-200 bg-red-50/50 px-4 py-3">
+    <aside
+      className="rounded-xl border border-indigo-100 bg-indigo-50/30 shadow-sm p-4 max-h-[min(70vh,48rem)] overflow-y-auto"
+      aria-label={`${unitLabel} context for question ${miss.slot}`}
+    >
+      <p className="text-xs font-semibold uppercase tracking-wide text-indigo-900">
+        {unitLabel} context
+      </p>
+      <p className="text-xs text-slate-600 mt-1">
+        Wrong answer · Q{miss.slot}
+        {miss.area ? (
+          <>
+            {" "}
+            · <span className="capitalize">{miss.area.replace(/_/g, " ")}</span>
+          </>
+        ) : null}
+      </p>
+      <div className="mt-3">
+        <WorksheetPassageContent
+          passage={passage}
+          embedded
+          centered={contextCenteredForPassage(passage, subject)}
+          maxWidthClass="max-w-none"
+        />
+      </div>
+    </aside>
+  );
+}
+
+function AreaMissCard({ miss, selected = false, onSelect = null }) {
+  const interactive = typeof onSelect === "function";
+
+  return (
+    <div
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onClick={interactive ? onSelect : undefined}
+      onMouseDown={interactive ? (event) => event.preventDefault() : undefined}
+      onKeyDown={
+        interactive
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelect();
+              }
+            }
+          : undefined
+      }
+      className={`rounded-xl border px-4 py-3 transition ${
+        selected
+          ? "border-indigo-300 bg-indigo-50/80 ring-2 ring-indigo-200"
+          : "border-red-200 bg-red-50/50"
+      } ${interactive ? "cursor-pointer hover:border-indigo-200 hover:bg-indigo-50/40" : ""}`}
+    >
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Q{miss.slot}
         </p>
         <QuestionDifficultyStars stars={miss.tier} />
+        {selected ? (
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-indigo-700">
+            Context shown →
+          </span>
+        ) : null}
       </div>
       <p className="text-sm text-slate-900 mt-2 leading-relaxed">
         {miss.prompt || "Question"}
@@ -194,12 +263,52 @@ function AreaMissCard({ miss }) {
   );
 }
 
-function WeakAreaChipList({ areas, resetKey }) {
+function WeakAreaChipList({
+  areas,
+  resetKey,
+  subject = "",
+  showPassageContext = false,
+  selectedMissKey = "",
+  onMissSelect = null,
+}) {
   const [expandedArea, setExpandedArea] = useState(null);
+  const expandedSectionRef = useRef(null);
+  const shouldScrollExpandedRef = useRef(false);
+
+  const expanded = areas.find((area) => area.area === expandedArea) || null;
+  const sortedMisses = expanded
+    ? [...(expanded.misses || [])].sort((a, b) => a.slot - b.slot)
+    : [];
 
   useEffect(() => {
     setExpandedArea(null);
   }, [resetKey]);
+
+  useEffect(() => {
+    if (!expandedArea || !shouldScrollExpandedRef.current) return;
+    shouldScrollExpandedRef.current = false;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        expandedSectionRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      });
+    });
+  }, [expandedArea, sortedMisses.length]);
+
+  useEffect(() => {
+    if (!showPassageContext || !onMissSelect) return;
+    if (!expandedArea) return;
+    const firstMiss = sortedMisses[0];
+    if (firstMiss) {
+      onMissSelect(firstMiss);
+    } else {
+      onMissSelect(null);
+    }
+    // Auto-focus first miss when the expanded weak-area chip changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expandedArea, resetKey, showPassageContext]);
 
   if (!areas.length) {
     return (
@@ -207,13 +316,8 @@ function WeakAreaChipList({ areas, resetKey }) {
     );
   }
 
-  const expanded = areas.find((area) => area.area === expandedArea) || null;
-  const sortedMisses = expanded
-    ? [...(expanded.misses || [])].sort((a, b) => a.slot - b.slot)
-    : [];
-
   return (
-    <div>
+    <div ref={expandedSectionRef}>
       <div className="flex flex-wrap gap-2">
         {areas.map((area) => {
           const selected = expandedArea === area.area;
@@ -224,9 +328,20 @@ function WeakAreaChipList({ areas, resetKey }) {
               type="button"
               title="Click to view wrong questions for this topic"
               aria-expanded={selected}
-              onClick={() =>
-                setExpandedArea((current) => (current === area.area ? null : area.area))
-              }
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                setExpandedArea((current) => {
+                  const next = current === area.area ? null : area.area;
+                  if (next) {
+                    // Only auto-scroll when opening from collapsed — chip switches
+                    // preserve scroll via handleMissSelect in the parent.
+                    shouldScrollExpandedRef.current = current === null;
+                  } else if (onMissSelect) {
+                    onMissSelect(null);
+                  }
+                  return next;
+                });
+              }}
               className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
                 selected
                   ? "border-rose-400 bg-rose-100 text-rose-950 ring-2 ring-rose-200"
@@ -257,12 +372,31 @@ function WeakAreaChipList({ areas, resetKey }) {
         <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50/30 px-4 py-4">
           <p className="text-xs font-semibold text-rose-900">
             Wrong questions · {expanded.label}
+            {showPassageContext ? (
+              <span className="font-normal text-slate-600">
+                {" "}
+                · click a question to show its{" "}
+                {passageWindowUnitLabel(subject).toLowerCase()} on the right
+              </span>
+            ) : null}
           </p>
           {sortedMisses.length > 0 ? (
             <div className="mt-3 flex flex-col gap-3">
-              {sortedMisses.map((miss) => (
-                <AreaMissCard key={miss.slot} miss={miss} />
-              ))}
+              {sortedMisses.map((miss) => {
+                const missKey = missContextKey(miss);
+                return (
+                  <AreaMissCard
+                    key={missKey}
+                    miss={miss}
+                    selected={showPassageContext && selectedMissKey === missKey}
+                    onSelect={
+                      showPassageContext && onMissSelect
+                        ? () => onMissSelect(miss)
+                        : null
+                    }
+                  />
+                );
+              })}
             </div>
           ) : (
             <p className="text-sm text-slate-600 mt-2">
@@ -352,9 +486,80 @@ export function TestAttemptTile({ attempt, selected, onSelect }) {
 export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
   const { tierTrend, tierBands, weakAreas, strongAreas, timePressure, narrative } =
     analysis;
+  const showPassageContext = attemptUsesPassageContext(attempt);
+  const [focusedMiss, setFocusedMiss] = useState(null);
+  const pendingScrollRestoreRef = useRef(null);
 
-  return (
-    <div className={nested ? "min-w-0" : "rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-5 min-w-0"}>
+  useEffect(() => {
+    setFocusedMiss(null);
+  }, [attempt?.id]);
+
+  const handleMissSelect = useCallback(
+    (miss) => {
+      if (showPassageContext && focusedMiss) {
+        pendingScrollRestoreRef.current = window.scrollY;
+      }
+      setFocusedMiss(miss);
+    },
+    [showPassageContext, focusedMiss],
+  );
+
+  const focusedPassage =
+    showPassageContext && focusedMiss
+      ? resolveMissPassage(attempt, focusedMiss)
+      : null;
+  const showContextPanel = Boolean(focusedPassage && focusedMiss);
+  const focusedMissKey = missContextKey(focusedMiss);
+  const compactClass = showContextPanel ? "test-analysis-compact" : "";
+
+  useEffect(() => {
+    if (pendingScrollRestoreRef.current === null) return;
+    const scrollY = pendingScrollRestoreRef.current;
+    pendingScrollRestoreRef.current = null;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: scrollY, left: 0, behavior: "instant" });
+      });
+    });
+  }, [focusedMissKey, focusedPassage?.id, showContextPanel]);
+
+  const weakAreasSection = (
+    <div className={showPassageContext ? "" : "mt-6"}>
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-sm font-semibold text-rose-900">Weak areas</h3>
+        <span
+          className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-200 bg-white text-[11px] font-bold text-slate-500 cursor-help"
+          title="Click a topic chip to view wrong questions for that area."
+          aria-label="Click a topic chip to view wrong questions for that area."
+        >
+          ?
+        </span>
+      </div>
+      <p className="text-xs text-slate-600 mt-1">
+        Below 75% weighted accuracy or any easy-tier miss in that topic. Click a chip
+        to review wrong answers.
+        {showPassageContext ? (
+          <>
+            {" "}
+            Passage or data-set context appears on the right when you expand a topic.
+          </>
+        ) : null}
+      </p>
+      <div className="mt-3">
+        <WeakAreaChipList
+          areas={weakAreas}
+          resetKey={attempt.id}
+          subject={attempt.subject}
+          showPassageContext={showPassageContext}
+          selectedMissKey={focusedMissKey}
+          onMissSelect={showPassageContext ? handleMissSelect : null}
+        />
+      </div>
+    </div>
+  );
+
+  const analysisBody = (
+    <>
       {narrative ? (
         <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4">
           <h3 className="text-sm font-semibold text-slate-900">Adaptive summary</h3>
@@ -462,26 +667,33 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
         </div>
       ) : null}
 
-      <div className="mt-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-sm font-semibold text-rose-900">Weak areas</h3>
-          <span
-            className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-200 bg-white text-[11px] font-bold text-slate-500 cursor-help"
-            title="Click a topic chip to view wrong questions for that area."
-            aria-label="Click a topic chip to view wrong questions for that area."
-          >
-            ?
-          </span>
-        </div>
-        <p className="text-xs text-slate-600 mt-1">
-          Below 75% weighted accuracy or any easy-tier miss in that topic. Click a chip
-          to review wrong answers.
-        </p>
-        <div className="mt-3">
-          <WeakAreaChipList areas={weakAreas} resetKey={attempt.id} />
-        </div>
-      </div>
+      {!showPassageContext ? weakAreasSection : null}
 
+      {!showPassageContext ? (
+        <>
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold text-emerald-900">Strong areas</h3>
+            <p className="text-xs text-slate-600 mt-1">
+              All questions correct in that topic for this sitting.
+            </p>
+            <div className="mt-3">
+              <AreaChipList areas={strongAreas} />
+            </div>
+          </div>
+
+          {attempt.review_id ? (
+            <p className="mt-6 text-sm text-slate-700">
+              Missed questions were saved to review session #{attempt.review_id}
+              {attempt.review_completed ? " (completed)." : " (pending)."}
+            </p>
+          ) : null}
+        </>
+      ) : null}
+    </>
+  );
+
+  const tailSections = showPassageContext ? (
+    <>
       <div className="mt-6">
         <h3 className="text-sm font-semibold text-emerald-900">Strong areas</h3>
         <p className="text-xs text-slate-600 mt-1">
@@ -498,6 +710,45 @@ export function TestAnalysisDetail({ attempt, analysis, nested = false }) {
           {attempt.review_completed ? " (completed)." : " (pending)."}
         </p>
       ) : null}
+    </>
+  ) : null;
+
+  const shellClass = nested
+    ? "min-w-0"
+    : "rounded-2xl border border-slate-200 bg-white shadow-sm px-5 py-5 min-w-0";
+
+  if (!showPassageContext) {
+    return <div className={shellClass}>{analysisBody}</div>;
+  }
+
+  return (
+    <div className={shellClass}>
+      <div className={showContextPanel ? compactClass : ""}>{analysisBody}</div>
+
+      <div
+        className={`mt-6 flex flex-col gap-5 ${
+          showContextPanel ? "xl:flex-row xl:items-start" : ""
+        }`}
+      >
+        <div
+          className={`min-w-0 flex-1 ${
+            showContextPanel ? `xl:max-w-[58%] ${compactClass}` : ""
+          }`}
+        >
+          {weakAreasSection}
+        </div>
+        {showContextPanel ? (
+          <div className="min-w-0 xl:w-[42%] xl:sticky xl:top-4 shrink-0 self-start">
+            <WrongAnswerContextPanel
+              passage={focusedPassage}
+              miss={focusedMiss}
+              subject={attempt.subject}
+            />
+          </div>
+        ) : null}
+      </div>
+
+      <div className={showContextPanel ? compactClass : ""}>{tailSections}</div>
     </div>
   );
 }

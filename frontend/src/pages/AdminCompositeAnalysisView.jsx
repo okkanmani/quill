@@ -156,7 +156,7 @@ export default function AdminCompositeAnalysisView({
             </div>
           </div>
 
-          <div className="flex-1 min-w-0 lg:sticky lg:top-4">
+          <div className="flex-1 min-w-0">
             {selectedComposite ? (
               <div className="rounded-2xl border border-violet-200 bg-white shadow-sm px-5 py-5 min-w-0">
                 <div className="border-b border-slate-100 pb-4 mb-6">

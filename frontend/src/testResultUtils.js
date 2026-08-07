@@ -114,6 +114,46 @@ export function worksheetHasPassageContext(worksheet) {
   return Boolean(worksheet?.passages?.length);
 }
 
+export function missContextKey(miss) {
+  if (!miss) return "";
+  return String(miss.question_id || miss.question_index || miss.slot || "");
+}
+
+/** True when attempt slots include passage-linked questions (RC or data analysis). */
+export function attemptUsesPassageContext(attempt) {
+  if (attempt?.subject === "data") return true;
+  return (attempt?.slots || []).some((slot) => slot.passage_id);
+}
+
+/** Resolve passage/chart/table context for a wrong-answer slot row. */
+export function resolveMissPassage(attempt, miss) {
+  if (!attempt || !miss) return null;
+
+  const answers = attempt.answers || [];
+  const passageId = miss.passage_id != null ? String(miss.passage_id) : "";
+
+  if (passageId) {
+    for (const answer of answers) {
+      if (String(answer?.passage_id || "") === passageId && answer?.passage) {
+        return answer.passage;
+      }
+    }
+  }
+
+  const questionId = miss.question_id != null ? String(miss.question_id) : "";
+  if (questionId) {
+    for (const answer of answers) {
+      if (!isPassageWindowAnswer(answer)) continue;
+      const matches = (answer.questions || []).some(
+        (question) => String(question?.question_id || "") === questionId,
+      );
+      if (matches && answer.passage) return answer.passage;
+    }
+  }
+
+  return null;
+}
+
 /** Flatten test result answers into per-question rows for grading. */
 export function flattenTestQuestions(answers) {
   const items = [];
