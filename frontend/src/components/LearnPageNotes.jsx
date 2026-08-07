@@ -54,7 +54,7 @@ function NotesPanelContent({
           readOnly={readOnly}
           rows={12}
           placeholder={readOnly ? "No notes yet." : "Write your notes here…"}
-          className={`w-full min-h-[12rem] resize-y rounded-lg border border-slate-300 px-2.5 py-2 text-xs leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 ${
+          className={`quill-field-textarea w-full min-h-[12rem] resize-y rounded-lg border border-slate-300 px-2.5 py-2 text-xs leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 ${
             readOnly ? "bg-slate-100 cursor-default" : "bg-white"
           }`}
         />

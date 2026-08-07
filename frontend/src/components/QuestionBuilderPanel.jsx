@@ -99,7 +99,7 @@ function McqChoices({ question, index, onChange }) {
                 onChange(index, { choices: next });
               }}
               placeholder={`Choice ${label}`}
-              className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="quill-field-input flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             />
           </div>
         );
@@ -190,7 +190,7 @@ function PassageCard({
                 type="text"
                 value={passage.title}
                 onChange={(e) => onChange(index, { title: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                 placeholder={isDataMode ? "e.g. Fruit sales at the market" : "e.g. Life in the Arctic"}
               />
             </label>
@@ -206,7 +206,7 @@ function PassageCard({
                     questionCount: Math.max(1, Math.min(15, Number(e.target.value) || 1)),
                   })
                 }
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
               />
             </label>
             {buildUsingAi && !isDataMode ? (
@@ -225,7 +225,7 @@ function PassageCard({
                       ),
                     })
                   }
-                  className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                  className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                 />
               </label>
             ) : null}
@@ -239,7 +239,7 @@ function PassageCard({
                 onChange={(e) => onChange(index, { aiPrompt: e.target.value })}
                 rows={3}
                 maxLength={1000}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y"
+                className="quill-field-textarea mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y"
                 placeholder={
                   isDataMode
                     ? "e.g. Bar chart of weekly rainfall, line graph of plant growth…"
@@ -255,7 +255,7 @@ function PassageCard({
                 value={passage.body}
                 onChange={(e) => onChange(index, { body: e.target.value })}
                 rows={3}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y"
+                className="quill-field-textarea mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y"
                 placeholder="Short intro shown above the chart or table."
               />
             </label>
@@ -266,7 +266,7 @@ function PassageCard({
                 value={passage.body}
                 onChange={(e) => onChange(index, { body: e.target.value })}
                 rows={8}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y min-h-[10rem]"
+                className="quill-field-textarea mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm leading-relaxed resize-y min-h-[10rem]"
                 placeholder="Paste or type the reading passage."
               />
             </label>
@@ -360,7 +360,7 @@ function QuestionCard({
               onChange={(e) => onChange(index, { prompt: e.target.value })}
               onFocus={() => onFocus?.(index)}
               rows={3}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="quill-field-textarea mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               placeholder="Enter the question text"
             />
           </label>
@@ -370,7 +370,7 @@ function QuestionCard({
               type="text"
               value={question.area || ""}
               onChange={(e) => onChange(index, { area: e.target.value })}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               placeholder="e.g. vocabulary, inference, main idea"
             />
             <span className={CREATE_FIELD_HINT}>
@@ -386,7 +386,7 @@ function QuestionCard({
                 type="text"
                 value={question.answer}
                 onChange={(e) => onChange(index, { answer: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 placeholder="Expected answer"
               />
             </label>
@@ -999,7 +999,7 @@ export default function QuestionBuilderPanel() {
         : "Publish worksheet";
 
   if (loadingEdit) {
-    return <QuillLoading label="Loading worksheet…" />;
+    return <QuillLoading page label="Loading worksheet…" />;
   }
 
   return (
@@ -1137,7 +1137,7 @@ export default function QuestionBuilderPanel() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             placeholder={
               buildUsingAi
                 ? "Optional — AI will suggest a title if blank"
@@ -1157,7 +1157,7 @@ export default function QuestionBuilderPanel() {
             <select
               value={subject}
               onChange={(e) => handleSubjectChange(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+              className="quill-field-select mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
             >
               {BUILDER_SUBJECTS.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -1172,7 +1172,7 @@ export default function QuestionBuilderPanel() {
             <select
               value={grade}
               onChange={(e) => setGrade(Number(e.target.value))}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+              className="quill-field-select mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
             >
               {GRADE_OPTIONS.map((g) => (
                 <option key={g.value} value={g.value}>
@@ -1189,7 +1189,7 @@ export default function QuestionBuilderPanel() {
             <select
               value={englishType}
               onChange={(e) => handleEnglishTypeChange(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+              className="quill-field-select mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
             >
               {ENGLISH_TYPES.map((option) => (
                 <option
@@ -1219,7 +1219,7 @@ export default function QuestionBuilderPanel() {
             value={learnResourceKey}
             onChange={(e) => setLearnResourceKey(e.target.value)}
             disabled={learnResourcesLoading}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white disabled:bg-slate-100"
+            className="quill-field-select mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white disabled:bg-slate-100"
           >
             <option value="">
               {learnResourcesLoading
@@ -1247,7 +1247,7 @@ export default function QuestionBuilderPanel() {
           <select
             value={stars}
             onChange={(e) => handleStarsChange(Number(e.target.value))}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+            className="quill-field-select mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
           >
             {STARS_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -1317,7 +1317,7 @@ export default function QuestionBuilderPanel() {
               value={isPassageWorksheet ? rcQuestionTotal : questionCount}
               onChange={(e) => handleQuestionCountChange(e.target.value)}
               readOnly={isPassageWorksheet}
-              className={`mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm ${
+              className={`quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm ${
                 isPassageWorksheet ? "bg-slate-50 text-slate-600" : ""
               }`}
             />
@@ -1352,7 +1352,7 @@ export default function QuestionBuilderPanel() {
                   max={180}
                   value={timeLimitMinutes}
                   onChange={(e) => setTimeLimitMinutes(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                  className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                 />
               </label>
             ) : null}
@@ -1471,7 +1471,7 @@ export default function QuestionBuilderPanel() {
                     ? "e.g. Use Canadian spelling, grade-appropriate vocabulary, mix inference and vocabulary questions…"
                     : "e.g. Focus on word problems about money, use Canadian spelling, avoid decimals…"
               }
-              className="mt-1 w-full rounded-xl border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-y min-h-[6rem]"
+              className="quill-field-textarea mt-1 w-full rounded-xl border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-y min-h-[6rem]"
             />
           </label>
           <p className="text-xs text-indigo-800/80 mt-1">

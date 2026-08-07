@@ -107,7 +107,7 @@ export default function TestPassageCard({
               <select
                 value={passage.tier ?? (rcAdaptiveMode ? 1 : 2)}
                 onChange={(e) => onChange({ tier: Number(e.target.value) })}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+                className="quill-field-select mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
               >
                 {passageTierOptions.map((tier) => (
                   <option key={tier.value} value={tier.value}>
@@ -127,7 +127,7 @@ export default function TestPassageCard({
                 placeholder={
                   isDataMode ? "e.g. Fruit sales at the market" : "e.g. The Lighthouse Keeper"
                 }
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
               />
             </label>
           </div>

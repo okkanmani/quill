@@ -54,7 +54,7 @@ export default function AdminTestAnalysisView({ initialAttemptId = null }) {
     [selectedAttempt],
   );
 
-  if (loading) return <QuillLoading label="Loading test analysis…" />;
+  if (loading) return <QuillLoading page label="Loading test analysis…" />;
 
   return (
     <div>
@@ -90,7 +90,7 @@ export default function AdminTestAnalysisView({ initialAttemptId = null }) {
             </div>
           </div>
 
-          <div className="flex-1 min-w-0 lg:sticky lg:top-4">
+          <div className="flex-1 min-w-0">
             {selectedAttempt && analysis ? (
               <TestAnalysisDetail
                 key={selectedAttempt.id}

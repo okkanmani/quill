@@ -444,7 +444,7 @@ export default function LearnSubject() {
   return (
     <LearnChrome onBack={() => navigate("/student/learn")}>
       <div className={contentWidthClass}>
-        {loading && <QuillLoading label="Loading topic…" />}
+        {loading && <QuillLoading page label="Loading topic…" />}
         {error && <p className={LEARN_ERROR}>{error}</p>}
 
         {data && !loading && (

@@ -133,7 +133,7 @@ export default function StudentTestReview() {
           ← Back to Tests
         </Link>
 
-        {loading && <QuillLoading label="Loading review…" />}
+        {loading && <QuillLoading page label="Loading review…" />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && review ? (
@@ -218,7 +218,7 @@ export default function StudentTestReview() {
                             }
                             rows={4}
                             placeholder="What was tricky? What should you remember for next time?"
-                            className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50"
+                            className="quill-field-textarea w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50"
                           />
                         )}
                       </div>

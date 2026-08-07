@@ -34,7 +34,7 @@ export default function StudentRevision() {
           Open one to practice and check your answers.
         </p>
 
-        {loading && <QuillLoading label="Loading revision worksheets…" />}
+        {loading && <QuillLoading page label="Loading revision worksheets…" />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && !error && revisions.length > 0 && (

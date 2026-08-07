@@ -98,7 +98,7 @@ export default function AdminSettings() {
           Manage your account, appearance, expert tools, and OpenAI API key for AI generation.
         </p>
 
-        {loading ? <QuillLoading label="Loading settings…" /> : null}
+        {loading ? <QuillLoading page label="Loading settings…" /> : null}
         {message ? <p className={ADMIN_HUB_ALERT_SUCCESS}>{message}</p> : null}
         {error ? <p className={ADMIN_HUB_ALERT_ERROR}>{error}</p> : null}
 
@@ -169,7 +169,7 @@ export default function AdminSettings() {
                     placeholder="sk-…"
                     autoComplete="off"
                     required
-                    className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                   />
                 </label>
                 <div className="flex flex-wrap gap-3">

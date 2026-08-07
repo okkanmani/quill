@@ -223,7 +223,7 @@ export default function DriveStyleMoveBrowser({
               onChange={(e) => setNewFolderName(e.target.value)}
               disabled={disabled || creatingFolder}
               placeholder="Folder name"
-              className="flex-1 min-w-0 rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="quill-field-input flex-1 min-w-0 rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               autoFocus
             />
             <button

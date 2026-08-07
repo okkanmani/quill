@@ -97,7 +97,7 @@ export default function AccountSettings() {
             onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
             required
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
           />
         </label>
 
@@ -109,7 +109,7 @@ export default function AccountSettings() {
             onChange={(e) => setCurrentPassword(e.target.value)}
             autoComplete="current-password"
             required
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
           />
         </label>
 
@@ -121,7 +121,7 @@ export default function AccountSettings() {
             onChange={(e) => setNewPassword(e.target.value)}
             autoComplete="new-password"
             placeholder="Leave blank to keep current"
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
           />
         </label>
 
@@ -133,7 +133,7 @@ export default function AccountSettings() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             autoComplete="new-password"
             placeholder="Leave blank to keep current"
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
           />
         </label>
 

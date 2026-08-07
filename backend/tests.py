@@ -1471,6 +1471,28 @@ def build_ordered_test_slots(
     return slots
 
 
+def _passages_by_id_for_analysis(
+    slots: list[dict] | None,
+    worksheet: dict | None,
+) -> dict[str, dict]:
+    """Return passage/chart/table bodies once per id for test analysis."""
+    if not slots or not worksheet:
+        return {}
+    passage_lookup = _passage_lookup(worksheet)
+    passages_by_id: dict[str, dict] = {}
+    for slot in slots:
+        passage_id = slot.get("passage_id")
+        if not passage_id:
+            continue
+        key = str(passage_id)
+        if key in passages_by_id:
+            continue
+        passage = passage_lookup.get(key)
+        if passage:
+            passages_by_id[key] = passage
+    return passages_by_id
+
+
 def _next_tier(current: int, *, correct: bool) -> int:
     if correct:
         return min(current + 1, 3)
@@ -2722,6 +2744,7 @@ def build_test_result_record(row) -> dict:
         if adaptive
         else []
     )
+    passages_by_id = _passages_by_id_for_analysis(slots, worksheet)
     return {
         "id": row["id"],
         "worksheet_id": row["worksheet_id"],
@@ -2741,6 +2764,7 @@ def build_test_result_record(row) -> dict:
         "review_id": row["review_id"],
         "review_completed": bool(row["review_completed_at"]),
         "slots": slots,
+        "passages_by_id": passages_by_id,
         "answers": enriched_answers,
     }
 

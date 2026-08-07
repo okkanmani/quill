@@ -494,7 +494,7 @@ export default function AdminHome() {
               : "Main worksheet, writing, and revision practice results for the selected student."}
         </p>
 
-        {loading && <QuillLoading label="Loading results…" />}
+        {loading && <QuillLoading page label="Loading results…" />}
         {error && <p className={RESULTS_ERROR}>{error}</p>}
 
         {!loading && !error && resultsView === "worksheets" && !hasWorksheetResults ? (

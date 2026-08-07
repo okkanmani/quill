@@ -208,7 +208,7 @@ export default function FocusAreaExplainPanel({
               }
               placeholder="Type notes or talking points to walk through with the student…"
               rows={6}
-              className="w-full mt-3 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-y min-h-[10rem]"
+              className="quill-field-textarea w-full mt-3 border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-y min-h-[10rem]"
             />
           )}
           {needsDiscussion && aiEnabled && apiKeyConfigured ? (

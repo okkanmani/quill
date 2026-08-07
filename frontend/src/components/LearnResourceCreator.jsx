@@ -126,7 +126,7 @@ export default function LearnResourceCreator() {
   }
 
   if (settingsLoading) {
-    return <QuillLoading label="Loading learning resource builder…" />;
+    return <QuillLoading page label="Loading learning resource builder…" />;
   }
 
   const learnLink = success
@@ -241,7 +241,7 @@ export default function LearnResourceCreator() {
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             placeholder="e.g. Calculus"
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
           />
           <span className="mt-1 block text-xs font-normal text-slate-500">
             Groups related sections. If empty, this section goes under Miscellaneous.
@@ -256,7 +256,7 @@ export default function LearnResourceCreator() {
             value={sectionTitle}
             onChange={(e) => setSectionTitle(e.target.value)}
             placeholder="e.g. Limits — intuitive idea of getting closer"
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
           />
           <span className="mt-1 block text-xs font-normal text-slate-500">
             Shown as the section heading — one focused slice, not a whole course.
@@ -276,7 +276,7 @@ export default function LearnResourceCreator() {
             <select
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+              className="quill-field-select mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
             >
               {BUILDER_SUBJECTS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -291,7 +291,7 @@ export default function LearnResourceCreator() {
             <select
               value={grade}
               onChange={(e) => setGrade(Number(e.target.value))}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+              className="quill-field-select mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
             >
               {GRADE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -308,7 +308,7 @@ export default function LearnResourceCreator() {
               value={curriculum}
               onChange={(e) => setCurriculum(e.target.value)}
               placeholder="e.g. NCERT, Ontario, Common Core"
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             />
           </label>
         </div>
@@ -323,7 +323,7 @@ export default function LearnResourceCreator() {
               rows={3}
               maxLength={2000}
               placeholder="e.g. Include two worked examples, use metric units…"
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm resize-y min-h-[4.5rem] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="quill-field-textarea mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm resize-y min-h-[4.5rem] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             />
           </label>
         ) : null}

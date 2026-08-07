@@ -13,7 +13,7 @@ export default function SectionSortSelect({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       aria-label="Sort section"
-      className={`rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300/80 ${className}`}
+      className={`quill-field-select rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300/80 ${className}`}
     >
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>

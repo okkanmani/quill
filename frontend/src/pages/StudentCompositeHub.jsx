@@ -345,7 +345,7 @@ export default function StudentCompositeHub() {
           ← Composite tests
         </button>
 
-        {loading ? <QuillLoading label="Loading assessment…" /> : null}
+        {loading ? <QuillLoading page label="Loading assessment…" /> : null}
 
         {!loading && accessLocked ? (
           <div className="rounded-2xl border border-violet-200 bg-violet-50/80 p-6">

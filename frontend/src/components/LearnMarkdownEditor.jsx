@@ -84,7 +84,7 @@ export default function LearnMarkdownEditor({
                 type="text"
                 value={title}
                 onChange={(e) => onTitleChange(e.target.value)}
-                className="mt-1 w-full max-w-xl rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-950 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="quill-field-input mt-1 w-full max-w-xl rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-950 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               />
               <span className={CREATE_FIELD_HINT}>
                 {titleHint}
@@ -158,7 +158,7 @@ export default function LearnMarkdownEditor({
             onChange={(e) => onMarkdownChange(e.target.value)}
             onPaste={handlePaste}
             spellCheck
-            className="flex-1 w-full resize-none border-0 px-4 py-4 text-sm font-mono text-slate-900 leading-relaxed focus:outline-none focus:ring-0 min-h-[24rem]"
+            className="quill-field-textarea flex-1 w-full resize-none border-0 px-4 py-4 text-sm font-mono text-slate-900 leading-relaxed focus:outline-none focus:ring-0 min-h-[24rem]"
             placeholder="Write markdown content…"
           />
         </div>

@@ -821,7 +821,7 @@ export default function AdminWorksheetLibraryPage({
           </div>
         ) : null}
 
-        {loading && <QuillLoading label={config.loadingLabel} />}
+        {loading && <QuillLoading page label={config.loadingLabel} />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && !error && visibleWorksheets.length === 0 && !worksheetSections.sections?.length && (

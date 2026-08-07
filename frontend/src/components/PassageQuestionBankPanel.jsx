@@ -445,7 +445,7 @@ export default function PassageQuestionBankPanel({
             value={passageSearchQuery}
             onChange={(e) => setPassageSearchQuery(e.target.value)}
             placeholder={copy.searchPlaceholder}
-            className="w-full max-w-md rounded-xl border border-slate-300 px-3 py-2 text-sm"
+            className="quill-field-input w-full max-w-md rounded-xl border border-slate-300 px-3 py-2 text-sm"
           />
 
           {loadingPassages ? (
@@ -572,7 +572,7 @@ export default function PassageQuestionBankPanel({
             value={standaloneSearchQuery}
             onChange={(e) => setStandaloneSearchQuery(e.target.value)}
             placeholder="Search questions, area, choices…"
-            className="w-full max-w-md rounded-xl border border-slate-300 px-3 py-2 text-sm"
+            className="quill-field-input w-full max-w-md rounded-xl border border-slate-300 px-3 py-2 text-sm"
           />
 
           {loadingStandalone ? (

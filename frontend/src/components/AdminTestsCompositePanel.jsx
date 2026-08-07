@@ -125,7 +125,7 @@ function CompositeTestRow({
               type="date"
               value={scheduleDate}
               onChange={(e) => setScheduleDate(e.target.value)}
-              className="mt-1 block rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900"
+              className="quill-field-input mt-1 block rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900"
             />
           </label>
           <label className="text-xs font-semibold text-slate-600">
@@ -134,7 +134,7 @@ function CompositeTestRow({
               type="time"
               value={scheduleTime}
               onChange={(e) => setScheduleTime(e.target.value)}
-              className="mt-1 block rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900"
+              className="quill-field-input mt-1 block rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900"
             />
           </label>
           <button
@@ -286,7 +286,7 @@ export default function AdminTestsCompositePanel() {
         </Link>
       </div>
 
-      {loading ? <QuillLoading label="Loading composite tests…" /> : null}
+      {loading ? <QuillLoading page label="Loading composite tests…" /> : null}
 
       {!loading && error ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">

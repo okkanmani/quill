@@ -10,6 +10,7 @@ import {
   setStoredSidebarCollapsed,
 } from "../sidebarUtils";
 import { NavItemIcon } from "./navIcons";
+import QuillLogo from "./QuillLogo";
 
 const navItemInnerClass = "flex items-center gap-2.5 min-w-0";
 
@@ -157,9 +158,14 @@ export default function AppShell({
     ? SIDEBAR_COLLAPSED_WIDTH_CLASS
     : SIDEBAR_WIDTH_CLASS;
 
+  const sidebarWidthVar = sidebarCollapsed ? "3.5rem" : "13rem";
+
   return (
     <ShellLayoutContext.Provider value={shellContext}>
-      <div className="min-h-screen bg-slate-50 flex">
+      <div
+        className="min-h-screen bg-slate-50 flex"
+        style={{ "--quill-sidebar-width": sidebarWidthVar }}
+      >
         <div
           className={`relative shrink-0 sticky top-0 z-20 h-screen border-r border-slate-200 bg-white transition-[width] duration-200 ease-out ${sidebarWidthClass}`}
         >
@@ -169,10 +175,10 @@ export default function AppShell({
                 className={`${SIDEBAR_COLLAPSED_WIDTH_CLASS} h-full flex flex-col`}
               >
                 <div
-                  className="shrink-0 py-4 flex justify-center border-b border-slate-100 text-lg"
+                  className="shrink-0 py-4 flex justify-center border-b border-slate-100 text-slate-800"
                   title="Quill"
                 >
-                  <span aria-hidden>🪶</span>
+                  <QuillLogo size="sm" showWordmark={false} />
                 </div>
 
                 <div className="flex-1 overflow-y-auto py-3">
@@ -211,9 +217,7 @@ export default function AppShell({
             ) : (
               <div className={`${SIDEBAR_WIDTH_CLASS} h-full flex flex-col`}>
                 <div className="px-4 pt-5 pb-4 border-b border-slate-100">
-                  <h1 className="text-xl font-bold text-slate-800 tracking-tight">
-                    🪶 Quill
-                  </h1>
+                  <QuillLogo size="md" className="text-slate-800" />
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-3 py-4">

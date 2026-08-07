@@ -334,7 +334,7 @@ function ScheduledTestsSection({
                       required
                       value={rescheduleDate}
                       onChange={(e) => setRescheduleDate(e.target.value)}
-                      className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 w-[8.75rem] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                      className="quill-field-input rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 w-[8.75rem] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                     />
                   </div>
                   <div>
@@ -344,7 +344,7 @@ function ScheduledTestsSection({
                       required
                       value={rescheduleTime}
                       onChange={(e) => setRescheduleTime(e.target.value)}
-                      className="rounded-lg border border-slate-300 bg-white pl-2.5 pr-2 py-1.5 text-sm text-slate-900 min-w-[6.85rem] w-[6.85rem] max-w-none box-border focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 [color-scheme:light]"
+                      className="quill-field-input rounded-lg border border-slate-300 bg-white pl-2.5 pr-2 py-1.5 text-sm text-slate-900 min-w-[6.85rem] w-[6.85rem] max-w-none box-border focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                     />
                   </div>
                   <button
@@ -555,7 +555,7 @@ export default function AdminLanding() {
           </div>
         ) : null}
 
-        {loading ? <QuillLoading label="Loading home…" /> : null}
+        {loading ? <QuillLoading page label="Loading home…" /> : null}
 
         {!loading && !error && students.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center">

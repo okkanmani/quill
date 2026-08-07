@@ -107,7 +107,7 @@ export default function AdminStudentBanner({ context = "results", centered = fal
           id={`admin-student-banner-${context}`}
           defaultValue=""
           onChange={(e) => onSelect(e.target.value)}
-          className="border border-amber-300 rounded-xl px-3 py-2 bg-white text-slate-950 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="quill-field-select border border-amber-300 rounded-xl px-3 py-2 bg-white text-slate-950 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
         >
           <option value="" disabled>
             Choose a student…

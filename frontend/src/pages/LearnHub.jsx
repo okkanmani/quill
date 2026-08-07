@@ -104,7 +104,7 @@ function EditableSectionTitleInput({ section, saving, onSave }) {
       }}
       disabled={saving}
       aria-label={`Section title for ${section.title}`}
-      className={`w-full min-w-0 rounded-lg border border-transparent bg-transparent px-0 py-0.5 ${WS_CARD_TITLE} hover:border-slate-200 hover:bg-white focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60 transition`}
+      className={`quill-field-skip w-full min-w-0 rounded-lg border border-transparent bg-transparent px-0 py-0.5 ${WS_CARD_TITLE} hover:border-slate-200 hover:bg-white focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60 transition`}
     />
   );
 }
@@ -1146,7 +1146,7 @@ export default function LearnHub() {
           />
         ) : null}
 
-        {loading && <QuillLoading label="Loading resources…" />}
+        {loading && <QuillLoading page label="Loading resources…" />}
         {error && <p className={`${LEARN_ERROR} mb-4`}>{error}</p>}
         {adminSectionsError ? (
           <p className="text-amber-800 text-sm mb-4">{adminSectionsError}</p>

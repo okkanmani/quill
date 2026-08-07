@@ -48,7 +48,7 @@ function McqChoices({ question, index, onChange }) {
                 onChange(index, { choices: next });
               }}
               placeholder={`Choice ${label}`}
-              className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="quill-field-input flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             />
           </div>
         );
@@ -84,7 +84,7 @@ function BuilderQuestionCard({ question, index, onChange, onRemove, canRemove })
               value={question.prompt}
               onChange={(e) => onChange(index, { prompt: e.target.value })}
               rows={3}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 leading-relaxed focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-y"
+              className="quill-field-textarea mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 leading-relaxed focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-y"
               placeholder="Enter the question text"
             />
           </label>
@@ -152,7 +152,7 @@ function BuilderQuestionCard({ question, index, onChange, onRemove, canRemove })
               onChange={(e) => onChange(index, { hintContext: e.target.value })}
               rows={3}
               placeholder="Nudge the student without giving away the answer…"
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 leading-relaxed focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200 resize-y"
+              className="quill-field-textarea mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 leading-relaxed focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200 resize-y"
             />
           </label>
         ) : null}
@@ -237,7 +237,7 @@ export default function FocusPracticeBuilder({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
           />
         </label>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm mt-3">

@@ -1,12 +1,26 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Exo 2";
+  src: url("/fonts/Exo2-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     color-scheme: light;
     --quill-font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
       Arial, sans-serif;
+    --quill-brand-font: "Exo 2", sans-serif;
+    --quill-brand-cyan: #00f5ff;
+    --quill-brand-blue: #2e5bff;
+    --quill-brand-icon-bg: #0e0d1f;
     --quill-page: #f8fafc;
     --quill-surface: #ffffff;
+    --quill-text-primary: #0f172a;
+    --quill-text-muted: #64748b;
     --quill-accent-50: #eef2ff;
     --quill-accent-100: #e0e7ff;
     --quill-accent-200: #c7d2fe;
@@ -300,6 +314,9 @@ html[data-theme-mode="dark"] .divide-slate-200 > :not([hidden]) ~ :not([hidden])
 html[data-theme-mode="dark"] .bg-slate-100 {
   background-color: var(--quill-muted-bg) !important;
 }
+html[data-theme-mode="dark"] .bg-slate-100\/90 {
+  background-color: color-mix(in srgb, var(--quill-muted-bg) 90%, transparent) !important;
+}
 html[data-theme-mode="dark"] .bg-slate-200,
 html[data-theme-mode="dark"] .bg-slate-200\/90 {
   background-color: var(--quill-elevated-bg) !important;
@@ -310,8 +327,14 @@ html[data-theme-mode="dark"] .bg-slate-50\/30 {
 html[data-theme-mode="dark"] .bg-slate-50\/40 {
   background-color: color-mix(in srgb, var(--quill-page) 40%, transparent) !important;
 }
+html[data-theme-mode="dark"] .bg-slate-50\/50 {
+  background-color: color-mix(in srgb, var(--quill-muted-bg) 55%, transparent) !important;
+}
 html[data-theme-mode="dark"] .bg-slate-50\/60 {
   background-color: color-mix(in srgb, var(--quill-page) 60%, transparent) !important;
+}
+html[data-theme-mode="dark"] .bg-slate-50\/70 {
+  background-color: color-mix(in srgb, var(--quill-muted-bg) 70%, transparent) !important;
 }
 html[data-theme-mode="dark"] .bg-white\/95 {
   background-color: color-mix(in srgb, var(--quill-surface) 95%, transparent) !important;
@@ -387,6 +410,7 @@ html[data-theme-mode="dark"] .bg-amber-50,
 html[data-theme-mode="dark"] .bg-amber-50\/60,
 html[data-theme-mode="dark"] .bg-amber-50\/80,
 html[data-theme-mode="dark"] .bg-amber-100,
+html[data-theme-mode="dark"] .bg-amber-100\/90,
 html[data-theme-mode="dark"] .bg-amber-200 {
   background-color: var(--quill-warning-surface) !important;
 }
@@ -396,6 +420,7 @@ html[data-theme-mode="dark"] .text-amber-950 {
   color: var(--quill-warning-text) !important;
 }
 html[data-theme-mode="dark"] .border-amber-200,
+html[data-theme-mode="dark"] .border-amber-200\/80,
 html[data-theme-mode="dark"] .border-amber-400 {
   border-color: var(--quill-warning-border) !important;
 }
@@ -432,7 +457,8 @@ html[data-theme-mode="dark"] .border-sky-200 {
 }
 
 html[data-theme-mode="dark"] .bg-teal-50,
-html[data-theme-mode="dark"] .bg-teal-100 {
+html[data-theme-mode="dark"] .bg-teal-100,
+html[data-theme-mode="dark"] .bg-teal-100\/90 {
   background-color: var(--quill-teal-surface) !important;
 }
 html[data-theme-mode="dark"] .text-teal-700,
@@ -440,6 +466,7 @@ html[data-theme-mode="dark"] .text-teal-900 {
   color: var(--quill-teal-text) !important;
 }
 html[data-theme-mode="dark"] .border-teal-200,
+html[data-theme-mode="dark"] .border-teal-200\/80,
 html[data-theme-mode="dark"] .border-teal-300 {
   border-color: var(--quill-teal-border) !important;
 }
@@ -513,8 +540,36 @@ html[data-theme-mode="dark"] .hover\:text-teal-900:hover {
   color: var(--quill-teal-text) !important;
 }
 
+html[data-theme-mode="dark"] .hover\:bg-red-50:hover,
 html[data-theme-mode="dark"] .hover\:bg-red-100:hover {
   background-color: color-mix(in srgb, var(--quill-error-surface) 80%, var(--quill-error-border)) !important;
+}
+
+/* Compact row action buttons on worksheet/collection toolbars. */
+html[data-theme-mode="dark"] .quill-row-action-btn {
+  background-color: var(--quill-elevated-bg) !important;
+  border-color: var(--quill-border) !important;
+  color: var(--quill-text-secondary) !important;
+}
+html[data-theme-mode="dark"] .quill-row-action-btn.hover\:bg-indigo-50:hover {
+  background-color: color-mix(in srgb, var(--quill-accent-100) 70%, var(--quill-elevated-bg)) !important;
+  border-color: var(--quill-accent-300) !important;
+  color: var(--quill-accent-800) !important;
+}
+html[data-theme-mode="dark"] .quill-row-action-btn.hover\:bg-red-50:hover {
+  background-color: color-mix(in srgb, var(--quill-error-surface) 85%, var(--quill-elevated-bg)) !important;
+  border-color: var(--quill-error-border) !important;
+  color: var(--quill-error-text) !important;
+}
+html[data-theme-mode="dark"] .quill-row-action-btn.hover\:bg-teal-50:hover {
+  background-color: color-mix(in srgb, var(--quill-teal-surface) 85%, var(--quill-elevated-bg)) !important;
+  border-color: var(--quill-teal-border) !important;
+  color: var(--quill-teal-text) !important;
+}
+html[data-theme-mode="dark"] .quill-row-action-btn.bg-indigo-100 {
+  background-color: color-mix(in srgb, var(--quill-accent-100) 80%, var(--quill-elevated-bg)) !important;
+  border-color: var(--quill-accent-300) !important;
+  color: var(--quill-accent-900) !important;
 }
 
 /* Solid accent buttons: keep white label text on saturated fills (not pale accent tints). */
@@ -550,20 +605,67 @@ html[data-theme-mode="dark"] .learn-figure__caption {
   color: var(--quill-text-muted);
 }
 
-@keyframes quill-loading {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 0.82;
-  }
-  50% {
-    transform: translateY(-5px) scale(1.05);
-    opacity: 1;
+@keyframes quill-nib-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-.quill-loading {
-  animation: quill-loading 1.8s ease-in-out infinite;
+.quill-loading-nib {
+  transform-box: view-box;
+  transform-origin: 50% 42.86%;
+  animation: quill-nib-spin 1.8s linear infinite;
+}
+
+.quill-loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: var(--quill-page);
+  color: var(--quill-text-primary, #0f172a);
+}
+
+.quill-loading-page {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--quill-sidebar-width, 0);
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background-color: var(--quill-page);
+  color: var(--quill-text-primary, #0f172a);
+}
+
+.quill-loading-overlay {
+  background-color: color-mix(in srgb, var(--quill-page) 92%, transparent);
+}
+
+.quill-loading-label {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--quill-text-muted, #64748b);
+}
+
+.quill-brand-lockup {
+  align-items: center;
+}
+
+.quill-brand-text {
+  font-family: var(--quill-brand-font);
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  /* Exo 2 caps sit a touch low in the em-box; lift to match icon optical center. */
+  transform: translateY(-0.04em);
 }
 
 .learn-hl {
@@ -836,6 +938,75 @@ html[data-theme-mode="dark"] .learn-figure__caption {
   size: auto;
 }
 
+/* Theme-aware form fields — use on inputs, textareas, and selects app-wide. */
+.quill-field-input,
+.quill-field-textarea,
+.quill-field-select {
+  background-color: var(--quill-surface);
+  color: var(--quill-text-primary);
+  border-color: var(--quill-border, #cbd5e1);
+}
+
+.quill-field-input::placeholder,
+.quill-field-textarea::placeholder {
+  color: var(--quill-text-faint, #94a3b8);
+}
+
+.quill-field-input:disabled,
+.quill-field-textarea:disabled,
+.quill-field-select:disabled {
+  background-color: var(--quill-muted-bg, #f1f5f9);
+  opacity: 0.85;
+  cursor: not-allowed;
+}
+
+.quill-field-input:-webkit-autofill,
+.quill-field-input:-webkit-autofill:hover,
+.quill-field-input:-webkit-autofill:focus,
+.quill-field-textarea:-webkit-autofill,
+.quill-field-textarea:-webkit-autofill:hover,
+.quill-field-textarea:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--quill-surface) inset;
+  -webkit-text-fill-color: var(--quill-text-primary);
+  caret-color: var(--quill-text-primary);
+}
+
+html[data-theme-mode="dark"] .quill-field-input:-webkit-autofill,
+html[data-theme-mode="dark"] .quill-field-input:-webkit-autofill:hover,
+html[data-theme-mode="dark"] .quill-field-input:-webkit-autofill:focus,
+html[data-theme-mode="dark"] .quill-field-textarea:-webkit-autofill,
+html[data-theme-mode="dark"] .quill-field-textarea:-webkit-autofill:hover,
+html[data-theme-mode="dark"] .quill-field-textarea:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--quill-surface) inset;
+}
+
+html[data-theme-mode="dark"] input[type="date"],
+html[data-theme-mode="dark"] input[type="time"],
+html[data-theme-mode="dark"] input[type="datetime-local"],
+html[data-theme-mode="dark"] input[type="month"],
+html[data-theme-mode="dark"] input[type="week"] {
+  color-scheme: dark;
+}
+
+/* Safety net: unstyled fields in dark mode (excludes login, overlays, inline editors). */
+.quill-field-input:where([class*="bg-transparent"]),
+.quill-field-textarea:where([class*="bg-transparent"]) {
+  background-color: transparent;
+}
+
+html[data-theme-mode="dark"]:not([data-quill-page="login"]) textarea:not(.quill-field-skip):not([class*="bg-black"]):not([class*="bg-transparent"]),
+html[data-theme-mode="dark"]:not([data-quill-page="login"]) select:not(.quill-field-skip):not([class*="bg-black"]):not([class*="bg-transparent"]),
+html[data-theme-mode="dark"]:not([data-quill-page="login"]) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="color"]):not(.quill-login-input):not(.quill-field-skip):not([class*="bg-black"]):not([class*="bg-transparent"]) {
+  background-color: var(--quill-surface);
+  color: var(--quill-text-primary);
+  border-color: var(--quill-border);
+}
+
+html[data-theme-mode="dark"]:not([data-quill-page="login"]) textarea:not(.quill-field-skip):not([class*="bg-black"]):not([class*="bg-transparent"])::placeholder,
+html[data-theme-mode="dark"]:not([data-quill-page="login"]) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="color"]):not(.quill-login-input):not(.quill-field-skip):not([class*="bg-black"]):not([class*="bg-transparent"])::placeholder {
+  color: var(--quill-text-faint);
+}
+
 /* Login page: independent light/dark toggle; keep fields readable on dark. */
 html[data-quill-page="login"] .quill-login-input {
   color-scheme: light;
@@ -869,4 +1040,83 @@ html[data-quill-page="login"][data-theme-mode="dark"] .quill-login-input--dark:-
   -webkit-box-shadow: 0 0 0 1000px var(--quill-elevated-bg) inset !important;
   -webkit-text-fill-color: var(--quill-text-primary) !important;
   caret-color: var(--quill-text-primary);
+}
+
+/* Test analysis: inline weak-area miss + passage context panel. */
+.test-analysis-miss-context {
+  border: 1px solid var(--quill-border-subtle, #e2e8f0);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: var(--quill-surface, #ffffff);
+}
+
+.test-analysis-miss-context-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .test-analysis-miss-context-grid {
+    grid-template-columns: 1fr 1.3fr;
+  }
+}
+
+.test-analysis-miss-context-question {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--quill-border-subtle, #e2e8f0);
+  background: var(--quill-page, #f8fafc);
+}
+
+@media (min-width: 640px) {
+  .test-analysis-miss-context-question {
+    border-bottom: 0;
+    border-right: 1px solid var(--quill-border-subtle, #e2e8f0);
+  }
+}
+
+.test-analysis-miss-context-passage {
+  padding: 1rem 1.25rem;
+  background: var(--quill-surface, #ffffff);
+}
+
+.test-analysis-miss-context-passage .rounded-xl.border {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+html[data-theme-mode="dark"] .test-analysis-miss-context,
+html[data-theme-mode="dark"] .test-analysis-miss-context-passage {
+  background: var(--quill-surface) !important;
+  border-color: var(--quill-border-subtle) !important;
+}
+
+html[data-theme-mode="dark"] .test-analysis-miss-context-question {
+  background: var(--quill-page) !important;
+  border-color: var(--quill-border-subtle) !important;
+}
+
+html[data-theme-mode="dark"] .test-analysis-miss-context-passage .rounded-xl.border {
+  background: transparent !important;
+}
+
+html[data-theme-mode="dark"] .test-analysis-miss-context-passage .text-slate-900,
+html[data-theme-mode="dark"] .test-analysis-miss-context-passage .text-slate-800 {
+  color: var(--quill-text-primary) !important;
+}
+
+html[data-theme-mode="dark"] .border-emerald-500 {
+  border-color: var(--quill-success-border) !important;
+}
+
+html[data-theme-mode="dark"] .border-red-500 {
+  border-color: var(--quill-error-border) !important;
+}
+
+html[data-theme-mode="dark"] .text-red-950 {
+  color: var(--quill-error-text) !important;
+}
+
+html[data-theme-mode="dark"] .ring-slate-200 {
+  --tw-ring-color: var(--quill-border-subtle) !important;
 }

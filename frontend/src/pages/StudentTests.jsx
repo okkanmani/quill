@@ -71,7 +71,7 @@ export default function StudentTests() {
 
         <TestsViewTabs activeTab={activeTab} />
 
-        {loading && <QuillLoading label="Loading tests…" />}
+        {loading && <QuillLoading page label="Loading tests…" />}
         {error && <p className="text-red-500">{error}</p>}
 
         {!loading && activeTab === "subject" && testsError ? (

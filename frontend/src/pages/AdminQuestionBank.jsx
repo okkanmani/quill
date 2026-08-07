@@ -288,7 +288,7 @@ export default function AdminQuestionBank() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search questions, area, choices…"
-                className="min-w-[16rem] flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                className="quill-field-input min-w-[16rem] flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm"
               />
               <div className="flex flex-wrap gap-2">
                 <button
@@ -321,9 +321,7 @@ export default function AdminQuestionBank() {
           </div>
 
           {loading ? (
-            <div className="p-8">
-              <QuillLoading label="Loading questions…" />
-            </div>
+            <QuillLoading page label="Loading questions…" />
           ) : filteredItems.length === 0 ? (
             <p className="text-sm text-slate-500 px-5 py-12 text-center">
               {items.length === 0

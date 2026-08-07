@@ -403,7 +403,7 @@ export default function FocusPracticeWorksheet({
                       disabled={locked}
                       placeholder="Jot notes or steps for this question…"
                       rows={8}
-                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y min-h-[12rem]"
+                      className="quill-field-textarea w-full border border-slate-200 rounded-xl px-4 py-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y min-h-[12rem]"
                     />
                   )}
                 </div>

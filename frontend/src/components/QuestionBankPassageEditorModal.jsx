@@ -71,7 +71,7 @@ export default function QuestionBankPassageEditorModal({
                   type="text"
                   value={passageDraft.title}
                   onChange={(e) => onPassageChange({ title: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                  className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                   placeholder={copy.titlePlaceholder}
                 />
               </label>

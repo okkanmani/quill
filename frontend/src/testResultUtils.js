@@ -1,5 +1,7 @@
 /** Helpers for rendering completed test answers in results views. */
 
+import { trendUsesPassageBands } from "./testAnalysisUtils";
+
 export function isPassageWindowAnswer(answer) {
   return (
     Array.isArray(answer?.questions) &&
@@ -112,6 +114,99 @@ export function groupWorksheetAnswers(answers, worksheet) {
 
 export function worksheetHasPassageContext(worksheet) {
   return Boolean(worksheet?.passages?.length);
+}
+
+export function missContextKey(miss) {
+  if (!miss) return "";
+  return String(miss.question_id || miss.question_index || miss.slot || "");
+}
+
+export function normalizeAttemptAnswers(attempt) {
+  const raw = attempt?.answers;
+  if (Array.isArray(raw)) return raw;
+  if (raw && typeof raw === "object") {
+    return Object.keys(raw)
+      .sort((a, b) => Number(a) - Number(b))
+      .map((key) => raw[key])
+      .filter((item) => item && typeof item === "object");
+  }
+  return [];
+}
+
+/** True when attempt slots include passage-linked questions (RC or data analysis). */
+export function attemptUsesPassageContext(attempt, { tierTrend = null } = {}) {
+  const subject = attempt?.subject;
+  // Math adaptive tests use per-question tiers only — no passage/data-set context.
+  if (subject === "math") return false;
+  if (subject === "data") return true;
+  if (attempt?.passages_by_id && Object.keys(attempt.passages_by_id).length > 0) {
+    return true;
+  }
+  if (tierTrend?.length && trendUsesPassageBands(tierTrend)) return true;
+  const answers = normalizeAttemptAnswers(attempt);
+  if (
+    answers.some(
+      (answer) =>
+        isPassageWindowAnswer(answer) ||
+        answer?.passage_id != null ||
+        answer?.passage,
+    )
+  ) {
+    return true;
+  }
+  // passage_tier alone is not enough — math slots reuse that field for question tier.
+  return (attempt?.slots || []).some(
+    (slot) => slot.passage_id != null || slot.passage,
+  );
+}
+
+/** Resolve passage/chart/table context for a wrong-answer slot row. */
+export function resolveMissPassage(
+  attempt,
+  miss,
+  { passageLookup = {}, questionPassageLookup = {} } = {},
+) {
+  if (!attempt || !miss) return null;
+  if (miss.passage) return miss.passage;
+
+  const answers = normalizeAttemptAnswers(attempt);
+  let passageId = miss.passage_id != null ? String(miss.passage_id) : "";
+  if (!passageId) {
+    const slotRow = (attempt?.slots || []).find(
+      (slot) =>
+        (miss.question_index != null && slot.question_index === miss.question_index) ||
+        (miss.slot != null && slot.question_index === miss.slot),
+    );
+    if (slotRow?.passage_id != null) {
+      passageId = String(slotRow.passage_id);
+    }
+    if (slotRow?.passage) return slotRow.passage;
+  }
+
+  if (passageId) {
+    const fromAttempt = attempt.passages_by_id?.[passageId];
+    if (fromAttempt) return fromAttempt;
+    for (const answer of answers) {
+      if (String(answer?.passage_id || "") === passageId && answer?.passage) {
+        return answer.passage;
+      }
+    }
+    if (passageLookup[passageId]) return passageLookup[passageId];
+  }
+
+  const questionId = miss.question_id != null ? String(miss.question_id) : "";
+  if (questionId) {
+    for (const answer of answers) {
+      if (!isPassageWindowAnswer(answer)) continue;
+      const matches = (answer.questions || []).some(
+        (question) => String(question?.question_id || "") === questionId,
+      );
+      if (matches && answer.passage) return answer.passage;
+    }
+    if (questionPassageLookup[questionId]) return questionPassageLookup[questionId];
+  }
+
+  return null;
 }
 
 /** Flatten test result answers into per-question rows for grading. */

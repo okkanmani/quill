@@ -70,7 +70,7 @@ function EditableWorksheetTitleInput({ worksheet, saving, onSave }) {
       }}
       disabled={saving}
       aria-label={`Worksheet title for ${worksheet.title}`}
-      className={`w-full min-w-0 rounded-lg border border-transparent bg-transparent px-0 py-0.5 ${WS_CARD_TITLE} hover:border-slate-200 hover:bg-white focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60 transition`}
+      className={`quill-field-skip w-full min-w-0 rounded-lg border border-transparent bg-transparent px-0 py-0.5 ${WS_CARD_TITLE} hover:border-slate-200 hover:bg-white focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60 transition`}
     />
   );
 }

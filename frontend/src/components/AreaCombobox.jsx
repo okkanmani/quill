@@ -150,7 +150,7 @@ export default function AreaCombobox({
         aria-expanded={showList}
         aria-controls={showList ? listId : undefined}
         aria-autocomplete="list"
-        className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-50"
+        className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-50"
       />
       {showList ? (
         <ul

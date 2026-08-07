@@ -75,7 +75,7 @@ export default function TestQuestionCard({
                 <select
                   value={question.tier}
                   onChange={(e) => onChange({ tier: Number(e.target.value) })}
-                  className={`mt-1 w-full rounded-xl border px-3 py-2 text-sm bg-white ${
+                  className={`quill-field-select mt-1 w-full rounded-xl border px-3 py-2 text-sm bg-white ${
                     tierInvalid ? "border-red-400" : "border-slate-300"
                   }`}
                 >
@@ -105,7 +105,7 @@ export default function TestQuestionCard({
                     value={question.area}
                     onChange={(e) => onChange({ area: e.target.value })}
                     placeholder="e.g. fractions, algebra"
-                    className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                    className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                   />
                 )}
               </label>
@@ -126,7 +126,7 @@ export default function TestQuestionCard({
                   value={question.area}
                   onChange={(e) => onChange({ area: e.target.value })}
                   placeholder="e.g. main idea, inference"
-                  className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                  className="quill-field-input mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                 />
               )}
             </label>
@@ -140,7 +140,7 @@ export default function TestQuestionCard({
                 onChange={(e) =>
                   onChange({ passageId: e.target.value || null })
                 }
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+                className="quill-field-select mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
               >
                 <option value="">Select a passage…</option>
                 {passages.map((passage, passageIndex) => (
@@ -159,7 +159,7 @@ export default function TestQuestionCard({
               onChange={(e) => onChange({ prompt: e.target.value })}
               rows={3}
               placeholder="What should the student answer?"
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm resize-y min-h-[4.5rem]"
+              className="quill-field-textarea mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm resize-y min-h-[4.5rem]"
             />
           </label>
 
@@ -194,7 +194,7 @@ export default function TestQuestionCard({
                       onChange({ choices: next });
                     }}
                     placeholder={`Choice ${label}`}
-                    className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                    className="quill-field-input flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>
               );

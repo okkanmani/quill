@@ -1282,7 +1282,7 @@ export default function AdminAnalysis() {
             generatingPractice={generatingPractice}
           />
 
-          {loading && <QuillLoading label="Loading analysis…" />}
+          {loading && <QuillLoading page label="Loading analysis…" />}
           {error && <p className="text-red-600 text-sm">{error}</p>}
 
           {!loading && !error && results.length === 0 && (
