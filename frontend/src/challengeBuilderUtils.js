@@ -47,7 +47,7 @@ export function formatForPrepProgram(program) {
 
 export function subjectForPrepProgram(program, subject) {
   if (program === "gauss") return "math";
-  if program === "ccat") return subject || "general";
+  if (program === "ccat") return subject || "general";
   return subject || "general";
 }
 
