@@ -18,6 +18,7 @@ import AdminAnalysis from "./pages/AdminAnalysis";
 import AdminWorksheets from "./pages/AdminWorksheets";
 import AdminCreate from "./pages/AdminCreate";
 import AdminCreateWorksheet from "./pages/AdminCreateWorksheet";
+import AdminCreateChallenge from "./pages/AdminCreateChallenge";
 import AdminCreateLearn from "./pages/AdminCreateLearn";
 import AdminCreateUpload from "./pages/AdminCreateUpload";
 import AdminCreateTest from "./pages/AdminCreateTest";
@@ -227,6 +228,7 @@ export default function App() {
         >
           <Route index element={<Navigate to="/admin/create/worksheet" replace />} />
           <Route path="worksheet" element={<AdminCreateWorksheet />} />
+          <Route path="challenge" element={<AdminCreateChallenge />} />
           <Route path="test" element={<AdminCreateTest />} />
           <Route path="composite" element={<AdminCreateComposite />} />
           <Route path="upload" element={<AdminCreateUpload />} />

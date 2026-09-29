@@ -10,12 +10,14 @@ const SECTION_STYLES = {
     "bg-amber-100/90 hover:bg-amber-100 border-amber-200/80",
   gifted:
     "bg-violet-100/90 hover:bg-violet-100 border-violet-200/80",
+  ability:
+    "bg-sky-100/90 hover:bg-sky-100 border-sky-200/80",
   tests:
     "bg-teal-100/90 hover:bg-teal-100 border-teal-200/80",
 };
 
 function isSpecialTrack(ws) {
-  return Boolean(ws.math_enrichment || ws.gifted_track);
+  return Boolean(ws.math_enrichment || ws.gifted_track || ws.prep_program === "ccat");
 }
 
 /**
@@ -44,6 +46,10 @@ export default function WorksheetsByMode({
   );
   const thinkingQuest = useMemo(
     () => worksheets.filter((ws) => ws.gifted_track),
+    [worksheets],
+  );
+  const abilityPrep = useMemo(
+    () => worksheets.filter((ws) => ws.prep_program === "ccat"),
     [worksheets],
   );
   const tests = useMemo(
@@ -95,6 +101,13 @@ export default function WorksheetsByMode({
         "A 12-week brain-building path — patterns, logic, and problem-solving for special-program style challenges.",
       items: thinkingQuest,
     },
+    {
+      key: "ability",
+      title: "Ability prep",
+      description:
+        "CCAT-style reasoning practice — verbal, quantitative, and non-verbal multiple choice.",
+      items: abilityPrep,
+    },
   ];
 
   if (
@@ -102,6 +115,7 @@ export default function WorksheetsByMode({
     timed.length === 0 &&
     mathEnrichment.length === 0 &&
     thinkingQuest.length === 0 &&
+    abilityPrep.length === 0 &&
     tests.length === 0
   ) {
     return null;

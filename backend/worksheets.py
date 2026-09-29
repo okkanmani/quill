@@ -11,6 +11,7 @@ from learn_content import get_subject
 
 WORKSHEETS_DIR = Path(__file__).parent / "data" / "worksheets"
 VALID_SUBJECTS = frozenset({"math", "english", "science", "data", "general"})
+VALID_PREP_PROGRAMS = frozenset({"ccat", "gauss", "thinking_quest"})
 VALID_EVALUATION = frozenset({"auto", "manual"})
 VALID_QUESTION_TYPES = frozenset({"multiple_choice", "short_answer"})
 VALID_CHART_TYPES = frozenset({"bar", "line", "pie"})
@@ -165,6 +166,37 @@ def _resolve_math_enrichment(worksheet_id: str, row_flag) -> dict:
 
 def _gifted_track_from_sheet_data(data: dict) -> bool:
     return data.get("gifted_track") is True
+
+
+def _prep_program_from_sheet_data(data: dict) -> str | None:
+    raw = data.get("prep_program")
+    if not isinstance(raw, str):
+        return None
+    program = raw.strip().lower()
+    if program in VALID_PREP_PROGRAMS:
+        return program
+    return None
+
+
+def _infer_prep_program_from_sheet_data(data: dict) -> str | None:
+    explicit = _prep_program_from_sheet_data(data)
+    if explicit:
+        return explicit
+    if _gifted_track_from_sheet_data(data):
+        return "thinking_quest"
+    if _math_enrichment_from_sheet_data(data):
+        return "gauss"
+    return None
+
+
+def _resolve_prep_program(worksheet_id: str) -> dict:
+    data = _load_bundled_sheet_data(worksheet_id)
+    if not isinstance(data, dict):
+        return {}
+    program = _infer_prep_program_from_sheet_data(data)
+    if program:
+        return {"prep_program": program}
+    return {}
 
 
 def _test_from_sheet_data(data: dict) -> bool:
@@ -1479,6 +1511,7 @@ def list_worksheets(
             item.update(_resolve_math_enrichment(r["id"], r["is_math_enrichment"]))
             item.update(_resolve_gifted_track(r["id"], r["is_gifted_track"]))
             item.update(_resolve_gifted_track_week(r["id"], r["gifted_track_week"]))
+            item.update(_resolve_prep_program(r["id"]))
             item.update(_resolve_test(r["id"], r["is_test"], r["test_sitting_count"], r["test_adaptive"]))
             if for_admin:
                 admin_code = r["admin_code"] if "admin_code" in r.keys() else None
@@ -1601,6 +1634,7 @@ def get_worksheet(worksheet_id: str, *, admin_id: int | None = None) -> dict | N
         out.update(_resolve_math_enrichment(worksheet_id, row["is_math_enrichment"]))
         out.update(_resolve_gifted_track(worksheet_id, row["is_gifted_track"]))
         out.update(_resolve_gifted_track_week(worksheet_id, row["gifted_track_week"]))
+        out.update(_resolve_prep_program(worksheet_id))
         out.update(_resolve_test(worksheet_id, row["is_test"], row["test_sitting_count"], row["test_adaptive"]))
         out.update(_resolve_english_type(worksheet_id, row["english_type"]))
         out.update(
@@ -1939,7 +1973,60 @@ def worksheet_data_from_builder(body: dict, *, existing: dict | None = None) -> 
     elif data.get("learn_subject"):
         data["content_badge"] = "Learn"
 
+    _apply_prep_program_from_builder(data, body)
+
     return data
+
+
+def _apply_prep_program_from_builder(data: dict, body: dict) -> None:
+    raw = body.get("prep_program")
+    if raw is None or (isinstance(raw, str) and not raw.strip()):
+        return
+    if not isinstance(raw, str):
+        raise ValueError(["prep_program must be a string."])
+    program = raw.strip().lower()
+    if program not in VALID_PREP_PROGRAMS:
+        raise ValueError(
+            [
+                f"prep_program must be one of: {', '.join(sorted(VALID_PREP_PROGRAMS))}."
+            ]
+        )
+
+    data["prep_program"] = program
+
+    if program == "gauss":
+        data["subject"] = "math"
+        data["math_enrichment"] = True
+        if not isinstance(data.get("content_badge"), str) or not data["content_badge"].strip():
+            data["content_badge"] = "Contest"
+        if data.get("gifted_track"):
+            raise ValueError(
+                ["gauss worksheets cannot also use gifted_track / thinking_quest."]
+            )
+    elif program == "thinking_quest":
+        data["gifted_track"] = True
+        data["evaluation"] = "manual"
+        week_raw = body.get("gifted_track_week")
+        week = _parse_gifted_track_week_value(week_raw)
+        if week is None:
+            raise ValueError(
+                [
+                    f"gifted_track_week is required (integer {GIFTED_TRACK_WEEK_MIN}–"
+                    f"{GIFTED_TRACK_WEEK_MAX}) for thinking_quest."
+                ]
+            )
+        data["gifted_track_week"] = week
+        if data.get("math_enrichment"):
+            raise ValueError(
+                ["thinking_quest worksheets cannot also use math_enrichment / gauss."]
+            )
+    elif program == "ccat":
+        if data.get("math_enrichment") or data.get("gifted_track"):
+            raise ValueError(
+                ["ccat worksheets cannot also use math_enrichment or gifted_track."]
+            )
+        if not isinstance(data.get("content_badge"), str) or not data["content_badge"].strip():
+            data["content_badge"] = "CCAT"
 
 
 def create_worksheet_from_builder(body: dict, *, admin_id: int) -> dict:
@@ -2152,6 +2239,17 @@ def validate_worksheet_data(data: dict) -> list[str]:
 
     if data.get("math_enrichment") is True and data.get("gifted_track") is True:
         errors.append("A worksheet cannot be both math_enrichment and gifted_track.")
+
+    prep_program = _prep_program_from_sheet_data(data)
+    if prep_program == "ccat":
+        if data.get("math_enrichment") is True or data.get("gifted_track") is True:
+            errors.append(
+                "ccat prep_program cannot be combined with math_enrichment or gifted_track."
+            )
+    elif prep_program == "gauss" and not data.get("math_enrichment"):
+        errors.append("gauss prep_program requires math_enrichment.")
+    elif prep_program == "thinking_quest" and not data.get("gifted_track"):
+        errors.append("thinking_quest prep_program requires gifted_track.")
 
     if data.get("math_enrichment") is True:
         subj = subject.strip().lower() if isinstance(subject, str) else "general"

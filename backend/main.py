@@ -260,6 +260,8 @@ class CreateWorksheetBuilderRequest(BaseModel):
     learn_subject: str | None = None
     learn_section: str | None = None
     content_badge: str | None = None
+    prep_program: str | None = None
+    gifted_track_week: int | None = None
     lock_on_create: bool = False
     scratchpad: bool | None = None
     questions: list[WorksheetBuilderQuestionRequest]
@@ -322,6 +324,7 @@ class GenerateWorksheetDraftRequest(BaseModel):
     english_type: str | None = None
     min_words: int | None = None
     passage_specs: list[GenerateWorksheetDraftPassageSpec] | None = None
+    prep_program: str | None = None
 
 
 class GenerateTestDraftRequest(BaseModel):
@@ -1135,6 +1138,7 @@ def admin_generate_worksheet_draft(
                 if req.passage_specs
                 else None
             ),
+            prep_program=body.get("prep_program") or "",
             api_key=api_key,
         )
     except ValueError as exc:

@@ -649,6 +649,12 @@ export default function AdminLanding() {
                       + New worksheet
                     </Link>
                     <Link
+                      to="/admin/create/challenge"
+                      className={`${HOME_ROW_CLASS} text-sm font-semibold text-slate-800 block`}
+                    >
+                      + New challenge worksheet
+                    </Link>
+                    <Link
                       to="/admin/create/learn"
                       className={`${HOME_ROW_CLASS} text-sm font-semibold text-slate-800 block`}
                     >

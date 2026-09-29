@@ -50,10 +50,19 @@ const LIBRARY_VARIANTS = {
     organizeLabel: "Organize unassigned worksheets into sections",
     itemSingular: "worksheet",
     itemPlural: "worksheets",
-    editPath: (ws) =>
-      ws.is_test
-        ? `/admin/create/test?edit=${encodeURIComponent(ws.id)}`
-        : `/admin/create/worksheet?edit=${encodeURIComponent(ws.id)}`,
+    editPath: (ws) => {
+      if (ws.is_test) {
+        return `/admin/create/test?edit=${encodeURIComponent(ws.id)}`;
+      }
+      if (
+        ws.prep_program ||
+        (ws.gifted_track && ws.evaluation === "manual") ||
+        ws.math_enrichment
+      ) {
+        return `/admin/create/challenge?edit=${encodeURIComponent(ws.id)}`;
+      }
+      return `/admin/create/worksheet?edit=${encodeURIComponent(ws.id)}`;
+    },
   },
   tests: {
     filter: (ws) => Boolean(ws.is_test),

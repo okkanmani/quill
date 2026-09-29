@@ -9,6 +9,7 @@ import httpx
 
 from worksheets import (
     STARS_DEFAULT_QUESTION_COUNTS,
+    VALID_PREP_PROGRAMS,
     VALID_SUBJECTS,
     _sanitize_passage_chart,
     _validate_passage_chart,
@@ -142,6 +143,208 @@ Return JSON matching this schema:
             extra = extra[:2000]
         return base + f"\nAdditional instructions from the teacher:\n{extra}\n"
     return base
+
+
+def _append_teacher_instructions(base: str, custom_prompt: str) -> str:
+    extra = (custom_prompt or "").strip()
+    if not extra:
+        return base
+    if len(extra) > 2000:
+        extra = extra[:2000]
+    return base + f"\nAdditional instructions from the teacher:\n{extra}\n"
+
+
+def _build_ccat_prompt(
+    *,
+    subject: str,
+    grade: int,
+    stars: int,
+    question_count: int,
+    custom_prompt: str = "",
+) -> str:
+    difficulty = _difficulty_label(stars)
+    subject_note = {
+        "general": "Mix verbal, quantitative, and non-verbal reasoning across the set.",
+        "math": "Emphasize quantitative and number-series items; include some figure/matrix style when described in text.",
+        "english": "Emphasize verbal classification, analogies, and sentence completion; include some logic setups.",
+    }.get(subject, "Mix reasoning types.")
+    schema = """
+{
+  "title": "short worksheet title",
+  "questions": [
+    {
+      "prompt": "question text",
+      "area": "specific skill label",
+      "choices": ["choice A text", "choice B text", "choice C text", "choice D text"],
+      "correct_index": 0
+    }
+  ]
+}
+"""
+    base = f"""Generate a CCAT-style practice worksheet as JSON only.
+
+Program: CCAT (Canadian Cognitive Abilities Test) — Level 3 style items for ability testing, NOT curriculum trivia.
+Audience: grade {grade} students in Canada/US.
+Subject focus: {subject} ({subject_note})
+Difficulty: {difficulty} (stars {stars} of 3)
+Number of questions: exactly {question_count}
+CRITICAL: The questions array must contain exactly {question_count} items — count before responding.
+
+Every question MUST be a CCAT-like reasoning item. Allowed types include:
+- verbal classification and analogies
+- quantitative number series and numeric reasoning
+- non-verbal figure series, matrix completion, and spatial patterns (describe figures clearly in words when needed)
+- logic and classification setups
+
+Do NOT use: geography facts, history trivia, science recall, or standard classroom worksheet drills unrelated to reasoning.
+
+Each question must have exactly 4 distinct, non-empty choices and correct_index 0-3.
+Do not prefix choices with letters.
+Each question must include area: a specific lowercase label such as verbal analogy, number series, figure matrix, classification, or spatial reasoning.
+
+Requirements:
+- Age-appropriate for grade {grade}; match CCAT Level 3 cognitive demand.
+- No duplicate or near-duplicate questions.
+- Accurate correct answers — double-check logic and math.
+- Title specific and under 80 characters.
+
+Return JSON matching this schema:
+{schema}
+"""
+    return _append_teacher_instructions(base, custom_prompt)
+
+
+def _build_gauss_prompt(
+    *,
+    grade: int,
+    stars: int,
+    question_count: int,
+    custom_prompt: str = "",
+) -> str:
+    difficulty = _difficulty_label(stars)
+    schema = """
+{
+  "title": "short worksheet title",
+  "questions": [
+    {
+      "prompt": "question text",
+      "area": "specific skill label",
+      "choices": ["choice A text", "choice B text", "choice C text", "choice D text"],
+      "correct_index": 0
+    }
+  ]
+}
+"""
+    base = f"""Generate a math contest practice worksheet as JSON only.
+
+Program: CEMC Gauss / Pascal-style enrichment (Canadian middle-school math contest multiple choice).
+Audience: grade {grade} students.
+Subject: math
+Difficulty: {difficulty} (stars {stars} of 3)
+Number of questions: exactly {question_count}
+CRITICAL: The questions array must contain exactly {question_count} items — count before responding.
+
+Each question is a single contest-style multiple-choice problem:
+- clever arithmetic, number sense, patterns, geometry, counting, or early algebra
+- one clear correct answer among four plausible distractors
+- no long multi-part word walls unless difficulty warrants it
+
+Each question must have exactly 4 distinct choices and correct_index 0-3.
+Do not prefix choices with letters.
+Each question must include area: a specific lowercase skill (e.g. prime factors, modular arithmetic, triangle angles).
+
+Requirements:
+- Age-appropriate for grade {grade} but challenging like a Gauss contest set.
+- No duplicate or near-duplicate questions.
+- Accurate correct answers — double-check all math.
+- Title under 80 characters.
+
+Return JSON matching this schema:
+{schema}
+"""
+    return _append_teacher_instructions(base, custom_prompt)
+
+
+def _build_thinking_quest_prompt(
+    *,
+    grade: int,
+    stars: int,
+    question_count: int,
+    custom_prompt: str = "",
+) -> str:
+    difficulty = _difficulty_label(stars)
+    schema = """
+{
+  "title": "short worksheet title",
+  "questions": [
+    {
+      "prompt": "question text",
+      "area": "specific skill label"
+    }
+  ]
+}
+"""
+    base = f"""Generate a Thinking Quest worksheet as JSON only.
+
+Program: Thinking Quest — gifted-track style logic, patterns, and open reasoning (manual teacher grading).
+Audience: grade {grade} students in Canada/US.
+Difficulty: {difficulty} (stars {stars} of 3)
+Number of questions: exactly {question_count}
+CRITICAL: The questions array must contain exactly {question_count} items — count before responding.
+
+Each question is a short written-answer prompt requiring explanation or shown work:
+- number/logic patterns, deductions, ordering, age-appropriate puzzles
+- students explain reasoning; do NOT include reference answers or an answer field
+- mix math and general logic when possible
+
+Each question must include area: a specific lowercase label (e.g. number pattern, deduction, spatial logic).
+
+Requirements:
+- Age-appropriate vocabulary for grade {grade}.
+- No duplicate or near-duplicate questions.
+- Title under 80 characters.
+
+Return JSON matching this schema:
+{schema}
+"""
+    return _append_teacher_instructions(base, custom_prompt)
+
+
+def _build_prep_program_prompt(
+    *,
+    prep_program: str,
+    subject: str,
+    grade: int,
+    stars: int,
+    fmt: str,
+    question_count: int,
+    custom_prompt: str = "",
+) -> str:
+    if prep_program == "ccat":
+        return _build_ccat_prompt(
+            subject=subject,
+            grade=grade,
+            stars=stars,
+            question_count=question_count,
+            custom_prompt=custom_prompt,
+        )
+    if prep_program == "gauss":
+        return _build_gauss_prompt(
+            grade=grade,
+            stars=stars,
+            question_count=question_count,
+            custom_prompt=custom_prompt,
+        )
+    if prep_program == "thinking_quest":
+        return _build_thinking_quest_prompt(
+            grade=grade,
+            stars=stars,
+            question_count=question_count,
+            custom_prompt=custom_prompt,
+        )
+    raise ValueError(
+        f"prep_program must be one of: {', '.join(sorted(VALID_PREP_PROGRAMS))}."
+    )
 
 
 def _parse_ai_json(content: str) -> dict:
@@ -1038,6 +1241,7 @@ def generate_worksheet_draft(
     english_type: str = "",
     min_words: int | None = None,
     passage_specs: list[dict] | None = None,
+    prep_program: str = "",
     api_key: str,
 ) -> dict:
     """Call OpenAI and return builder-ready draft."""
@@ -1056,6 +1260,68 @@ def generate_worksheet_draft(
         raise ValueError("stars must be 1, 2, or 3.")
     if not isinstance(grade, int) or grade < 1 or grade > 12:
         raise ValueError("grade must be an integer from 1 to 12.")
+
+    prep_program = (prep_program or "").strip().lower()
+    if prep_program:
+        if prep_program not in VALID_PREP_PROGRAMS:
+            raise ValueError(
+                f"prep_program must be one of: {', '.join(sorted(VALID_PREP_PROGRAMS))}."
+            )
+        if prep_program == "gauss":
+            subject = "math"
+            fmt = "multiple_choice"
+        elif prep_program == "thinking_quest":
+            fmt = "short_answer"
+        elif prep_program == "ccat":
+            fmt = "multiple_choice"
+            if subject not in ("general", "math", "english"):
+                raise ValueError(
+                    "ccat prep uses subject general, math, or english."
+                )
+        count = (
+            question_count
+            if question_count is not None
+            else STARS_DEFAULT_QUESTION_COUNTS[stars]
+        )
+        if not isinstance(count, int) or count < 1 or count > 50:
+            raise ValueError("question_count must be between 1 and 50.")
+        user_prompt = _build_prep_program_prompt(
+            prep_program=prep_program,
+            subject=subject,
+            grade=grade,
+            stars=stars,
+            fmt=fmt,
+            question_count=count,
+            custom_prompt=custom_prompt,
+        )
+        parsed = _openai_json_completion(
+            api_key=api_key,
+            messages=[{"role": "user", "content": user_prompt}],
+        )
+        require_reference = fmt != "short_answer" or _ai_generates_short_answer_reference(
+            subject
+        )
+        draft = parsed
+        questions = draft.get("questions")
+        if isinstance(questions, list):
+            missing = count - len(questions)
+            if 0 < missing <= TOPUP_MAX_MISSING:
+                draft = _topup_worksheet_questions(
+                    draft,
+                    missing=missing,
+                    api_key=api_key,
+                    subject=subject,
+                    grade=grade,
+                    stars=stars,
+                    fmt=fmt,
+                    custom_prompt=custom_prompt,
+                )
+        return _normalize_draft(
+            draft,
+            fmt=fmt,
+            question_count=count,
+            require_short_answer_reference=require_reference,
+        )
 
     english_type = (english_type or "").strip().lower()
     specs = passage_specs or []
