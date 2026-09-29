@@ -31,9 +31,9 @@ export const PREP_PROGRAMS = [
 ];
 
 export const CCAT_SUBJECTS = [
-  { value: "general", label: "Mixed reasoning" },
-  { value: "math", label: "Quantitative focus" },
-  { value: "english", label: "Verbal focus" },
+  { value: "general", label: "Mixed reasoning (verbal + quant + non-verbal)" },
+  { value: "math", label: "Quantitative reasoning only" },
+  { value: "english", label: "Verbal reasoning only" },
 ];
 
 export const GIFTED_TRACK_WEEKS = Array.from({ length: 12 }, (_, i) => ({

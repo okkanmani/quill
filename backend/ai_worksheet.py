@@ -154,6 +154,66 @@ def _append_teacher_instructions(base: str, custom_prompt: str) -> str:
     return base + f"\nAdditional instructions from the teacher:\n{extra}\n"
 
 
+def _ccat_strand_instructions(subject: str) -> tuple[str, str]:
+    """Human title + strict rules for CCAT verbal / quantitative / mixed focus."""
+    if subject == "english":
+        return (
+            "Verbal reasoning only",
+            """
+CCAT strand lock: VERBAL REASONING ONLY — every single question.
+
+Each question must fit the CCAT verbal battery: analogies, word classification,
+sentence completion, verbal logic, or word relationships. The primary skill must
+be language and verbal reasoning, not numbers or spatial figures.
+
+FORBIDDEN (include zero questions of these types):
+- number series or numeric patterns (e.g. "What comes next: 3, 6, 12, 24?")
+- arithmetic, counting, or calculation as the main task
+- figure matrices, spatial rotation, or non-verbal pattern completion
+
+Each question "area" must be one of:
+verbal analogy, verbal classification, sentence completion, verbal logic, word relationship.
+
+Before responding, verify every question is verbal-only; replace any quant or non-verbal item.
+""",
+        )
+    if subject == "math":
+        return (
+            "Quantitative reasoning only",
+            """
+CCAT strand lock: QUANTITATIVE REASONING ONLY — every single question.
+
+Each question must fit the CCAT quantitative battery: number series, numeric relationships,
+arithmetic reasoning, counting, or quantitative patterns (including figural/numeric patterns
+described in words). The primary skill must not be vocabulary analogies or grammar.
+
+FORBIDDEN (include zero questions of these types):
+- verbal analogies ("Hand is to glove as foot is to ___")
+- word classification by meaning unrelated to numbers
+- sentence completion driven mainly by vocabulary or grammar
+
+Each question "area" must be one of:
+number series, numeric reasoning, quantitative pattern, figure series, spatial reasoning.
+
+Before responding, verify every question is quantitative/non-verbal-quant only; replace any verbal item.
+""",
+        )
+    return (
+        "Mixed CCAT strands",
+        """
+CCAT strand lock: MIXED — balance verbal, quantitative, and non-verbal reasoning.
+
+Include all three CCAT-style strands across the set with rough balance:
+- verbal: analogies, classification, sentence completion
+- quantitative: number series, numeric reasoning
+- non-verbal: figure series, matrices or spatial patterns (describe figures in words when needed)
+
+For {question_count} questions, include at least two different strands and avoid making the
+entire set a single strand unless question_count is below 6.
+""",
+    )
+
+
 def _build_ccat_prompt(
     *,
     subject: str,
@@ -163,11 +223,9 @@ def _build_ccat_prompt(
     custom_prompt: str = "",
 ) -> str:
     difficulty = _difficulty_label(stars)
-    subject_note = {
-        "general": "Mix verbal, quantitative, and non-verbal reasoning across the set.",
-        "math": "Emphasize quantitative and number-series items; include some figure/matrix style when described in text.",
-        "english": "Emphasize verbal classification, analogies, and sentence completion; include some logic setups.",
-    }.get(subject, "Mix reasoning types.")
+    focus_title, strand_rules = _ccat_strand_instructions(subject)
+    if subject == "general":
+        strand_rules = strand_rules.replace("{question_count}", str(question_count))
     schema = """
 {
   "title": "short worksheet title",
@@ -185,22 +243,17 @@ def _build_ccat_prompt(
 
 Program: CCAT (Canadian Cognitive Abilities Test) — Level 3 style items for ability testing, NOT curriculum trivia.
 Audience: grade {grade} students in Canada/US.
-Subject focus: {subject} ({subject_note})
+Teacher-selected focus: {focus_title}
 Difficulty: {difficulty} (stars {stars} of 3)
 Number of questions: exactly {question_count}
 CRITICAL: The questions array must contain exactly {question_count} items — count before responding.
 
-Every question MUST be a CCAT-like reasoning item. Allowed types include:
-- verbal classification and analogies
-- quantitative number series and numeric reasoning
-- non-verbal figure series, matrix completion, and spatial patterns (describe figures clearly in words when needed)
-- logic and classification setups
+{strand_rules}
 
 Do NOT use: geography facts, history trivia, science recall, or standard classroom worksheet drills unrelated to reasoning.
 
 Each question must have exactly 4 distinct, non-empty choices and correct_index 0-3.
 Do not prefix choices with letters.
-Each question must include area: a specific lowercase label such as verbal analogy, number series, figure matrix, classification, or spatial reasoning.
 
 Requirements:
 - Age-appropriate for grade {grade}; match CCAT Level 3 cognitive demand.
@@ -1057,10 +1110,12 @@ def _build_topup_prompt(
     fmt: str,
     existing_prompts: list[str],
     custom_prompt: str = "",
+    prep_program: str = "",
 ) -> str:
     difficulty = _difficulty_label(stars)
     subject_text = _subject_label(subject)
     existing_block = "\n".join(f"- {text}" for text in existing_prompts[:40])
+    prep_program = (prep_program or "").strip().lower()
     if fmt == "multiple_choice":
         schema = """
 {
@@ -1122,6 +1177,9 @@ Existing questions:
 Return JSON matching this schema:
 {schema}
 """
+    if prep_program == "ccat":
+        _title, strand_rules = _ccat_strand_instructions(subject)
+        base += f"\nCCAT continuation — same strand rules as the main worksheet:\n{strand_rules}\n"
     extra = (custom_prompt or "").strip()
     if extra:
         if len(extra) > 2000:
@@ -1140,6 +1198,7 @@ def _topup_worksheet_questions(
     stars: int,
     fmt: str,
     custom_prompt: str = "",
+    prep_program: str = "",
 ) -> dict:
     if missing <= 0 or missing > TOPUP_MAX_MISSING:
         return parsed
@@ -1159,6 +1218,7 @@ def _topup_worksheet_questions(
                     fmt=fmt,
                     existing_prompts=_existing_question_prompts(existing),
                     custom_prompt=custom_prompt,
+                    prep_program=prep_program,
                 ),
             }
         ],
@@ -1315,6 +1375,7 @@ def generate_worksheet_draft(
                     stars=stars,
                     fmt=fmt,
                     custom_prompt=custom_prompt,
+                    prep_program=prep_program,
                 )
         return _normalize_draft(
             draft,

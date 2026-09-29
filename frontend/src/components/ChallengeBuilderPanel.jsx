@@ -445,7 +445,7 @@ export default function ChallengeBuilderPanel() {
 
             {prepProgram === "ccat" ? (
               <label className={CREATE_FIELD_LABEL}>
-                CCAT focus
+                CCAT strand
                 <select
                   value={ccatSubject}
                   onChange={(e) => setCcatSubject(e.target.value)}
@@ -457,6 +457,9 @@ export default function ChallengeBuilderPanel() {
                     </option>
                   ))}
                 </select>
+                <span className={CREATE_FIELD_HINT}>
+                  AI uses strict strand rules — verbal-only sets exclude number series and quant items.
+                </span>
               </label>
             ) : null}
 
