@@ -65,6 +65,7 @@ def _build_prompt(
 """
         type_rules = (
             "Each question must have exactly 4 distinct, non-empty choices. "
+            f"{_MCQ_DISTINCT_CHOICES_RULE} "
             "correct_index is 0 for A, 1 for B, 2 for C, 3 for D. "
             "Distractors must be plausible but clearly wrong. "
             "Do not prefix choices with letters. "
@@ -143,6 +144,38 @@ Return JSON matching this schema:
             extra = extra[:2000]
         return base + f"\nAdditional instructions from the teacher:\n{extra}\n"
     return base
+
+
+_MCQ_DISTINCT_CHOICES_RULE = (
+    "All four choice strings must be unique within each question (case-insensitive) — "
+    "never repeat the same number, word, or phrase twice among A–D."
+)
+
+
+def _repair_duplicate_mcq_choices(choices: list[str], correct_index: int) -> list[str]:
+    """Best-effort fix when the model repeats a distractor (common on long CCAT sets)."""
+    out = [str(c).strip() for c in choices]
+    labels = ("A", "B", "C", "D")
+    for _ in range(4):
+        keys = [t.casefold() for t in out]
+        if len(set(keys)) == 4:
+            return out
+        seen: dict[str, int] = {}
+        for i, text in enumerate(out):
+            key = text.casefold()
+            if not key:
+                continue
+            if key in seen:
+                if i == correct_index:
+                    continue
+                out[i] = f"{text} ({labels[i]})"
+            else:
+                seen[key] = i
+        correct_key = out[correct_index].casefold()
+        for i, text in enumerate(out):
+            if i != correct_index and text.casefold() == correct_key:
+                out[i] = f"{text} ({labels[i]})"
+    return out
 
 
 def _append_teacher_instructions(base: str, custom_prompt: str) -> str:
@@ -253,6 +286,7 @@ CRITICAL: The questions array must contain exactly {question_count} items — co
 Do NOT use: geography facts, history trivia, science recall, or standard classroom worksheet drills unrelated to reasoning.
 
 Each question must have exactly 4 distinct, non-empty choices and correct_index 0-3.
+{_MCQ_DISTINCT_CHOICES_RULE}
 Do not prefix choices with letters.
 
 Requirements:
@@ -1002,13 +1036,15 @@ def _normalize_draft(
             correct_index = raw.get("correct_index")
             if not isinstance(choices, list) or len(choices) != 4:
                 raise ValueError(f"AI question {i + 1} must have 4 choices.")
+            if not isinstance(correct_index, int) or correct_index not in (0, 1, 2, 3):
+                raise ValueError(f"AI question {i + 1} has invalid correct_index.")
             trimmed = [str(c).strip() for c in choices]
             if any(not c for c in trimmed):
                 raise ValueError(f"AI question {i + 1} has empty choices.")
-            if len(set(trimmed)) < 4:
+            if len({t.casefold() for t in trimmed}) < 4:
+                trimmed = _repair_duplicate_mcq_choices(trimmed, correct_index)
+            if len({t.casefold() for t in trimmed}) < 4:
                 raise ValueError(f"AI question {i + 1} has duplicate choices.")
-            if not isinstance(correct_index, int) or correct_index not in (0, 1, 2, 3):
-                raise ValueError(f"AI question {i + 1} has invalid correct_index.")
             questions.append(
                 {
                     "prompt": prompt.strip(),
@@ -1131,6 +1167,7 @@ def _build_topup_prompt(
 """
         type_rules = (
             "Each question must have exactly 4 distinct, non-empty choices and correct_index 0-3. "
+            f"{_MCQ_DISTINCT_CHOICES_RULE} "
             "Do not prefix choices with letters."
         )
     elif _ai_generates_short_answer_reference(subject):
@@ -1345,44 +1382,60 @@ def generate_worksheet_draft(
         )
         if not isinstance(count, int) or count < 1 or count > 50:
             raise ValueError("question_count must be between 1 and 50.")
-        user_prompt = _build_prep_program_prompt(
-            prep_program=prep_program,
-            subject=subject,
-            grade=grade,
-            stars=stars,
-            fmt=fmt,
-            question_count=count,
-            custom_prompt=custom_prompt,
-        )
-        parsed = _openai_json_completion(
-            api_key=api_key,
-            messages=[{"role": "user", "content": user_prompt}],
-        )
         require_reference = fmt != "short_answer" or _ai_generates_short_answer_reference(
             subject
         )
-        draft = parsed
-        questions = draft.get("questions")
-        if isinstance(questions, list):
-            missing = count - len(questions)
-            if 0 < missing <= TOPUP_MAX_MISSING:
-                draft = _topup_worksheet_questions(
+        last_error: ValueError | None = None
+        for attempt in range(3):
+            user_prompt = _build_prep_program_prompt(
+                prep_program=prep_program,
+                subject=subject,
+                grade=grade,
+                stars=stars,
+                fmt=fmt,
+                question_count=count,
+                custom_prompt=custom_prompt,
+            )
+            parsed = _openai_json_completion(
+                api_key=api_key,
+                messages=[{"role": "user", "content": user_prompt}],
+            )
+            draft = parsed
+            questions = draft.get("questions")
+            if isinstance(questions, list):
+                missing = count - len(questions)
+                if 0 < missing <= TOPUP_MAX_MISSING:
+                    draft = _topup_worksheet_questions(
+                        draft,
+                        missing=missing,
+                        api_key=api_key,
+                        subject=subject,
+                        grade=grade,
+                        stars=stars,
+                        fmt=fmt,
+                        custom_prompt=custom_prompt,
+                        prep_program=prep_program,
+                    )
+            try:
+                return _normalize_draft(
                     draft,
-                    missing=missing,
-                    api_key=api_key,
-                    subject=subject,
-                    grade=grade,
-                    stars=stars,
                     fmt=fmt,
-                    custom_prompt=custom_prompt,
-                    prep_program=prep_program,
+                    question_count=count,
+                    require_short_answer_reference=require_reference,
                 )
-        return _normalize_draft(
-            draft,
-            fmt=fmt,
-            question_count=count,
-            require_short_answer_reference=require_reference,
-        )
+            except ValueError as exc:
+                message = str(exc)
+                if attempt < 2 and (
+                    "questions; expected" in message
+                    or "duplicate choices" in message
+                    or "has empty choices" in message
+                ):
+                    last_error = exc
+                    continue
+                raise
+        if last_error:
+            raise last_error
+        raise ValueError("Could not generate worksheet draft.")
 
     english_type = (english_type or "").strip().lower()
     specs = passage_specs or []
@@ -1496,7 +1549,11 @@ def generate_worksheet_draft(
             )
         except ValueError as exc:
             message = str(exc)
-            if attempt == 0 and "questions; expected" in message:
+            if attempt == 0 and (
+                "questions; expected" in message
+                or "duplicate choices" in message
+                or "has empty choices" in message
+            ):
                 last_error = exc
                 continue
             raise
